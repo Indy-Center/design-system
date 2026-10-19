@@ -1,0 +1,50 @@
+import type { Plugin } from "@terrazzo/parser";
+
+export const schemes = ["light", "dark"] as const;
+
+/**
+ * Writes tokens.json: each scheme's resolved values, for code that can't
+ * read CSS custom properties (a canvas, a script). Colours are the token
+ * files' hex, as the guide gives them; font stacks are CSS font-family
+ * values, ready for `ctx.font`.
+ *
+ *   { "light": { "color": { "card": "#FFFFFF", … }, "font": { … } }, "dark": … }
+ */
+export default function tokensJson({
+  filename = "tokens.json",
+}: { filename?: string } = {}): Plugin {
+  return {
+    name: "indy-center:tokens-json",
+    enforce: "post",
+    async build({ resolver, getTransforms, outputFile }) {
+      const out: Record<string, Record<string, Record<string, string>>> = {};
+      for (const theme of schemes) {
+        const scheme: Record<string, Record<string, string>> = {};
+        for (const token of Object.values(resolver.apply({ theme }))) {
+          const [group, ...rest] = token.id.split(".");
+          const name = rest.join(".");
+          let value: string;
+          if (token.$type === "color") {
+            if (!token.$value.hex) {
+              throw new Error(`${token.id}: colours need the guide's hex`);
+            }
+            value = token.$value.hex.toUpperCase();
+          } else {
+            const [css] = getTransforms({
+              format: "css",
+              id: token.id,
+              input: { theme },
+            });
+            if (typeof css?.value !== "string") {
+              throw new Error(`${token.id}: no CSS value to write`);
+            }
+            value = css.value;
+          }
+          (scheme[group!] ??= {})[name] = value;
+        }
+        out[theme] = scheme;
+      }
+      outputFile(filename, `${JSON.stringify(out, null, 2)}\n`);
+    },
+  };
+}

@@ -1,6 +1,7 @@
 import { defineConfig } from "@terrazzo/cli";
 import css from "@terrazzo/plugin-css";
 import tailwind from "@terrazzo/plugin-tailwind";
+import tokensJson from "./scripts/tokens-json.ts";
 
 const block = (selector: string, scheme: string) => (contents: string) =>
   `${selector} {\n  color-scheme: ${scheme};\n  ${contents}\n}`;
@@ -34,5 +35,6 @@ export default defineConfig({
       },
       defaultTheme: { theme: "light" },
     }),
+    tokensJson(),
   ],
 });

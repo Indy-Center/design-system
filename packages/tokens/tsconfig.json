@@ -10,5 +10,5 @@
     "allowImportingTsExtensions": true,
     "skipLibCheck": true
   },
-  "include": ["terrazzo.config.ts", "vitest.config.ts", "test"]
+  "include": ["terrazzo.config.ts", "vitest.config.ts", "scripts", "test"]
 }
