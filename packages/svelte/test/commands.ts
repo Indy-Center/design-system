@@ -1,18 +1,25 @@
 // Browser commands: run in Node, called from tests through
 // `commands` in "vitest/browser".
-import type { BrowserCommand } from "vitest/node";
+import type { BrowserCommand, BrowserCommandContext } from "vitest/node";
 
 type DeviceScheme = "light" | "dark" | "no-preference" | null;
+
+/** The Playwright page under test; `command` needs the Playwright provider. */
+function playwrightPage(context: BrowserCommandContext, command: string) {
+  if (context.provider.name !== "playwright") {
+    throw new Error(`${command} needs the Playwright provider`);
+  }
+  return context.page;
+}
 
 /** Sets the device's colour scheme the page sees; null resets it. */
 export const emulateColorScheme: BrowserCommand<[DeviceScheme]> = async (
   context,
   colorScheme,
 ) => {
-  if (context.provider.name !== "playwright") {
-    throw new Error("emulateColorScheme needs the Playwright provider");
-  }
-  await context.page.emulateMedia({ colorScheme });
+  await playwrightPage(context, "emulateColorScheme").emulateMedia({
+    colorScheme,
+  });
 };
 
 /** A cookie as the browser stored it, attributes included. */
@@ -28,12 +35,8 @@ export type StoredCookie = {
 };
 
 /** Every cookie the browser holds. */
-export const storedCookies: BrowserCommand<[]> = async (context) => {
-  if (context.provider.name !== "playwright") {
-    throw new Error("storedCookies needs the Playwright provider");
-  }
-  return context.page.context().cookies();
-};
+export const storedCookies: BrowserCommand<[]> = async (context) =>
+  playwrightPage(context, "storedCookies").context().cookies();
 
 declare module "vitest/browser" {
   interface BrowserCommands {
