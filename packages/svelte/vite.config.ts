@@ -5,6 +5,9 @@ import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   plugins: [tailwindcss(), await sveltekit()],
+  // The tokens package is linked from beside this one; its font is served
+  // from there.
+  server: { fs: { allow: ["../tokens"] } },
   test: {
     // expect.element retries until the test times out, so keep this short.
     testTimeout: 10_000,

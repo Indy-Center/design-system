@@ -22,6 +22,7 @@ unless told). The path is relative to the stylesheet; this one is for
 @import "tailwindcss";
 @import "@indy-center/tokens/tokens.css";
 @import "@indy-center/tokens/theme.css";
+@import "@indy-center/tokens/fonts.css";
 @source "../node_modules/@indy-center/svelte";
 ```
 
