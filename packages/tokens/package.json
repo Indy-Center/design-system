@@ -15,6 +15,7 @@
   "exports": {
     "./tokens.css": "./dist/tokens.css",
     "./theme.css": "./dist/theme.css",
+    "./_tokens.scss": "./dist/_tokens.scss",
     "./tokens.json": "./dist/tokens.json",
     "./tables.md": "./dist/tables.md",
     "./package.json": "./package.json"
@@ -31,9 +32,11 @@
   "devDependencies": {
     "@terrazzo/cli": "^2.9.0",
     "@terrazzo/plugin-css": "^2.9.0",
+    "@terrazzo/plugin-sass": "^2.9.0",
     "@terrazzo/plugin-tailwind": "^2.9.0",
     "@types/node": "^22.20.5",
     "playwright-core": "^1.64.1",
+    "sass": "^1.105.2",
     "tailwindcss": "^4.3.3",
     "typescript": "^7.0.2",
     "vitest": "^5.0.5"
