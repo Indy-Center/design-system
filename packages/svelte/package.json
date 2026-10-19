@@ -35,7 +35,7 @@
   "scripts": {
     "dev": "vite dev",
     "build": "svelte-kit sync && svelte-package",
-    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --fail-on-warnings",
+    "check": "npm run build && svelte-check --tsconfig ./tsconfig.json --fail-on-warnings",
     "test": "npm run build --prefix ../tokens && npm run build && vitest run",
     "prepublishOnly": "npm run build"
   },
