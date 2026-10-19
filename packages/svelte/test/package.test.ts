@@ -25,6 +25,7 @@ describe("the packed package", () => {
         "dist/Link/Link.svelte",
         "dist/Link/Link.svelte.d.ts",
         "dist/Link/Link.md",
+        "dist/colorScheme/colorScheme.md",
       ]),
     );
   });
@@ -40,5 +41,20 @@ describe("the packed package", () => {
   test("exports Link from the package root, with types", async () => {
     const index = await readFile(new URL("dist/index.d.ts", root), "utf8");
     expect(index).toMatch(/export \{ default as Link \}/);
+  });
+
+  test("exports saveColorScheme from the package root, with types", async () => {
+    const index = await readFile(new URL("dist/index.d.ts", root), "utf8");
+    expect(index).toMatch(/\bsaveColorScheme\b/);
+  });
+
+  test("serves the colour-scheme hook from /hooks, in Node, with types", async () => {
+    const pkg = JSON.parse(
+      await readFile(new URL("package.json", root), "utf8"),
+    );
+    const hooks = pkg.exports["./hooks"];
+    expect(files).toContain(hooks.types.replace("./", ""));
+    const { colorSchemeHandle } = await import("@indy-center/svelte/hooks");
+    expect(colorSchemeHandle({ fallback: "dark" })).toBeTypeOf("function");
   });
 });

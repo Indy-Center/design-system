@@ -40,6 +40,19 @@ Components take the light or dark colours from the nearest
 `data-theme="dark"` element, so they work on a dark page and in the dark
 header on a light page alike.
 
+The page's colour scheme comes from a server hook, which serves each
+member's choice from a cookie shared across the Indy Center sites:
+
+```ts
+// src/hooks.server.ts
+import { colorSchemeHandle } from "@indy-center/svelte/hooks";
+
+export const handle = colorSchemeHandle({ fallback: "dark" });
+```
+
+See [`src/lib/colorScheme/colorScheme.md`](src/lib/colorScheme/colorScheme.md)
+for the `app.html` script tag and saving a choice.
+
 ## Docs
 
 Each component's doc page ships beside it, as

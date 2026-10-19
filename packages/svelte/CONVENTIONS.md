@@ -47,6 +47,14 @@ src/routes/name/+page.svelte its playground page (lower-case folder)
   `data-theme="dark"` element. `dark:` is for the rare non-colour change.
 - Components that are dark in both schemes (Header, Footer) put
   `data-theme="dark"` on their own root, and everything inside follows.
+- Never set `data-theme` on `<html>`: the colour-scheme hook does. To save
+  a member's choice (UserMenu's colour-scheme item), call
+  `saveColorScheme("light" | "dark")` from
+  `../colorScheme/saveColorScheme.js` (a `.ts` file, imported as `.js` so
+  the built package resolves it); it writes the shared cookie and
+  applies the choice at once. Read the scheme in use from
+  `document.documentElement.dataset.theme` after mount. See
+  `src/lib/colorScheme/colorScheme.md`.
 - `font-heading` for headings, `font-mono` for CIDs and ratings; Tailwind's
   default sizes.
 - Focus: `focus-visible:outline-2 focus-visible:outline-offset-2
