@@ -10,7 +10,8 @@
     "directory": "packages/tokens"
   },
   "files": [
-    "dist"
+    "dist",
+    "fonts"
   ],
   "exports": {
     "./tokens.css": "./dist/tokens.css",
@@ -18,6 +19,7 @@
     "./_tokens.scss": "./dist/_tokens.scss",
     "./tokens.json": "./dist/tokens.json",
     "./tables.md": "./dist/tables.md",
+    "./fonts.css": "./fonts/fonts.css",
     "./package.json": "./package.json"
   },
   "publishConfig": {
