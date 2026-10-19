@@ -26,6 +26,15 @@ describe("with no cookie", () => {
     const page = await serve(colorSchemeHandle({ fallback: "dark" }));
     expect(htmlTheme(page)).toBe("dark");
   });
+
+  test("the scheme lands on <html> when it isn't in the first chunk", async () => {
+    const at = template.indexOf("<html");
+    const page = await serve(colorSchemeHandle({ fallback: "dark" }), {
+      chunks: [template.slice(0, at), template.slice(at), "<p>More</p>"],
+    });
+    expect(htmlTheme(page)).toBe("dark");
+    expect(page.match(/data-theme/g)).toHaveLength(1);
+  });
 });
 
 describe("with a choice in the cookie", () => {

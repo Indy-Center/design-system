@@ -35,6 +35,8 @@ export type ColorSchemeHandle = <
  */
 const SCRIPT_MARKER = /\/\*\s*@indy-center\/svelte color scheme\s*\*\//;
 
+const HTML_TAG = /<html(?=[\s>])/i;
+
 /** Sets dark from the device's setting when the server set nothing. */
 const DEVICE_SCRIPT =
   "(function(){var d=document.documentElement;" +
@@ -54,12 +56,12 @@ export function colorSchemeHandle(
     let written = false;
     return resolve(event, {
       transformPageChunk: ({ html }) => {
-        // <html> and <head> come in the first chunk; later chunks are body.
-        if (written) return html;
+        // Only the chunk with <html> in it, which has <head> too.
+        if (written || !HTML_TAG.test(html)) return html;
         written = true;
         if (theme) {
           return html
-            .replace(/<html(?=[\s>])/i, `<html data-theme="${theme}"`)
+            .replace(HTML_TAG, `<html data-theme="${theme}"`)
             .replace(SCRIPT_MARKER, "");
         }
         if (SCRIPT_MARKER.test(html)) {

@@ -13,10 +13,15 @@ export const template = `<!doctype html>
 /**
  * Runs `handle` for one request carrying `cookie` (a Cookie header, as
  * `document.cookie` reads) and returns the page it serves, built from `html`.
+ * `chunks` streams the page in those pieces instead, as SvelteKit may.
  */
 export async function serve(
   handle: Handle,
-  { cookie = "", html = template }: { cookie?: string; html?: string } = {},
+  {
+    cookie = "",
+    html = template,
+    chunks = [html],
+  }: { cookie?: string; html?: string; chunks?: string[] } = {},
 ): Promise<string> {
   const jar = new Map<string, string>();
   for (const pair of cookie.split(";")) {
@@ -28,10 +33,15 @@ export async function serve(
   } as unknown as RequestEvent;
   const response = await handle({
     event,
-    resolve: async (_event, options?: ResolveOptions) =>
-      new Response(
-        (await options?.transformPageChunk?.({ html, done: true })) ?? html,
-      ),
+    resolve: async (_event, options?: ResolveOptions) => {
+      let page = "";
+      for (const [i, chunk] of chunks.entries()) {
+        const done = i === chunks.length - 1;
+        page +=
+          (await options?.transformPageChunk?.({ html: chunk, done })) ?? chunk;
+      }
+      return new Response(page);
+    },
   });
   return response.text();
 }
