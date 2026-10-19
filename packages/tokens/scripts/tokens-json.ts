@@ -9,9 +9,7 @@ import { guideHex, resolveSchemes, schemes } from "./schemes.ts";
  *
  *   { "light": { "color": { "card": "#FFFFFF", … }, "font": { … } }, "dark": … }
  */
-export default function tokensJson({
-  filename = "tokens.json",
-}: { filename?: string } = {}): Plugin {
+export default function tokensJson(): Plugin {
   return {
     name: "indy-center:tokens-json",
     enforce: "post",
@@ -41,7 +39,7 @@ export default function tokensJson({
         }
         out[theme] = scheme;
       }
-      outputFile(filename, `${JSON.stringify(out, null, 2)}\n`);
+      outputFile("tokens.json", `${JSON.stringify(out, null, 2)}\n`);
     },
   };
 }

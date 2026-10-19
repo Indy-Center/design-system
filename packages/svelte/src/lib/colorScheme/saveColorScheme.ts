@@ -9,7 +9,7 @@ export type SaveColorSchemeOptions = {
 };
 
 /** The Indy Center domain, which every app's cookie is shared across. */
-export const INDY_CENTER_DOMAIN = "flyindycenter.com";
+const INDY_CENTER_DOMAIN = "flyindycenter.com";
 
 const ONE_YEAR = 365 * 24 * 60 * 60;
 
