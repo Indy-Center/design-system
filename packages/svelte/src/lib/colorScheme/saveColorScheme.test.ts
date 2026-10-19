@@ -1,6 +1,8 @@
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { commands } from "vitest/browser";
+import { forgetColorScheme } from "../../playground/forgetColorScheme.ts";
 import { htmlTheme, serve } from "../../../test/serve.ts";
+import { COOKIE_NAME } from "./colorScheme.ts";
 import { colorSchemeHandle } from "./colorSchemeHandle.ts";
 import { saveColorScheme } from "./saveColorScheme.ts";
 
@@ -11,7 +13,7 @@ const darkBackground = "rgb(17, 24, 39)"; // #111827
 const added: HTMLElement[] = [];
 
 afterEach(() => {
-  document.cookie = "indy-color-scheme=; Path=/; Max-Age=0";
+  forgetColorScheme();
   delete document.documentElement.dataset.theme;
   for (const element of added.splice(0)) element.remove();
 });
@@ -30,7 +32,7 @@ function background(element: Element): string {
 /** The scheme cookie as the browser stored it. */
 async function storedCookie() {
   const cookies = await commands.storedCookies();
-  return cookies.find((cookie) => cookie.name === "indy-color-scheme");
+  return cookies.find((cookie) => cookie.name === COOKIE_NAME);
 }
 
 describe("saving a choice", () => {

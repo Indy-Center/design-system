@@ -3,7 +3,9 @@
   // from the cookie, else the fallback. The header above stays dark.
   import { page } from "$app/state";
   import { onMount } from "svelte";
+  import { COOKIE_NAME } from "../../lib/colorScheme/colorScheme.ts";
   import { Link, saveColorScheme, type ColorScheme } from "../../lib/index.ts";
+  import { forgetColorScheme } from "../../playground/forgetColorScheme.ts";
 
   const fallback = $derived(
     page.url.searchParams.get("fallback") === "device" ? "device" : "dark",
@@ -16,8 +18,10 @@
   function read() {
     onHtml = document.documentElement.dataset.theme ?? "nothing (light)";
     cookie =
-      /(?:^|; )indy-color-scheme=([^;]*)/.exec(document.cookie)?.[1] ??
-      "nothing";
+      document.cookie
+        .split("; ")
+        .find((pair) => pair.startsWith(`${COOKIE_NAME}=`))
+        ?.slice(COOKIE_NAME.length + 1) ?? "nothing";
   }
 
   onMount(read);
@@ -29,7 +33,7 @@
 
   // Playground only: back to no choice, so the fallback shows again.
   function forget() {
-    document.cookie = "indy-color-scheme=; Path=/; Max-Age=0";
+    forgetColorScheme();
     location.reload();
   }
 

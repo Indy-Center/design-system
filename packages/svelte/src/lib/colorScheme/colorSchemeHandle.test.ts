@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, test } from "vitest";
 import { commands } from "vitest/browser";
 import { htmlTheme, serve, template } from "../../../test/serve.ts";
+import { COOKIE_NAME } from "./colorScheme.ts";
 import { colorSchemeHandle } from "./colorSchemeHandle.ts";
 
 /**
@@ -37,7 +38,7 @@ describe("with a choice in the cookie", () => {
     "%s is served, whatever the fallback (%s)",
     async (choice, fallback) => {
       const page = await serve(colorSchemeHandle({ fallback }), {
-        cookie: `other=1; indy-color-scheme=${choice}`,
+        cookie: `other=1; ${COOKIE_NAME}=${choice}`,
       });
       expect(htmlTheme(page)).toBe(choice);
     },
@@ -45,7 +46,7 @@ describe("with a choice in the cookie", () => {
 
   test("a value that isn't a choice counts as none", async () => {
     const page = await serve(colorSchemeHandle({ fallback: "dark" }), {
-      cookie: "indy-color-scheme=purple",
+      cookie: `${COOKIE_NAME}=purple`,
     });
     expect(htmlTheme(page)).toBe("dark");
   });
