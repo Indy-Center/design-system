@@ -1,0 +1,14 @@
+/* Light values, so Tailwind makes bg-card, text-foreground and the rest.
+ * Dark comes from tokens.css, which re-declares the same variables on any
+ * element with data-theme="dark" (decision 0001). Import both. */
+@theme {
+  @tz (theme: "light");
+}
+
+/* dark: applies on and inside any element with data-theme="dark". */
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+
+/* CIDs and ratings line up in tables. */
+@utility font-mono {
+  font-variant-numeric: tabular-nums;
+}
