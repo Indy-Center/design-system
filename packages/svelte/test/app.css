@@ -1,0 +1,5 @@
+/* What an app's stylesheet holds, so component tests see real styles. */
+@import "tailwindcss";
+@import "@indy-center/tokens/tokens.css";
+@import "@indy-center/tokens/theme.css";
+@source "../src/lib";

@@ -1,0 +1,4 @@
+/* The playground's stylesheet, as an app's would be. */
+@import "tailwindcss";
+@import "@indy-center/tokens/tokens.css";
+@import "@indy-center/tokens/theme.css";
