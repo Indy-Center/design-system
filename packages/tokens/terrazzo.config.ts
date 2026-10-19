@@ -1,6 +1,9 @@
 import { defineConfig } from "@terrazzo/cli";
 import css from "@terrazzo/plugin-css";
+import sass from "@terrazzo/plugin-sass";
 import tailwind from "@terrazzo/plugin-tailwind";
+import tables from "./scripts/tables.ts";
+import tokensJson from "./scripts/tokens-json.ts";
 
 const block = (selector: string, scheme: string) => (contents: string) =>
   `${selector} {\n  color-scheme: ${scheme};\n  ${contents}\n}`;
@@ -34,5 +37,10 @@ export default defineConfig({
       },
       defaultTheme: { theme: "light" },
     }),
+    // A typed layer over tokens.css: token("color.card") is
+    // var(--color-card), so load tokens.css too.
+    sass({ filename: "_tokens.scss" }),
+    tokensJson(),
+    tables(),
   ],
 });
