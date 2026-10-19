@@ -2,6 +2,7 @@ import { sveltekit } from "@sveltejs/kit/vite";
 import tailwindcss from "@tailwindcss/vite";
 import { playwright } from "@vitest/browser-playwright";
 import { defineConfig } from "vitest/config";
+import { emulateColorScheme, storedCookies } from "./test/commands.ts";
 
 export default defineConfig({
   plugins: [tailwindcss(), await sveltekit()],
@@ -30,6 +31,7 @@ export default defineConfig({
               },
             }),
             instances: [{ browser: "chromium" }],
+            commands: { emulateColorScheme, storedCookies },
           },
         },
       },
