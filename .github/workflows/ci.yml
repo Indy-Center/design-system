@@ -1,8 +1,12 @@
 name: CI
 
-# No push trigger: on main, CI runs inside build-and-deploy.yml, as in indy-larry.
+# workflow_call lets a later publish workflow (none yet) run these checks
+# first, as indy-larry's build-and-deploy.yml does. The push trigger covers
+# the Centerline feature branch while its tickets land on it.
 on:
   pull_request:
+  push:
+    branches: [centerline/packages]
   workflow_call:
 
 permissions:
