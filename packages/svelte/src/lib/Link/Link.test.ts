@@ -61,6 +61,7 @@ describe("Link", () => {
   // The guide's `ring` role: #0284C7 light, #0EA5E9 dark.
   test.each([
     ["light", "rgb(2, 132, 199)"],
+    ["dark", "rgb(14, 165, 233)"],
     ["dark-header", "rgb(14, 165, 233)"],
   ] as const)(
     "shows a ring outline when tabbed to in %s",
