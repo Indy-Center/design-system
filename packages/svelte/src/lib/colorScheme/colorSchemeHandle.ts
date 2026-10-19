@@ -1,3 +1,4 @@
+import { DEV } from "esm-env";
 import { COOKIE_NAME, parseColorScheme } from "./colorScheme.js";
 
 export type ColorSchemeHandleOptions = {
@@ -37,6 +38,12 @@ const SCRIPT_MARKER = /\/\*\s*@indy-center\/svelte color scheme\s*\*\//;
 
 const HTML_TAG = /<html(?=[\s>])/i;
 
+const MISSING_MARKER =
+  "@indy-center/svelte: app.html has no colour-scheme script tag, so the " +
+  "hook adds one without a nonce, which a Content Security Policy blocks. " +
+  'Add <script nonce="%sveltekit.nonce%">/* @indy-center/svelte color scheme */</script> ' +
+  "to <head> in src/app.html.";
+
 /** Sets dark from the device's setting when the server set nothing. */
 const DEVICE_SCRIPT =
   "(function(){var d=document.documentElement;" +
@@ -50,6 +57,7 @@ const DEVICE_SCRIPT =
 export function colorSchemeHandle(
   options: ColorSchemeHandleOptions,
 ): ColorSchemeHandle {
+  let warned = false;
   return ({ event, resolve }) => {
     const choice = parseColorScheme(event.cookies.get(COOKIE_NAME));
     const theme = choice ?? (options.fallback === "dark" ? "dark" : undefined);
@@ -66,6 +74,10 @@ export function colorSchemeHandle(
         }
         if (SCRIPT_MARKER.test(html)) {
           return html.replace(SCRIPT_MARKER, DEVICE_SCRIPT);
+        }
+        if (DEV && !warned) {
+          warned = true;
+          console.warn(MISSING_MARKER);
         }
         return html.replace(
           /<head(\s[^>]*)?>/i,

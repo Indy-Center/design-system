@@ -55,7 +55,9 @@ In a component, when the member picks light or dark:
 - **The script tag**: the hook fills in the comment. It carries
   `%sveltekit.nonce%`, so it runs under a Content Security Policy in nonce
   mode. Without the tag, the hook adds a script of its own at the start of
-  `<head>`, without a nonce. Prerendered pages get no cookie and no nonce.
+  `<head>`, without a nonce, which a Content Security Policy blocks; in dev
+  it logs a warning saying to add the tag. Prerendered pages get no cookie
+  and no nonce.
 - **`saveColorScheme(scheme, { domain })`** writes the cookie for a year on
   `Path=/` and sets `data-theme` on `<html>` at once. `domain` defaults to
   `flyindycenter.com`; on a page outside it (localhost, a preview host), the

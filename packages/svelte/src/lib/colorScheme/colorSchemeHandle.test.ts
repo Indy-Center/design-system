@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, test } from "vitest";
+import { afterEach, describe, expect, test, vi } from "vitest";
 import { commands } from "vitest/browser";
 import { htmlTheme, serve, template } from "../../../test/serve.ts";
 import { COOKIE_NAME } from "./colorScheme.ts";
@@ -90,5 +90,32 @@ describe("with no cookie and fallback 'device'", () => {
     );
     await commands.emulateColorScheme("dark");
     expect(await themeInBrowser(await serve(handle, { html }))).toBe("dark");
+  });
+});
+
+describe("the script tag in app.html, in dev", () => {
+  const marker = "/* @indy-center/svelte color scheme */";
+  const withMarker = template.replace(
+    "</head>",
+    `<script nonce="abc123">${marker}</script></head>`,
+  );
+
+  test("missing: one warning, naming the tag to add", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const handle = colorSchemeHandle({ fallback: "device" });
+    await serve(handle);
+    await serve(handle);
+    expect(warn).toHaveBeenCalledOnce();
+    expect(warn.mock.calls[0]?.join(" ")).toContain(marker);
+    warn.mockRestore();
+  });
+
+  test("present: no warning", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    await serve(colorSchemeHandle({ fallback: "device" }), {
+      html: withMarker,
+    });
+    expect(warn).not.toHaveBeenCalled();
+    warn.mockRestore();
   });
 });

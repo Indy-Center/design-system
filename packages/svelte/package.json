@@ -60,5 +60,8 @@
     "vite": "^8.3.4",
     "vitest": "^5.0.5",
     "vitest-browser-svelte": "^3.1.0"
+  },
+  "dependencies": {
+    "esm-env": "^1.2.2"
   }
 }
