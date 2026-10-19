@@ -29,6 +29,10 @@ describe("the packed package", () => {
     );
   });
 
+  test("carries the MIT licence", () => {
+    expect(files).toContain("LICENSE");
+  });
+
   test("leaves out tests", () => {
     expect(files.filter((f) => /\.test\./.test(f))).toEqual([]);
   });
