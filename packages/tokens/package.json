@@ -16,6 +16,7 @@
     "./tokens.css": "./dist/tokens.css",
     "./theme.css": "./dist/theme.css",
     "./tokens.json": "./dist/tokens.json",
+    "./tables.md": "./dist/tables.md",
     "./package.json": "./package.json"
   },
   "publishConfig": {

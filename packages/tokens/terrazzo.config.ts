@@ -1,6 +1,7 @@
 import { defineConfig } from "@terrazzo/cli";
 import css from "@terrazzo/plugin-css";
 import tailwind from "@terrazzo/plugin-tailwind";
+import tables from "./scripts/tables.ts";
 import tokensJson from "./scripts/tokens-json.ts";
 
 const block = (selector: string, scheme: string) => (contents: string) =>
@@ -36,5 +37,6 @@ export default defineConfig({
       defaultTheme: { theme: "light" },
     }),
     tokensJson(),
+    tables(),
   ],
 });
