@@ -1,4 +1,5 @@
 import type { Plugin } from "@terrazzo/parser";
+import { guideHex, resolveSchemes } from "./schemes.ts";
 
 /**
  * Writes tables.md: the brand guide's two tables (brand colours; roles),
@@ -14,20 +15,14 @@ export default function tables({
     name: "indy-center:tables",
     enforce: "post",
     async build({ resolver, outputFile }) {
-      const light = resolver.apply({ theme: "light" });
-      const dark = resolver.apply({ theme: "dark" });
+      const { light, dark } = resolveSchemes(resolver);
       const brandNames = colourNames(resolver.source.sets?.brand?.sources);
       const roleNames = colourNames(
         resolver.source.modifiers?.theme?.contexts?.light,
       );
 
-      const hex = (set: typeof light, name: string) => {
-        const token = set[`color.${name}`];
-        if (token?.$type !== "color" || !token.$value.hex) {
-          throw new Error(`color.${name}: no hex to print`);
-        }
-        return `\`${token.$value.hex.toUpperCase()}\``;
-      };
+      const hex = (set: typeof light, name: string) =>
+        `\`${guideHex(set[`color.${name}`], `color.${name}`)}\``;
       const usedFor = (name: string) => light[`color.${name}`]?.$description;
 
       const brandRows = brandNames.map(

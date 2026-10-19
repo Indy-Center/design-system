@@ -1,6 +1,5 @@
 import type { Plugin } from "@terrazzo/parser";
-
-export const schemes = ["light", "dark"] as const;
+import { guideHex, resolveSchemes, schemes } from "./schemes.ts";
 
 /**
  * Writes tokens.json: each scheme's resolved values, for code that can't
@@ -17,18 +16,16 @@ export default function tokensJson({
     name: "indy-center:tokens-json",
     enforce: "post",
     async build({ resolver, getTransforms, outputFile }) {
+      const resolved = resolveSchemes(resolver);
       const out: Record<string, Record<string, Record<string, string>>> = {};
       for (const theme of schemes) {
         const scheme: Record<string, Record<string, string>> = {};
-        for (const token of Object.values(resolver.apply({ theme }))) {
+        for (const token of Object.values(resolved[theme])) {
           const [group, ...rest] = token.id.split(".");
           const name = rest.join(".");
           let value: string;
           if (token.$type === "color") {
-            if (!token.$value.hex) {
-              throw new Error(`${token.id}: colours need the guide's hex`);
-            }
-            value = token.$value.hex.toUpperCase();
+            value = guideHex(token, token.id);
           } else {
             const [css] = getTransforms({
               format: "css",
