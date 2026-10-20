@@ -31,7 +31,7 @@ export const points: Point[] = [
       },
       {
         key: "C",
-        note: "Both: the menu switches this browser; Settings picks a zone and saves it to your profile.",
+        note: "Both: the same control in the menu and on Settings. Every choice saves to this browser and your profile.",
       },
     ],
   },
@@ -114,6 +114,10 @@ export const points: Point[] = [
 export const NOTE =
   "Saved on this browser for a year, across flyindycenter.com.";
 
+/** The time zone also goes to the profile when the member is signed in. */
+export const TZ_NOTE =
+  "Saved on this browser for a year, across flyindycenter.com, and to your Indy Center profile for every browser you sign in on.";
+
 /** The chosen variant of each point, kept in `?v=`. */
 export const chosen = $state<Record<PointKey, string>>(
   Object.fromEntries(points.map((p) => [p.key, p.recommend])) as Record<
@@ -195,6 +199,8 @@ export function saveTimeZone(zone: string, follow = false) {
   );
   prefs.zone = zone;
   prefs.follow = follow;
+  // Signed in: the choice goes to the profile too, without asking.
+  void saveToProfile(follow ? "device" : zone);
 }
 
 /** "Use my device's time zone". */
@@ -207,6 +213,7 @@ export function clearTimeZone() {
   document.cookie = [`${TZ_COOKIE}=`, ...cookieAttrs(0)].join("; ");
   prefs.zone = undefined;
   prefs.follow = false;
+  void saveToProfile("zulu");
 }
 
 /**

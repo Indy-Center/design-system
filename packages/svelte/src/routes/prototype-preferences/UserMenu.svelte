@@ -62,16 +62,11 @@
     <div class="border-t border-border p-2">
       <p class={groupLabel}>Time zone</p>
       <ZoneControl />
-      {#if chosen.where === "C"}
+      {#if chosen.where === "C" && chosen.wording !== "D"}
         <a
           href="/prototype-preferences/settings{variantQuery()}"
           class="{row} text-xs"
-          >{chosen.wording === "D"
-            ? "Save it to your profile"
-            : "Pick another zone, or save it to your profile"}{prefs.zone &&
-          chosen.wording !== "D"
-            ? ` (now ${city(prefs.zone)})`
-            : ""}</a
+          >Pick another zone{prefs.zone ? ` (now ${city(prefs.zone)})` : ""}</a
         >
       {/if}
     </div>

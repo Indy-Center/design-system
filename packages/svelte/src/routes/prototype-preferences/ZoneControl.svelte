@@ -10,6 +10,7 @@
     city,
     shortName,
     ZONES,
+    TZ_NOTE,
   } from "./prefs.svelte.ts";
   import { seg, segGroup, focus } from "./cls.ts";
   import Note from "./Note.svelte";
@@ -185,4 +186,4 @@
     {/if}
   </div>
 {/if}
-<Note {saved} />
+<Note text={TZ_NOTE} {saved} />
