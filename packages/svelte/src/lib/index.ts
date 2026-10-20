@@ -1,4 +1,5 @@
 // One line per component, in alphabetical order.
+export { default as Combobox } from "./Combobox/Combobox.svelte";
 export { default as Field, type FieldControl } from "./Field/Field.svelte";
 export { default as Icon } from "./Icon/Icon.svelte";
 export { default as Input } from "./Input/Input.svelte";
