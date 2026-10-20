@@ -31,6 +31,7 @@ describe("the packed package", () => {
         "fonts/fonts.css",
         "fonts/source-sans-3-latin-wght-normal.woff2",
         "fonts/OFL.txt",
+        "prose.css",
       ].sort(),
     );
   });
