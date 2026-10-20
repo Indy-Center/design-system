@@ -55,7 +55,7 @@
   );
   let decimals = $state<2 | 3>(q.get("decimals") === "3" ? 3 : 2);
   // How far the airport code beside the radio name is lifted, in px.
-  let nudge = $state(Number(q.get("nudge") ?? 1) || 0);
+  let nudge = $state(Number(q.get("nudge") ?? 0.5) || 0);
   $effect(() => {
     document.documentElement.style.setProperty("--airport-nudge", `${nudge}px`);
   });
