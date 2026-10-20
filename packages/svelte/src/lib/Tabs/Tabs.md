@@ -58,7 +58,10 @@ description: Links between the pages of one section, the current one marked.
 - The current tab has a 2px bar under it in the `link` role, and semibold
   text in `foreground`. The bar and the weight mark it, not colour alone.
 - The others are in `muted-foreground`, turning `foreground` on hover.
-- On a narrow screen the row scrolls sideways rather than wrapping.
+- On a narrow screen the row scrolls sideways rather than wrapping. It
+  takes its width from its container, not its tabs, so it never pushes a
+  page wider than the screen; in a flex row beside other things, give it
+  room with `class="flex-1"`.
 - A `ring` outline, drawn inside the tab, when reached by keyboard.
 
 ## Accessibility

@@ -21,7 +21,9 @@
   let { label, items, class: className, ...rest }: Props = $props();
 </script>
 
-<nav aria-label={label} {...rest} class={className}>
+<!-- Sized by its container, not its tabs, so a grid or flex parent doesn't
+     grow past a phone's width to fit them. -->
+<nav aria-label={label} {...rest} class={["[contain:inline-size]", className]}>
   <!-- Scrolls sideways when the tabs are wider than a phone. -->
   <ul class="flex overflow-x-auto border-b border-border">
     {#each items as tab (tab.href)}

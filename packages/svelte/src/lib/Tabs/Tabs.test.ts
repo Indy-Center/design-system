@@ -78,6 +78,22 @@ describe("Tabs", () => {
     },
   );
 
+  // A grid or flex item grows to its content; the tabs must scroll instead
+  // of pushing the page wider than a phone.
+  test("scrolls inside a narrow grid rather than widening it", async () => {
+    const screen = await renderIn("light", Tabs, {
+      label: "Admin",
+      items: ["Overview", "Users", "Events", "Feedback", "Partners"].map(
+        (label) => ({ href: `#${label}`, label }),
+      ),
+    });
+    screen.container.style.cssText = "display: grid; width: 200px";
+    const nav = screen.getByRole("navigation").element();
+    expect(nav.getBoundingClientRect().width).toBeLessThanOrEqual(200);
+    const list = nav.querySelector("ul")!;
+    expect(list.scrollWidth).toBeGreaterThan(list.clientWidth);
+  });
+
   test("each tab is at least 44px tall and wide", async () => {
     const screen = await renderIn("light", Tabs, {
       label: "Course",
