@@ -7,6 +7,7 @@ export { default as ProgressBar } from "./ProgressBar/ProgressBar.svelte";
 export { default as Select } from "./Select/Select.svelte";
 export { default as SkipLink } from "./SkipLink/SkipLink.svelte";
 export { default as Spinner } from "./Spinner/Spinner.svelte";
+export { default as Steps, type Step } from "./Steps/Steps.svelte";
 export { default as Textarea } from "./Textarea/Textarea.svelte";
 
 // The colour scheme, in the browser. Its server hook is in ./hooks.ts.
