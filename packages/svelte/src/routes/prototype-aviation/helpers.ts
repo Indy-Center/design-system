@@ -32,10 +32,15 @@ export function resolvePosition(login: string): Resolved {
 
 // US frequencies need two decimals: the third is cut, not rounded
 // (128.225 MHz shows as 128.22, as the spoken form does).
-export function formatFrequency(hz: number, trim = false): string {
+// `decimals: 3` is the dormant flag for 8.33 kHz spacing, if the US ever
+// adopts it.
+export function formatFrequency(hz: number, decimals: 2 | 3 = 2): string {
   const whole = Math.floor(hz / 1_000_000);
-  let frac = String(Math.floor((hz % 1_000_000) / 10_000)).padStart(2, "0");
-  if (trim) frac = frac.replace(/0$/, "");
+  const step = decimals === 3 ? 1_000 : 10_000;
+  const frac = String(Math.floor((hz % 1_000_000) / step)).padStart(
+    decimals,
+    "0",
+  );
   return `${whole}.${frac}`;
 }
 
@@ -55,7 +60,7 @@ const words = [
 ];
 export function spokenFrequency(hz: number): string {
   const [whole, frac] = formatFrequency(hz).split(".");
-  const kept = frac.replace(/0+$/, "") || "0";
+  const kept = frac.slice(0, 2).replace(/0+$/, "") || "0";
   const say = (s: string) => [...s].map((d) => words[+d]).join(" ");
   return `${say(whole)} point ${say(kept)}`;
 }
@@ -199,3 +204,14 @@ export const AIRPORTS = [
   { icao: "KCVG", name: "Cincinnati/Northern Kentucky International" },
   { icao: "KLEX", name: "Blue Grass" },
 ];
+
+// Round 3: a cab position's airport, from its callsign's prefix. Approach and
+// center positions cover many airports (DAY_APP is "Columbus Approach"), so
+// they have none. The real component would take it from data, not guess.
+export function airportOf(callsign: string) {
+  const parts = callsign.split("_");
+  if (!["TWR", "GND", "DEL", "RMP"].includes(parts[parts.length - 1]))
+    return undefined;
+  const icao = `K${parts[0]}`;
+  return AIRPORTS.find((a) => a.icao === icao) ?? { icao, name: "" };
+}

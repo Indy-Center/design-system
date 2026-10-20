@@ -1,14 +1,13 @@
 <script lang="ts">
-  // Throwaway prototype (ticket centerline-packages/08), round 2: the user's
-  // feedback on round 1 (commit 221dbef). Settled picks at the top; then the
-  // open questions: which Position fields, two-decimal frequencies, the member
-  // format in real contexts, and the date. Positions come from a slim
-  // snapshot of ZID's vNAS Data Admin, read 2026-10-20. Members are made up.
+  // Throwaway prototype (ticket centerline-packages/08), round 3. Rounds 1
+  // and 2 are in this branch's history (221dbef, 7499bb3). Settled picks at
+  // the top; open: the Position's presets (controllers and pilots), relief
+  // logins in lists, and the date. Positions come from a slim snapshot of
+  // ZID's vNAS Data Admin, read 2026-10-20. Members are made up.
   import { goto } from "$app/navigation";
   import { page } from "$app/state";
   import Schemes from "../../playground/Schemes.svelte";
-  import CopyFrequency from "./CopyFrequency.svelte";
-  import Member, { type MemberFormat, type Privacy } from "./Member.svelte";
+  import Member from "./Member.svelte";
   import OnlineRow from "./OnlineRow.svelte";
   import Pair from "./Pair.svelte";
   import Position, { FIELDS, type Field } from "./Position.svelte";
@@ -20,10 +19,12 @@
     CREDENTIALS,
     NOW,
     RATINGS,
+    airportOf,
     durationShort,
     formatDate,
     formatFrequency,
     localTime,
+    resolvePosition,
     spokenFrequency,
     zulu,
     type Category,
@@ -43,23 +44,17 @@
   let layout = $state<"inline" | "stacked">(
     q.get("layout") === "inline" ? "inline" : "stacked",
   );
-  let format = $state<MemberFormat>(
-    (["A", "B", "C", "D"].includes(q.get("member") ?? "")
-      ? q.get("member")
-      : "A") as MemberFormat,
+  let airportAt = $state<"left" | "under">(
+    q.get("airport") === "under" ? "under" : "left",
   );
-  let privacy = $state<Privacy>(
-    (["today", "first", "cid"].includes(q.get("privacy") ?? "")
-      ? q.get("privacy")
-      : "today") as Privacy,
-  );
+  let decimals = $state<2 | 3>(q.get("decimals") === "3" ? 3 : 2);
 
   $effect(() => {
     const u = new URL(page.url.href);
     u.searchParams.set("fields", fields.join(","));
     u.searchParams.set("layout", layout);
-    u.searchParams.set("member", format);
-    u.searchParams.set("privacy", privacy);
+    u.searchParams.set("airport", airportAt);
+    u.searchParams.set("decimals", String(decimals));
     if (u.search !== page.url.search)
       goto(u, { state: {}, shallow: true, replace: true, reset: false });
   });
@@ -70,58 +65,101 @@
     } else fields = allFields.filter((x) => x === f || fields.includes(x));
   }
 
-  const showcase = [
+  const controllerRows = [
     "IND_83_CTR",
     "IND_E_APP",
     "LEX_TWR",
     "IND_831_CTR",
     "CMH_LCE",
   ];
-  const presets: {
+  const pilotRows = [
+    "IND_83_CTR",
+    "IND_E_APP",
+    "IND_E_TWR",
+    "IND_GND",
+    "LEX_TWR",
+    "LEX_GND",
+  ];
+
+  type Preset = {
     letter: string;
     note: string;
     show: Field[];
+    layout?: "inline" | "stacked";
+    airportAt?: "left" | "under";
     pick?: boolean;
-  }[] = [
+  };
+  const controllerPresets: Preset[] = [
     {
-      letter: "A",
-      note: "Radio name only: what a pilot hears. 29 rows would read 'Indy Center'.",
-      show: ["radioName"],
-    },
-    {
-      letter: "B",
-      note: "Sector name only: short, but 'Local Control' means little alone.",
-      show: ["name"],
-    },
-    {
-      letter: "C",
-      note: "Radio name, sector beneath.",
-      show: ["radioName", "name"],
-    },
-    {
-      letter: "D",
+      letter: "C1",
       pick: true,
-      note: "Radio name, sector beneath, frequency right. The default for a position on its own.",
+      note: "Default: radio name, sector beneath, frequency right.",
       show: ["radioName", "name", "frequency"],
     },
     {
-      letter: "E",
-      note: "Sector and frequency, for lists already grouped by facility.",
-      show: ["name", "frequency"],
+      letter: "C2",
+      note: "With the short name on the left (the callsign until vNAS publishes it).",
+      show: ["callsign", "radioName", "name", "frequency"],
     },
     {
-      letter: "F",
-      note: "Everything, callsign last (the short name will take its place).",
-      show: ["radioName", "name", "frequency", "callsign"],
+      letter: "C3",
+      note: "C1 on one line, for tight spots.",
+      show: ["radioName", "name", "frequency"],
+      layout: "inline",
+    },
+  ];
+  const pilotPresets: Preset[] = [
+    {
+      letter: "P1",
+      note: "Radio name and frequency: what a pilot tunes and calls.",
+      show: ["radioName", "frequency"],
+    },
+    {
+      letter: "P2",
+      pick: true,
+      note: "P1, the airport on the left like a short name. Center and approach have none.",
+      show: ["airport", "radioName", "frequency"],
+    },
+    {
+      letter: "P3",
+      note: "P1, the airport and its name beneath.",
+      show: ["airport", "radioName", "frequency"],
+      airportAt: "under",
     },
   ];
 
-  const freqs = [128_225_000, 121_900_000, 119_100_000, 124_950_000];
+  // P4: a pilot list grouped by airport, composed on the page.
+  const groups = $derived.by(() => {
+    const out = new Map<string, { title: string; logins: string[] }>();
+    for (const l of pilotRows) {
+      const a = airportOf(l);
+      const key = a?.icao ?? "enroute";
+      const title = a ? `${a.icao} ${a.name}` : "Enroute and approach";
+      if (!out.has(key)) out.set(key, { title, logins: [] });
+      out.get(key)!.logins.push(l);
+    }
+    return [...out.values()];
+  });
 
+  // Relief: two people on what resolves to the same position.
   const alex = { first: "Alex", last: "Example", cid: 1000001 };
   const sam = { first: "Sam", last: "Private", cid: 1000002, hidden: true };
   const jordan = { first: "Jordan", last: "Sample", cid: 1000004 };
-  const pat = { first: "Pat", last: "Pilot", cid: 1234567 };
+  const online = [
+    { login: "IND_83_CTR", member: alex },
+    { login: "IND_831_CTR", member: jordan },
+    { login: "LEX_TWR", member: sam },
+  ];
+  const pilotOnline = $derived.by(() => {
+    const seen = new Set<string>();
+    return online.filter((o) => {
+      const r = resolvePosition(o.login);
+      const key = r.kind === "unknown" ? o.login : r.position.callsign;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  });
 
   const events = [
     {
@@ -189,25 +227,16 @@
     IFR: "bg-destructive/15 text-destructive",
     LIFR: "bg-destructive text-card",
   };
+  const showProp = (p: Preset) =>
+    `show={[${p.show.map((f) => `"${f}"`).join(", ")}]}` +
+    (p.layout === "inline" ? ' layout="inline"' : "") +
+    (p.airportAt === "under" ? ' airportAt="under"' : "");
 </script>
 
 <svelte:head
-  ><title>Aviation prototype, round 2 · Centerline playground</title
+  ><title>Aviation prototype, round 3 · Centerline playground</title
   ></svelte:head
 >
-
-{#snippet credential(c: (typeof CREDENTIALS)[number])}
-  <abbr
-    title={c.name}
-    class={[
-      "rounded-sm px-1.5 font-mono text-xs font-semibold no-underline",
-      kindTint[c.kind],
-    ]}
-    >{c.code}{#if c.kind === "solo"}<span class="font-sans font-normal"
-        >&nbsp;· until Nov 3</span
-      >{/if}</abbr
-  >
-{/snippet}
 
 {#snippet range(e: (typeof events)[number], style: DateStyle)}
   <time datetime={e.start.toISOString()}
@@ -218,23 +247,37 @@
   >
 {/snippet}
 
+{#snippet presetCard(p: Preset, rows: string[])}
+  <Variant letter={p.letter} pick={p.pick} note={p.note}>
+    <ul class="space-y-2">
+      {#each rows as login (login)}
+        <li>
+          <Position
+            {login}
+            show={p.show}
+            layout={p.layout}
+            airportAt={p.airportAt}
+            {decimals}
+          />
+        </li>
+      {/each}
+    </ul>
+    <code class="block text-xs text-muted-foreground">{showProp(p)}</code>
+  </Variant>
+{/snippet}
+
 <h1 class="mb-2 font-heading text-3xl font-semibold text-foreground">
-  Aviation prototype, round 2
+  Aviation prototype, round 3
 </h1>
 <p class={lede}>
-  Throwaway. Round 1's picks are settled below; the rest is your feedback, built
+  Throwaway. Rounds 1 and 2 are settled below; the rest is your feedback, built
   out. Positions and frequencies are ZID's real Data Admin entries; members are
   made up. Clock pinned to 21:00Z, Oct 20, shown in Indianapolis time. The
-  switches on this page are kept in the URL, so a set-up can be shared.
+  switches are kept in the URL, so a set-up can be shared.
 </p>
 
 <!-- ───────────────────────── Settled ───────────────────────── -->
-<h2 class={h2}>Settled in round 1</h2>
-<p class={lede}>
-  7A time, 8A relative, 9B rating (not shown unless asked for), 10A credential,
-  11A flight category (LIFR turns magenta with ticket 49), and both airport
-  looks as an option.
-</p>
+<h2 class={h2}>Settled</h2>
 <Schemes>
   <dl class="grid grid-cols-[auto_1fr] items-baseline gap-x-3 gap-y-2 text-sm">
     <dt class="text-muted-foreground">Time</dt>
@@ -263,7 +306,18 @@
     </dd>
     <dt class="text-muted-foreground">Credential</dt>
     <dd class="flex flex-wrap gap-2">
-      {#each CREDENTIALS as c (c.code)}{@render credential(c)}{/each}
+      {#each CREDENTIALS as c (c.code)}
+        <abbr
+          title={c.name}
+          class={[
+            "rounded-sm px-1.5 font-mono text-xs font-semibold no-underline",
+            kindTint[c.kind],
+          ]}
+          >{c.code}{#if c.kind === "solo"}<span class="font-sans font-normal"
+              >&nbsp;· until Nov 3</span
+            >{/if}</abbr
+        >
+      {/each}
     </dd>
     <dt class="text-muted-foreground">Category</dt>
     <dd class="flex flex-wrap gap-2">
@@ -276,40 +330,54 @@
           ]}>{c}</abbr
         >
       {/each}
+      <span class="text-xs text-muted-foreground">LIFR magenta: ticket 49</span>
     </dd>
     <dt class="text-muted-foreground">Airport</dt>
     <dd>
-      <span class="block"
-        ><span class="font-mono font-semibold text-foreground">KIND</span>
-        <span class="text-sm text-muted-foreground"
-          >Indianapolis International</span
+      <span class="font-mono font-semibold text-foreground">KIND</span>
+      <span class="text-sm text-muted-foreground">{AIRPORTS[0].name}</span>
+      <span class="block text-xs text-muted-foreground"
+        >or the code alone, name in a tooltip</span
+      >
+    </dd>
+    <dt class="text-muted-foreground">Frequency</dt>
+    <dd>
+      <span class="font-mono text-foreground tabular-nums"
+        >{formatFrequency(128_225_000)}<span class="sr-only">
+          ({spokenFrequency(128_225_000)})</span
         ></span
       >
-      <span class="block text-xs text-muted-foreground"
-        >name shown (default)</span
-      >
-      <span class="mt-1 block"
-        >{#each AIRPORTS as a, i (a.icao)}{i ? " " : ""}<abbr
-            title={a.name}
-            class="font-mono font-semibold text-foreground decoration-dotted"
-            >{a.icao}</abbr
-          >{/each}</span
+      <span class="font-mono text-foreground tabular-nums"
+        >{formatFrequency(121_900_000)}</span
       >
       <span class="block text-xs text-muted-foreground"
-        >name hidden, for controllers; tooltip on hover, focus and tap</span
+        >dormant <code>decimals=&#123;3&#125;</code>:
+        <span class="font-mono">{formatFrequency(128_225_000, 3)}</span></span
+      >
+    </dd>
+    <dt class="text-muted-foreground">Member</dt>
+    <dd>
+      <span class="block"><Member {...alex} href="#member" /></span>
+      <span class="block"
+        ><Member {...sam} />
+        <span class="text-xs text-muted-foreground"
+          >name-private: first name</span
+        ></span
+      >
+      <span class="block"
+        ><Member {...jordan} showCid={false} />
+        <span class="text-xs text-muted-foreground">CID off</span></span
       >
     </dd>
   </dl>
 </Schemes>
 
 <!-- ───────────────────────── Position ───────────────────────── -->
-<h2 class={h2}>1. Position: any of its fields</h2>
+<h2 class={h2}>1. Position presets</h2>
 <p class={lede}>
-  One component, a <code>show</code> list picks the fields. The first text field leads;
-  the others follow, muted. The callsign is one field like the rest, off unless asked
-  for, and the vNAS short name replaces it when it's published. An unknown callsign
-  has nothing else to show, so it shows alone whatever the list says; a relief login
-  only says so when the callsign is shown.
+  Stacked by default, one line as an option. Codes (the short name, an airport)
+  sit in a column on the left. A relief login shows as the position it resolves
+  to, with no note; an unknown callsign still shows alone.
 </p>
 
 <h3 class={h3}>Try it</h3>
@@ -328,208 +396,163 @@
     {/each}
   </div>
 </fieldset>
-<fieldset class="mb-3">
-  <legend class="mb-2 text-sm text-muted-foreground">Layout</legend>
-  <div class="flex flex-wrap gap-2">
-    {#each ["stacked", "inline"] as const as l (l)}
-      <label class={seg}
-        ><input
-          type="radio"
-          class="sr-only"
-          name="layout"
-          value={l}
-          bind:group={layout}
-        />{l === "stacked" ? "Stacked" : "One line"}</label
-      >
-    {/each}
-  </div>
-</fieldset>
+<div class="mb-3 flex flex-wrap gap-x-6 gap-y-3">
+  <fieldset>
+    <legend class="mb-2 text-sm text-muted-foreground">Layout</legend>
+    <div class="flex flex-wrap gap-2">
+      {#each ["stacked", "inline"] as const as l (l)}
+        <label class={seg}
+          ><input
+            type="radio"
+            class="sr-only"
+            name="layout"
+            value={l}
+            bind:group={layout}
+          />{l === "stacked" ? "Stacked" : "One line"}</label
+        >
+      {/each}
+    </div>
+  </fieldset>
+  <fieldset>
+    <legend class="mb-2 text-sm text-muted-foreground">Airport</legend>
+    <div class="flex flex-wrap gap-2">
+      {#each ["left", "under"] as const as a (a)}
+        <label class={seg}
+          ><input
+            type="radio"
+            class="sr-only"
+            name="airport"
+            value={a}
+            bind:group={airportAt}
+          />{a === "left" ? "On the left" : "Beneath"}</label
+        >
+      {/each}
+    </div>
+  </fieldset>
+  <fieldset>
+    <legend class="mb-2 text-sm text-muted-foreground"
+      >Decimals (dormant flag)</legend
+    >
+    <div class="flex flex-wrap gap-2">
+      {#each [2, 3] as const as d (d)}
+        <label class={seg}
+          ><input
+            type="radio"
+            class="sr-only"
+            name="decimals"
+            value={d}
+            bind:group={decimals}
+          />{d}</label
+        >
+      {/each}
+    </div>
+  </fieldset>
+</div>
 <pre
-  class="mb-3 overflow-x-auto rounded-md bg-muted p-2 font-mono text-xs text-foreground">&lt;Position callsign="IND_83_CTR" show=&#123;[{fields
+  class="mb-3 overflow-x-auto rounded-md bg-muted p-2 font-mono text-xs text-foreground">&lt;Position callsign="LEX_TWR" show=&#123;[{fields
     .map((f) => `"${f}"`)
     .join(", ")}]&#125;{layout === "inline"
     ? ' layout="inline"'
+    : ""}{airportAt === "under" ? ' airportAt="under"' : ""}{decimals === 3
+    ? " decimals={3}"
     : ""} /&gt;</pre>
 <Schemes>
   <ul class="space-y-3">
-    {#each showcase as login (login)}<li>
-        <Position {login} show={fields} {layout} />
+    {#each [...new Set([...controllerRows, ...pilotRows])] as login (login)}<li>
+        <Position {login} show={fields} {layout} {airportAt} {decimals} />
       </li>{/each}
   </ul>
 </Schemes>
 
-<h3 class={h3}>Presets</h3>
+<h3 class={h3}>For controllers</h3>
 <p class={lede}>
-  Stacked. Rows: Indy Center 83, Indianapolis Approach East, Lexington Tower, a
-  relief login (IND_831_CTR), an unknown one (CMH_LCE).
+  Rows: Indy Center 83, Indianapolis Approach East, Lexington Tower, a relief
+  login (IND_831_CTR, now just Falmouth 83), an unknown callsign (CMH_LCE).
 </p>
 <div
   class="grid gap-3 rounded-lg border border-border bg-background p-4 sm:grid-cols-2 xl:grid-cols-3"
 >
-  {#each presets as p (p.letter)}
-    <Variant letter={p.letter} pick={p.pick} note={p.note}>
-      {#each showcase as login (login)}<Position {login} show={p.show} />{/each}
-    </Variant>
-  {/each}
+  {#each controllerPresets as p (p.letter)}{@render presetCard(
+      p,
+      controllerRows,
+    )}{/each}
 </div>
 
-<!-- ───────────────────────── Frequency ───────────────────────── -->
-<h2 class={h2}>2. Frequency: two decimals</h2>
+<h3 class={h3}>For pilots</h3>
 <p class={lede}>
-  The third decimal is cut, not rounded: 128.225 shows as 128.22, as it's
-  spoken. 45 of ZID's 157 positions end in 25 or 75. Screen readers still get
-  "one two eight point two two". Open now: keep a trailing zero, and whether
-  'MHz' or a copy button comes back.
+  Only cab positions (tower, ground, clearance, ramp) get an airport: an
+  approach covers several (DAY_APP is "Columbus Approach") and a center has
+  none. The prototype takes the airport from the callsign; the component would
+  get it from data.
 </p>
-<Schemes>
-  <Variant letter="A" pick note="Always two decimals: 121.90. Columns line up.">
-    {#each freqs as hz (hz)}
-      <p>
-        <span class="font-mono text-foreground tabular-nums"
-          >{formatFrequency(hz)}<span class="sr-only">
-            ({spokenFrequency(hz)})</span
-          ></span
-        >
-      </p>
-    {/each}
-  </Variant>
-  <Variant letter="B" note="Trailing zero dropped: 121.9, as charts write it.">
-    {#each freqs as hz (hz)}
-      <p>
-        <span class="font-mono text-foreground tabular-nums"
-          >{formatFrequency(hz, true)}</span
-        >
-      </p>
-    {/each}
-  </Variant>
-  <Variant letter="C" note="A, with a muted 'MHz'.">
-    {#each freqs as hz (hz)}
-      <p>
-        <span class="font-mono text-foreground tabular-nums"
-          >{formatFrequency(hz)}</span
-        > <span class="text-sm text-muted-foreground">MHz</span>
-      </p>
-    {/each}
-  </Variant>
-  <Variant letter="D" note="A, with a copy button.">
-    {#each freqs.slice(0, 2) as hz (hz)}<p><CopyFrequency {hz} /></p>{/each}
-  </Variant>
-</Schemes>
-
-<!-- ───────────────────────── Member ───────────────────────── -->
-<h2 class={h2}>3. Member, in context</h2>
-<p class={lede}>
-  The four formats from round 1, switched below, across the places members
-  appear. Sam is name-private: today the CID stands in for the last name, so
-  formats print it twice. The second switch tries the alternatives.
-</p>
-<fieldset class="mb-3">
-  <legend class="mb-2 text-sm text-muted-foreground">Format</legend>
-  <div class="flex flex-wrap gap-2">
-    {#each [["A", "Name 1000001"], ["B", "Name (1000001)"], ["C", "Stacked"], ["D", "Name · CID 1000001"]] as [k, label] (k)}
-      <label class={seg}
-        ><input
-          type="radio"
-          class="sr-only"
-          name="member"
-          value={k}
-          bind:group={format}
-        /><span class="font-mono font-semibold">{k}</span>
-        {label}</label
-      >
-    {/each}
-  </div>
-</fieldset>
-<fieldset class="mb-4">
-  <legend class="mb-2 text-sm text-muted-foreground">Name-private member</legend
+<div
+  class="grid gap-3 rounded-lg border border-border bg-background p-4 sm:grid-cols-2 xl:grid-cols-4"
+>
+  {#each pilotPresets as p (p.letter)}{@render presetCard(p, pilotRows)}{/each}
+  <Variant
+    letter="P4"
+    note="P1 in a list grouped by airport: the airport said once, as a heading."
   >
-  <div class="flex flex-wrap gap-2">
-    {#each [["today", "Today: CID as last name"], ["first", "First name only"], ["cid", "CID only"]] as [k, label] (k)}
-      <label class={seg}
-        ><input
-          type="radio"
-          class="sr-only"
-          name="privacy"
-          value={k}
-          bind:group={privacy}
-        />{label}</label
+    {#each groups as g (g.title)}
+      <h4
+        class="mt-1 text-xs font-semibold tracking-wider text-muted-foreground uppercase"
       >
+        {g.title}
+      </h4>
+      <ul class="space-y-2">
+        {#each g.logins as login (login)}<li>
+            <Position {login} show={["radioName", "frequency"]} {decimals} />
+          </li>{/each}
+      </ul>
     {/each}
-  </div>
-</fieldset>
+  </Variant>
+</div>
 
+<!-- ───────────────────────── Relief in lists ───────────────────────── -->
+<h2 class={h2}>2. Two people on one position</h2>
+<p class={lede}>
+  IND_83_CTR and IND_831_CTR are both on. Where names show, the position shows
+  twice, once per person. For pilots it shows once: they only need what to call
+  and where to tune.
+</p>
 <Pair>
-  <h3 class="mb-2 text-sm font-semibold text-foreground">Roster</h3>
-  <div class="overflow-x-auto">
-    <table class="w-full text-left text-sm">
-      <thead class="text-xs text-muted-foreground">
-        <tr
-          ><th class="py-1 pr-3 font-medium">Member</th><th
-            class="py-1 pr-3 font-medium">Credentials</th
-          ><th class="py-1 font-medium">Joined</th></tr
-        >
-      </thead>
-      <tbody>
-        {#each [{ m: alex, c: [0, 1], j: "Mar 2, 2024" }, { m: sam, c: [0, 2], j: "Jun 18, 2025" }, { m: jordan, c: [3], j: "Sep 9, 2026" }] as row (row.m.cid)}
-          <tr class="border-t border-border align-top">
-            <td class="py-2 pr-3"
-              ><Member {...row.m} {format} {privacy} href="#member" /></td
-            >
-            <td class="py-2 pr-3"
-              ><span class="flex flex-wrap gap-1"
-                >{#each row.c as i (i)}{@render credential(
-                    CREDENTIALS[i],
-                  )}{/each}</span
-              ></td
-            >
-            <td class="py-2 whitespace-nowrap">{row.j}</td>
-          </tr>
+  <div class="grid gap-6 sm:grid-cols-2">
+    <div>
+      <h3 class="mb-2 text-sm font-semibold text-foreground">
+        Controllers (with names)
+      </h3>
+      <ul class="divide-y divide-border text-sm">
+        {#each online as o (o.login)}
+          <li class="py-2">
+            <Position
+              login={o.login}
+              show={["radioName", "name", "frequency"]}
+              {decimals}
+            />
+            <span class="mt-0.5 block text-sm"><Member {...o.member} /></span>
+          </li>
         {/each}
-      </tbody>
-    </table>
+      </ul>
+    </div>
+    <div>
+      <h3 class="mb-2 text-sm font-semibold text-foreground">Pilots (P2)</h3>
+      <ul class="divide-y divide-border text-sm">
+        {#each pilotOnline as o (o.login)}
+          <li class="py-2">
+            <Position
+              login={o.login}
+              show={["airport", "radioName", "frequency"]}
+              {decimals}
+            />
+          </li>
+        {/each}
+      </ul>
+    </div>
   </div>
-
-  <h3 class="mt-5 mb-2 text-sm font-semibold text-foreground">
-    Event positions
-  </h3>
-  <ul class="divide-y divide-border text-sm">
-    {#each [{ l: "IND_83_CTR", m: alex }, { l: "IND_E_APP", m: sam }, { l: "LEX_TWR", m: jordan }] as s (s.l)}
-      <li class="flex items-start justify-between gap-3 py-2">
-        <Position login={s.l} show={["radioName", "name"]} />
-        <span class="text-right"><Member {...s.m} {format} {privacy} /></span>
-      </li>
-    {/each}
-  </ul>
-
-  <h3 class="mt-5 mb-2 text-sm font-semibold text-foreground">Feedback</h3>
-  <article class="rounded-md border border-border bg-card p-3 text-sm">
-    <p class="mb-1"><Member {...alex} {format} {privacy} href="#member" /></p>
-    <p class="text-muted-foreground">
-      Indy Center · Falmouth 83, {formatDate(
-        new Date("2026-10-19T22:00:00Z"),
-        "A",
-      )}
-    </p>
-    <p class="my-2 text-foreground-soft">
-      “Smooth handoff into Indy Approach, thanks!”
-    </p>
-    <p class="text-muted-foreground">
-      From <Member {...pat} {format} {privacy} />
-    </p>
-  </article>
-
-  <h3 class="mt-5 mb-2 text-sm font-semibold text-foreground">In a sentence</h3>
-  <p class="text-sm">
-    <Member {...sam} {format} {privacy} /> passed the S-GC practical with
-    <Member {...jordan} {format} {privacy} href="#member" /> on {formatDate(
-      new Date("2026-10-18T23:00:00Z"),
-      "A",
-    )}.
-  </p>
 </Pair>
 
 <!-- ───────────────────────── Date ───────────────────────── -->
-<h2 class={h2}>4. Date</h2>
+<h2 class={h2}>3. Date (still open)</h2>
 <p class={lede}>
   The time stays 7A; only the date part changes. Four events: tonight, tomorrow,
   next week, and next March (which shows the year and EST). The Zulu range
@@ -553,11 +576,11 @@
 </div>
 
 <!-- ───────────────────────── OnlineController ───────────────────────── -->
-<h2 class={h2}>5. OnlineController</h2>
+<h2 class={h2}>4. OnlineController</h2>
 <p class={lede}>
-  Rebuilt: the Position uses the fields picked in point 1, the member the format
-  in point 3, frequency two decimals, no rating. The callsign and any relief
-  note move into the open part. Tap a row to open it.
+  Uses the fields and layout from "Try it" above, and the settled member (Name ·
+  CID, first name when private). The callsign logged in with is in the open
+  part. Tap a row to open it.
 </p>
 <Schemes>
   <ul
@@ -565,12 +588,11 @@
   >
     <OnlineRow
       login="IND_831_CTR"
-      member={alex}
+      member={jordan}
       loginTime={loggedIn}
       info={"Indy Center, Falmouth sector.\nExpected log-off time: 2330z"}
       show={fields}
-      {format}
-      {privacy}
+      {layout}
       open
     />
     <OnlineRow
@@ -579,17 +601,15 @@
       loginTime={new Date("2026-10-20T20:12:00Z")}
       info="Lexington Tower. Feedback: flyindycenter.com/feedback"
       show={fields}
-      {format}
-      {privacy}
+      {layout}
     />
     <OnlineRow
       login="CMH_LCE"
-      member={jordan}
+      member={alex}
       loginTime={new Date("2026-10-20T20:51:00Z")}
       info="Training session."
       show={fields}
-      {format}
-      {privacy}
+      {layout}
     />
   </ul>
 </Schemes>

@@ -1,18 +1,23 @@
 <script lang="ts" module>
-  export type Field = "callsign" | "radioName" | "name" | "frequency";
+  export type Field =
+    "callsign" | "airport" | "radioName" | "name" | "frequency";
   export const FIELDS: { key: Field; label: string }[] = [
+    { key: "callsign", label: "Callsign (vNAS short name later)" },
+    { key: "airport", label: "Airport" },
     { key: "radioName", label: "Radio name" },
     { key: "name", label: "Sector name" },
     { key: "frequency", label: "Frequency" },
-    { key: "callsign", label: "Callsign (vNAS short name later)" },
   ];
 </script>
 
 <script lang="ts">
-  // Round 2: a Position that shows any subset of its fields. The first text
-  // field leads; the rest follow, muted. Frequency sits at the end (inline)
-  // or on the right of the first line (stacked).
+  // Round 3: a Position that shows any subset of its fields. Codes (the short
+  // name, the airport) sit in a column on the left; the radio name leads, the
+  // sector follows muted; the frequency sits right of the first line (stacked)
+  // or at the end (one line). A relief login shows as the position it
+  // resolves to, with no note: it may not be a relief at all.
   import {
+    airportOf,
     formatFrequency,
     resolvePosition,
     spokenFrequency,
@@ -22,36 +27,49 @@
     login,
     show,
     layout = "stacked",
-  }: { login: string; show: Field[]; layout?: "inline" | "stacked" } = $props();
+    airportAt = "left",
+    decimals = 2,
+  }: {
+    login: string;
+    show: Field[];
+    layout?: "inline" | "stacked";
+    airportAt?: "left" | "under";
+    decimals?: 2 | 3;
+  } = $props();
 
   const r = $derived(resolvePosition(login));
-  const order: Field[] = ["radioName", "name", "callsign"];
-  const texts = $derived.by(() => {
-    // An unknown callsign has nothing else to show, so it shows alone.
-    if (r.kind === "unknown")
-      return [{ field: "callsign" as Field, text: login }];
-    const p = r.position;
-    const out = order
-      .filter((f) => show.includes(f))
-      .map((f) => ({
-        field: f,
-        text: f === "callsign" ? r.login : f === "name" ? p.name : p.radioName,
-      }));
-    return out;
-  });
-  const hz = $derived(
-    r.kind !== "unknown" && show.includes("frequency")
-      ? r.position.frequency
-      : undefined,
+  const has = (f: Field) => show.includes(f);
+  const airport = $derived(
+    r.kind !== "unknown" && has("airport") ? airportOf(r.login) : undefined,
   );
-  const lead = $derived(texts[0]);
-  const rest = $derived(texts.slice(1));
-  const mono = (f: Field) => (f === "callsign" ? "font-mono" : "");
+  const texts = $derived(
+    r.kind === "unknown"
+      ? []
+      : [
+          has("radioName") ? r.position.radioName : "",
+          has("name") ? r.position.name : "",
+        ].filter(Boolean),
+  );
+  // With no words to lead, a code leads instead; an unknown callsign has
+  // nothing else to show, so it shows alone.
+  const codeLeads = $derived(r.kind === "unknown" || texts.length === 0);
+  const codes = $derived(
+    [
+      has("callsign") || r.kind === "unknown" ? login : "",
+      airport && (airportAt === "left" || codeLeads) ? airport.icao : "",
+    ].filter(Boolean),
+  );
+  const under = $derived(
+    airport && airportAt === "under" && !codeLeads ? airport : undefined,
+  );
+  const hz = $derived(
+    r.kind !== "unknown" && has("frequency") ? r.position.frequency : undefined,
+  );
 </script>
 
 {#snippet freq(hz: number)}
   <span class="font-mono text-foreground tabular-nums"
-    >{formatFrequency(hz)}<span class="sr-only">
+    >{formatFrequency(hz, decimals)}<span class="sr-only">
       ({spokenFrequency(hz)})</span
     ></span
   >
@@ -59,41 +77,55 @@
 
 {#if layout === "inline"}
   <span>
-    {#if lead}<span class={["font-semibold text-foreground", mono(lead.field)]}
-        >{lead.text}</span
+    {#if codes.length}<span
+        class={[
+          "font-mono",
+          codeLeads ? "font-semibold text-foreground" : "text-foreground-soft",
+        ]}>{codes.join(" ")}</span
       >{/if}
-    {#each rest as t (t.field)}
-      <span class="text-muted-foreground">
-        · <span class={mono(t.field)}>{t.text}</span></span
+    {#each texts as t, i (t)}
+      <span
+        class={i ? "text-muted-foreground" : "font-semibold text-foreground"}
+        >{i || codes.length ? " · " : ""}{t}</span
       >
     {/each}
-    {#if hz}{#if lead}<span class="text-muted-foreground">
-          ·
-        </span>{/if}{@render freq(hz)}{/if}
-    {#if r.kind === "relief" && show.includes("callsign")}
-      <span class="text-sm text-muted-foreground">(relief)</span>
-    {/if}
+    {#if under}<span class="text-muted-foreground">
+        · <span class="font-mono">{under.icao}</span></span
+      >{/if}
+    {#if hz}{#if codes.length || texts.length}<span
+          class="text-muted-foreground">{" · "}</span
+        >{/if}{@render freq(hz)}{/if}
   </span>
 {:else}
-  <span class="block">
-    <span class="flex items-baseline justify-between gap-3">
-      {#if lead}<span
-          class={["font-semibold text-foreground", mono(lead.field)]}
-          >{lead.text}</span
-        >{/if}
-      {#if hz}{@render freq(hz)}{/if}
-    </span>
-    {#if rest.length}
-      <span class="block text-sm text-muted-foreground">
-        {#each rest as t, i (t.field)}{i ? " · " : ""}<span
-            class={mono(t.field)}>{t.text}</span
-          >{/each}
-      </span>
-    {/if}
-    {#if r.kind === "relief" && show.includes("callsign")}
-      <span class="block text-sm text-muted-foreground"
-        >relief of <span class="font-mono">{r.position.callsign}</span></span
+  <span class="flex items-baseline gap-3">
+    {#if !codeLeads && (has("callsign") || (has("airport") && airportAt === "left"))}
+      <!-- Kept even when empty, so rows in a list line up. -->
+      <span
+        class={[
+          "shrink-0 font-mono text-sm text-foreground-soft",
+          has("callsign") ? "w-[11ch]" : "w-[4ch]",
+        ]}>{codes.join(" ")}</span
       >
     {/if}
+    <span class="block min-w-0 flex-1">
+      <span class="flex items-baseline justify-between gap-3">
+        {#if codeLeads}
+          <span class="font-mono font-semibold text-foreground"
+            >{codes.join(" ")}</span
+          >
+        {:else}
+          <span class="font-semibold text-foreground">{texts[0]}</span>
+        {/if}
+        {#if hz}{@render freq(hz)}{/if}
+      </span>
+      {#if texts[1] || under}
+        <span class="block text-sm text-muted-foreground">
+          {#if texts[1]}{texts[1]}{/if}{#if texts[1] && under}{" · "}{/if}{#if under}<span
+              class="font-mono">{under.icao}</span
+            >
+            {under.name}{/if}
+        </span>
+      {/if}
+    </span>
   </span>
 {/if}
