@@ -53,6 +53,10 @@ export const handle = colorSchemeHandle({ fallback: "dark" });
 See [`src/lib/colorScheme/colorScheme.md`](src/lib/colorScheme/colorScheme.md)
 for the `app.html` script tag and saving a choice.
 
+Aviation helpers (frequencies, callsigns, positions, ratings, durations)
+are plain functions from the package root, for an app's own code too:
+see [`src/lib/aviation/aviation.md`](src/lib/aviation/aviation.md).
+
 ## Docs
 
 Each component's doc page ships beside it, as
