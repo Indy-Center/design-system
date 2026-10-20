@@ -13,9 +13,9 @@
 <Schemes>
   <form class="space-y-6" onsubmit={(event) => event.preventDefault()}>
     <Fieldset legend="Position" hint="The one you'll train on first." required>
-      <Radio label="Ground" name="position" value="gnd" required />
-      <Radio label="Tower" name="position" value="twr" required />
-      <Radio label="Approach" name="position" value="app" required />
+      <Radio label="Ground" name="position" value="gnd" />
+      <Radio label="Tower" name="position" value="twr" />
+      <Radio label="Approach" name="position" value="app" />
     </Fieldset>
     <Fieldset legend="Emails" error="Choose at least one.">
       <Checkbox label="Events" name="emails" value="events" />

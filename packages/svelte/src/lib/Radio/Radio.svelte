@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { HTMLInputAttributes } from "svelte/elements";
+  import { getFieldset } from "../Fieldset/fieldsetContext.js";
   import {
     choiceInputClasses,
     choiceRowClasses,
@@ -24,10 +25,13 @@
     name,
     value,
     group = $bindable(),
+    required,
     onchange,
     class: className,
     ...rest
   }: Props = $props();
+
+  const fieldset = getFieldset();
 </script>
 
 <!-- The label wraps the circle, so the whole 44px row chooses it. `group`
@@ -39,6 +43,7 @@
     {name}
     {value}
     checked={group === value}
+    required={required ?? fieldset?.required}
     onchange={(event) => {
       group = value;
       onchange?.(event);

@@ -9,11 +9,13 @@ description: A native checkbox with its label beside it, ticked in the primary r
       sent, or for picking any number of options from a list. For one of
       several options, use `Radio`s.
 - [ ] Put a list of checkboxes in a `Fieldset`, whose legend says what
-      they choose. A single checkbox can stand alone.
+      they choose, and give the list's error to the `Fieldset`. A single
+      checkbox, such as a consent box, can stand alone with its own
+      `error`.
 - [ ] Write the label as what's true when it's ticked ("Show on the
       roster"), not a question.
 - [ ] Don't colour it: no `accent-*`, `text-*` or size classes. `class`
-      goes on the row and is for layout only, such as a margin.
+      is for layout only, such as a margin.
 
 ## Use
 
@@ -21,10 +23,18 @@ description: A native checkbox with its label beside it, ticked in the primary r
 <script>
   import { Checkbox, Fieldset } from "@indy-center/svelte";
 
+  let { form } = $props();
   let onRoster = $state(true);
 </script>
 
 <Checkbox label="Show on the roster" name="roster" bind:checked={onRoster} />
+
+<Checkbox
+  label="I've read the training policy"
+  name="policy"
+  required
+  error={form?.errors?.policy}
+/>
 
 <Fieldset legend="Emails">
   <Checkbox label="Events" name="emails" value="events" />
@@ -38,7 +48,8 @@ description: A native checkbox with its label beside it, ticked in the primary r
 | --------- | -------------------- | ---------------------------------------------------------------------------------------- |
 | `label`   | `string`             | Required. The text beside the box, which names it.                                       |
 | `checked` | `boolean`            | Bindable: `bind:checked`. `false` when left out.                                         |
-| `class`   | `string`             | Added to the row (the `<label>`) after its own classes. Layout only.                     |
+| `error`   | `string`             | For a box on its own: shown under the label, and marks the box invalid.                  |
+| `class`   | `string`             | Added to its outer element after its own classes. Layout only.                           |
 | others    | `<input>` attributes | Passed to the `<input>`: `name`, `value`, `disabled`, `required`, `aria-*` and the rest. |
 
 ## Looks
@@ -49,10 +60,14 @@ description: A native checkbox with its label beside it, ticked in the primary r
 - A `ring` outline round the box when focused.
 - The row is at least 44px tall, and all of it ticks the box. Disabled,
   the row dims.
+- An error: small, `destructive`, under the label's text, with an alert
+  icon so it isn't colour alone.
 
 ## Accessibility
 
 - It renders a native `<input type="checkbox">` inside its `<label>`, so
   the label names it, a screen reader says whether it's ticked, and Space
   toggles it.
-- To give it an error, put it in a `Fieldset` with `error`.
+- With an `error`, or inside a `Fieldset` with one, the box takes
+  `aria-invalid`. Its own error is linked by `aria-describedby`, after
+  any ids you pass.

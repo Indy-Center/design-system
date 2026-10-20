@@ -10,9 +10,9 @@ description: A group of radios or checkboxes with a legend, hint and error, wire
       select, use `Field`.
 - [ ] Write the legend as the question, as a short noun ("Position"),
       with no colon or `*`. Set `required` and Fieldset writes
-      "(required)" in words. For radios, set `required` on each radio
-      too, so the browser won't send the form with none chosen; never on
-      checkboxes, where it would make every box compulsory.
+      "(required)" in words, and makes each `Radio` in it required, so
+      the browser won't send the form with none chosen. Checkboxes stay
+      optional: `required` on a box would make every box compulsory.
 - [ ] Put help in `hint`, and a validation message in `error` saying how
       to fix it ("Choose a position"). Leave `error` unset when the choice
       is fine.
@@ -35,34 +35,22 @@ description: A group of radios or checkboxes with a legend, hint and error, wire
   error={form?.errors?.position}
   required
 >
-  <Radio
-    label="Ground"
-    name="position"
-    value="gnd"
-    bind:group={position}
-    required
-  />
-  <Radio
-    label="Tower"
-    name="position"
-    value="twr"
-    bind:group={position}
-    required
-  />
+  <Radio label="Ground" name="position" value="gnd" bind:group={position} />
+  <Radio label="Tower" name="position" value="twr" bind:group={position} />
 </Fieldset>
 ```
 
 ## Props
 
-| Prop       | Type                    | Notes                                                                                                            |
-| ---------- | ----------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `legend`   | `string`                | Required. The legend's text, which names the group.                                                              |
-| `hint`     | `string`                | Shown under the options, and read as the group's description.                                                    |
-| `error`    | `string`                | Shown under the hint, and read after it.                                                                         |
-| `required` | `boolean`               | Writes "(required)" by the legend, read as part of the group's name. For radios, set `required` on each as well. |
-| `children` | `Snippet`               | The options: `Radio`s or `Checkbox`es.                                                                           |
-| `class`    | `string`                | Added to the `<fieldset>` after its own classes. Layout only.                                                    |
-| others     | `<fieldset>` attributes | Passed to the `<fieldset>`: `disabled` (which disables every option), `name` and the rest.                       |
+| Prop       | Type                    | Notes                                                                                                  |
+| ---------- | ----------------------- | ------------------------------------------------------------------------------------------------------ |
+| `legend`   | `string`                | Required. The legend's text, which names the group.                                                    |
+| `hint`     | `string`                | Shown under the options, and read as the group's description.                                          |
+| `error`    | `string`                | Shown under the hint, read after it, and marks each `Checkbox` in it invalid.                          |
+| `required` | `boolean`               | Writes "(required)" by the legend, read as part of the group's name, and makes each `Radio` required.  |
+| `children` | `Snippet`               | The options: `Radio`s or `Checkbox`es.                                                                 |
+| `class`    | `string`                | Added to the `<fieldset>` after its own classes. Layout only.                                          |
+| others     | `<fieldset>` attributes | Passed to the `<fieldset>`: `disabled` (which disables every option), `aria-describedby` and the rest. |
 
 ## Looks
 
@@ -80,12 +68,12 @@ description: A group of radios or checkboxes with a legend, hint and error, wire
   name come from the browser, and a screen reader reads the legend on
   entering the group.
 - `aria-describedby` on the `<fieldset>` points at the hint and the
-  error. It doesn't set `aria-invalid`, which a group can't take; the
-  error's text says it.
+  error, after any ids you pass. With an error, each `Checkbox` in it
+  takes `aria-invalid`. A radio can't take `aria-invalid`, nor can the
+  group, so for radios the error's text, read as the group's
+  description, says what's wrong.
 - "(required)" is part of the legend, so a screen reader reads it with
-  the group's name. That's the only way a checkbox group says it; a
-  radio's own `required` may say it again.
-- The error doesn't mark the options invalid; the error's text, read as
-  the group's description, says what's wrong.
+  the group's name. That's the only way a checkbox group says it; in a
+  radio group, each radio's own `required` says it again.
 - The ids come from Svelte's `$props.id()`, so they match between the
   server's HTML and the browser.

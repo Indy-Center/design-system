@@ -3,6 +3,7 @@ import { describe, expect, test } from "vitest";
 import { page } from "vitest/browser";
 import { renderIn } from "../../../test/schemes.ts";
 import Fieldset from "./Fieldset.svelte";
+import Options from "./Fieldset.test.svelte";
 
 const options = createRawSnippet(() => ({
   render: () =>
@@ -32,6 +33,60 @@ describe("Fieldset", () => {
       .toHaveAccessibleDescription(
         "The one you'll train on first. Choose a position.",
       );
+  });
+
+  test("keeps a caller's aria-describedby before its own hint", async () => {
+    const screen = await renderIn("light", Fieldset, {
+      legend: "Position",
+      hint: "The one you'll train on first.",
+      "aria-describedby": "intro",
+      children: options,
+    });
+    const ids = screen
+      .getByRole("group")
+      .element()
+      .getAttribute("aria-describedby")!
+      .split(" ");
+    expect(ids[0]).toBe("intro");
+    expect(document.getElementById(ids[1])).toHaveTextContent(
+      "The one you'll train on first.",
+    );
+  });
+
+  test("with an error, marks its checkboxes invalid", async () => {
+    const screen = await renderIn("light", Options, {
+      options: "checkbox",
+      error: "Choose at least one.",
+    });
+    for (const name of ["Ground", "Tower"]) {
+      await expect
+        .element(screen.getByRole("checkbox", { name }))
+        .toHaveAttribute("aria-invalid", "true");
+    }
+  });
+
+  test("with no error, leaves its checkboxes valid", async () => {
+    const screen = await renderIn("light", Options, { options: "checkbox" });
+    await expect
+      .element(screen.getByRole("checkbox", { name: "Ground" }))
+      .not.toHaveAttribute("aria-invalid");
+  });
+
+  test("when required, makes its radios required but not its checkboxes", async () => {
+    const radios = await renderIn("light", Options, {
+      options: "radio",
+      required: true,
+    });
+    for (const name of ["Ground", "Tower"]) {
+      await expect.element(radios.getByRole("radio", { name })).toBeRequired();
+    }
+    const boxes = await renderIn("light", Options, {
+      options: "checkbox",
+      required: true,
+    });
+    await expect
+      .element(boxes.getByRole("checkbox", { name: "Ground" }))
+      .not.toBeRequired();
   });
 
   test("has no description with neither hint nor error", async () => {

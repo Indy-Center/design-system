@@ -7,12 +7,13 @@
     describedBy,
     type DescriptionProps,
   } from "../formControl/formControl.js";
+  import { setFieldset } from "./fieldsetContext.js";
 
   type Props = Omit<HTMLFieldsetAttributes, "children"> &
     DescriptionProps & {
       /** The legend's text, which names the group. */
       legend: string;
-      /** Says "(required)" by the legend; for radios, put `required` on each so the browser checks it. */
+      /** Says "(required)" by the legend, and makes each radio in it required. */
       required?: boolean;
       /** The options: `Radio`s or `Checkbox`es. */
       children: Snippet;
@@ -30,6 +31,15 @@
   }: Props = $props();
 
   const id = $props.id();
+
+  setFieldset({
+    get invalid() {
+      return Boolean(error);
+    },
+    get required() {
+      return required;
+    },
+  });
 </script>
 
 <fieldset
