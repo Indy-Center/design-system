@@ -15,7 +15,7 @@ description: A data table with a caption, header cells that say what they head, 
 - [ ] Write every header cell as `Th`, with its `scope`: `"col"` in
       `<thead>`, `"row"` for the cell that names its row (a callsign, a
       name). Use `"colgroup"` over a header that spans a group of columns.
-      Don't write `<th>` by hand.
+      Don't write `<th>` by hand. An empty corner cell is a `<td></td>`.
 - [ ] Write `<thead>` and `<tbody>` yourself, with plain `<tr>` and `<td>`.
 - [ ] For a row that goes somewhere, put a `Link` in the cell that names it
       (usually the first). Never put `onclick` on a `<tr>`: a keyboard
@@ -89,7 +89,8 @@ description: A data table with a caption, header cells that say what they head, 
 - The region gets the `ring` outline when focused.
 
 The table's classes are written on the `<table>` and reach its plain
-cells, so a rich-text table from the CMS can share the look later.
+cells. They aren't exported yet; the rich-text feature will share them
+with tables from the CMS.
 
 ## Accessibility
 

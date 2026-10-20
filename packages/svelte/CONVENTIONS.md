@@ -88,7 +88,10 @@ the tokens loaded, so computed colours are the real ones.
   brand guide's hex as `rgb(…)` literals. Copy the expected values from the
   guide's Roles table, not from the tokens.
 - Keyboard: `userEvent.tab()`, Enter, Escape, as the component needs.
-- Snippets for `children` in tests: `createRawSnippet`.
+- Snippets for `children` in tests: `createRawSnippet`. It renders one
+  root element only, so when the children are several siblings or other
+  components (a table's `Th` and `Link`, a list's rows), write a small
+  page in `test/fixtures/` and render that.
 
 Run one file while working:
 `npx vitest run --project components src/lib/Name`.

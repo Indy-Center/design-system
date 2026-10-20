@@ -2,7 +2,7 @@ import { describe, expect, test } from "vitest";
 import MemberDetails from "../../../test/fixtures/MemberDetails.svelte";
 import { renderIn } from "../../../test/schemes.ts";
 
-/** Where `name`'s term and its value sit, relative to each other. */
+/** Where a term and its value sit, relative to each other. */
 function layout(term: Element, value: Element) {
   const t = term.getBoundingClientRect();
   const v = value.getBoundingClientRect();
@@ -20,7 +20,7 @@ describe("DescriptionList", () => {
       .toBeInTheDocument();
   });
 
-  // A phone's width: the value goes under its term.
+  // Narrower than 24rem (a phone): the value goes under its term.
   test("stacks each term over its value when narrow", async () => {
     const screen = await renderIn("light", MemberDetails, {});
     screen.container.style.width = "360px";
@@ -29,7 +29,7 @@ describe("DescriptionList", () => {
     expect(layout(term, value)).toEqual({ stacked: true, sideBySide: false });
   });
 
-  // From `sm` (640px) the value sits beside its term.
+  // From 24rem wide (the list's own width), the value sits beside its term.
   test("puts each value beside its term when wide", async () => {
     const screen = await renderIn("light", MemberDetails, {});
     screen.container.style.width = "800px";
@@ -80,6 +80,7 @@ describe("DescriptionList", () => {
       await expect
         .element(screen.getByText("1234567"))
         .toHaveStyle({ color: value });
+      // Tailwind's divide-y draws each row's line along its bottom.
       const first = screen.getByText("CID").element().parentElement!;
       await expect.element(first).toHaveStyle({
         borderBottomStyle: "solid",
