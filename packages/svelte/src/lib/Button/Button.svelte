@@ -11,9 +11,9 @@
     variant?: "primary" | "secondary" | "danger";
     /** `md` by default; `md` lines up with Input. Every size is at least 44px. */
     size?: "sm" | "md" | "lg";
-    /** While true: shows a Spinner, sets `aria-busy` and ignores presses. */
+    /** While true: shows a Spinner, sets `aria-busy` and ignores presses. Pass it from the start (false) so the change is announced. */
     busy?: boolean;
-    /** What the Spinner says while busy. "Working" by default. */
+    /** What screen readers are told while busy. "Working" by default. */
     busyLabel?: string;
     /** The button's text. */
     children: Snippet;
@@ -33,6 +33,8 @@
       href: string;
       /** Links can't be toggles. */
       pressed?: undefined;
+      /** Links can't be disabled; leave out `href` for a button that can. */
+      disabled?: undefined;
     };
 
   type Props = AsButton | AsLink;
@@ -40,7 +42,7 @@
   let {
     variant = "primary",
     size = "md",
-    busy = false,
+    busy,
     busyLabel = "Working",
     pressed,
     href,
@@ -95,12 +97,22 @@
       ]}
     ></span>
   {/if}
-  {@render children()}
   {#if busy}
-    <!-- After the text, so the name reads "Save Working"; drawn first. -->
-    <Spinner label={busyLabel} class="order-first" />
+    <!-- Only drawn: the status beside the button does the telling. -->
+    <span aria-hidden="true" class="inline-flex">
+      <Spinner label={busyLabel} />
+    </span>
   {/if}
+  {@render children()}
 {/snippet}
+
+{#if busy !== undefined}
+  <!-- Beside the button, not in it: readers hold back updates inside an
+       aria-busy element, and a button's children are presentational. It is
+       on the page before busy starts, so the change is announced. Before
+       the button, so `space-x-*` on a parent still spaces the button. -->
+  <span role="status" class="sr-only">{busy ? busyLabel : ""}</span>
+{/if}
 
 {#if href !== undefined}
   <a

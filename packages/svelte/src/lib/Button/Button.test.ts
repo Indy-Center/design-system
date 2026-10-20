@@ -52,6 +52,23 @@ describe("Button", () => {
       .toHaveStyle({ backgroundColor: fill, color: ink });
   });
 
+  // The guide's `primary-hover` #075985 (both schemes), and `muted`
+  // (#E2E8F0 light, #334155 dark).
+  test.each([
+    ["primary", "light", "rgb(7, 89, 133)"],
+    ["primary", "dark", "rgb(7, 89, 133)"],
+    ["secondary", "light", "rgb(226, 232, 240)"],
+    ["secondary", "dark", "rgb(51, 65, 85)"],
+  ] as const)("%s on hover in %s", async (variant, scheme, fill) => {
+    const screen = await renderIn(scheme, Button, {
+      variant,
+      children: text("Save"),
+    });
+    const button = screen.getByRole("button");
+    await userEvent.hover(button);
+    await expect.element(button).toHaveStyle({ backgroundColor: fill });
+  });
+
   test("secondary has an edge in the input colour", async () => {
     const screen = await renderIn("light", Button, {
       variant: "secondary",
@@ -98,16 +115,21 @@ describe("Button", () => {
   );
 
   describe("busy", () => {
-    test('says "Working" through a status, and is marked busy', async () => {
+    // Readers hold back updates inside an aria-busy element, and a
+    // button's children are presentational, so the status sits beside the
+    // button. It is there before busy starts, so the change is announced.
+    test('says "Working" through a status beside it, when busy starts', async () => {
       const screen = await renderIn("light", Button, {
-        busy: true,
+        busy: false,
         children: text("Save"),
       });
+      const status = screen.getByRole("status");
+      await expect.element(status).toHaveTextContent("");
+      await screen.rerender({ busy: true });
+      await expect.element(status).toHaveTextContent("Working");
       const button = screen.getByRole("button");
       await expect.element(button).toHaveAttribute("aria-busy", "true");
-      await expect
-        .element(button.getByRole("status"))
-        .toHaveTextContent("Working");
+      expect(button.element().contains(status.element())).toBe(false);
     });
 
     test("says the busy label it's given", async () => {
@@ -121,7 +143,31 @@ describe("Button", () => {
         .toHaveTextContent("Saving");
     });
 
-    test("isn't busy, and has no status, until told", async () => {
+    test("goes quiet when busy ends", async () => {
+      const screen = await renderIn("light", Button, {
+        busy: true,
+        children: text("Save"),
+      });
+      await screen.rerender({ busy: false });
+      await expect.element(screen.getByRole("status")).toHaveTextContent("");
+      await expect
+        .element(screen.getByRole("button"))
+        .not.toHaveAttribute("aria-busy");
+    });
+
+    test("shows a spinner inside, hidden from readers", async () => {
+      const screen = await renderIn("light", Button, {
+        busy: true,
+        children: text("Save"),
+      });
+      const button = screen.getByRole("button");
+      const svg = button.element().querySelector("svg");
+      await expect.element(svg).toBeVisible();
+      expect(svg?.closest('[aria-hidden="true"]')).not.toBeNull();
+      expect(button.getByRole("status").elements()).toEqual([]);
+    });
+
+    test("has no status when busy is left out", async () => {
       const screen = await renderIn("light", Button, {
         children: text("Save"),
       });
@@ -131,12 +177,12 @@ describe("Button", () => {
       expect(screen.container.querySelector('[role="status"]')).toBeNull();
     });
 
-    test("keeps its text and its focus", async () => {
+    test("keeps its name, text and focus", async () => {
       const screen = await renderIn("light", Button, {
         busy: true,
         children: text("Save"),
       });
-      const button = screen.getByRole("button");
+      const button = screen.getByRole("button", { name: "Save", exact: true });
       await expect.element(button.getByText("Save")).toBeVisible();
       await expect.element(button).toBeEnabled();
       await userEvent.tab();
