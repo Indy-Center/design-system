@@ -10,6 +10,9 @@
   };
 
   let { href, children, class: className, ...rest }: Props = $props();
+
+  // Prose draws links in rich text the same way: keep
+  // packages/tokens/prose.css in step with these classes.
 </script>
 
 <a

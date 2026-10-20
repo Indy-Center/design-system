@@ -38,7 +38,8 @@
    * rules skip it. The element names below outrank the plugin's rules,
    * and so its prose-a:, prose-headings: and prose-lg modifiers too. */
   & :not(:where([class~="not-prose"], [class~="not-prose"] *)) {
-    /* Links as the Link component draws them. */
+    /* Links as the Link component draws them. Keep in step with the
+     * classes in packages/svelte/src/lib/Link/Link.svelte. */
     &:is(a) {
       border-radius: 0.125rem;
       font-weight: inherit;
@@ -53,7 +54,8 @@
     }
 
     /* Headings at the Heading component's sizes, semibold in the heading
-     * font. */
+     * font. Keep in step with the looks map in
+     * packages/svelte/src/lib/Heading/Heading.svelte. */
     &:is(h1, h2, h3, h4, h5, h6) {
       font-family: var(--font-heading);
       font-weight: 600;
