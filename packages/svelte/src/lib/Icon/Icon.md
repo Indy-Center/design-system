@@ -9,7 +9,9 @@ description: An MDI icon in the text colour, hidden from screen readers unless i
       it as `path`. Don't paste SVG markup.
 - [ ] Give it a `label` only when it means something no text beside it
       says, such as an icon-only status. An icon next to its own words
-      ("Delete") takes no label, so the words aren't read twice.
+      ("Delete") takes no label, so the words aren't read twice. Name it
+      with `label`, not `aria-label`: without `label` the icon is hidden,
+      and an `aria-label` on it is never read.
 - [ ] An icon-only button or link is named on the button or link
       (`aria-label`), not on the icon.
 - [ ] Don't colour it: it takes the text colour around it. Set `size` for
