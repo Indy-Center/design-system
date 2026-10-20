@@ -1,4 +1,5 @@
 // One line per component, in alphabetical order.
+export { default as Field, type FieldControl } from "./Field/Field.svelte";
 export { default as Input } from "./Input/Input.svelte";
 export { default as Link } from "./Link/Link.svelte";
 export { default as Select } from "./Select/Select.svelte";

@@ -41,7 +41,7 @@
   },
   "peerDependencies": {
     "@indy-center/tokens": "^0.1.0",
-    "svelte": "^5.16.0",
+    "svelte": "^5.20.0",
     "tailwindcss": "^4.0.0"
   },
   "devDependencies": {
