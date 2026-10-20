@@ -114,14 +114,16 @@ describe("base.css after tokens.css and theme.css", () => {
     expect(
       await styles(
         '<button id="on">Save</button><button id="off" disabled>Save</button>' +
-          '<div id="role" role="button">Save</div>',
+          '<div id="role" role="button">Save</div>' +
+          '<div id="role-off" role="button" aria-disabled="true">Save</div>',
         [
           ["#on", "cursor"],
           ["#off", "cursor"],
           ["#role", "cursor"],
+          ["#role-off", "cursor"],
         ],
       ),
-    ).toEqual(["pointer", "default", "pointer"]);
+    ).toEqual(["pointer", "default", "pointer", "auto"]);
   });
 
   test("a paragraph inherits its parent's colour", async () => {

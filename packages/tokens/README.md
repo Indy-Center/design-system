@@ -30,7 +30,8 @@ In a Tailwind v4 app's stylesheet:
   `foreground`, so a dark header's text is light; `h1`–`h6` the heading
   font (sizes stay with `Heading`); borders default to `border`, so
   `border` and `divide-y` need no colour; placeholders take
-  `placeholder`; and enabled buttons get a pointer cursor. It leaves `p`,
+  `placeholder`; and enabled buttons get a pointer cursor (a
+  `role="button"` is disabled by `aria-disabled="true"`). It leaves `p`,
   `a`, `li` and `strong` alone, so they inherit, and sets no focus
   outline. Import it after `theme.css`. Apps without Tailwind can use it
   after `tokens.css`; being layered, it loses to any of their unlayered

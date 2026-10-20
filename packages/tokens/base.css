@@ -36,9 +36,10 @@
     color: var(--color-placeholder);
   }
 
-  /* Tailwind v4 dropped this from its reset (upgrade guide). */
+  /* Tailwind v4 dropped this from its reset (upgrade guide). :disabled
+   * never matches a role button, so it is disabled by aria-disabled. */
   button:not(:disabled),
-  [role="button"]:not(:disabled) {
+  [role="button"]:not([aria-disabled="true"]) {
     cursor: pointer;
   }
 }
