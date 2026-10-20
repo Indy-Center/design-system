@@ -63,13 +63,17 @@ describe("Fieldset", () => {
       .toHaveAccessibleDescription("Second hint.");
   });
 
-  test("says required in words in the legend", async () => {
+  // A checkbox group can't carry `required` on its boxes, so the legend says it.
+  test("says required in words in the legend, read in the group's name", async () => {
     const screen = await renderIn("light", Fieldset, {
-      legend: "Position",
+      legend: "Emails",
       required: true,
       children: options,
     });
     await expect.element(screen.getByText("(required)")).toBeVisible();
+    await expect
+      .element(screen.getByRole("group", { name: "Emails (required)" }))
+      .toBeInTheDocument();
   });
 
   // The guide's roles: `foreground-soft` legend (#334155 light, #D1D5DB

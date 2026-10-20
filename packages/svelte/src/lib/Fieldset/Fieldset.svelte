@@ -10,7 +10,7 @@
     hint?: string;
     /** What's wrong with the choice. */
     error?: string;
-    /** Says "(required)" by the legend; put `required` on the radios too. */
+    /** Says "(required)" by the legend; for radios, put `required` on each so the browser checks it. */
     required?: boolean;
     /** The options: `Radio`s or `Checkbox`es. */
     children: Snippet;
@@ -41,10 +41,8 @@
   <legend class="mb-1.5 text-sm font-medium text-foreground-soft">
     {legend}
     {#if required}
-      <!-- The radios' own `required` says it to screen readers. -->
-      <span aria-hidden="true" class="font-normal text-muted-foreground"
-        >(required)</span
-      >
+      <!-- Read with the legend: a checkbox group has no other way to say it. -->
+      <span class="font-normal text-muted-foreground">(required)</span>
     {/if}
   </legend>
   <div class="flex flex-col">

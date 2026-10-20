@@ -15,8 +15,9 @@ description: A native radio button with its label beside it, chosen in the prima
       same name in the same form.
 - [ ] Write each label as the option itself ("Tower"), short and
       parallel.
-- [ ] For a required group, set `required` on the `Fieldset` and on each
-      radio.
+- [ ] For a required group, set `required` on the `Fieldset` (it says
+      so in words) and on each radio (the browser then won't send the
+      form with none chosen).
 - [ ] Don't colour it: no `accent-*`, `text-*` or size classes. `class`
       goes on the row and is for layout only.
 

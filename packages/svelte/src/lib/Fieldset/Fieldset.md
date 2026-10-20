@@ -10,7 +10,9 @@ description: A group of radios or checkboxes with a legend, hint and error, wire
       select, use `Field`.
 - [ ] Write the legend as the question, as a short noun ("Position"),
       with no colon or `*`. Set `required` and Fieldset writes
-      "(required)" in words; for radios, set `required` on each radio too.
+      "(required)" in words. For radios, set `required` on each radio
+      too, so the browser won't send the form with none chosen; never on
+      checkboxes, where it would make every box compulsory.
 - [ ] Put help in `hint`, and a validation message in `error` saying how
       to fix it ("Choose a position"). Leave `error` unset when the choice
       is fine.
@@ -52,15 +54,15 @@ description: A group of radios or checkboxes with a legend, hint and error, wire
 
 ## Props
 
-| Prop       | Type                    | Notes                                                                                      |
-| ---------- | ----------------------- | ------------------------------------------------------------------------------------------ |
-| `legend`   | `string`                | Required. The legend's text, which names the group.                                        |
-| `hint`     | `string`                | Shown under the options, and read as the group's description.                              |
-| `error`    | `string`                | Shown under the hint, and read after it.                                                   |
-| `required` | `boolean`               | Writes "(required)" by the legend. Set `required` on the radios as well.                   |
-| `children` | `Snippet`               | The options: `Radio`s or `Checkbox`es.                                                     |
-| `class`    | `string`                | Added to the `<fieldset>` after its own classes. Layout only.                              |
-| others     | `<fieldset>` attributes | Passed to the `<fieldset>`: `disabled` (which disables every option), `name` and the rest. |
+| Prop       | Type                    | Notes                                                                                                            |
+| ---------- | ----------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `legend`   | `string`                | Required. The legend's text, which names the group.                                                              |
+| `hint`     | `string`                | Shown under the options, and read as the group's description.                                                    |
+| `error`    | `string`                | Shown under the hint, and read after it.                                                                         |
+| `required` | `boolean`               | Writes "(required)" by the legend, read as part of the group's name. For radios, set `required` on each as well. |
+| `children` | `Snippet`               | The options: `Radio`s or `Checkbox`es.                                                                           |
+| `class`    | `string`                | Added to the `<fieldset>` after its own classes. Layout only.                                                    |
+| others     | `<fieldset>` attributes | Passed to the `<fieldset>`: `disabled` (which disables every option), `name` and the rest.                       |
 
 ## Looks
 
@@ -80,7 +82,10 @@ description: A group of radios or checkboxes with a legend, hint and error, wire
 - `aria-describedby` on the `<fieldset>` points at the hint and the
   error. It doesn't set `aria-invalid`, which a group can't take; the
   error's text says it.
-- "(required)" is hidden from screen readers, because the radios' own
-  `required` says it.
+- "(required)" is part of the legend, so a screen reader reads it with
+  the group's name. That's the only way a checkbox group says it; a
+  radio's own `required` may say it again.
+- The error doesn't mark the options invalid; the error's text, read as
+  the group's description, says what's wrong.
 - The ids come from Svelte's `$props.id()`, so they match between the
   server's HTML and the browser.
