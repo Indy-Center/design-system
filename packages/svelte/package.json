@@ -46,6 +46,7 @@
   },
   "devDependencies": {
     "@indy-center/tokens": "^0.1.0",
+    "@mdi/js": "^7.4.47",
     "@sveltejs/kit": "^3.1.0",
     "@sveltejs/package": "^3.0.1",
     "@sveltejs/vite-plugin-svelte": "^7.3.1",
