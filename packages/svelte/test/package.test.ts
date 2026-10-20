@@ -44,6 +44,23 @@ describe("the packed package", () => {
     expect(index).toMatch(/export \{ default as Link \}/);
   });
 
+  test("ships Table, Th and DescriptionList from the package root", async () => {
+    expect(files).toEqual(
+      expect.arrayContaining([
+        "dist/Table/Table.svelte",
+        "dist/Table/Th.svelte",
+        "dist/Table/tableClasses.js",
+        "dist/Table/Table.md",
+        "dist/DescriptionList/DescriptionList.svelte",
+        "dist/DescriptionList/DescriptionList.md",
+      ]),
+    );
+    const index = await readFile(new URL("dist/index.d.ts", root), "utf8");
+    for (const name of ["DescriptionList", "Table", "Th"]) {
+      expect(index).toMatch(new RegExp(`export \\{ default as ${name} \\}`));
+    }
+  });
+
   test("exports saveColorScheme from the package root, with types", async () => {
     const index = await readFile(new URL("dist/index.d.ts", root), "utf8");
     expect(index).toMatch(/\bsaveColorScheme\b/);
