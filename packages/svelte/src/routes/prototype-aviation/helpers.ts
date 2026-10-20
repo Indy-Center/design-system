@@ -94,6 +94,18 @@ export function localDate(d: Date): string {
   }).format(d);
 }
 
+// The log-out time a controller wrote in their info: the first "2330z" or
+// "2330Z" (24-hour Zulu), taken as its next occurrence after `after` (when
+// they logged in). Undefined when there's none or it isn't a time.
+export function parseLogoff(info: string, after: Date): Date | undefined {
+  const m = /\b([01]\d|2[0-3])([0-5]\d)[zZ]\b/.exec(info);
+  if (!m) return undefined;
+  const d = new Date(after);
+  d.setUTCHours(+m[1], +m[2], 0, 0);
+  if (d < after) d.setUTCDate(d.getUTCDate() + 1);
+  return d;
+}
+
 // Round 2: date formats for point 7's date part.
 const fmt = (d: Date, o: Intl.DateTimeFormatOptions) =>
   new Intl.DateTimeFormat("en-US", { timeZone: ZONE, ...o }).format(d);

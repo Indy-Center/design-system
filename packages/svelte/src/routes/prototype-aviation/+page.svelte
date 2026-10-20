@@ -26,6 +26,7 @@
     localTime,
     resolvePosition,
     spokenFrequency,
+    parseLogoff,
     zulu,
     type Category,
     type CredentialKind,
@@ -54,8 +55,10 @@
         : "right",
   );
   let decimals = $state<2 | 3>(q.get("decimals") === "3" ? 3 : 2);
-  // Names under a position: CIDs optional, off by default.
+  // Names under a position and in the online rows: CIDs optional, off by
+  // default.
   let peopleCid = $state(false);
+  let rowCid = $state(false);
   $effect(() => {
     const u = new URL(page.url.href);
     u.searchParams.set("fields", fields.join(","));
@@ -224,6 +227,48 @@
   ].map((e) => ({ ...e, start: new Date(e.start), end: new Date(e.end) }));
 
   const loggedIn = new Date("2026-10-20T19:37:00Z");
+
+  // Online rows: the log-out time from a booking, else the controller info.
+  type Row = {
+    login: string;
+    member: typeof alex;
+    loginTime: Date;
+    info: string;
+    bookingEnd?: Date;
+  };
+  const rows: Row[] = [
+    {
+      login: "IND_831_CTR",
+      member: jordan,
+      loginTime: loggedIn,
+      info: "Indy Center, Falmouth sector.\nExpected log-off time: 2330z",
+    },
+    {
+      login: "IND_E_APP",
+      member: alex,
+      loginTime: new Date("2026-10-20T20:30:00Z"),
+      info: "Indy Approach East. Off around 0000Z",
+      bookingEnd: new Date("2026-10-21T01:00:00Z"),
+    },
+    {
+      login: "LEX_TWR",
+      member: sam,
+      loginTime: new Date("2026-10-20T20:12:00Z"),
+      info: "Lexington Tower. Feedback: flyindycenter.com/feedback",
+    },
+    {
+      login: "CMH_LCE",
+      member: { first: "Pat", last: "Placeholder", cid: 1000003 },
+      loginTime: new Date("2026-10-20T20:51:00Z"),
+      info: "Training session until 0130Z",
+    },
+  ];
+  // More info texts, to show what the parser does and doesn't take.
+  const parseCases: Omit<Row, "login" | "member">[] = [
+    "Runway 23 in use, ATIS on 128.82",
+    "Closing at 2460Z",
+    "Online until 2100z",
+  ].map((info) => ({ info, loginTime: loggedIn }));
 
   const hm = (d: Date) =>
     new Intl.DateTimeFormat("en-US", {
@@ -596,39 +641,57 @@
 </Pair>
 
 <!-- ───────────────────────── OnlineController ───────────────────────── -->
-<h2 class={h2}>3. OnlineController (next, once Position settles)</h2>
+<h2 class={h2}>3. OnlineController</h2>
 <p class={lede}>
-  Unchanged for now apart from following "Try it" above. Tap a row to open it.
+  A flat row, nothing to open: the position (C2), who's on (CID off unless asked
+  for) and for how long, then when they log out. The log-out time comes from a
+  booking once bookings run; until then, from the first
+  <code>0000z</code> or <code>0000Z</code> in the controller info (24-hour Zulu, the
+  next one after they logged in). No time found, no line.
 </p>
+<label class={["mb-3 w-fit", seg]}
+  ><input type="checkbox" class="sr-only" bind:checked={rowCid} />Show CIDs</label
+>
 <Schemes>
   <ul
     class="max-w-[390px] overflow-hidden rounded-md border border-border bg-background"
   >
-    <OnlineRow
-      login="IND_831_CTR"
-      member={jordan}
-      loginTime={loggedIn}
-      info={"Indy Center, Falmouth sector.\nExpected log-off time: 2330z"}
-      show={fields}
-      {layout}
-      open
-    />
-    <OnlineRow
-      login="LEX_TWR"
-      member={sam}
-      loginTime={new Date("2026-10-20T20:12:00Z")}
-      info="Lexington Tower. Feedback: flyindycenter.com/feedback"
-      show={fields}
-      {layout}
-    />
-    <OnlineRow
-      login="CMH_LCE"
-      member={alex}
-      loginTime={new Date("2026-10-20T20:51:00Z")}
-      info="Training session."
-      show={fields}
-      {layout}
-    />
+    {#each rows as row (row.login)}
+      <OnlineRow
+        {...row}
+        show={["callsign", "radioName", "name", "frequency"]}
+        showCid={rowCid}
+      />
+    {/each}
   </ul>
 </Schemes>
+
+<h3 class={h3}>Where each log-out time came from</h3>
+<div class="overflow-x-auto">
+  <table class="w-full max-w-3xl text-left text-sm">
+    <thead class="text-xs text-muted-foreground">
+      <tr
+        ><th class="py-1 pr-3 font-medium">Controller info</th><th
+          class="py-1 pr-3 font-medium">Booking</th
+        ><th class="py-1 font-medium">Off at</th></tr
+      >
+    </thead>
+    <tbody>
+      {#each [...rows, ...parseCases] as c, i (i)}
+        {@const off = c.bookingEnd ?? parseLogoff(c.info, c.loginTime)}
+        <tr class="border-t border-border align-top">
+          <td class="py-1.5 pr-3 font-mono text-xs whitespace-pre-line"
+            >{c.info || "—"}</td
+          >
+          <td class="py-1.5 pr-3 font-mono text-xs"
+            >{c.bookingEnd ? zulu(c.bookingEnd) : "—"}</td
+          >
+          <td class="py-1.5"
+            >{off ? `${formatDate(off, "D")}, ${zulu(off)}` : "none"}</td
+          >
+        </tr>
+      {/each}
+    </tbody>
+  </table>
+</div>
 <div class="h-16"></div>

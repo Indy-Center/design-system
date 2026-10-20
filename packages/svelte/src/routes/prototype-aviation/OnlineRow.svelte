@@ -1,8 +1,8 @@
 <script lang="ts">
-  // Round 3's "who's on" row: the Position with the page's chosen fields, the
-  // member as chosen (5D), how long they've been on (8A). No rating. The
-  // whole row is a disclosure button; the open part holds the callsign
-  // logged in with and the log-in time (7A).
+  // Round 5's "who's on" row, flat (no disclosure): the Position (C2), the
+  // member (CID optional, off by default) and how long they've been on (8A),
+  // then when they log out. The log-out time comes from a booking when there
+  // is one, else from a "2330z" in the controller info.
   import Member from "./Member.svelte";
   import Position, { type Field } from "./Position.svelte";
   import {
@@ -10,6 +10,7 @@
     durationShort,
     isoDuration,
     localTime,
+    parseLogoff,
     zulu,
   } from "./helpers.ts";
 
@@ -17,73 +18,40 @@
     login,
     member,
     loginTime,
-    info,
+    info = "",
+    bookingEnd,
     show,
     layout = "stacked",
-    open = false,
+    showCid = false,
   }: {
     login: string;
     member: { first: string; last: string; cid: number; hidden?: boolean };
     loginTime: Date;
-    info: string;
+    info?: string;
+    bookingEnd?: Date;
     show: Field[];
     layout?: "inline" | "stacked";
-    open?: boolean;
+    showCid?: boolean;
   } = $props();
 
-  const id = $props.id();
-  // svelte-ignore state_referenced_locally
-  let expanded = $state(open);
+  const logoff = $derived(bookingEnd ?? parseLogoff(info, loginTime));
 </script>
 
-<li class="border-b border-border last:border-b-0">
-  <button
-    type="button"
-    aria-expanded={expanded}
-    aria-controls="{id}-more"
-    onclick={() => (expanded = !expanded)}
-    class="flex min-h-11 w-full items-start gap-3 px-3 py-2.5 text-left hover:bg-muted focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
-  >
-    <span class="min-w-0 flex-1">
-      <Position {login} {show} {layout} />
-      <span class="mt-1 flex flex-wrap items-baseline gap-x-2 gap-y-1 text-sm">
-        <span class="text-foreground-soft"><Member {...member} /></span>
-        <span class="text-muted-foreground"
-          >online <time datetime={isoDuration(loginTime, NOW)}
-            >{durationShort(loginTime, NOW)}</time
-          ></span
-        >
-      </span>
-    </span>
-    <svg
-      viewBox="0 0 20 20"
-      class={[
-        "mt-1 size-4 shrink-0 text-muted-foreground transition-transform",
-        expanded && "rotate-180",
-      ]}
-      fill="currentColor"
-      aria-hidden="true"
-      ><path
-        fill-rule="evenodd"
-        d="M5.2 7.2a1 1 0 0 1 1.4 0L10 10.6l3.4-3.4a1 1 0 1 1 1.4 1.4l-4.1 4.1a1 1 0 0 1-1.4 0L5.2 8.6a1 1 0 0 1 0-1.4Z"
-      /></svg
+<li class="border-b border-border px-3 py-2.5 last:border-b-0">
+  <Position {login} {show} {layout} />
+  <span class="mt-1 block text-sm">
+    <span class="text-foreground-soft"><Member {...member} {showCid} /></span>
+    <span class="text-muted-foreground">
+      · online <time datetime={isoDuration(loginTime, NOW)}
+        >{durationShort(loginTime, NOW)}</time
+      ></span
     >
-  </button>
-  <div
-    id="{id}-more"
-    hidden={!expanded}
-    class="space-y-2 bg-card px-3 pt-1 pb-3 text-sm"
-  >
-    <dl class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1">
-      <dt class="text-muted-foreground">Callsign</dt>
-      <dd class="font-mono">{login}</dd>
-      <dt class="text-muted-foreground">Logged in</dt>
-      <dd>
-        <time datetime={loginTime.toISOString()}
-          >{localTime(loginTime)} · {zulu(loginTime)}</time
-        >
-      </dd>
-    </dl>
-    <p class="whitespace-pre-line text-foreground-soft">{info}</p>
-  </div>
+  </span>
+  {#if logoff}
+    <span class="block text-sm text-muted-foreground"
+      >Off at <time datetime={logoff.toISOString()}
+        >{localTime(logoff)} · {zulu(logoff)}</time
+      ></span
+    >
+  {/if}
 </li>
