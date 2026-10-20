@@ -25,8 +25,11 @@ export const lessonHtml = `
 </ol>
 <blockquote><p>An aircraft must not cross or enter a runway without an explicit clearance, even one with no traffic.</p></blockquote>
 <h3>Phraseology</h3>
-<pre><code>N123AB, runway 27, taxi via A, B, hold short of runway 18.
+<figure>
+  <pre><code>N123AB, runway 27, taxi via A, B, hold short of runway 18.
 N123AB, cross runway 18 at B.</code></pre>
+  <figcaption>A clearance with a hold short, then the crossing.</figcaption>
+</figure>
 <h4>Readbacks</h4>
 <p>The pilot reads back every hold-short instruction. Correct a wrong readback at once.</p>
 <h3>Common mistakes</h3>

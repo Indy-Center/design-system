@@ -65,7 +65,7 @@ Only pass `{@html}` HTML the app trusts, such as the CMS's own output.
 `prose prose-centerline`: the typography plugin's spacing, on the roles.
 
 - Body text `foreground-soft`; headings, bold text and code `foreground`;
-  captions and list numbers `muted-foreground`.
+  captions, list numbers and bullets `muted-foreground`.
 - Headings at `Heading`'s sizes: h1 3xl, h2 xl, h3 lg, h4 to h6 base, all
   semibold in the heading font.
 - Links as `Link` draws them: the `link` role, the body's weight,
@@ -73,7 +73,7 @@ Only pass `{@html}` HTML the app trusts, such as the CMS's own output.
   from the keyboard.
 - Inline code as a `muted` chip, without backticks. Code blocks on
   `muted`.
-- Quotes upright, with a rule in the `link` role (the sky) and no quote
+- Quotes upright, with a rule in the `info` role (the sky) and no quote
   marks.
 - Tables: a `muted` head, and `border` lines, the head's too.
 

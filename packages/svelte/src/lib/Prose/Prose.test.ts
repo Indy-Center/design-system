@@ -7,7 +7,9 @@ import ProseLesson from "../../../test/ProseLesson.svelte";
 const light = {
   foreground: "rgb(15, 23, 42)", // #0F172A
   foregroundSoft: "rgb(51, 65, 85)", // #334155
+  mutedForeground: "rgb(71, 85, 105)", // #475569
   link: "rgb(3, 105, 161)", // #0369A1
+  info: "rgb(3, 105, 161)", // #0369A1
   muted: "rgb(226, 232, 240)", // #E2E8F0
   border: "rgb(226, 232, 240)", // #E2E8F0
   ring: "rgb(2, 132, 199)", // #0284C7
@@ -15,7 +17,9 @@ const light = {
 const dark = {
   foreground: "rgb(255, 255, 255)", // #FFFFFF
   foregroundSoft: "rgb(209, 213, 219)", // #D1D5DB
+  mutedForeground: "rgb(156, 163, 175)", // #9CA3AF
   link: "rgb(56, 189, 248)", // #38BDF8
+  info: "rgb(56, 189, 248)", // #38BDF8
   muted: "rgb(51, 65, 85)", // #334155
   border: "rgb(51, 65, 85)", // #334155
   ring: "rgb(14, 165, 233)", // #0EA5E9
@@ -25,6 +29,13 @@ const schemes = [
   ["dark", dark],
   ["dark-header", dark],
 ] as const;
+
+// The plugin puts backticks round inline code and marks round quotes, in
+// ::before and ::after; the theme takes them out.
+function expectNoMarks(element: Element) {
+  expect(getComputedStyle(element, "::before").content).toBe("none");
+  expect(getComputedStyle(element, "::after").content).toBe("none");
+}
 
 describe("Prose", () => {
   test("is an article holding the lesson", async () => {
@@ -156,9 +167,7 @@ describe("Prose", () => {
 
   test("inline code has no backticks around it", async () => {
     const screen = await renderIn("light", ProseLesson, {});
-    const code = screen.getByText("KXMP").element();
-    expect(getComputedStyle(code, "::before").content).toBe("none");
-    expect(getComputedStyle(code, "::after").content).toBe("none");
+    expectNoMarks(screen.getByText("KXMP").element());
   });
 
   test.each(schemes)(
@@ -172,18 +181,42 @@ describe("Prose", () => {
     },
   );
 
-  // The quote's rule is the sky, in the link role.
+  // The quote's rule is the sky, in the info role.
   test.each(schemes)(
     "a quote has a sky rule and no quote marks in %s",
-    async (scheme, { link }) => {
+    async (scheme, { info }) => {
       const screen = await renderIn(scheme, ProseLesson, {});
       const text = screen.getByText(/^An aircraft must not cross/);
       await expect.element(text).toBeVisible();
       const quote = text.element().closest("blockquote")!;
-      expect(getComputedStyle(quote).borderInlineStartColor).toBe(link);
+      expect(getComputedStyle(quote).borderInlineStartColor).toBe(info);
       expect(getComputedStyle(quote).fontStyle).toBe("normal");
-      expect(getComputedStyle(text.element(), "::before").content).toBe("none");
-      expect(getComputedStyle(text.element(), "::after").content).toBe("none");
+      expectNoMarks(text.element());
+    },
+  );
+
+  test.each(schemes)(
+    "list numbers and bullets are muted in %s",
+    async (scheme, { mutedForeground }) => {
+      const screen = await renderIn(scheme, ProseLesson, {});
+      const numbered = screen.getByText("Call sign.").element();
+      const bulleted = screen.getByText(/^Open the field diagram/).element();
+      expect(getComputedStyle(numbered, "::marker").color).toBe(
+        mutedForeground,
+      );
+      expect(getComputedStyle(bulleted, "::marker").color).toBe(
+        mutedForeground,
+      );
+    },
+  );
+
+  test.each(schemes)(
+    "a caption is muted in %s",
+    async (scheme, { mutedForeground }) => {
+      const screen = await renderIn(scheme, ProseLesson, {});
+      await expect
+        .element(screen.getByText(/^A clearance with a hold short/))
+        .toHaveStyle({ color: mutedForeground });
     },
   );
 });

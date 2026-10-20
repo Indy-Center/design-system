@@ -12,12 +12,14 @@
   --tw-prose-lead: var(--color-muted-foreground);
   --tw-prose-links: var(--color-link);
   --tw-prose-bold: var(--color-foreground);
+  /* List numbers and bullets alike: marks beside the text, like captions. */
   --tw-prose-counters: var(--color-muted-foreground);
-  /* The mid grey, the same in both schemes. */
-  --tw-prose-bullets: var(--color-input);
+  --tw-prose-bullets: var(--color-muted-foreground);
   --tw-prose-hr: var(--color-border);
   --tw-prose-quotes: var(--color-foreground-soft);
-  --tw-prose-quote-borders: var(--color-link);
+  /* A quote is set apart from the text, as a notice is: the info role,
+   * which is the sky. */
+  --tw-prose-quote-borders: var(--color-info);
   --tw-prose-captions: var(--color-muted-foreground);
   --tw-prose-kbd: var(--color-foreground);
   --tw-prose-kbd-shadows: color-mix(
