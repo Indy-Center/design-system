@@ -159,4 +159,15 @@ describe("ProgressBar", () => {
     });
     await expect.element(under.getByText("0%")).toBeVisible();
   });
+
+  test("says 0% when there is nothing to do", async () => {
+    const screen = await renderIn("light", ProgressBar, {
+      label: "Lessons",
+      value: 0,
+      max: 0,
+    });
+    await expect
+      .element(screen.getByRole("progressbar"))
+      .toHaveAttribute("aria-valuetext", "0%");
+  });
 });

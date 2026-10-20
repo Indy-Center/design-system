@@ -23,9 +23,9 @@
 
   const id = $props.id();
   const percent = $derived(
-    Math.round(Math.min(Math.max(value / max, 0), 1) * 100),
+    max > 0 ? Math.round(Math.min(Math.max(value / max, 0), 1) * 100) : 0,
   );
-  const words = $derived(valueText ?? `${percent}%`);
+  const valueLabel = $derived(valueText ?? `${percent}%`);
 </script>
 
 <div {...rest} class={["flex flex-col gap-1.5", className]}>
@@ -34,14 +34,14 @@
     >
     <!-- The bar says its value to readers; this is for the eye. -->
     <span aria-hidden="true" class="text-muted-foreground tabular-nums"
-      >{words}</span
+      >{valueLabel}</span
     >
   </div>
   <!-- A <label for> names <progress> in browsers but not in every reader,
        so the bar points at its label instead. -->
   <progress
     aria-labelledby="{id}-label"
-    aria-valuetext={words}
+    aria-valuetext={valueLabel}
     {value}
     {max}
     class={[
