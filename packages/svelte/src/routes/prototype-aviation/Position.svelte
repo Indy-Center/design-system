@@ -97,11 +97,9 @@
   );
 </script>
 
-{#snippet beside()}{#if besideLead}{" "}<span
-      class="inline-flex items-center gap-1.5 align-middle text-muted-foreground"
-      ><span class="font-normal">·</span><span
-        class="font-mono text-sm leading-none font-normal">{besideLead}</span
-      ></span
+{#snippet beside()}{#if besideLead}<span
+      class="font-normal text-muted-foreground"
+      >{" · "}<span class="font-mono text-sm">{besideLead}</span></span
     >{/if}{/snippet}
 
 {#snippet freq(hz: number)}
@@ -139,8 +137,7 @@
     {/if}
     <span class="block min-w-0 flex-1">
       <span class="flex items-baseline justify-between gap-3">
-        {#if lead}<span
-            class="inline-flex flex-wrap items-center gap-x-1.5 font-semibold text-foreground"
+        {#if lead}<span class="font-semibold text-foreground"
             >{@render part(lead)}{@render beside()}</span
           >{/if}
         {#if hz}{@render freq(hz)}{/if}
