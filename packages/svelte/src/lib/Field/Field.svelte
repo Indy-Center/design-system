@@ -11,22 +11,24 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
   import type { HTMLAttributes } from "svelte/elements";
-  import ErrorIcon from "../formControl/ErrorIcon.svelte";
+  import Description from "../formControl/Description.svelte";
+  import RequiredMark from "../formControl/RequiredMark.svelte";
+  import {
+    describedBy,
+    type DescriptionProps,
+  } from "../formControl/formControl.js";
 
-  type Props = Omit<HTMLAttributes<HTMLDivElement>, "id" | "children"> & {
-    /** The label's text. */
-    label: string;
-    /** A line on what to enter, under the control. */
-    hint?: string;
-    /** What's wrong with the value; marks the control invalid when set. */
-    error?: string;
-    /** Says "(required)" by the label and makes the control required. */
-    required?: boolean;
-    /** The control's id; one is made when left out. */
-    id?: string;
-    /** The control, given the attributes to spread on it. */
-    children: Snippet<[FieldControl]>;
-  };
+  type Props = Omit<HTMLAttributes<HTMLDivElement>, "id" | "children"> &
+    DescriptionProps & {
+      /** The label's text. */
+      label: string;
+      /** Says "(required)" by the label and makes the control required. */
+      required?: boolean;
+      /** The control's id; one is made when left out. */
+      id?: string;
+      /** The control, given the attributes to spread on it. */
+      children: Snippet<[FieldControl]>;
+    };
 
   let {
     label,
@@ -41,13 +43,10 @@
 
   const madeId = $props.id();
   const controlId = $derived(id ?? madeId);
-  const hintId = $derived(`${controlId}-hint`);
-  const errorId = $derived(`${controlId}-error`);
 
   const control: FieldControl = $derived({
     id: controlId,
-    "aria-describedby":
-      [hint && hintId, error && errorId].filter(Boolean).join(" ") || undefined,
+    "aria-describedby": describedBy(controlId, { hint, error }),
     "aria-invalid": error ? true : undefined,
     required: required || undefined,
   });
@@ -58,19 +57,9 @@
     {label}
     {#if required}
       <!-- The control's own `required` says it to screen readers. -->
-      <span aria-hidden="true" class="font-normal text-muted-foreground"
-        >(required)</span
-      >
+      <RequiredMark announced={false} />
     {/if}
   </label>
   {@render children(control)}
-  {#if hint}
-    <p id={hintId} class="text-sm text-muted-foreground">{hint}</p>
-  {/if}
-  {#if error}
-    <p id={errorId} class="flex gap-1.5 text-sm text-destructive">
-      <ErrorIcon />
-      <span>{error}</span>
-    </p>
-  {/if}
+  <Description id={controlId} {hint} {error} />
 </div>

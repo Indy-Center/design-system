@@ -1,5 +1,34 @@
-// The form controls' shared looks. ErrorIcon, beside this file, is Field's
-// and Fieldset's error icon.
+// The form controls' shared looks and wiring. Beside this file: Description,
+// the hint and error under a control or group, and ErrorIcon, its icon.
+
+/** The hint and error that Field, Fieldset and Checkbox show under themselves. */
+export type DescriptionProps = {
+  /** A line on what to enter or choose, shown under it. */
+  hint?: string;
+  /** What's wrong; marks it invalid when set. */
+  error?: string;
+};
+
+/** The ids Description gives its hint and error, from one base id. */
+export function descriptionIds(id: string) {
+  return { hint: `${id}-hint`, error: `${id}-error` };
+}
+
+/**
+ * The `aria-describedby` that points at the hint and error that are shown,
+ * after any ids the caller passed; `undefined` when there are none.
+ */
+export function describedBy(
+  id: string,
+  { hint, error }: DescriptionProps,
+  callers?: string | null,
+) {
+  const ids = descriptionIds(id);
+  return (
+    [callers, hint && ids.hint, error && ids.error].filter(Boolean).join(" ") ||
+    undefined
+  );
+}
 
 // The look Input, Textarea and Select share: the input roles, the ring
 // outline, a destructive border when invalid, and 44px targets.
