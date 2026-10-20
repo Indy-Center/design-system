@@ -3,11 +3,12 @@
   export type Step = {
     /** What the step is: "Rating exam". */
     label: string;
+    /** Whether the step is behind them, the one they're on, or to come. */
     state: "done" | "current" | "upcoming";
     /** A line under the label: who, or what happens next. */
-    detail?: string;
+    detail?: string | null;
     /** When the step happened, as text beside the label. */
-    date?: string;
+    date?: string | null;
   };
 </script>
 

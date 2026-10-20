@@ -49,8 +49,8 @@ A `Step`, also exported as a type:
 | -------- | ----------------------------------- | ------------------------------ |
 | `label`  | `string`                            | Required. What the step is.    |
 | `state`  | `"done" \| "current" \| "upcoming"` | Required.                      |
-| `detail` | `string`                            | A line under the label.        |
-| `date`   | `string`                            | Shown beside the label, small. |
+| `detail` | `string \| null`                    | A line under the label.        |
+| `date`   | `string \| null`                    | Shown beside the label, small. |
 
 ## Looks
 
@@ -59,18 +59,19 @@ A `Step`, also exported as a type:
   - done: a ticked circle in `success`
   - current: a ringed dot in `info`
   - upcoming: an empty circle in `muted-foreground`
-- Done and current labels are `foreground`, medium weight; upcoming
-  labels are `muted-foreground`. Detail and date are small
-  `muted-foreground` text.
-- Small text (`text-sm`) throughout.
+- Labels are `text-sm`: done and current in `foreground`, medium weight;
+  upcoming in `muted-foreground`. Detail and date are `text-xs`
+  `muted-foreground`.
 
 ## Accessibility
 
 - An `<ol role="list">`, so readers say how many steps there are and
-  which one they're on. The role is repeated because Safari stops
+  where each sits in the list. The role is repeated because Safari stops
   calling a list without bullets a list.
 - The current step's `<li>` has `aria-current="step"`, which readers say
-  as "current step".
+  as "current step". There's no hidden "(current step)" text as well,
+  which readers that support `aria-current` would say twice; a reader
+  without that support hears the step but not that it's the current one.
 - A done step's label is followed by "(done)" for readers only. Upcoming
   steps say nothing extra.
 - The icons and the joining line are hidden from readers.

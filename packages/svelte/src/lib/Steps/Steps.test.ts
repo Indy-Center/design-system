@@ -133,4 +133,16 @@ describe("Steps", () => {
     await expect.element(screen.getByText("Teacher: Jo Bloggs")).toBeVisible();
     await expect.element(screen.getByText("18 October 2026")).toBeVisible();
   });
+
+  // Training's timeline holds a missing date or detail as null.
+  test("takes null for a missing detail or date", async () => {
+    const screen = await renderIn("light", Steps, {
+      steps: [
+        { label: "Training", state: "current", detail: null, date: null },
+      ],
+    });
+    expect(screen.getByRole("listitem").element().textContent?.trim()).toBe(
+      "Training",
+    );
+  });
 });
