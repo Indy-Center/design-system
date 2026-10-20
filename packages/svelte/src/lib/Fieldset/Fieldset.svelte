@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
   import type { HTMLFieldsetAttributes } from "svelte/elements";
-  import ErrorIcon from "../Field/ErrorIcon.svelte";
+  import ErrorIcon from "../formControl/ErrorIcon.svelte";
 
   type Props = Omit<HTMLFieldsetAttributes, "children"> & {
     /** The legend's text, which names the group. */

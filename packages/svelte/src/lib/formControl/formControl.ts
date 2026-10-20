@@ -1,3 +1,6 @@
+// The form controls' shared looks. ErrorIcon, beside this file, is Field's
+// and Fieldset's error icon.
+
 // The look Input, Textarea and Select share: the input roles, the ring
 // outline, a destructive border when invalid, and 44px targets.
 export const formControlClasses = [

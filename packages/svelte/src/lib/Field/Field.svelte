@@ -11,7 +11,7 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
   import type { HTMLAttributes } from "svelte/elements";
-  import ErrorIcon from "./ErrorIcon.svelte";
+  import ErrorIcon from "../formControl/ErrorIcon.svelte";
 
   type Props = Omit<HTMLAttributes<HTMLDivElement>, "id" | "children"> & {
     /** The label's text. */
