@@ -54,6 +54,8 @@
         : "right",
   );
   let decimals = $state<2 | 3>(q.get("decimals") === "3" ? 3 : 2);
+  // Names under a position: CIDs optional, off by default.
+  let peopleCid = $state(false);
   $effect(() => {
     const u = new URL(page.url.href);
     u.searchParams.set("fields", fields.join(","));
@@ -546,8 +548,12 @@
 <h2 class={h2}>2. Two people on one position</h2>
 <p class={lede}>
   IND_83_CTR and IND_831_CTR are both on. The position shows once, with everyone
-  on it stacked beneath. Pilots see it once with no names.
+  on it stacked beneath, CIDs off unless asked for. Pilots see it once with no
+  names.
 </p>
+<label class={["mb-3 w-fit", seg]}
+  ><input type="checkbox" class="sr-only" bind:checked={peopleCid} />Show CIDs</label
+>
 <Pair>
   <div class="grid gap-6 sm:grid-cols-2">
     <div>
@@ -563,7 +569,9 @@
               {decimals}
             />
             <ul class="mt-1 space-y-0.5">
-              {#each g.members as m (m.cid)}<li><Member {...m} /></li>{/each}
+              {#each g.members as m (m.cid)}<li>
+                  <Member {...m} showCid={peopleCid} />
+                </li>{/each}
             </ul>
           </li>
         {/each}

@@ -25,6 +25,6 @@
 <span
   >{#if href}<Link {href}>{name}</Link>{:else}{name}{/if}{#if showCid}
     <span class="text-sm text-muted-foreground"
-      >· CID <span class="font-mono">{cid}</span></span
+      >{" · "}CID <span class="font-mono">{cid}</span></span
     >{/if}</span
 >

@@ -2,7 +2,7 @@
   // Round 3's "who's on" row: the Position with the page's chosen fields, the
   // member as chosen (5D), how long they've been on (8A). No rating. The
   // whole row is a disclosure button; the open part holds the callsign
-  // logged in with, log-in time (7A) and spoken frequency.
+  // logged in with and the log-in time (7A).
   import Member from "./Member.svelte";
   import Position, { type Field } from "./Position.svelte";
   import {
@@ -10,8 +10,6 @@
     durationShort,
     isoDuration,
     localTime,
-    resolvePosition,
-    spokenFrequency,
     zulu,
   } from "./helpers.ts";
 
@@ -36,7 +34,6 @@
   const id = $props.id();
   // svelte-ignore state_referenced_locally
   let expanded = $state(open);
-  const r = $derived(resolvePosition(login));
 </script>
 
 <li class="border-b border-border last:border-b-0">
@@ -86,10 +83,6 @@
           >{localTime(loginTime)} · {zulu(loginTime)}</time
         >
       </dd>
-      {#if r.kind !== "unknown"}
-        <dt class="text-muted-foreground">Spoken</dt>
-        <dd>“{spokenFrequency(r.position.frequency)}”</dd>
-      {/if}
     </dl>
     <p class="whitespace-pre-line text-foreground-soft">{info}</p>
   </div>
