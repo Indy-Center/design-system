@@ -1,8 +1,11 @@
 // One line per component, in alphabetical order.
+export { default as Checkbox } from "./Checkbox/Checkbox.svelte";
 export { default as Field, type FieldControl } from "./Field/Field.svelte";
+export { default as Fieldset } from "./Fieldset/Fieldset.svelte";
 export { default as Icon } from "./Icon/Icon.svelte";
 export { default as Input } from "./Input/Input.svelte";
 export { default as Link } from "./Link/Link.svelte";
+export { default as Radio } from "./Radio/Radio.svelte";
 export { default as Select } from "./Select/Select.svelte";
 export { default as SkipLink } from "./SkipLink/SkipLink.svelte";
 export { default as Spinner } from "./Spinner/Spinner.svelte";
