@@ -7,6 +7,7 @@
     prefs,
     ZONES,
     city,
+    pretendDevice,
   } from "./prefs.svelte.ts";
   import { seg, focus } from "./cls.ts";
 
@@ -38,14 +39,20 @@
         <p class="mt-1 text-muted-foreground">{v?.note}</p>
       </div>
     {/each}
-    <label class="flex flex-wrap items-center gap-2 text-muted-foreground">
-      Pretend this device is in
-      <select
-        bind:value={prefs.device}
-        class="min-h-11 rounded-md border border-border bg-background px-2 text-foreground {focus}"
-      >
-        {#each ZONES as z (z)}<option value={z}>{city(z)}</option>{/each}
-      </select>
-    </label>
+    <div>
+      <label class="flex flex-wrap items-center gap-2 text-muted-foreground">
+        Pretend this device is in
+        <select
+          value={prefs.device}
+          onchange={(e) => pretendDevice(e.currentTarget.value)}
+          class="min-h-11 rounded-md border border-border bg-background px-2 text-foreground {focus}"
+        >
+          {#each ZONES as z (z)}<option value={z}>{city(z)}</option>{/each}
+        </select>
+      </label>
+      <p class="text-xs text-muted-foreground">
+        Travel: “Use my device's time zone” catches up on the next page.
+      </p>
+    </div>
   </div>
 </details>

@@ -7,6 +7,7 @@
     variantQuery,
     saveTimeZone,
     clearTimeZone,
+    followDevice,
     saveToProfile,
     ZONES,
     city,
@@ -20,7 +21,10 @@
   import Readout from "../Readout.svelte";
   import { Link } from "../../../lib/index.ts";
 
-  let mode = $state<"zulu" | "local">(prefs.zone ? "local" : "zulu");
+  type Mode = "zulu" | "device" | "local";
+  const current = (): Mode =>
+    !prefs.zone ? "zulu" : prefs.follow ? "device" : "local";
+  let mode = $state<Mode>(current());
   let pick = $state(prefs.zone ?? prefs.device);
   let toProfile = $state(true);
   let status = $state("");
@@ -29,18 +33,22 @@
   $effect(() => {
     // Follow the browser's read after mount, until the member edits.
     if (!saved) {
-      mode = prefs.zone ? "local" : "zulu";
+      mode = current();
       pick = prefs.zone ?? prefs.device;
     }
   });
 
   async function save() {
     if (mode === "local") saveTimeZone(pick);
+    else if (mode === "device") followDevice();
     else clearTimeZone();
     saved = true;
     if (toProfile) {
       status = "Saving to your profile…";
-      await saveToProfile(mode === "local" ? pick : undefined);
+      // The profile keeps "device" as is: each browser uses its own zone.
+      await saveToProfile(
+        mode === "local" ? pick : mode === "device" ? "device" : undefined,
+      );
       status = "Saved to your profile: any browser you sign in on will use it.";
     } else status = "Saved on this browser.";
   }
@@ -75,9 +83,22 @@
           <input type="radio" bind:group={mode} value="zulu" class={focus} />
           Zulu (UTC), as controllers use
         </label>
+        {#if chosen.wording === "D"}
+          <label class="flex min-h-11 items-center gap-2">
+            <input
+              type="radio"
+              bind:group={mode}
+              value="device"
+              class={focus}
+            />
+            My device's time zone ({city(prefs.device)}, {shortName(
+              prefs.device,
+            )}), even when I travel
+          </label>
+        {/if}
         <label class="flex min-h-11 flex-wrap items-center gap-2">
           <input type="radio" bind:group={mode} value="local" class={focus} />
-          My time zone:
+          {chosen.wording === "D" ? "Another time zone:" : "My time zone:"}
           <select
             bind:value={pick}
             onchange={() => (mode = "local")}
@@ -108,7 +129,13 @@
         <p class="text-sm text-muted-foreground" aria-live="polite">{status}</p>
       </div>
       <h3 class="mt-4 mb-2 text-sm font-semibold text-foreground">Preview</h3>
-      <TimeSamples zone={mode === "local" ? pick : undefined} />
+      <TimeSamples
+        zone={mode === "local"
+          ? pick
+          : mode === "device"
+            ? prefs.device
+            : undefined}
+      />
     {/if}
   </section>
 

@@ -1,6 +1,6 @@
 <script lang="ts">
   // PROTOTYPE: what's in the cookies and the (fake) profile right now.
-  import { prefs } from "./prefs.svelte.ts";
+  import { prefs, FOLLOW } from "./prefs.svelte.ts";
 </script>
 
 <dl
@@ -8,7 +8,9 @@
   data-testid="readout"
 >
   <dt class="font-semibold text-foreground">indy-time-zone</dt>
-  <dd class="font-mono break-all">{prefs.zone ?? "none (Zulu)"}</dd>
+  <dd class="font-mono break-all">
+    {prefs.zone ? (prefs.follow ? FOLLOW : "") + prefs.zone : "none (Zulu)"}
+  </dd>
   <dt class="font-semibold text-foreground">indy-color-scheme</dt>
   <dd class="font-mono">
     {prefs.scheme === "device" ? "none (device)" : prefs.scheme}

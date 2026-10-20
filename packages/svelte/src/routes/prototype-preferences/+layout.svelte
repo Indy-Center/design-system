@@ -9,11 +9,16 @@
     data,
     children,
   }: {
-    data: { zone: string | undefined; scheme: "light" | "dark" | "device" };
+    data: {
+      zone: string | undefined;
+      follow: boolean;
+      scheme: "light" | "dark" | "device";
+    };
     children: Snippet;
   } = $props();
 
   prefs.zone = data.zone;
+  prefs.follow = data.follow;
   prefs.scheme = data.scheme;
   readVariants(page.url);
   onMount(readBrowser);

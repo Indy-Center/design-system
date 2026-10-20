@@ -6,11 +6,14 @@
     prefs,
     saveTimeZone,
     clearTimeZone,
+    followDevice,
     city,
     shortName,
+    ZONES,
   } from "./prefs.svelte.ts";
   import { seg, segGroup, focus } from "./cls.ts";
   import Note from "./Note.svelte";
+  import Icon from "./Icon.svelte";
 
   const id = $props.id();
   let saved = $state(false);
@@ -21,9 +24,96 @@
     else clearTimeZone();
     saved = true;
   }
+
+  // Wording D: three rows, like the colour scheme.
+  const mode = $derived(
+    prefs.zone === undefined ? "zulu" : prefs.follow ? "device" : "other",
+  );
+  let picking = $state(false);
+  const showPicker = $derived(picking || mode === "other");
+  function pickMode(m: "zulu" | "device") {
+    if (m === "zulu") clearTimeZone();
+    else followDevice();
+    picking = false;
+    saved = true;
+  }
+  function pickZone(e: Event) {
+    const z = (e.currentTarget as HTMLSelectElement).value;
+    if (z) {
+      saveTimeZone(z);
+      saved = true;
+    }
+  }
+  const rowCls = (on: boolean) =>
+    `flex min-h-11 w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-1 text-sm ${focus} ${
+      on
+        ? "bg-muted font-semibold text-foreground"
+        : "text-foreground-soft hover:bg-muted hover:text-foreground"
+    }`;
 </script>
 
-{#if chosen.wording === "A"}
+{#if chosen.wording === "D"}
+  <div role="group" aria-label="Time zone" class="space-y-0.5 px-3 pt-1">
+    <button
+      type="button"
+      aria-pressed={mode === "zulu"}
+      onclick={() => pickMode("zulu")}
+      class={rowCls(mode === "zulu")}
+    >
+      <Icon name="earth" />
+      <span class="flex-1 text-left">Zulu</span>
+      {#if mode === "zulu"}<Icon name="check" />{/if}
+    </button>
+    <button
+      type="button"
+      aria-pressed={mode === "device"}
+      onclick={() => pickMode("device")}
+      class={rowCls(mode === "device")}
+    >
+      <Icon name="device" />
+      <span class="flex-1 text-left"
+        >Use my device's time zone
+        <span class="block text-xs font-normal text-muted-foreground"
+          >{city(prefs.device)} ({shortName(prefs.device)})</span
+        ></span
+      >
+      {#if mode === "device"}<Icon name="check" />{/if}
+    </button>
+    <button
+      type="button"
+      aria-pressed={mode === "other"}
+      aria-expanded={showPicker}
+      aria-controls="tz-pick-{id}"
+      onclick={() => (picking = !picking || mode === "other")}
+      class={rowCls(mode === "other")}
+    >
+      <Icon name="pin" />
+      <span class="flex-1 text-left"
+        >Another time zone
+        {#if mode === "other"}
+          <span class="block text-xs font-normal text-muted-foreground"
+            >{city(prefs.zone!)} ({shortName(prefs.zone!)})</span
+          >
+        {/if}</span
+      >
+      {#if mode === "other"}<Icon name="check" />{/if}
+    </button>
+    <div id="tz-pick-{id}" hidden={!showPicker} class="pb-1 pl-10">
+      <label class="sr-only" for="tz-sel-{id}">Time zone</label>
+      <select
+        id="tz-sel-{id}"
+        value={mode === "other" ? prefs.zone : ""}
+        onchange={pickZone}
+        class="min-h-11 w-full rounded-md border border-border bg-background px-2 text-sm text-foreground {focus}"
+      >
+        <option value="" disabled>Pick a time zone…</option>
+        {#each ZONES as z (z)}
+          <option value={z}>{city(z)} ({shortName(z)})</option>
+        {/each}
+      </select>
+    </div>
+  </div>
+{:else if chosen.wording === "A"}
   <div class="flex min-h-11 items-center justify-between gap-3 px-3 text-sm">
     <div>
       <span id="tz-{id}" class="text-foreground-soft">Local times</span>

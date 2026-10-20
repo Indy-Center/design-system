@@ -11,6 +11,7 @@
     shortName,
     saveTimeZone,
     clearTimeZone,
+    followDevice,
   } from "./prefs.svelte.ts";
   import { focus } from "./cls.ts";
 
@@ -34,7 +35,8 @@
       <button
         type="button"
         class={link}
-        onclick={() => saveTimeZone(prefs.device)}
+        onclick={() =>
+          chosen.wording === "D" ? followDevice() : saveTimeZone(prefs.device)}
         >Show them in {city(prefs.device)} time?</button
       >
     {/if}

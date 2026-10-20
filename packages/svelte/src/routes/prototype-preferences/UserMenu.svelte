@@ -66,7 +66,10 @@
         <a
           href="/prototype-preferences/settings{variantQuery()}"
           class="{row} text-xs"
-          >Pick another zone, or save it to your profile{prefs.zone
+          >{chosen.wording === "D"
+            ? "Save it to your profile"
+            : "Pick another zone, or save it to your profile"}{prefs.zone &&
+          chosen.wording !== "D"
             ? ` (now ${city(prefs.zone)})`
             : ""}</a
         >

@@ -2,7 +2,7 @@
 // time-zone and colour-scheme choices. Not for main.
 //
 // The points to decide, each with lettered variants; `?v=` holds one letter
-// per point, in this order, so `?v=CCBBAA` is where C, wording C, …
+// per point, in this order, so `?v=CDBBAA` is where C, wording D, …
 import { replaceState } from "$app/navigation";
 import { saveColorScheme } from "../../lib/index.ts";
 import { COOKIE_NAME as SCHEME_COOKIE } from "../../lib/colorScheme/colorScheme.ts";
@@ -38,7 +38,7 @@ export const points: Point[] = [
   {
     key: "wording",
     name: "Time zone: wording",
-    recommend: "C",
+    recommend: "D",
     variants: [
       {
         key: "A",
@@ -51,6 +51,10 @@ export const points: Point[] = [
       {
         key: "C",
         note: "A sentence: “Times are in Zulu. Show them in Indianapolis time?”, then “Show times in Zulu”.",
+      },
+      {
+        key: "D",
+        note: "Three rows like the colour scheme: Zulu, “Use my device's time zone” (follows the device, even after you travel), and “Another time zone” with a picker.",
       },
     ],
   },
@@ -166,18 +170,52 @@ function cookieAttrs(maxAge: number) {
   ];
 }
 
+/**
+ * "Use my device's time zone" is saved as `device:<zone>`: the zone lets the
+ * server draw local times from the start, and the prefix tells the browser to
+ * rewrite it when the device's zone changes (after travel).
+ */
+export const FOLLOW = "device:";
+
+/** Split a cookie value into the zone and whether it follows the device. */
+export function parseZoneCookie(v: string | undefined): {
+  zone: string | undefined;
+  follow: boolean;
+} {
+  const follow = !!v?.startsWith(FOLLOW);
+  const zone = follow ? v!.slice(FOLLOW.length) : v;
+  return isZone(zone) ? { zone, follow } : { zone: undefined, follow: false };
+}
+
 /** The member asked for local times: write the cookie (browser only). */
-export function saveTimeZone(zone: string) {
-  document.cookie = [`${TZ_COOKIE}=${zone}`, ...cookieAttrs(ONE_YEAR)].join(
+export function saveTimeZone(zone: string, follow = false) {
+  const value = (follow ? FOLLOW : "") + zone;
+  document.cookie = [`${TZ_COOKIE}=${value}`, ...cookieAttrs(ONE_YEAR)].join(
     "; ",
   );
   prefs.zone = zone;
+  prefs.follow = follow;
+}
+
+/** "Use my device's time zone". */
+export function followDevice() {
+  saveTimeZone(prefs.device, true);
 }
 
 /** "Show times in Zulu": delete the cookie. */
 export function clearTimeZone() {
   document.cookie = [`${TZ_COOKIE}=`, ...cookieAttrs(0)].join("; ");
   prefs.zone = undefined;
+  prefs.follow = false;
+}
+
+/**
+ * The device's zone changed (or the pretend switch moved): a following
+ * cookie catches up, as it would on the next page load after travel.
+ */
+export function setDevice(zone: string) {
+  prefs.device = zone;
+  if (prefs.follow && prefs.zone !== zone) followDevice();
 }
 
 // ---- Colour scheme ------------------------------------------------------
@@ -205,6 +243,8 @@ export function setScheme(choice: SchemeChoice) {
 export const prefs = $state<{
   /** The zone in the cookie; none means Zulu. */
   zone: string | undefined;
+  /** The cookie follows the device ("Use my device's time zone"). */
+  follow: boolean;
   /** What the device says (or the pretend zone). */
   device: string;
   scheme: SchemeChoice;
@@ -214,6 +254,7 @@ export const prefs = $state<{
   savedOnce: boolean;
 }>({
   zone: undefined,
+  follow: false,
   device: "America/Indiana/Indianapolis",
   scheme: "device",
   profileZone: undefined,
@@ -231,9 +272,17 @@ export function readCookie(name: string): string | undefined {
 export function readBrowser() {
   const detected = Intl.DateTimeFormat().resolvedOptions().timeZone;
   // A headless or UTC machine has no interesting local time; pretend Indy.
-  if (detected && !/^(UTC|Etc\/)/.test(detected)) prefs.device = detected;
-  const z = readCookie(TZ_COOKIE);
-  prefs.zone = isZone(z) ? z : undefined;
+  let device = prefs.device;
+  if (detected && !/^(UTC|Etc\/)/.test(detected)) device = detected;
+  try {
+    device = sessionStorage.getItem("prototype-device-zone") ?? device;
+  } catch {
+    /* no storage: no pretend zone */
+  }
+  const { zone, follow } = parseZoneCookie(readCookie(TZ_COOKIE));
+  prefs.zone = zone;
+  prefs.follow = follow;
+  setDevice(device);
   const s = readCookie(SCHEME_COOKIE);
   prefs.scheme = s === "light" || s === "dark" ? s : "device";
   try {
@@ -298,6 +347,16 @@ export function local(d: Date, zone: string): { day: string; time: string } {
     minute: "2-digit",
   }).format(d);
   return { day, time: `${time} ${shortName(zone, d)}` };
+}
+
+/** Store the pretend device zone so a reload keeps it. */
+export function pretendDevice(zone: string) {
+  try {
+    sessionStorage.setItem("prototype-device-zone", zone);
+  } catch {
+    /* ignore */
+  }
+  setDevice(zone);
 }
 
 export const ZONES = [
