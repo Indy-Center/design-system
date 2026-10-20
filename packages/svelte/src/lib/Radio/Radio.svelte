@@ -30,7 +30,9 @@
   }: Props = $props();
 </script>
 
-<!-- The label wraps the circle, so the whole 44px row chooses it. -->
+<!-- The label wraps the circle, so the whole 44px row chooses it. `group`
+     is kept by hand, not with Svelte's `bind:group`, which only links
+     inputs inside one component, not radios in sibling components. -->
 <label class={[choiceRowClasses, className]}>
   <input
     type="radio"
