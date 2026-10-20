@@ -1,16 +1,22 @@
 import { createRawSnippet } from "svelte";
 import { describe, expect, test } from "vitest";
-import { contrastOn, SURFACES } from "../../../test/contrast.ts";
+import {
+  contrastOn,
+  styleOfClasses,
+  SURFACES,
+} from "../../../test/contrast.ts";
 import { renderIn } from "../../../test/schemes.ts";
 import Chip from "./Chip.svelte";
 
 const text = (s: string) =>
   createRawSnippet(() => ({ render: () => `<span>${s}</span>` }));
 
+const chipOf = (code: Element) => code.parentElement!;
+
 describe("Chip", () => {
   test("is a span holding its text, in mono", async () => {
     const screen = await renderIn("light", Chip, { children: text("HY") });
-    const chip = screen.getByText("HY").element().parentElement!;
+    const chip = chipOf(screen.getByText("HY").element());
     expect(chip.tagName).toBe("SPAN");
     await expect.element(chip).toHaveTextContent("HY");
     expect(getComputedStyle(chip).fontFamily).toMatch(/monospace/);
@@ -24,7 +30,7 @@ describe("Chip", () => {
     ["dark-header", "rgb(51, 65, 85)", "rgb(255, 255, 255)"],
   ] as const)("is muted by default in %s", async (scheme, fill, colour) => {
     const screen = await renderIn(scheme, Chip, { children: text("S3") });
-    const chip = screen.getByText("S3").element().parentElement!;
+    const chip = chipOf(screen.getByText("S3").element());
     await expect
       .element(chip)
       .toHaveStyle({ backgroundColor: fill, color: colour });
@@ -46,27 +52,48 @@ describe("Chip", () => {
           tone,
           children: text("HY"),
         });
-        const chip = screen.getByText("HY").element().parentElement!;
+        const chip = chipOf(screen.getByText("HY").element());
         expect(contrastOn(chip, background)).toBeGreaterThanOrEqual(4.5);
         expect(contrastOn(chip, card)).toBeGreaterThanOrEqual(4.5);
       },
     );
   });
 
-  // Solid fills, so a tone's text reads the same on any surface.
-  test.each(tones.filter((tone) => tone !== "muted"))(
-    "the %s tone is white on a solid fill",
-    async (tone) => {
-      const screen = await renderIn("light", Chip, {
+  // The community site's hues, made solid and, for amber and rose, one step
+  // darker, so white passes on every surface. The same in every scheme.
+  test.each([
+    ["initials", "bg-indigo-600"],
+    ["senior", "bg-amber-700"],
+    ["training", "bg-rose-700"],
+    ["team", "bg-slate-600"],
+  ] as const)("the %s tone is white on %s", async (tone, fill) => {
+    for (const scheme of ["light", "dark"] as const) {
+      const screen = await renderIn(scheme, Chip, {
         tone,
-        children: text("HY"),
+        children: text(scheme),
       });
-      const chip = screen.getByText("HY").element().parentElement!;
-      await expect.element(chip).toHaveStyle({ color: "rgb(255, 255, 255)" });
-      const { backgroundColor } = getComputedStyle(chip);
-      expect(backgroundColor).not.toMatch(/\/|rgba|transparent/);
-    },
-  );
+      const chip = chipOf(screen.getByText(scheme).element());
+      await expect.element(chip).toHaveStyle({
+        color: "rgb(255, 255, 255)",
+        backgroundColor: styleOfClasses(fill, chip).backgroundColor,
+      });
+    }
+  });
+
+  test("shows an icon before its code, hidden from screen readers", async () => {
+    const icon = createRawSnippet(() => ({
+      render: () => `<svg data-testid="icon" viewBox="0 0 24 24"></svg>`,
+    }));
+    const screen = await renderIn("light", Chip, {
+      tone: "training",
+      icon,
+      children: text("INS"),
+    });
+    const chip = chipOf(screen.getByText("INS").element());
+    const svg = screen.getByTestId("icon").element();
+    expect(chip.firstElementChild!.contains(svg)).toBe(true);
+    expect(svg.closest("[aria-hidden='true']")).not.toBeNull();
+  });
 
   test("adds a caller's class and attributes to its own", async () => {
     const screen = await renderIn("light", Chip, {
@@ -74,7 +101,7 @@ describe("Chip", () => {
       title: "Operating initials",
       children: text("HY"),
     });
-    const chip = screen.getByText("HY").element().parentElement!;
+    const chip = chipOf(screen.getByText("HY").element());
     await expect.element(chip).toHaveAttribute("title", "Operating initials");
     await expect.element(chip).toHaveStyle({ marginLeft: "16px" });
   });

@@ -9,6 +9,19 @@ export const SURFACES = {
   dark: { background: "#111827", card: "#1E293B" },
 } as const;
 
+/**
+ * The computed style of a span with `classes`, placed beside `element` so
+ * it sits in the same scheme. For checking a component against the
+ * guide's Tailwind steps ("text in -800"), which the guide names by step
+ * rather than by hex.
+ */
+export function styleOfClasses(classes: string, element: Element) {
+  const probe = document.createElement("span");
+  probe.className = classes;
+  element.parentElement!.append(probe);
+  return getComputedStyle(probe);
+}
+
 /** `colours` painted in order onto a pixel; its sRGB bytes. */
 function paint(...colours: string[]): [number, number, number] {
   const context = document.createElement("canvas").getContext("2d")!;

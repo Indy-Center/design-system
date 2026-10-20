@@ -10,14 +10,24 @@
   type Props = HTMLAttributes<HTMLSpanElement> & {
     /** What the chip shows: a rating (`muted`, the default), operating initials, or a staff group. */
     tone?: ChipTone;
+    /** An icon before the code, such as `<Icon path={mdiSchool} />`. Hidden from screen readers. */
+    icon?: Snippet;
     /** The short code: operating initials, a rating, a staff role. */
     children: Snippet;
   };
 
-  let { tone = "muted", children, class: className, ...rest }: Props = $props();
+  let {
+    tone = "muted",
+    icon,
+    children,
+    class: className,
+    ...rest
+  }: Props = $props();
 
-  // White on solid fills, so the text passes 4.5:1 on any surface. The
-  // community site's see-through `-600/80` fills fell short on light pages.
+  // The roles have no colours for initials or staff groups, so these keep
+  // the community site's Tailwind hues (decision 0004, as for Badge). White
+  // on solid fills, so the text passes 4.5:1 on any surface in either
+  // scheme; the site's see-through `-600/80` fills fell short on light pages.
   const tones: Record<ChipTone, string> = {
     muted: "bg-muted text-foreground",
     initials: "bg-indigo-600 text-white",
@@ -33,5 +43,7 @@
     "inline-flex items-center gap-1 rounded-md px-2 py-0.5 font-mono text-xs font-semibold",
     tones[tone],
     className,
-  ]}>{@render children()}</span
+  ]}
+  >{#if icon}<span aria-hidden="true" class="inline-flex">{@render icon()}</span
+    >{/if}{@render children()}</span
 >

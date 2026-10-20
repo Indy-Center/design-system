@@ -21,22 +21,29 @@ description: A small mono label for a short code, such as operating initials, a 
 
 ```svelte
 <script>
-  import { Chip } from "@indy-center/svelte";
+  import { Chip, Icon } from "@indy-center/svelte";
+  import { mdiSchool } from "@mdi/js";
 </script>
 
 <Chip tone="initials">HY</Chip>
 <Chip tone="senior">ATM</Chip>
 <Chip>S3</Chip>
+
+<Chip tone="training">
+  {#snippet icon()}<Icon path={mdiSchool} />{/snippet}
+  INS
+</Chip>
 ```
 
 ## Props
 
-| Prop       | Type                                                        | Notes                                        |
-| ---------- | ----------------------------------------------------------- | -------------------------------------------- |
-| `tone`     | `"muted" \| "initials" \| "senior" \| "training" \| "team"` | `"muted"` by default.                        |
-| `children` | `Snippet`                                                   | Required. The code, and an icon if wanted.   |
-| `class`    | `string`                                                    | Added after Chip's own classes. Layout only. |
-| others     | `<span>` attributes                                         | Passed to the `<span>`.                      |
+| Prop       | Type                                                        | Notes                                                |
+| ---------- | ----------------------------------------------------------- | ---------------------------------------------------- |
+| `tone`     | `"muted" \| "initials" \| "senior" \| "training" \| "team"` | `"muted"` by default.                                |
+| `icon`     | `Snippet`                                                   | An icon before the code. Hidden from screen readers. |
+| `children` | `Snippet`                                                   | Required. The code.                                  |
+| `class`    | `string`                                                    | Added after Chip's own classes. Layout only.         |
+| others     | `<span>` attributes                                         | Passed to the `<span>`.                              |
 
 ## Looks
 
@@ -50,11 +57,16 @@ Mono, 12px, semibold, with 6px corners.
 | `training` | `rose-700`                                | white        |
 | `team`     | `slate-600`                               | white        |
 
-The coloured tones are solid, so they look and read the same in either
-scheme and on any surface: white text passes 4.5:1 on each. The community
-site's chips were see-through (`-600/80`); on a light page white fell to
-2.5–4.3:1 on amber, emerald, rose, sky and indigo, and amber failed in
-dark too.
+The roles have no colours for initials or staff groups, so the coloured
+tones keep the community site's Tailwind hues (decision 0004). They are
+solid, so they look and read the same in either scheme and on any
+surface: white text passes 4.5:1 on each. The community site's chips were
+see-through (`-600/80`); on a light page white fell to 2.5–4.3:1 on amber,
+emerald, rose, sky and indigo, and amber failed in dark too.
+
+There is no green tone for certifications: they move to `Credential`,
+tinted on the `success` role. Until it arrives (later in this release),
+the community site keeps its own certification chips.
 
 ## Accessibility
 

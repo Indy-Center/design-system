@@ -45,6 +45,12 @@ src/routes/name/+page.svelte its playground page (lower-case folder)
   no hex. Roles change with the scheme; stock colours don't.
 - Don't write `dark:` for colours: the roles already switch inside any
   `data-theme="dark"` element. `dark:` is for the rare non-colour change.
+- The exception: hues the roles don't have, kept from Tailwind under
+  decision 0004. `Badge` uses the guide's status-badge steps, with
+  `dark:` for the dark pair; `Chip` uses solid fills, the same in both
+  schemes. Test these against the steps (`styleOfClasses` in
+  `test/contrast.ts`) and for 4.5:1 (`contrastOn`), as their tests do.
+  Anything new reaches for a role first.
 - Components that are dark in both schemes (Header, Footer) put
   `data-theme="dark"` on their own root, and everything inside follows.
 - Never set `data-theme` on `<html>`: the colour-scheme hook does. To save

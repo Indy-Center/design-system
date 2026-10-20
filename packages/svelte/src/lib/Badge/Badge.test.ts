@@ -1,6 +1,10 @@
 import { createRawSnippet } from "svelte";
 import { describe, expect, test } from "vitest";
-import { contrastOn, SURFACES } from "../../../test/contrast.ts";
+import {
+  contrastOn,
+  styleOfClasses,
+  SURFACES,
+} from "../../../test/contrast.ts";
 import { renderIn } from "../../../test/schemes.ts";
 import Badge from "./Badge.svelte";
 
@@ -67,10 +71,7 @@ describe("Badge", () => {
         children: text("Draft"),
       });
       const badge = badgeOf(screen.getByText("Draft").element());
-      const probe = document.createElement("span");
-      probe.className = guide;
-      badge.parentElement!.append(probe);
-      const expected = getComputedStyle(probe);
+      const expected = styleOfClasses(guide, badge);
       await expect.element(badge).toHaveStyle({
         color: expected.color,
         backgroundColor: expected.backgroundColor,
@@ -143,11 +144,8 @@ describe("Badge", () => {
   test("is sky by default", async () => {
     const screen = await renderIn("light", Badge, { children: text("New") });
     const badge = badgeOf(screen.getByText("New").element());
-    const probe = document.createElement("span");
-    probe.className = "text-sky-800";
-    badge.parentElement!.append(probe);
     await expect
       .element(badge)
-      .toHaveStyle({ color: getComputedStyle(probe).color });
+      .toHaveStyle({ color: styleOfClasses("text-sky-800", badge).color });
   });
 });
