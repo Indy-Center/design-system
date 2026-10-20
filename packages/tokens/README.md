@@ -93,8 +93,8 @@ write the CSS and SCSS; two small plugins in `scripts/` write
 `tokens.json` and `tables.md`. The brand team reviews changes to `src/`
 (CODEOWNERS).
 
-`prose.css` is hand-written: it names the roles' variables and holds no
-colours of its own.
+`prose.css` is hand-written: every colour in it is a role's variable,
+or, for the shadow under `<kbd>`, `foreground` mixed with transparent.
 
 `fonts/` is not generated: Fontsource's file
 (`@fontsource-variable/source-sans-3` 5.3.1), unchanged, and `fonts.css`.
