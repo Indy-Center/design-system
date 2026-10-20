@@ -15,6 +15,7 @@
           size?: never;
         }
       | {
+          /** Not a lead line. */
           lead?: false;
           /** `muted` for captions and fine print. */
           tone?: "muted";
@@ -32,15 +33,19 @@
     class: className,
     ...rest
   }: Props = $props();
+
+  // One look at a time: small is muted already, so it wins over muted.
+  let look = $derived(
+    lead
+      ? "text-lg text-foreground-soft"
+      : size === "small"
+        ? "text-sm text-muted-foreground"
+        : tone === "muted"
+          ? "text-base text-muted-foreground"
+          : undefined,
+  );
 </script>
 
-<svelte:element
-  this={as}
-  {...rest}
-  class={[
-    lead && "text-lg text-foreground-soft",
-    tone === "muted" && "text-muted-foreground",
-    size === "small" && "text-sm text-muted-foreground",
-    className,
-  ]}>{@render children()}</svelte:element
+<svelte:element this={as} {...rest} class={[look, className]}
+  >{@render children()}</svelte:element
 >

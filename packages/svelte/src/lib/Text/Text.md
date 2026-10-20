@@ -47,15 +47,15 @@ description: Text that differs from body text, as a lead line, muted or small, i
 
 ## Looks
 
-| Look           | Size      | Colour             |
-| -------------- | --------- | ------------------ |
-| none           | inherited | inherited          |
-| `lead`         | `text-lg` | `foreground-soft`  |
-| `tone="muted"` | inherited | `muted-foreground` |
-| `size="small"` | `text-sm` | `muted-foreground` |
+| Look           | Size        | Colour             |
+| -------------- | ----------- | ------------------ |
+| none           | inherited   | inherited          |
+| `lead`         | `text-lg`   | `foreground-soft`  |
+| `tone="muted"` | `text-base` | `muted-foreground` |
+| `size="small"` | `text-sm`   | `muted-foreground` |
 
-With no look, Text sets nothing and follows what it sits in. `muted` keeps
-the size around it, so muted text in a small card stays small.
+With no look, Text sets nothing and follows what it sits in. Small is
+muted already, so `size="small"` with `tone="muted"` is just small.
 
 ## Accessibility
 

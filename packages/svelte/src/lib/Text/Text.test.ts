@@ -67,6 +67,26 @@ describe("Text", () => {
       .toHaveStyle({ color: "rgb(1, 2, 3)", fontSize: "13px" });
   });
 
+  // Each look sets its own size, whatever it sits in.
+  test.each([
+    ["lead", { lead: true }, "18px"],
+    ["muted", { tone: "muted" }, "16px"],
+    ["small", { size: "small" }, "14px"],
+    ["small and muted", { size: "small", tone: "muted" }, "14px"],
+  ] as const)(
+    "%s keeps its size inside larger text",
+    async (_, props, fontSize) => {
+      const screen = await renderIn("light", Text, {
+        ...props,
+        children: text(sentence),
+      });
+      screen.container.style.fontSize = "24px";
+      await expect
+        .element(screen.getByRole("paragraph"))
+        .toHaveStyle({ fontSize });
+    },
+  );
+
   test("adds a caller's class and attributes to its own", async () => {
     const screen = await renderIn("light", Text, {
       size: "small",
