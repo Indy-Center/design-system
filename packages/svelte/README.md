@@ -57,6 +57,11 @@ Aviation helpers (frequencies, callsigns, positions, ratings, durations)
 are plain functions from the package root, for an app's own code too:
 see [`src/lib/aviation/aviation.md`](src/lib/aviation/aviation.md).
 
+The positions `Position` and `Frequency` look callsigns up in come from
+vNAS, fetched by server code from `@indy-center/svelte/server` and set
+once in the root layout: see
+[`src/lib/positions/positions.md`](src/lib/positions/positions.md).
+
 ## Docs
 
 Each component's doc page ships beside it, as
