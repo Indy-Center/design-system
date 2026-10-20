@@ -36,7 +36,7 @@
   // Which pages to show: all of them when there are no more than `room`;
   // otherwise the first, the last, and those within `reach` of the current
   // one. A gap of one page shows that page instead.
-  function window(reach: number, room: number) {
+  function pagesToShow(reach: number, room: number) {
     if (pageCount <= room) return () => true;
     const keep = (n: number) =>
       n === 1 || n === pageCount || Math.abs(n - page) <= reach;
@@ -48,8 +48,8 @@
   // serves both, each item marked with the widths it shows at.
   const items = $derived.by(() => {
     // Room, at 44px a button: six pages in 23rem, four in a phone's card.
-    const wide = window(1, 6);
-    const narrow = window(0, 4);
+    const wide = pagesToShow(1, 6);
+    const narrow = pagesToShow(0, 4);
     const out: Item[] = [];
     let lastWide = 0;
     let lastNarrow = 0;
@@ -84,9 +84,11 @@
     "inline-flex min-h-11 min-w-11 items-center justify-center rounded-md px-2 text-sm",
     "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
   ];
-  const other = "text-foreground-soft hover:bg-muted hover:text-foreground";
+  // A page that isn't the current one.
+  const pageButton =
+    "text-foreground-soft hover:bg-muted hover:text-foreground";
   // Previous and next: dimmed, without the hover, at an end.
-  const end = [
+  const stepButton = [
     control,
     "text-foreground-soft enabled:hover:bg-muted enabled:hover:text-foreground",
     "disabled:cursor-not-allowed disabled:opacity-40",
@@ -105,7 +107,7 @@
       aria-label="Previous page"
       disabled={page <= 1}
       onclick={(e) => go(page - 1, e)}
-      class={end}
+      class={stepButton}
     >
       <Icon path={left} size={20} />
     </button>
@@ -131,7 +133,7 @@
             control,
             n === page
               ? "bg-primary font-semibold text-primary-foreground"
-              : other,
+              : pageButton,
             !item.narrow && "@max-[23rem]:hidden",
           ]}>{n}</button
         >
@@ -142,7 +144,7 @@
       aria-label="Next page"
       disabled={page >= pageCount}
       onclick={(e) => go(page + 1, e)}
-      class={end}
+      class={stepButton}
     >
       <Icon path={right} size={20} />
     </button>
