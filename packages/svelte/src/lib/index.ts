@@ -1,4 +1,8 @@
 // One line per component, in alphabetical order.
+export {
+  default as Breadcrumbs,
+  type Crumb,
+} from "./Breadcrumbs/Breadcrumbs.svelte";
 export { default as Disclosure } from "./Disclosure/Disclosure.svelte";
 export { default as Field, type FieldControl } from "./Field/Field.svelte";
 export { default as Icon } from "./Icon/Icon.svelte";
