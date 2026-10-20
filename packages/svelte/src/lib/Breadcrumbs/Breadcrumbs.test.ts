@@ -88,10 +88,17 @@ describe("Breadcrumbs", () => {
     },
   );
 
-  test("each crumb is at least 44px tall", async () => {
-    const screen = await renderIn("light", Breadcrumbs, props());
+  test("each crumb is at least 44px tall and wide", async () => {
+    const screen = await renderIn("light", Breadcrumbs, {
+      items: [
+        { href: "/", label: "ZID" },
+        { href: "/faq", label: "FAQ" },
+      ],
+    });
     for (const a of screen.getByRole("link").elements()) {
-      expect(a.getBoundingClientRect().height).toBeGreaterThanOrEqual(44);
+      const box = a.getBoundingClientRect();
+      expect(box.height).toBeGreaterThanOrEqual(44);
+      expect(box.width).toBeGreaterThanOrEqual(44);
     }
   });
 

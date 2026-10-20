@@ -55,4 +55,4 @@ description: The pages above this one, as a trail of links back up.
 - The last link has `aria-current="page"`.
 - The chevrons are hidden from screen readers, so nothing is read between
   crumbs.
-- Each crumb is at least 44px tall.
+- Each crumb is at least 44px tall and wide.

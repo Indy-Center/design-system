@@ -6,6 +6,7 @@
 <script lang="ts">
   import type { HTMLAttributes } from "svelte/elements";
   import Icon from "../Icon/Icon.svelte";
+  import Link from "../Link/Link.svelte";
 
   // MDI's chevron-right.
   const chevron = "M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z";
@@ -23,6 +24,9 @@
     class: className,
     ...rest
   }: Props = $props();
+
+  // A crumb stands alone, so it is a 44px target, unlike a link in a sentence.
+  const target = "inline-flex min-h-11 min-w-11 items-center justify-center";
 </script>
 
 <nav aria-label={label} {...rest} class={className}>
@@ -33,17 +37,19 @@
         {#if i > 0}
           <Icon path={chevron} size={16} class="mx-1 text-muted-foreground" />
         {/if}
-        <a
-          href={crumb.href}
-          aria-current={current ? "page" : undefined}
-          class={[
-            "inline-flex min-h-11 items-center rounded-sm",
-            current
-              ? "text-foreground-soft"
-              : "text-link underline underline-offset-4 hover:decoration-2",
-            "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
-          ]}>{crumb.label}</a
-        >
+        {#if current}
+          <a
+            href={crumb.href}
+            aria-current="page"
+            class={[
+              target,
+              "rounded-sm text-foreground-soft",
+              "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
+            ]}>{crumb.label}</a
+          >
+        {:else}
+          <Link href={crumb.href} class={target}>{crumb.label}</Link>
+        {/if}
       </li>
     {/each}
   </ol>
