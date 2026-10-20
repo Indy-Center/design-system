@@ -68,16 +68,16 @@ With a search function:
 
 ## Props
 
-| Prop      | Type                                    | Notes                                                                                    |
-| --------- | --------------------------------------- | ---------------------------------------------------------------------------------------- |
-| `options` | `T[] \| (query) => T[] \| Promise<T[]>` | Required. A list is matched on `getText`, ignoring case; a function does its own search. |
-| `value`   | `T \| null`                             | Bindable: `bind:value`. The pick; null until one is made. Typing in the box clears it.   |
-| `getText` | `(option: T) => string`                 | The option's words: shown in the box once picked, and matched. `String` by default.      |
-| `getKey`  | `(option: T) => string`                 | Unique per option; sent with the form. `getText` by default.                             |
-| `name`    | `string`                                | Sends the pick's key with a form, from a hidden input.                                   |
-| `option`  | `Snippet<[T]>`                          | Draws one option in the list. Its text when left out.                                    |
-| `class`   | `string`                                | Added to the wrapper. Layout only.                                                       |
-| others    | `<input>` attributes                    | Passed to the box: `id`, `placeholder`, `required`, `disabled`, `aria-*` and the rest.   |
+| Prop      | Type                                    | Notes                                                                                                                                                                                                                            |
+| --------- | --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `options` | `T[] \| (query) => T[] \| Promise<T[]>` | Required. A list is matched on `getText`, ignoring case; a function does its own search.                                                                                                                                         |
+| `value`   | `T \| null`                             | Bindable: `bind:value`. The pick; null until one is made. Typing in the box clears it.                                                                                                                                           |
+| `getText` | `(option: T) => string`                 | The option's words: shown in the box once picked, and matched. `String` by default.                                                                                                                                              |
+| `getKey`  | `(option: T) => string`                 | Unique per option; sent with the form. `getText` by default.                                                                                                                                                                     |
+| `name`    | `string`                                | Sends the pick's key with a form, from a hidden input.                                                                                                                                                                           |
+| `option`  | `Snippet<[T]>`                          | Draws one option in the list. Its text when left out.                                                                                                                                                                            |
+| `class`   | `string`                                | Added to the wrapper. Layout only.                                                                                                                                                                                               |
+| others    | `<input>` attributes                    | Passed to the box: `id`, `placeholder`, `required`, `disabled`, `aria-*` and the rest. Your `oninput`, `onkeydown`, `onclick` and `onblur` run before the combobox's own; `preventDefault()` in `onkeydown` keeps a key from it. |
 
 ## Looks
 
@@ -88,7 +88,8 @@ With a search function:
   shadow, and scrolls past 16rem. Options are `foreground` text. The
   active option has a `muted` fill and a `ring` outline, so it isn't
   shown by colour alone.
-- "Searching…" and "No matches" show in `muted-foreground` in the list.
+- "Searching…", "No matches" and, when a search function throws or
+  rejects, "Couldn't search" show in `muted-foreground` in the list.
 - The box and each option are at least 44px tall.
 
 ## Accessibility
@@ -111,7 +112,8 @@ option.
 - A click on the box opens the list; a click on an option picks it; a
   click outside closes it.
 - A status region says how many options match while the list is open
-  ("3 results", "No results"), then "Ann Archer, selected" on a pick.
+  ("3 results", "No results", "Couldn't search"), then "Ann Archer,
+  selected" on a pick.
 - Its name comes from `Field`'s label, or your `aria-label`.
 - It has been tested by its keyboard table in a browser; a person checks it
   with a screen reader before release.

@@ -31,6 +31,11 @@
     option,
     id,
     class: className,
+    // The caller's own handlers, run before the combobox's.
+    oninput: callerInput,
+    onkeydown: callerKeydown,
+    onclick: callerClick,
+    onblur: callerBlur,
     ...rest
   }: Props = $props();
 
@@ -43,12 +48,14 @@
   let query = $state("");
   // The option with visual focus, as an index into `results`; -1 for none.
   let active = $state(-1);
-  // The last pick, said once the list closes.
-  let picked = $state("");
+  // "Ann Archer, selected": the last pick, said once the list closes.
+  let pickedMessage = $state("");
 
-  // What a search function last found, and whether it is still looking.
+  // What a search function last found, whether it is still looking, and
+  // whether its last search failed.
   let found = $state<T[]>([]);
   let searching = $state(false);
+  let failed = $state(false);
 
   const results = $derived.by(() => {
     if (!Array.isArray(options)) return found;
@@ -61,15 +68,20 @@
     if (Array.isArray(options) || !open) return;
     let current = true;
     searching = true;
-    Promise.resolve(options(query))
-      .catch(() => [])
-      .then((answer) => {
-        // A newer text has been typed since; its answer is the one to show.
-        if (!current) return;
-        found = answer;
-        searching = false;
-        active = -1;
-      });
+    const search = options;
+    // A function that throws fails the same way as one that rejects.
+    new Promise<T[]>((resolve) => resolve(search(query))).then(
+      (answer) => settle(answer, false),
+      () => settle([], true),
+    );
+    function settle(answer: T[], error: boolean) {
+      // A newer text has been typed since; its answer is the one to show.
+      if (!current) return;
+      found = answer;
+      failed = error;
+      searching = false;
+      active = -1;
+    }
     return () => {
       current = false;
     };
@@ -78,8 +90,9 @@
   // What the status region says to screen readers: how many match while
   // the list is open, then what was picked.
   const announcement = $derived.by(() => {
-    if (!open) return picked;
+    if (!open) return pickedMessage;
     if (searching) return "";
+    if (failed) return "Couldn't search";
     const count = results.length;
     if (count === 0) return "No results";
     return count === 1 ? "1 result" : `${count} results`;
@@ -102,17 +115,17 @@
   // The key of the pick the box's text was last written from. When `value`
   // changes from outside (a form reset), the box follows it. Keys, not the
   // options, are compared: a bound value comes back as a proxy.
-  let shown: string | null = null;
+  let shownKey: string | null = null;
   $effect.pre(() => {
     const key = keyOf(value);
-    if (key === shown) return;
-    shown = key;
+    if (key === shownKey) return;
+    shownKey = key;
     query = value == null ? "" : getText(value);
   });
 
   /** Sets the pick, leaving the box's text as it is. */
   function pick(next: T | null) {
-    shown = keyOf(next);
+    shownKey = keyOf(next);
     value = next;
   }
 
@@ -120,7 +133,7 @@
     // Changing the text undoes the pick, so a form never sends a pick the
     // box no longer shows.
     pick(null);
-    picked = "";
+    pickedMessage = "";
     active = -1;
     open = true;
   }
@@ -128,7 +141,7 @@
   function show() {
     if (open) return;
     // Reopening isn't a new pick: don't say the old one again on close.
-    picked = "";
+    pickedMessage = "";
     open = true;
   }
 
@@ -153,7 +166,7 @@
   function choose(option: T) {
     pick(option);
     query = getText(option);
-    picked = `${query}, selected`;
+    pickedMessage = `${query}, selected`;
     close();
   }
 
@@ -164,7 +177,8 @@
   }
 
   function onkeydown(event: KeyboardEvent) {
-    if (event.isComposing) return;
+    // A caller's handler that prevents a key keeps it from the combobox.
+    if (event.isComposing || event.defaultPrevented) return;
     switch (event.key) {
       case "Enter":
         if (!open) break;
@@ -201,7 +215,7 @@
 
 <div class={["relative", className]}>
   {#if name}
-    <input type="hidden" {name} value={value == null ? "" : getKey(value)} />
+    <input type="hidden" {name} value={keyOf(value) ?? ""} />
   {/if}
   <input
     {...rest}
@@ -215,10 +229,22 @@
     aria-activedescendant={active >= 0 ? optionId(active) : undefined}
     bind:this={input}
     bind:value={query}
-    {oninput}
-    onclick={show}
-    onblur={close}
-    {onkeydown}
+    oninput={(event) => {
+      callerInput?.(event);
+      oninput();
+    }}
+    onclick={(event) => {
+      callerClick?.(event);
+      show();
+    }}
+    onblur={(event) => {
+      callerBlur?.(event);
+      close();
+    }}
+    onkeydown={(event) => {
+      callerKeydown?.(event);
+      onkeydown(event);
+    }}
     class={[formControlClasses, "pr-10"]}
   />
   <svg
@@ -266,6 +292,8 @@
     </ul>
     {#if searching}
       <p class="px-3 py-2 text-muted-foreground">Searching…</p>
+    {:else if failed}
+      <p class="px-3 py-2 text-muted-foreground">Couldn't search</p>
     {:else if results.length === 0}
       <p class="px-3 py-2 text-muted-foreground">No matches</p>
     {/if}

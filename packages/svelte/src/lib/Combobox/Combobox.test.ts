@@ -2,6 +2,7 @@ import { describe, expect, test } from "vitest";
 import { page, userEvent } from "vitest/browser";
 import type { RenderResult } from "vitest-browser-svelte";
 import { renderIn } from "../../../test/schemes.ts";
+import Combobox from "./Combobox.svelte";
 import Picker from "./Combobox.test.svelte";
 
 type Screen = RenderResult<typeof Picker>;
@@ -290,6 +291,37 @@ describe("Combobox", () => {
     await expect.element(input).toHaveAttribute("aria-expanded", "true");
     await screen.getByRole("button", { name: "Elsewhere" }).click();
     await expect.element(input).toHaveAttribute("aria-expanded", "false");
+  });
+
+  test("runs the caller's own event handlers too", async () => {
+    const seen: string[] = [];
+    const screen = await renderIn("light", Combobox, {
+      "aria-label": "Position",
+      options: ["IND_CTR", "IND_APP"],
+      onkeydown: (event) => seen.push(`key ${event.key}`),
+      oninput: () => seen.push("input"),
+    });
+    await screen.getByRole("combobox").fill("IND");
+    await userEvent.keyboard("{ArrowDown}");
+    expect(seen).toEqual(["input", "key ArrowDown"]);
+    await expect
+      .element(screen.getByRole("combobox"))
+      .toHaveAttribute("aria-activedescendant");
+  });
+
+  test("says so when the search fails", async () => {
+    const screen = await renderIn("light", Picker, {
+      options: () => Promise.reject(new Error("offline")),
+    });
+    await screen.getByRole("combobox").fill("a");
+    await expect
+      .element(
+        screen.getByText("Couldn't search").and(page.getByRole("paragraph")),
+      )
+      .toBeVisible();
+    await expect
+      .element(screen.getByRole("status"))
+      .toHaveTextContent("Couldn't search");
   });
 
   test("draws each option with the caller's snippet", async () => {
