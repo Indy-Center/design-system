@@ -26,6 +26,7 @@ describe("the packed package", () => {
         "dist/Link/Link.svelte.d.ts",
         "dist/Link/Link.md",
         "dist/colorScheme/colorScheme.md",
+        "dist/aviation/aviation.md",
       ]),
     );
   });
@@ -46,6 +47,33 @@ describe("the packed package", () => {
   test("exports saveColorScheme from the package root, with types", async () => {
     const index = await readFile(new URL("dist/index.d.ts", root), "utf8");
     expect(index).toMatch(/\bsaveColorScheme\b/);
+  });
+
+  test("exports the aviation helpers from the package root, with types", async () => {
+    const index = await readFile(new URL("dist/index.d.ts", root), "utf8");
+    for (const name of [
+      "comparePositionTypes",
+      "findRating",
+      "formatDuration",
+      "formatFrequency",
+      "isPosition",
+      "parseCallsign",
+      "POSITION_TYPES",
+      "RATINGS",
+      "resolvePosition",
+      "spokenFrequency",
+      "VnasPosition",
+    ]) {
+      expect(index).toMatch(new RegExp(`\\b${name}\\b`));
+    }
+  });
+
+  test("the built aviation helpers run, their imports resolved", async () => {
+    const { resolvePosition } = await import(
+      new URL("dist/aviation/resolvePosition.js", root).href
+    );
+    const positions = [{ id: "1", callsign: "IND_GND" }];
+    expect(resolvePosition("IND_1_GND", positions)?.position.id).toBe("1");
   });
 
   test("serves the colour-scheme hook from /hooks, in Node, with types", async () => {

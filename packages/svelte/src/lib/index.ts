@@ -7,3 +7,22 @@ export {
   saveColorScheme,
   type SaveColorSchemeOptions,
 } from "./colorScheme/saveColorScheme.js";
+
+// Aviation helpers: plain functions, for components and apps alike.
+export {
+  comparePositionTypes,
+  isPosition,
+  parseCallsign,
+  POSITION_TYPES,
+  type CallsignParts,
+  type PositionType,
+} from "./aviation/callsign.js";
+export { formatDuration, type DurationStyle } from "./aviation/duration.js";
+export { formatFrequency, spokenFrequency } from "./aviation/frequency.js";
+export { findRating, RATINGS, type Rating } from "./aviation/ratings.js";
+export {
+  resolvePosition,
+  type PositionMatch,
+  type ResolvePositionOptions,
+  type VnasPosition,
+} from "./aviation/resolvePosition.js";
