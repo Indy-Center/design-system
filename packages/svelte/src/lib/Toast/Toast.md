@@ -39,7 +39,12 @@ toast("danger", "We couldn't save the roster. Try again.");
 ```
 
 `toast()` does nothing on the server; call it from the browser, such as
-in a `use:enhance` callback or an event handler.
+in a `use:enhance` callback or an event handler. A form action or `load`
+that redirects can't raise one yet: return a result instead, and toast it
+in the `use:enhance` callback before going on.
+
+`<Toaster />` takes no props and isn't styled by the app: there is one,
+for the whole page.
 
 ## Props and arguments
 
@@ -49,8 +54,6 @@ in a `use:enhance` callback or an event handler.
 | --------- | ---------------------------------------------- | -------------------------- |
 | `level`   | `"info" \| "success" \| "caution" \| "danger"` | How serious it is.         |
 | `message` | `string`                                       | The text, a full sentence. |
-
-`<Toaster />` takes no props.
 
 ## Looks
 
@@ -62,8 +65,7 @@ in a `use:enhance` callback or an event handler.
   the message.
 - Newest first. At most 3 show; the rest wait. A more important toast
   takes the place of a less important one (the oldest among equals),
-  which goes back to the front of the queue. The most important waiting
-  toast shows next.
+  which goes back to the front of the queue. Waiting toasts show in turn.
 
 ## Accessibility
 
@@ -74,7 +76,7 @@ in a `use:enhance` callback or an event handler.
 - Each toast stays 5 seconds. Its clock stops while the pointer or focus
   is on the toasts, so there's time to read it.
 - Each has a 44px close button named after its message. Escape closes the
-  newest, unless a menu used that Escape or a modal is open. Closing the
+  top one, the newest shown, unless a menu used that Escape or a modal is open. Closing the
   focused toast moves focus to the next one.
 - Toasts still showing or waiting when the page goes (a full-page
   redirect) are kept for this tab and shown, and read, on the next page.

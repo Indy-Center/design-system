@@ -52,7 +52,7 @@
 <svelte:window
   {onkeydown}
   onpagehide={() => toasts.save()}
-  onpageshow={(event) => event.persisted && toasts.unsave()}
+  onpageshow={(event) => event.persisted && toasts.forgetSaved()}
 />
 
 <div class="sr-only" role="status" aria-live="polite">

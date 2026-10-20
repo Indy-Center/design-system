@@ -5,6 +5,9 @@ import { SEVERITIES, type Severity } from "../severity/severity.js";
 export const TOAST_DURATION = 5000;
 const MOST_SHOWN = 3;
 const STORAGE_KEY = "centerline-toasts";
+// How long a line stays in a live region, in milliseconds: long enough to
+// be read, then cleared so the region doesn't grow.
+const READ_LINE_FOR = 7000;
 const rank = (level: Severity) => Object.keys(SEVERITIES).indexOf(level);
 
 export type ShownToast = {
@@ -77,7 +80,7 @@ class Toasts {
   }
 
   /** Drops what `save` kept, when the page itself comes back from the back-forward cache. */
-  unsave() {
+  forgetSaved() {
     try {
       sessionStorage.removeItem(STORAGE_KEY);
     } catch {
@@ -107,14 +110,11 @@ class Toasts {
     this.assertive = [];
   }
 
-  // Shows the most important waiting toast (the first among equals) in
-  // each free place, with a full clock.
+  // Shows the toast at the front of the queue in each free place, with a
+  // full clock.
   #promote() {
     while (this.shown.length < MOST_SHOWN && this.queued.length) {
-      let next = this.queued[0]!;
-      for (const t of this.queued)
-        if (rank(t.level) > rank(next.level)) next = t;
-      this.queued.splice(this.queued.indexOf(next), 1);
+      const next = this.queued.shift()!;
       this.shown.unshift({ ...next, left: TOAST_DURATION });
     }
   }
@@ -129,7 +129,7 @@ class Toasts {
       const lines = this[region];
       const at = lines.indexOf(line);
       if (at >= 0) lines.splice(at, 1);
-    }, 7000);
+    }, READ_LINE_FOR);
   }
 }
 
@@ -138,7 +138,8 @@ export const toasts = new Toasts();
 /**
  * Shows a brief message after an action, such as `toast("success", "Roster
  * saved.")`. It shows on the next page too, after a redirect. Needs one
- * `<Toaster />` in the root layout. Does nothing on the server.
+ * `<Toaster />` in the root layout. Does nothing on the server, so a form
+ * action or `load` can't raise one.
  */
 export function toast(level: Severity, message: string) {
   if (BROWSER) toasts.raise(level, message);

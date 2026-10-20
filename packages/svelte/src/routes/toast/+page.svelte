@@ -58,7 +58,9 @@
   </button>
 </div>
 
-<!-- The playground's header is about 3.25rem tall. -->
+<!-- Not in <Schemes>: the toasts are fixed to the window, so there's one
+     Toaster, in the page's scheme. The playground's header is about
+     3.25rem tall. -->
 <div style="--centerline-header-height: 3.25rem">
   <Toaster />
 </div>

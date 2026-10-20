@@ -128,6 +128,7 @@ describe("Toast", () => {
   describe.each([
     ["light", "rgb(255, 255, 255)", "rgb(51, 65, 85)"],
     ["dark", "rgb(30, 41, 59)", "rgb(209, 213, 219)"],
+    ["dark-header", "rgb(30, 41, 59)", "rgb(209, 213, 219)"],
   ] as const)("in %s", (scheme, card, body) => {
     const role: Record<Severity, string> =
       scheme === "light"
@@ -221,11 +222,13 @@ describe("Toast", () => {
       ]);
     });
 
-    test("the most important waiting toast shows next", async () => {
+    test("waiting toasts show in the order they came", async () => {
       await renderIn("light", Toaster, {});
       for (const n of [1, 2, 3]) toast("danger", `Danger ${n}.`);
       toast("info", "Info.");
       toast("danger", "Danger 4.");
+      await userEvent.keyboard("{Escape}");
+      expect((await shown())[0]).toBe("Info: Info.");
       await userEvent.keyboard("{Escape}");
       expect((await shown())[0]).toBe("Danger: Danger 4.");
     });
