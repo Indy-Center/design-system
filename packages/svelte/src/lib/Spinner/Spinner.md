@@ -7,8 +7,8 @@ description: A busy indicator that says what is happening to screen readers and 
 
 - [ ] Use it while something loads or saves and its length isn't known.
       For a known amount done, use `ProgressBar`. On a button, use
-      `Button busy`, which shows one for you. (Both arrive in this
-      release; until then, use Spinner beside the button.)
+      `Button busy`, which shows one for you. (`ProgressBar` arrives in
+      this release.)
 - [ ] Set `label` when "Loading" isn't what is happening: "Saving",
       "Signing in".
 - [ ] Take it away when the work is done, and show the result.
