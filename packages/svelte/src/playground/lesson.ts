@@ -1,7 +1,7 @@
 // A lesson plan's bodyHtml as Payload writes it and indy-library shows it
 // with {@html}: indy-library's S-GC-1 fixture ("Taxi basics"), whose body
 // is one line, grown to every element a CMS lesson plan can hold. The
-// playground shows it too.
+// Prose playground page shows it, and Prose's tests check it.
 export const lessonHtml = `
 <p>Read the field diagram of Example Field before the lesson.</p>
 <p>This lesson covers moving aircraft between the ramp and the runway at a made-up field. By the end, the student issues <strong>taxi clearances</strong> with the correct route and hold-short instructions, and knows when to give <em>progressive taxi</em>. See the <a href="https://www.faa.gov/air_traffic/publications/atpubs/atc_html/">FAA 7110.65</a>, chapter 3, section 7.</p>

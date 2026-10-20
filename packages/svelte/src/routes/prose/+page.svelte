@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Prose } from "../../lib/index.ts";
   import Schemes from "../../playground/Schemes.svelte";
-  import { lessonHtml } from "../../../test/lesson.ts";
+  import { lessonHtml } from "../../playground/lesson.ts";
 </script>
 
 <svelte:head><title>Prose · Centerline playground</title></svelte:head>

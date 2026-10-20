@@ -22,6 +22,9 @@ src/routes/name/+page.svelte its playground page (lower-case folder)
 - Inside `src/lib`, import with relative paths (`../Link/Link.svelte`).
   SvelteKit 3 has no `$lib`, and `#lib` would not resolve once published.
   Playground pages import from `../../lib/index.ts`.
+- Anything a playground page and the tests both use (sample content, a
+  helper) goes in `src/playground/`, as `lesson.ts` and
+  `forgetColorScheme.ts` do.
 - A component's own small parts (a helper, an icon) go in its folder. Only
   what `index.ts` exports is public.
 
@@ -88,7 +91,10 @@ the tokens loaded, so computed colours are the real ones.
   brand guide's hex as `rgb(…)` literals. Copy the expected values from the
   guide's Roles table, not from the tokens.
 - Keyboard: `userEvent.tab()`, Enter, Escape, as the component needs.
-- Snippets for `children` in tests: `createRawSnippet`.
+- Snippets for `children` in tests: `createRawSnippet`. It needs one root
+  element, so for children that are loose HTML (Prose's `{@html}` body),
+  write a small wrapper component in `test/` instead, as
+  `test/ProseLesson.svelte` does.
 
 Run one file while working:
 `npx vitest run --project components src/lib/Name`.
