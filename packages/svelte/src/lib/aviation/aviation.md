@@ -120,5 +120,5 @@ whichever way round, so the caller adds "in" or "ago":
 - `spokenFrequency` is for text a person reads or hears, such as a
   procedure's phraseology or screen-reader text beside the digits. Don't put
   it in an `aria-label` on a plain `<span>`: it isn't reliably announced.
-- Write a duration in a `<time datetime>` element (`PT1H23M`) so its
-  length is machine-readable as well.
+- How frequencies, positions and times are shown is the aviation
+  components' job (`Position`, `Frequency`, `Time`), not these helpers'.
