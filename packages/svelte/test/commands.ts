@@ -1,5 +1,6 @@
 // Browser commands: run in Node, called from tests through
 // `commands` in "vitest/browser".
+import type { CDPSession } from "playwright";
 import type { BrowserCommand, BrowserCommandContext } from "vitest/node";
 
 type DeviceScheme = "light" | "dark" | "no-preference" | null;
@@ -31,6 +32,40 @@ export const emulateReducedMotion: BrowserCommand<
   });
 };
 
+/** Sets the time zone the page's clock reads, an IANA name; null resets it. */
+export const emulateTimeZone: BrowserCommand<[string | null]> = async (
+  context,
+  timeZone,
+) => {
+  const page = playwrightPage(context, "emulateTimeZone");
+  let cdp = sessions.get(page);
+  if (!cdp) {
+    cdp = await page.context().newCDPSession(page);
+    sessions.set(page, cdp);
+  }
+  // Chromium refuses a second override until the first is cleared.
+  await cdp.send("Emulation.setTimezoneOverride", { timezoneId: "" });
+  if (timeZone) {
+    await cdp.send("Emulation.setTimezoneOverride", { timezoneId: timeZone });
+  }
+};
+
+const sessions = new WeakMap<object, CDPSession>();
+
+/**
+ * Renders a component on the server, as SvelteKit would for a page, and
+ * returns its body HTML. `path` is the component's file from the package
+ * root (`/src/lib/Time/Time.svelte`); `props` must survive JSON.
+ */
+export const serverRender: BrowserCommand<
+  [path: string, props: Record<string, unknown>]
+> = async (context, path, props) => {
+  const vite = context.project.vite;
+  const { render } = await vite.ssrLoadModule("svelte/server");
+  const { default: component } = await vite.ssrLoadModule(path);
+  return render(component, { props }).body;
+};
+
 /** A cookie as the browser stored it, attributes included. */
 export type StoredCookie = {
   name: string;
@@ -53,6 +88,11 @@ declare module "vitest/browser" {
     emulateReducedMotion: (
       motion: "reduce" | "no-preference" | null,
     ) => Promise<void>;
+    emulateTimeZone: (timeZone: string | null) => Promise<void>;
+    serverRender: (
+      path: string,
+      props: Record<string, unknown>,
+    ) => Promise<string>;
     storedCookies: () => Promise<StoredCookie[]>;
   }
 }

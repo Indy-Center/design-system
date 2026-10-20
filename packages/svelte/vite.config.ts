@@ -5,6 +5,8 @@ import { defineConfig } from "vitest/config";
 import {
   emulateColorScheme,
   emulateReducedMotion,
+  emulateTimeZone,
+  serverRender,
   storedCookies,
 } from "./test/commands.ts";
 
@@ -38,6 +40,8 @@ export default defineConfig({
             commands: {
               emulateColorScheme,
               emulateReducedMotion,
+              emulateTimeZone,
+              serverRender,
               storedCookies,
             },
           },
