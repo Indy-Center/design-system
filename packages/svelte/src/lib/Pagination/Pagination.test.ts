@@ -3,13 +3,16 @@ import { userEvent } from "vitest/browser";
 import { renderIn } from "../../../test/schemes.ts";
 import Pagination from "./Pagination.svelte";
 
-/** The page buttons' names, in order, with "…" for a gap. */
+/** The visible page buttons' names, in order, with "…" for a gap. */
 function shown(nav: HTMLElement): string[] {
-  return [...nav.querySelectorAll("button, [data-gap]")].map((el) =>
-    el.hasAttribute("data-gap")
-      ? "…"
-      : (el.getAttribute("aria-label") ?? el.textContent!.trim()),
-  );
+  const items = [...nav.querySelectorAll("button, [data-gap]")];
+  return items
+    .filter((el) => el.checkVisibility())
+    .map((el) =>
+      el.hasAttribute("data-gap")
+        ? "…"
+        : (el.getAttribute("aria-label") ?? el.textContent!.trim()),
+    );
 }
 
 describe("Pagination", () => {
@@ -89,10 +92,47 @@ describe("Pagination", () => {
     const screen = await renderIn("light", Pagination, {
       pageCount: 20,
       page,
+      style: "width: 400px",
     });
     const nav = screen.getByRole("navigation").element() as HTMLElement;
     expect(shown(nav)).toEqual(["Previous page", ...pages, "Next page"]);
   });
+
+  // Gaps only when needed: four pages fit a narrow card, six a wide one.
+  test.each([
+    ["294px", 4],
+    ["400px", 6],
+  ] as const)("at %s shows all of %i pages", async (width, pageCount) => {
+    const screen = await renderIn("light", Pagination, {
+      pageCount,
+      style: `width: ${width}`,
+    });
+    const nav = screen.getByRole("navigation").element() as HTMLElement;
+    const pages = Array.from({ length: pageCount }, (_, i) => `Page ${i + 1}`);
+    expect(shown(nav)).toEqual(["Previous page", ...pages, "Next page"]);
+    expect(nav.getBoundingClientRect().height).toBe(44);
+  });
+
+  // In a card on a phone there is room for three pages, not five: the
+  // pages beside the current one go.
+  test.each([
+    [1, ["Page 1", "…", "Page 20"]],
+    [3, ["Page 1", "Page 2", "Page 3", "…", "Page 20"]],
+    [4, ["Page 1", "…", "Page 4", "…", "Page 20"]],
+    [10, ["Page 1", "…", "Page 10", "…", "Page 20"]],
+    [20, ["Page 1", "…", "Page 20"]],
+  ] as const)(
+    "on page %i of 20 in a narrow card, shows %j",
+    async (page, pages) => {
+      const screen = await renderIn("light", Pagination, {
+        pageCount: 20,
+        page,
+        style: "width: 294px",
+      });
+      const nav = screen.getByRole("navigation").element() as HTMLElement;
+      expect(shown(nav)).toEqual(["Previous page", ...pages, "Next page"]);
+    },
+  );
 
   test("hides its gaps from screen readers", async () => {
     const screen = await renderIn("light", Pagination, { pageCount: 20 });
@@ -100,17 +140,21 @@ describe("Pagination", () => {
     expect(gap.getAttribute("aria-hidden")).toBe("true");
   });
 
-  test("fits a phone's width on any page", async () => {
-    const screen = await renderIn("light", Pagination, {
-      pageCount: 120,
-      page: 60,
-      // A 390px phone, less the 16px gutters.
-      style: "width: 358px",
-    });
-    // One row of 44px buttons, not wrapped onto a second.
-    const nav = screen.getByRole("navigation").element();
-    expect(nav.getBoundingClientRect().height).toBe(44);
-  });
+  // 358px: a 390px phone less its gutters; 294px: a card in the dark header
+  // on that phone; 400px: just wide enough to keep the neighbours.
+  test.each(["400px", "358px", "294px"])(
+    "fits one row at %s on any page",
+    async (width) => {
+      const screen = await renderIn("light", Pagination, {
+        pageCount: 120,
+        page: 60,
+        style: `width: ${width}`,
+      });
+      // One row of 44px buttons, not wrapped onto a second.
+      const nav = screen.getByRole("navigation").element();
+      expect(nav.getBoundingClientRect().height).toBe(44);
+    },
+  );
 
   // A disabled button drops focus; a keyboard user would land on the page.
   test("keeps focus in the nav when next reaches the last page", async () => {

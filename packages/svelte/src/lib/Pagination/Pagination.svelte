@@ -29,15 +29,41 @@
 
   let nav = $state<HTMLElement>();
 
-  // The first and last pages and those beside the current one, with null
-  // for a gap. A gap of one page shows that page instead.
-  const shown = $derived.by(() => {
+  type Item =
+    | { page: number; narrow: boolean }
+    | { gap: number; wide: boolean; narrow: boolean };
+
+  // Which pages to show: all of them when there are no more than `room`;
+  // otherwise the first, the last, and those within `reach` of the current
+  // one. A gap of one page shows that page instead.
+  function window(reach: number, room: number) {
+    if (pageCount <= room) return () => true;
     const keep = (n: number) =>
-      n === 1 || n === pageCount || Math.abs(n - page) <= 1;
-    const out: (number | null)[] = [];
+      n === 1 || n === pageCount || Math.abs(n - page) <= reach;
+    return (n: number) => keep(n) || (keep(n - 1) && keep(n + 1));
+  }
+
+  // The wide row keeps the current page's neighbours; the narrow one, under
+  // 23rem, drops them. Every narrow page is also a wide one, so one list
+  // serves both, each item marked with the widths it shows at.
+  const items = $derived.by(() => {
+    // Room, at 44px a button: six pages in 23rem, four in a phone's card.
+    const wide = window(1, 6);
+    const narrow = window(0, 4);
+    const out: Item[] = [];
+    let lastWide = 0;
+    let lastNarrow = 0;
     for (let n = 1; n <= pageCount; n++) {
-      if (keep(n) || (keep(n - 1) && keep(n + 1))) out.push(n);
-      else if (out.at(-1) !== null) out.push(null);
+      if (!wide(n)) continue;
+      const inNarrow = narrow(n);
+      const gapWide = n - lastWide > 1;
+      const gapNarrow = inNarrow && n - lastNarrow > 1;
+      if (gapWide || gapNarrow) {
+        out.push({ gap: n, wide: gapWide, narrow: gapNarrow });
+      }
+      out.push({ page: n, narrow: inNarrow });
+      lastWide = n;
+      if (inNarrow) lastNarrow = n;
     }
     return out;
   });
@@ -72,7 +98,7 @@
     bind:this={nav}
     aria-label={label}
     {...rest}
-    class={["flex flex-wrap items-center", className]}
+    class={["@container flex flex-wrap items-center", className]}
   >
     <button
       type="button"
@@ -83,14 +109,19 @@
     >
       <Icon path={left} size={20} />
     </button>
-    {#each shown as n, i (n ?? `gap-${i}`)}
-      {#if n === null}
+    {#each items as item ("gap" in item ? `gap-${item.gap}` : item.page)}
+      {#if "gap" in item}
         <span
           data-gap
           aria-hidden="true"
-          class="w-6 text-center text-muted-foreground">…</span
+          class={[
+            "w-6 text-center text-muted-foreground",
+            !item.narrow && "@max-[23rem]:hidden",
+            !item.wide && "@min-[23rem]:hidden",
+          ]}>…</span
         >
       {:else}
+        {@const n = item.page}
         <button
           type="button"
           aria-label="Page {n}"
@@ -101,6 +132,7 @@
             n === page
               ? "bg-primary font-semibold text-primary-foreground"
               : other,
+            !item.narrow && "@max-[23rem]:hidden",
           ]}>{n}</button
         >
       {/if}
