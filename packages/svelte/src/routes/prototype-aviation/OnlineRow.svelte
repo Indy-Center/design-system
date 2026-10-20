@@ -42,14 +42,14 @@
   <span class="mt-1 block text-sm">
     <span class="text-foreground-soft"><Member {...member} {showCid} /></span>
     <span class="text-muted-foreground">
-      · online <time datetime={isoDuration(loginTime, NOW)}
+      · <time datetime={isoDuration(loginTime, NOW)}
         >{durationShort(loginTime, NOW)}</time
       ></span
     >
   </span>
   {#if logoff}
     <span class="block text-sm text-muted-foreground"
-      >Off at <time datetime={logoff.toISOString()}
+      >Online until <time datetime={logoff.toISOString()}
         >{localTime(logoff)} · {zulu(logoff)}</time
       ></span
     >
