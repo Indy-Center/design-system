@@ -71,7 +71,7 @@ focus-visible:outline-ring`.
   on the panel: `use:dismiss={{ open, trigger, onclose }}`, with the
   trigger from `bind:this` on a `$state`. While open, it closes on Escape
   (focus goes back to the trigger) and on a press outside the panel and
-  trigger. Menus, `Tooltip` and `Combobox` all use it; it isn't exported.
+  trigger. It is for menus, `Tooltip` and `Combobox`; it isn't exported.
   Its tests, `src/lib/dismiss/dismiss.test.ts`, show it in use.
 - Every control and menu row is at least 44px tall and wide (`min-h-11
 min-w-11`). A link inside a sentence is exempt.
