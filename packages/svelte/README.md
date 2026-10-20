@@ -53,6 +53,10 @@ export const handle = colorSchemeHandle({ fallback: "dark" });
 See [`src/lib/colorScheme/colorScheme.md`](src/lib/colorScheme/colorScheme.md)
 for the `app.html` script tag and saving a choice.
 
+`Prose`, for CMS rich text, also needs `@tailwindcss/typography` and
+`@indy-center/tokens/prose.css` in the stylesheet: see
+[`src/lib/Prose/Prose.md`](src/lib/Prose/Prose.md).
+
 Aviation helpers (frequencies, callsigns, positions, ratings, durations)
 are plain functions from the package root, for an app's own code too:
 see [`src/lib/aviation/aviation.md`](src/lib/aviation/aviation.md).

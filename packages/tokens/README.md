@@ -29,6 +29,23 @@ In a Tailwind v4 app's stylesheet:
 
 Tailwind's own colours (`slate-*`, `sky-*`) stay available beside the roles.
 
+### Rich text
+
+`prose.css` adds `prose-centerline`, a theme for
+`@tailwindcss/typography` on the roles: `class="prose prose-centerline"`
+follows `data-theme`, so it needs no `prose-invert`. Links look like the
+`Link` component, inline code is a muted chip, quotes have a sky rule, and
+headings take the `Heading` component's sizes. The plugin is the app's own
+dependency; import this file after it:
+
+```css
+@plugin "@tailwindcss/typography";
+@import "@indy-center/tokens/prose.css";
+```
+
+Svelte apps use the `Prose` component from `@indy-center/svelte`, which
+adds both classes.
+
 ### Sass (Payload)
 
 `_tokens.scss` gives each token as its `tokens.css` variable, so load
@@ -75,6 +92,9 @@ The token files in `src/` are in the W3C Design Tokens format (2025.10):
 write the CSS and SCSS; two small plugins in `scripts/` write
 `tokens.json` and `tables.md`. The brand team reviews changes to `src/`
 (CODEOWNERS).
+
+`prose.css` is hand-written: it names the roles' variables and holds no
+colours of its own.
 
 `fonts/` is not generated: Fontsource's file
 (`@fontsource-variable/source-sans-3` 5.3.1), unchanged, and `fonts.css`.

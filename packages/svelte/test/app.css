@@ -2,4 +2,6 @@
 @import "tailwindcss";
 @import "@indy-center/tokens/tokens.css";
 @import "@indy-center/tokens/theme.css";
+@plugin "@tailwindcss/typography";
+@import "@indy-center/tokens/prose.css";
 @source "../src/lib";
