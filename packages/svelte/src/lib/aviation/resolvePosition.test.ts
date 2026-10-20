@@ -71,16 +71,16 @@ describe("the relief rule against all of ZID's positions", () => {
     }
   });
 
-  test("a relief login of each resolves to it", () => {
+  test("a relief login of each, with any digit, resolves to it", () => {
     for (const position of positions) {
       const [prefix, middle, type] = position.callsign.split("_");
-      if (type === undefined) {
-        // No middle: a numbered relief, IND_GND as IND_1_GND.
-        const login = `${prefix}_1_${middle}`;
-        expect(resolvePosition(login, positions)?.position).toBe(position);
-      } else {
-        // A digit added to the middle, IND_83_CTR as IND_831_CTR.
-        const login = `${prefix}_${middle}1_${type}`;
+      for (const digit of "0123456789") {
+        const login =
+          type === undefined
+            ? // No middle: a numbered relief, IND_GND as IND_1_GND.
+              `${prefix}_${digit}_${middle}`
+            : // A digit added to the middle, IND_83_CTR as IND_831_CTR.
+              `${prefix}_${middle}${digit}_${type}`;
         expect(resolvePosition(login, positions)?.position).toBe(position);
       }
     }

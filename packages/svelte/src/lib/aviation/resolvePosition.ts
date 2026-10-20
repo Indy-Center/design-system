@@ -62,10 +62,17 @@ export function resolvePosition<
   if (parts?.middle === undefined) return undefined;
   const { prefix, middle, type } = parts;
 
-  const relief =
-    (middle.length > 1 && /[0-9]$/.test(middle)
-      ? find(`${prefix}_${middle.slice(0, -1)}_${type}`)
-      : undefined) ??
-    (/^[0-9]+$/.test(middle) ? find(`${prefix}_${type}`) : undefined);
-  return relief && { match: "relief", position: relief };
+  // A trailing digit dropped from the middle: IND_831_CTR is IND_83_CTR.
+  if (middle.length > 1 && /[0-9]$/.test(middle)) {
+    const relief = find(`${prefix}_${middle.slice(0, -1)}_${type}`);
+    if (relief) return { match: "relief", position: relief };
+  }
+
+  // An all-digit middle dropped: IND_1_GND is IND_GND.
+  if (/^[0-9]+$/.test(middle)) {
+    const relief = find(`${prefix}_${type}`);
+    if (relief) return { match: "relief", position: relief };
+  }
+
+  return undefined;
 }
