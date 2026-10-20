@@ -68,7 +68,7 @@ export function relative(at: Date, now: Date): string {
 }
 
 /** Zulu as four digits and a `Z`: `2300Z`. */
-export function zulu(at: Date): string {
+function zulu(at: Date): string {
   const h = String(at.getUTCHours()).padStart(2, "0");
   const m = String(at.getUTCMinutes()).padStart(2, "0");
   return `${h}${m}Z`;

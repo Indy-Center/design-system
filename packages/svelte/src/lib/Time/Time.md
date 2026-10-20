@@ -38,14 +38,14 @@ description: A time, date, range or relative time as a <time datetime>, in the m
 
 ## Props
 
-| Prop    | Type                                 | Notes                                                                                            |
-| ------- | ------------------------------------ | ------------------------------------------------------------------------------------------------ |
-| `value` | `Date \| string \| number`           | Required. The instant: a `Date`, an ISO string or milliseconds since the epoch.                  |
-| `end`   | `Date \| string \| number`           | A range's end.                                                                                   |
-| `zone`  | `"local" \| "zulu" \| "both"`        | `"local"` by default. `"both"` is local, then Zulu: `7:00 PM EDT · 2300Z`.                       |
-| `show`  | `"time" \| "datetime" \| "relative"` | `"time"` by default. `"datetime"` puts the day first; `"relative"` gives "in 2 h" or "1 h 23 m". |
-| `class` | `string`                             | Layout only.                                                                                     |
-| others  | `<time>` attributes                  | Passed to the root: the `<time>`, or a range's `<span>`.                                         |
+| Prop    | Type                                 | Notes                                                                                                                          |
+| ------- | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------ |
+| `value` | `Date \| string \| number`           | Required. The instant: a `Date`, an ISO string or milliseconds since the epoch.                                                |
+| `end`   | `Date \| string \| number`           | A range's end.                                                                                                                 |
+| `zone`  | `"local" \| "zulu" \| "both"`        | `"local"` by default. `"both"` is local, then Zulu: `7:00 PM EDT · 2300Z`.                                                     |
+| `show`  | `"time" \| "datetime" \| "relative"` | `"time"` by default. `"datetime"` puts the day first; `"relative"` gives "in 2 h" or "1 h 23 m", and ignores `end` and `zone`. |
+| `class` | `string`                             | Layout only.                                                                                                                   |
+| others  | `<time>` attributes                  | Passed to the root: the `<time>`, or a range's `<span>`.                                                                       |
 
 ## What it shows
 
@@ -76,10 +76,11 @@ Times, with the clock pinned at 5:00 PM EDT on Tuesday 20 October 2026:
 ## Server and browser
 
 The server can't know the member's zone, so it draws Zulu, whatever zone
-the server runs in. Once the page loads, the browser redraws in its own
-zone. A Worker in UTC never shows a wrong "local" time; a member sees Zulu
-for a moment before local. Once members can save a time zone, the server
-reads it and draws local from the start.
+the server runs in: `zone="both"` is `2300Z` alone until then. Once the
+page loads, the browser redraws in its own zone. A Worker in UTC never
+shows a wrong "local" time; a member sees Zulu for a moment before local.
+A saved time zone, which will let the server draw local from the start,
+is still to come.
 
 ## Looks
 

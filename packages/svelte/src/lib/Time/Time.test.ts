@@ -235,13 +235,10 @@ describe("Time", () => {
         value: new Date(served - 83 * 60_000).toISOString(),
         show: "relative",
       };
-      const target = document.createElement("main");
-      target.dataset.served = "";
-      target.innerHTML = await commands.serverRender(PATH, props);
-      document.body.append(target);
+      const target = await serve(props);
       expect(target.textContent).toBe("1 h 23 m");
       vi.setSystemTime(served + 120_000);
-      hydrated.push(hydrate(Time, { target, props: props as never }));
+      hydrateServed(target, props);
       await expect.poll(() => target.textContent).toBe("1 h 25 m");
     });
   });
@@ -263,16 +260,24 @@ afterEach(() => {
   document.querySelectorAll("[data-served]").forEach((el) => el.remove());
 });
 
-/**
- * Renders `Time` on the server, puts the HTML on the page as SvelteKit
- * would, hydrates it, and returns its `<time>`.
- */
-async function serveAndHydrate(props: Record<string, unknown>) {
+/** Renders `Time` on the server and puts the HTML on the page. */
+async function serve(props: Record<string, unknown>) {
   const target = document.createElement("main");
   target.dataset.served = "";
   target.innerHTML = await commands.serverRender(PATH, props);
   document.body.append(target);
+  return target;
+}
+
+/** Hydrates served HTML in `target`, as SvelteKit would. */
+function hydrateServed(target: HTMLElement, props: Record<string, unknown>) {
   hydrated.push(hydrate(Time, { target, props: props as never }));
+}
+
+/** Serves `Time`, hydrates it, and returns its `<time>`. */
+async function serveAndHydrate(props: Record<string, unknown>) {
+  const target = await serve(props);
+  hydrateServed(target, props);
   const time = target.querySelector("time");
   if (!time) throw new Error("No <time> was served");
   return time;

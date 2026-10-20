@@ -6,6 +6,10 @@
   const hour = 3_600_000;
   const base = Math.ceil(Date.now() / hour) * hour;
   const at = (hours: number) => new Date(base + hours * hour);
+  // 4 March next year, 2300Z.
+  const nextYear = new Date(
+    Date.UTC(new Date().getUTCFullYear() + 1, 2, 4, 23),
+  );
 </script>
 
 <svelte:head><title>Time · Centerline playground</title></svelte:head>
@@ -32,7 +36,7 @@
     <dt class="text-muted-foreground">Next week</dt>
     <dd><Time value={at(7 * 24)} show="datetime" /></dd>
     <dt class="text-muted-foreground">Next year</dt>
-    <dd><Time value={at(365 * 24)} show="datetime" /></dd>
+    <dd><Time value={nextYear} show="datetime" /></dd>
     <dt class="text-muted-foreground">Event</dt>
     <dd>
       <Time value={at(2)} end={at(5)} show="datetime" zone="both" />
