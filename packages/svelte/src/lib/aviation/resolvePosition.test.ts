@@ -1,0 +1,101 @@
+import { describe, expect, test } from "vitest";
+import zid from "../../../test/zid-positions.json";
+import { resolvePosition, type VnasPosition } from "./resolvePosition.ts";
+
+// ZID's 157 positions from vNAS Data Admin, slimmed, read 2026-10-20.
+const positions: VnasPosition[] = zid;
+
+function byCallsign(callsign: string): VnasPosition {
+  const position = positions.find((p) => p.callsign === callsign);
+  if (!position) throw new Error(`${callsign} isn't in the snapshot`);
+  return position;
+}
+
+describe("resolvePosition", () => {
+  test("matches a callsign exactly", () => {
+    expect(resolvePosition("IND_83_CTR", positions)).toEqual({
+      match: "exact",
+      position: byCallsign("IND_83_CTR"),
+    });
+  });
+
+  test.each([
+    // A trailing digit dropped from the middle part.
+    ["IND_831_CTR", "IND_83_CTR"],
+    ["IND_E1_APP", "IND_E_APP"],
+    ["CVG_11_RMP", "CVG_1_RMP"],
+    // An all-digit middle part dropped.
+    ["IND_1_GND", "IND_GND"],
+    ["LEX_12_TWR", "LEX_TWR"],
+  ])("resolves the relief login %s to %s", (login, callsign) => {
+    expect(resolvePosition(login, positions)).toEqual({
+      match: "relief",
+      position: byCallsign(callsign),
+    });
+  });
+
+  test.each([
+    // Not ZID's.
+    "MEM_221_CTR",
+    // The prefix changed: no rule covers it.
+    "DCA_J1_APP",
+    // A letter added, not a digit.
+    "IND_83A_CTR",
+    // A letter middle isn't dropped.
+    "IND_X_GND",
+    // A single-digit middle stays: there is no IND_8_CTR.
+    "IND_8_CTR",
+    "AAL123",
+    "",
+  ])("leaves %j unknown", (callsign) => {
+    expect(resolvePosition(callsign, positions)).toBeUndefined();
+  });
+
+  test("given the person's vNAS position id, matches on that instead", () => {
+    const position = byCallsign("IND_83_CTR");
+    expect(
+      resolvePosition("IND_E_APP", positions, { positionId: position.id }),
+    ).toEqual({ match: "id", position });
+    expect(
+      resolvePosition("IND_83_CTR", positions, { positionId: "not-zid" }),
+    ).toBeUndefined();
+  });
+});
+
+describe("the relief rule against all of ZID's positions", () => {
+  test("every callsign resolves to its own position", () => {
+    for (const position of positions) {
+      expect(resolvePosition(position.callsign, positions)?.position).toBe(
+        position,
+      );
+    }
+  });
+
+  test("a relief login of each resolves to it", () => {
+    for (const position of positions) {
+      const [prefix, middle, type] = position.callsign.split("_");
+      if (type === undefined) {
+        // No middle: a numbered relief, IND_GND as IND_1_GND.
+        const login = `${prefix}_1_${middle}`;
+        expect(resolvePosition(login, positions)?.position).toBe(position);
+      } else {
+        // A digit added to the middle, IND_83_CTR as IND_831_CTR.
+        const login = `${prefix}_${middle}1_${type}`;
+        expect(resolvePosition(login, positions)?.position).toBe(position);
+      }
+    }
+  });
+
+  test("no rule lands on a different real position", () => {
+    // Were a callsign a relief login, its own position missing, would a
+    // rule resolve it to another one?
+    const landed = positions.flatMap((position) => {
+      const others = positions.filter((p) => p !== position);
+      const resolved = resolvePosition(position.callsign, others);
+      return resolved
+        ? [`${position.callsign} → ${resolved.position.callsign}`]
+        : [];
+    });
+    expect(landed).toEqual([]);
+  });
+});
