@@ -82,6 +82,71 @@ describe("Radio", () => {
     expect(group).toBe("gnd");
   });
 
+  test("in a group with none chosen, Space chooses the focused radio", async () => {
+    let group: string | undefined;
+    const screen = await renderIn("light", RadioGroup, {
+      get group() {
+        return group;
+      },
+      set group(value) {
+        group = value;
+      },
+    });
+    const ground = screen.getByRole("radio", { name: "Ground" });
+    await userEvent.tab();
+    await expect.element(ground).toHaveFocus();
+    await expect.element(ground).not.toBeChecked();
+    await userEvent.keyboard(" ");
+    await expect.element(ground).toBeChecked();
+    expect(group).toBe("gnd");
+  });
+
+  // Unbound, each radio keeps its own copy of `group`. Svelte only writes
+  // `checked` when that radio's copy changes, so the browser's choice holds,
+  // and a new `group` from the parent still wins.
+  test.each([undefined, "twr"])(
+    "in a group that only reads group (%s), the last chosen stays checked",
+    async (group) => {
+      const screen = await renderIn("light", RadioGroup, {
+        group,
+        bound: false,
+      });
+      const radio = (name: string) => screen.getByRole("radio", { name });
+      for (const name of ["Ground", "Tower", "Approach", "Ground"]) {
+        await screen.getByText(name).click();
+      }
+      await expect.element(radio("Ground")).toBeChecked();
+      await expect.element(radio("Tower")).not.toBeChecked();
+      await expect.element(radio("Approach")).not.toBeChecked();
+      await screen.rerender({ group: "app", bound: false });
+      await expect.element(radio("Approach")).toBeChecked();
+      await expect.element(radio("Ground")).not.toBeChecked();
+      await screen.getByText("Tower").click();
+      await expect.element(radio("Tower")).toBeChecked();
+      await expect.element(radio("Approach")).not.toBeChecked();
+    },
+  );
+
+  test("takes number values, and sets the group to the number", async () => {
+    let group: number | undefined = 1;
+    const screen = await renderIn("light", Radio<number>, {
+      label: "Two",
+      name: "seats",
+      value: 2,
+      get group() {
+        return group;
+      },
+      set group(value) {
+        group = value;
+      },
+    });
+    const radio = screen.getByRole("radio", { name: "Two" });
+    await expect.element(radio).toHaveAttribute("value", "2");
+    await expect.element(radio).not.toBeChecked();
+    await radio.click();
+    expect(group).toBe(2);
+  });
+
   test("in a group, the radios sit in a group named by the legend", async () => {
     const screen = await renderIn("light", RadioGroup, {});
     const group = screen.getByRole("group", { name: "Position" });
@@ -91,7 +156,8 @@ describe("Radio", () => {
   });
 
   // The guide's roles: `primary` circle (#0369A1 in both), `foreground-soft`
-  // label (#334155 light, #D1D5DB dark).
+  // label (#334155 light, #D1D5DB dark). The circle is checked, so the
+  // browser paints its fill from `accent-color`.
   test.each([
     ["light", "rgb(51, 65, 85)"],
     ["dark", "rgb(209, 213, 219)"],
@@ -101,9 +167,12 @@ describe("Radio", () => {
       label: "Tower",
       name: "position",
       value: "twr",
+      group: "twr",
     });
+    const radio = screen.getByRole("radio");
+    await expect.element(radio).toBeChecked();
     await expect
-      .element(screen.getByRole("radio"))
+      .element(radio)
       .toHaveStyle({ accentColor: "rgb(3, 105, 161)" });
     await expect
       .element(screen.getByText("Tower"))

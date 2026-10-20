@@ -15,9 +15,9 @@ description: A native radio button with its label beside it, chosen in the prima
       same name in the same form.
 - [ ] Write each label as the option itself ("Tower"), short and
       parallel.
-- [ ] For a required group, set `required` on the `Fieldset` (it says
-      so in words) and on each radio (the browser then won't send the
-      form with none chosen).
+- [ ] For a required group, set `required` on the `Fieldset`: it says so
+      in words and makes each radio required, so the browser won't send
+      the form with none chosen.
 - [ ] Don't colour it: no `accent-*`, `text-*` or size classes. `class`
       goes on the row and is for layout only.
 
@@ -28,43 +28,31 @@ description: A native radio button with its label beside it, chosen in the prima
   import { Fieldset, Radio } from "@indy-center/svelte";
 
   let position = $state("gnd");
+  let seats = $state(1);
 </script>
 
 <Fieldset legend="Position" required>
-  <Radio
-    label="Ground"
-    name="position"
-    value="gnd"
-    bind:group={position}
-    required
-  />
-  <Radio
-    label="Tower"
-    name="position"
-    value="twr"
-    bind:group={position}
-    required
-  />
-  <Radio
-    label="Approach"
-    name="position"
-    value="app"
-    bind:group={position}
-    required
-  />
+  <Radio label="Ground" name="position" value="gnd" bind:group={position} />
+  <Radio label="Tower" name="position" value="twr" bind:group={position} />
+  <Radio label="Approach" name="position" value="app" bind:group={position} />
+</Fieldset>
+
+<Fieldset legend="Seats">
+  <Radio label="One" name="seats" value={1} bind:group={seats} />
+  <Radio label="Two" name="seats" value={2} bind:group={seats} />
 </Fieldset>
 ```
 
 ## Props
 
-| Prop    | Type                 | Notes                                                                                  |
-| ------- | -------------------- | -------------------------------------------------------------------------------------- |
-| `label` | `string`             | Required. The text beside the circle, which names it.                                  |
-| `name`  | `string`             | Required. The group's name, the same on every radio in it.                             |
-| `value` | `string`             | Required. This radio's value.                                                          |
-| `group` | `string`             | Bindable: `bind:group`. The chosen radio's value; this one is checked when it matches. |
-| `class` | `string`             | Added to the row (the `<label>`) after its own classes. Layout only.                   |
-| others  | `<input>` attributes | Passed to the `<input>`: `disabled`, `required`, `onchange`, `aria-*` and the rest.    |
+| Prop    | Type                 | Notes                                                                                        |
+| ------- | -------------------- | -------------------------------------------------------------------------------------------- |
+| `label` | `string`             | Required. The text beside the circle, which names it.                                        |
+| `name`  | `string`             | Required. The group's name, the same on every radio in it.                                   |
+| `value` | `string \| number`   | Required. This radio's value. A number stays a number in `group`; the form sends it as text. |
+| `group` | same as `value`      | Bindable: `bind:group`. The chosen radio's value; this one is checked when it matches.       |
+| `class` | `string`             | Added to the row (the `<label>`) after its own classes. Layout only.                         |
+| others  | `<input>` attributes | Passed to the `<input>`: `disabled`, `required`, `onchange`, `aria-*` and the rest.          |
 
 ## Looks
 
@@ -81,6 +69,8 @@ description: A native radio button with its label beside it, chosen in the prima
   label names it and a screen reader says whether it's chosen.
 - The browser gives the group its keyboard: Tab enters at the chosen
   radio (the first, when none is) and leaves after the group; the arrow
-  keys move and choose.
+  keys move and choose; Space chooses the focused radio.
 - The `Fieldset`'s legend names the group, and a screen reader reads it
-  on entering.
+  on entering. A required `Fieldset` makes each radio `required`.
+- A radio can't take `aria-invalid`: the `Fieldset`'s error, read as the
+  group's description, says what's wrong.
