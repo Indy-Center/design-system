@@ -60,12 +60,13 @@ For checkboxes and radios, use `Checkbox` and `Radio`.
 ### Beside `@tailwindcss/forms`
 
 Input doesn't need the forms plugin. Where an app still loads it with its
-default `base` strategy, the plugin styles every input first and Input's
-classes, which are utilities, win over it. To keep the plugin off the
-components entirely while old forms still use it, load it with
-`@plugin "@tailwindcss/forms" { strategy: "class"; }`, so it only styles
-elements with its `form-*` classes. Drop it once the app's forms use these
-components.
+default `base` strategy, the plugin styles every input first. Input's
+classes, which are utilities, win for the fill, border, padding and
+outline, but the plugin's blue focus ring (a `box-shadow`) still shows
+beside Input's own outline. While old forms still use the plugin, load it
+with `@plugin "@tailwindcss/forms" { strategy: "class"; }`, so it only
+styles elements with its `form-*` classes and leaves the components alone.
+Drop it once the app's forms use these components.
 
 ## Accessibility
 

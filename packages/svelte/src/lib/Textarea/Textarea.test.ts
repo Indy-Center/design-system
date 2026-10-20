@@ -44,6 +44,7 @@ describe("Textarea", () => {
   test.each([
     ["light", "rgb(71, 85, 105)"],
     ["dark", "rgb(209, 213, 219)"],
+    ["dark-header", "rgb(209, 213, 219)"],
   ] as const)("colours its placeholder in %s", async (scheme, colour) => {
     const screen = await renderIn(scheme, Textarea, {
       "aria-label": "Comments",
@@ -57,6 +58,7 @@ describe("Textarea", () => {
   test.each([
     ["light", "rgb(185, 28, 28)"],
     ["dark", "rgb(248, 113, 113)"],
+    ["dark-header", "rgb(248, 113, 113)"],
   ] as const)(
     "has a destructive border when invalid in %s",
     async (scheme, colour) => {
@@ -74,6 +76,7 @@ describe("Textarea", () => {
   test.each([
     ["light", "rgb(2, 132, 199)"],
     ["dark", "rgb(14, 165, 233)"],
+    ["dark-header", "rgb(14, 165, 233)"],
   ] as const)(
     "shows a ring outline when tabbed to in %s",
     async (scheme, colour) => {
@@ -89,6 +92,15 @@ describe("Textarea", () => {
       });
     },
   );
+
+  test("is at least 44px tall with one row", async () => {
+    const screen = await renderIn("light", Textarea, {
+      "aria-label": "Comments",
+      rows: 1,
+    });
+    const box = screen.getByRole("textbox").element();
+    expect(box.getBoundingClientRect().height).toBeGreaterThanOrEqual(44);
+  });
 
   test("adds a caller's class and attributes to its own", async () => {
     const screen = await renderIn("light", Textarea, {

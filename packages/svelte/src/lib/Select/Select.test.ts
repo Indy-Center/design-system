@@ -55,6 +55,7 @@ describe("Select", () => {
   test.each([
     ["light", "rgb(185, 28, 28)"],
     ["dark", "rgb(248, 113, 113)"],
+    ["dark-header", "rgb(248, 113, 113)"],
   ] as const)(
     "has a destructive border when invalid in %s",
     async (scheme, colour) => {
@@ -73,6 +74,7 @@ describe("Select", () => {
   test.each([
     ["light", "rgb(2, 132, 199)"],
     ["dark", "rgb(14, 165, 233)"],
+    ["dark-header", "rgb(14, 165, 233)"],
   ] as const)(
     "shows a ring outline when tabbed to in %s",
     async (scheme, colour) => {

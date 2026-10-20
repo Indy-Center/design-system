@@ -44,8 +44,8 @@ placeholder `placeholder`; a `ring` outline when focused; a `destructive`
 border when `aria-invalid` is set. The member can drag it taller.
 
 Beside `@tailwindcss/forms`: as for `Input`, its classes win over the
-plugin's `base` styles, and the plugin's `class` strategy keeps it off the
-components entirely.
+plugin's `base` styles except the plugin's focus ring, so load the plugin
+with its `class` strategy while old forms still use it.
 
 ## Accessibility
 

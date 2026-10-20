@@ -55,9 +55,11 @@ description: A native drop-down list of options on the input roles.
 
 ### Beside `@tailwindcss/forms`
 
-Select's classes win over the plugin's `base` styles, but the plugin also
-turns off the browser's arrow and draws its own grey one, which stays.
-Load the plugin with `@plugin "@tailwindcss/forms" { strategy: "class"; }`
+Select's classes win over the plugin's `base` styles for the fill,
+border, padding and outline. Two of the plugin's styles stay: its blue
+focus ring (a `box-shadow`) beside Select's outline, and its own grey
+arrow in place of the browser's, which Select's padding lets long options
+run under. Load the plugin with `@plugin "@tailwindcss/forms" { strategy: "class"; }`
 while old forms still use it, so it only styles elements with its
 `form-*` classes and Select keeps the browser's arrow.
 

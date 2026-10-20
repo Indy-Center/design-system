@@ -166,6 +166,29 @@ describe("Field", () => {
     },
   );
 
+  // The guide's roles: `foreground-soft` label (#334155 light, #D1D5DB
+  // dark), `muted-foreground` "(required)" (#475569 light, #9CA3AF dark).
+  test.each([
+    ["light", "rgb(51, 65, 85)", "rgb(71, 85, 105)"],
+    ["dark", "rgb(209, 213, 219)", "rgb(156, 163, 175)"],
+    ["dark-header", "rgb(209, 213, 219)", "rgb(156, 163, 175)"],
+  ] as const)(
+    "colours the label and (required) in %s",
+    async (scheme, label, required) => {
+      const screen = await renderIn(scheme, Field, {
+        label: "Callsign",
+        required: true,
+        children: control(),
+      });
+      await expect
+        .element(screen.container.querySelector("label")!)
+        .toHaveStyle({ color: label });
+      await expect
+        .element(screen.getByText("(required)"))
+        .toHaveStyle({ color: required });
+    },
+  );
+
   test("adds a caller's class and attributes to its own", async () => {
     const screen = await renderIn("light", Field, {
       label: "Callsign",

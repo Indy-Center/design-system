@@ -42,7 +42,10 @@ description: A form control's label, hint and error, wired to the control so scr
 ```
 
 Field also wires your own control: spread `control` on any element that
-takes an `id` and `aria-*` attributes.
+takes an `id` and `aria-*` attributes. Spread all of it, `required`
+included: the "(required)" by the label is hidden from screen readers.
+Don't set your own `aria-describedby` on the control as well; one would
+replace the other, so put the text in `hint`.
 
 ## Props
 
