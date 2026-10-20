@@ -61,6 +61,14 @@ describe("base.css after tokens.css and theme.css", () => {
     },
   );
 
+  test("text in a dark header on a light page takes the dark foreground", async () => {
+    expect(
+      await styles('<header data-theme="dark"><p>Events</p></header>', [
+        ["p", "color"],
+      ]),
+    ).toEqual([rgb(roles.foreground.dark)]);
+  });
+
   test.each(["light", "dark"] as const)(
     "a bare border takes the %s border role",
     async (scheme) => {

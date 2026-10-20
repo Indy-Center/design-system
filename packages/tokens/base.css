@@ -7,6 +7,12 @@
     font-family: var(--font-sans);
   }
 
+  /* Text inherits body's colour as a value, so a dark header on a light
+   * page sets its own from the dark roles (decision 0001). */
+  [data-theme] {
+    color: var(--color-foreground);
+  }
+
   /* Sizes stay with the Heading component. */
   h1,
   h2,
