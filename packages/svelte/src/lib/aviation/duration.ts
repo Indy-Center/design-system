@@ -16,19 +16,11 @@ export function formatDuration(minutes: number, style: DurationStyle): string {
 
   if (style === "clock") return `${h}:${String(m).padStart(2, "0")}`;
 
-  const parts: [number, string, string][] =
-    style === "short"
-      ? [
-          [h, "h", "h"],
-          [m, "m", "m"],
-        ]
-      : [
-          [h, "hour", "hours"],
-          [m, "minute", "minutes"],
-        ];
-  const said = parts
-    .filter(([n]) => n > 0)
-    .map(([n, one, many]) => `${n} ${n === 1 ? one : many}`);
-  const [, , none] = parts[1];
-  return said.length > 0 ? said.join(" ") : `0 ${none}`;
+  const unit = (n: number, short: string, word: string) =>
+    style === "short" ? `${n} ${short}` : `${n} ${word}${n === 1 ? "" : "s"}`;
+
+  if (total === 0) return unit(0, "m", "minute");
+  const hours = h > 0 ? unit(h, "h", "hour") : "";
+  const mins = m > 0 ? unit(m, "m", "minute") : "";
+  return [hours, mins].filter(Boolean).join(" ");
 }
