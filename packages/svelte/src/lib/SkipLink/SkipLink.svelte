@@ -29,7 +29,7 @@
   onclick={focusTarget}
   class={[
     "sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50",
-    "focus:inline-flex focus:min-h-11 focus:items-center focus:rounded-md",
+    "focus:inline-flex focus:min-h-11 focus:min-w-11 focus:items-center focus:rounded-md",
     "focus:border focus:border-border focus:bg-card focus:px-4",
     "text-link underline underline-offset-4",
     "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",

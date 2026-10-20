@@ -5,9 +5,10 @@ description: A "Skip to content" link, first on the page and hidden until it has
 
 ## Checklist
 
-- [ ] The `Header` places it; an app using `Header` adds nothing. Use it
-      by itself only on a page without `Header`, as the first thing in
-      `<body>`, so it is the first stop on Tab.
+- [ ] The `Header` places it (once `Header` ships); an app using `Header`
+      adds nothing. Use it by itself only on a page without `Header`, as
+      the first thing in `<body>`, so it is the first stop on Tab.
+- [ ] Its text is always "Skip to content"; it takes no children.
 - [ ] Give the page's main content `id="main"`, normally on `<main>`. If
       the content has another id, pass it as `href="#that-id"`.
 - [ ] Keep one per page.
