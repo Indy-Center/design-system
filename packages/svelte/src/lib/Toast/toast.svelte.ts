@@ -1,0 +1,145 @@
+import { BROWSER } from "esm-env";
+import { SEVERITIES, type Severity } from "../severity/severity.js";
+
+/** How long a toast shows, in milliseconds, while nothing is on it. */
+export const TOAST_DURATION = 5000;
+const MOST_SHOWN = 3;
+const STORAGE_KEY = "centerline-toasts";
+const rank = (level: Severity) => Object.keys(SEVERITIES).indexOf(level);
+
+export type ShownToast = {
+  id: number;
+  level: Severity;
+  message: string;
+  /** Milliseconds left on its clock. */
+  left: number;
+};
+
+/**
+ * The page's toasts: up to three shown, newest first, the rest queued.
+ * One for the whole page; `<Toaster>` shows it.
+ */
+class Toasts {
+  shown = $state<ShownToast[]>([]);
+  queued: ShownToast[] = [];
+  /** What the live regions read, polite and assertive. */
+  polite = $state<string[]>([]);
+  assertive = $state<string[]>([]);
+  #nextId = 1;
+
+  raise(level: Severity, message: string) {
+    const added = { id: this.#nextId++, level, message, left: TOAST_DURATION };
+    this.#announce(added);
+    if (this.shown.length < MOST_SHOWN) {
+      this.shown.unshift(added);
+      return;
+    }
+    // The least important showing, the oldest among equals (newest first,
+    // so the last one found).
+    let least = this.shown[0]!;
+    for (const t of this.shown)
+      if (rank(t.level) <= rank(least.level)) least = t;
+    if (rank(level) > rank(least.level)) {
+      this.shown = this.shown.filter((t) => t !== least);
+      this.queued.unshift({ ...least });
+      this.shown.unshift(added);
+    } else {
+      this.queued.push(added);
+    }
+  }
+
+  close(id: number) {
+    this.shown = this.shown.filter((t) => t.id !== id);
+    this.#promote();
+  }
+
+  /** Runs every shown toast's clock on by `ms`. */
+  tick(ms: number) {
+    for (const t of this.shown) t.left -= ms;
+    const done = this.shown.filter((t) => t.left <= 0);
+    if (!done.length) return;
+    this.shown = this.shown.filter((t) => t.left > 0);
+    this.#promote();
+  }
+
+  /** Keeps the toasts still to read for the next page, after a redirect. */
+  save() {
+    const left = [...this.shown].reverse().concat(this.queued);
+    if (!left.length) return;
+    try {
+      sessionStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify(left.map(({ level, message }) => ({ level, message }))),
+      );
+    } catch {
+      // Storage is blocked: they're lost with the page.
+    }
+  }
+
+  /** Drops what `save` kept, when the page itself comes back from the back-forward cache. */
+  unsave() {
+    try {
+      sessionStorage.removeItem(STORAGE_KEY);
+    } catch {
+      // Nothing was kept.
+    }
+  }
+
+  /** Shows, and reads again, the toasts the last page kept. */
+  restore() {
+    let kept: { level: Severity; message: string }[] = [];
+    try {
+      kept = JSON.parse(sessionStorage.getItem(STORAGE_KEY) ?? "[]");
+      sessionStorage.removeItem(STORAGE_KEY);
+    } catch {
+      return;
+    }
+    for (const { level, message } of kept)
+      if (level in SEVERITIES && typeof message === "string")
+        this.raise(level, message);
+  }
+
+  /** Forgets every toast, shown and queued. */
+  clear() {
+    this.shown = [];
+    this.queued = [];
+    this.polite = [];
+    this.assertive = [];
+  }
+
+  // Shows the most important waiting toast (the first among equals) in
+  // each free place, with a full clock.
+  #promote() {
+    while (this.shown.length < MOST_SHOWN && this.queued.length) {
+      let next = this.queued[0]!;
+      for (const t of this.queued)
+        if (rank(t.level) > rank(next.level)) next = t;
+      this.queued.splice(this.queued.indexOf(next), 1);
+      this.shown.unshift({ ...next, left: TOAST_DURATION });
+    }
+  }
+
+  // Each message is a line added to its region, so several in a row are all
+  // read; lines go a while later, which isn't announced.
+  #announce({ level, message }: ShownToast) {
+    const line = `${SEVERITIES[level].label}: ${message}`;
+    const region = level === "danger" ? "assertive" : "polite";
+    this[region].push(line);
+    setTimeout(() => {
+      const lines = this[region];
+      const at = lines.indexOf(line);
+      if (at >= 0) lines.splice(at, 1);
+    }, 7000);
+  }
+}
+
+export const toasts = new Toasts();
+
+/**
+ * Shows a brief message after an action, such as `toast("success", "Roster
+ * saved.")`. It shows on the next page too, after a redirect. Needs one
+ * `<Toaster />` in the root layout. Does nothing on the server.
+ */
+export function toast(level: Severity, message: string) {
+  if (BROWSER) toasts.raise(level, message);
+}
