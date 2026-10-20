@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { HTMLInputAttributes } from "svelte/elements";
-  import { control } from "./control.js";
+  import { formControlClasses } from "../formControl/formControl.js";
 
   type Props = Omit<HTMLInputAttributes, "type"> & {
     /** One of the types the apps use; "text" when left out. */
@@ -18,4 +18,4 @@
   }: Props = $props();
 </script>
 
-<input {type} bind:value {...rest} class={[control, className]} />
+<input {type} bind:value {...rest} class={[formControlClasses, className]} />

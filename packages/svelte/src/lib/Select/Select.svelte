@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
   import type { HTMLSelectAttributes } from "svelte/elements";
-  import { control } from "../Input/control.js";
+  import { formControlClasses } from "../formControl/formControl.js";
 
   type Props = HTMLSelectAttributes & {
     /** The chosen option's value, bindable. */
@@ -18,6 +18,6 @@
   }: Props = $props();
 </script>
 
-<select bind:value {...rest} class={[control, className]}>
+<select bind:value {...rest} class={[formControlClasses, className]}>
   {@render children()}
 </select>
