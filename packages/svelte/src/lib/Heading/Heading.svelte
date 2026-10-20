@@ -13,24 +13,21 @@
 
   let { level, look, children, class: className, ...rest }: Props = $props();
 
-  // h5 and h6 look like h4: below it, sizes stop being told apart.
-  const sizes = {
-    1: "text-3xl",
-    2: "text-xl",
-    3: "text-lg",
-    4: "text-base",
+  const sized = "font-heading font-semibold text-foreground";
+  const looks = {
+    1: `text-3xl ${sized}`,
+    2: `text-xl ${sized}`,
+    3: `text-lg ${sized}`,
+    4: `text-base ${sized}`,
+    // The section label is in the body font, not the heading font.
+    label:
+      "font-sans text-xs font-semibold tracking-wider text-muted-foreground uppercase",
   };
 
+  // h5 and h6 look like h4: below it, sizes stop being told apart.
   let shown = $derived(look ?? (Math.min(level, 4) as 1 | 2 | 3 | 4));
 </script>
 
-<svelte:element
-  this={`h${level}`}
-  {...rest}
-  class={[
-    shown === "label"
-      ? "font-sans text-xs font-semibold tracking-wider text-muted-foreground uppercase"
-      : [sizes[shown], "font-heading font-semibold text-foreground"],
-    className,
-  ]}>{@render children()}</svelte:element
+<svelte:element this={`h${level}`} {...rest} class={[looks[shown], className]}
+  >{@render children()}</svelte:element
 >
