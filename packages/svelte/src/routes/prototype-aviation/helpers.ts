@@ -30,8 +30,13 @@ export function resolvePosition(login: string): Resolved {
   return { kind: "unknown", login };
 }
 
-export function formatFrequency(hz: number): string {
-  return (hz / 1_000_000).toFixed(3);
+// US frequencies need two decimals: the third is cut, not rounded
+// (128.225 MHz shows as 128.22, as the spoken form does).
+export function formatFrequency(hz: number, trim = false): string {
+  const whole = Math.floor(hz / 1_000_000);
+  let frac = String(Math.floor((hz % 1_000_000) / 10_000)).padStart(2, "0");
+  if (trim) frac = frac.replace(/0$/, "");
+  return `${whole}.${frac}`;
 }
 
 // 7110.65 2-4-17: separate digits, "point" for the decimal, drop digits after
@@ -50,7 +55,7 @@ const words = [
 ];
 export function spokenFrequency(hz: number): string {
   const [whole, frac] = formatFrequency(hz).split(".");
-  const kept = frac.slice(0, 2).replace(/0+$/, "") || "0";
+  const kept = frac.replace(/0+$/, "") || "0";
   const say = (s: string) => [...s].map((d) => words[+d]).join(" ");
   return `${say(whole)} point ${say(kept)}`;
 }
@@ -82,6 +87,47 @@ export function localDate(d: Date): string {
     month: "short",
     day: "numeric",
   }).format(d);
+}
+
+// Round 2: date formats for point 7's date part.
+const fmt = (d: Date, o: Intl.DateTimeFormatOptions) =>
+  new Intl.DateTimeFormat("en-US", { timeZone: ZONE, ...o }).format(d);
+const dayKey = (d: Date) =>
+  fmt(d, { year: "numeric", month: "2-digit", day: "2-digit" });
+const sameYear = (d: Date) =>
+  fmt(d, { year: "numeric" }) === fmt(NOW, { year: "numeric" });
+const year = (d: Date, sep = ", ") =>
+  sameYear(d) ? "" : `${sep}${fmt(d, { year: "numeric" })}`;
+
+export type DateStyle = "A" | "B" | "C" | "D" | "E";
+export function formatDate(d: Date, style: DateStyle): string {
+  switch (style) {
+    case "A":
+      return (
+        fmt(d, { weekday: "short", month: "short", day: "numeric" }) + year(d)
+      );
+    case "B":
+      return (
+        fmt(d, { weekday: "long", month: "long", day: "numeric" }) + year(d)
+      );
+    case "C":
+      return fmt(d, { month: "short", day: "numeric" }) + year(d);
+    case "D": {
+      const days = Math.round(
+        (Date.parse(dayKey(d)) - Date.parse(dayKey(NOW))) / 86_400_000,
+      );
+      if (days === 0) return "Today";
+      if (days === 1) return "Tomorrow";
+      if (days > 1 && days < 7) return fmt(d, { weekday: "long" });
+      return formatDate(d, "A");
+    }
+    case "E":
+      return (
+        `${fmt(d, { weekday: "short" })} ${fmt(d, { day: "numeric" })} ` +
+        fmt(d, { month: "short" }) +
+        year(d, " ")
+      );
+  }
 }
 
 // Minutes between two instants, split into hours and minutes.
