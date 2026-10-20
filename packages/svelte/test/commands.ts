@@ -22,6 +22,15 @@ export const emulateColorScheme: BrowserCommand<[DeviceScheme]> = async (
   });
 };
 
+/** Sets whether the device asks for less motion; null resets it. */
+export const emulateReducedMotion: BrowserCommand<
+  ["reduce" | "no-preference" | null]
+> = async (context, reducedMotion) => {
+  await playwrightPage(context, "emulateReducedMotion").emulateMedia({
+    reducedMotion,
+  });
+};
+
 /** A cookie as the browser stored it, attributes included. */
 export type StoredCookie = {
   name: string;
@@ -41,6 +50,9 @@ export const storedCookies: BrowserCommand<[]> = async (context) =>
 declare module "vitest/browser" {
   interface BrowserCommands {
     emulateColorScheme: (scheme: DeviceScheme) => Promise<void>;
+    emulateReducedMotion: (
+      motion: "reduce" | "no-preference" | null,
+    ) => Promise<void>;
     storedCookies: () => Promise<StoredCookie[]>;
   }
 }
