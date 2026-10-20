@@ -69,12 +69,11 @@ function, and call it where you use them:
 
 ## Functions
 
-| Function                          | Where        | Notes                                                                                                |
-| --------------------------------- | ------------ | ---------------------------------------------------------------------------------------------------- |
-| `fetchPositions(artcc)`           | `/server`    | `Promise<VnasPosition[]>`: the ARTCC's positions, its TRACONs' and towers' included. Never rejects.  |
-| `createPositionsFetcher(options)` | `/server`    | A separate fetcher with its own cache: `fetch`, `maxAge` (ms, an hour by default), `now`. For tests. |
-| `setPositions(() => positions)`   | package root | In the root layout's `<script>`, once.                                                               |
-| `getPositions()`                  | package root | `() => readonly VnasPosition[]`; no positions when no layout set them.                               |
+| Function                        | Where        | Notes                                                                                               |
+| ------------------------------- | ------------ | --------------------------------------------------------------------------------------------------- |
+| `fetchPositions(artcc)`         | `/server`    | `Promise<VnasPosition[]>`: the ARTCC's positions, its TRACONs' and towers' included. Never rejects. |
+| `setPositions(() => positions)` | package root | In the root layout's `<script>`, once.                                                              |
+| `getPositions()`                | package root | `() => readonly VnasPosition[]`; no positions when no layout set them.                              |
 
 `@indy-center/svelte/server` throws if it is loaded in the browser, so a
 stray import from a component fails at once rather than at the fetch.

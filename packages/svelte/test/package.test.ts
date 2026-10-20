@@ -1,6 +1,6 @@
 import { execFileSync } from "node:child_process";
 import { readFile } from "node:fs/promises";
-import { describe, expect, test } from "vitest";
+import { describe, expect, onTestFinished, test, vi } from "vitest";
 
 // Run after `npm run build`, as the test script does.
 const root = new URL("..", import.meta.url);
@@ -80,33 +80,34 @@ describe("the packed package", () => {
     const pkg = JSON.parse(
       await readFile(new URL("package.json", root), "utf8"),
     );
-    const server = pkg.exports["./server"];
-    expect(files).toContain(server.types.replace("./", ""));
+    expect(files).toContain(pkg.exports["./server"].types.replace("./", ""));
     expect(files).toContain("dist/positions/positions.md");
 
-    const { createPositionsFetcher, fetchPositions } =
-      await import("@indy-center/svelte/server");
-    expect(fetchPositions).toBeTypeOf("function");
-    const fetchZid = createPositionsFetcher({
-      fetch: async () =>
-        Response.json({
-          lastUpdatedAt: "2026-10-17T02:35:43.475Z",
-          facility: {
-            name: "Indianapolis ARTCC",
-            positions: [
-              {
-                id: "1",
-                callsign: "IND_GND",
-                name: "Ground",
-                radioName: "Indy  Ground",
-                frequency: 121900000,
-                starred: true,
-              },
-            ],
-          },
-        }),
+    // Data Admin stubbed, so the test stays off the network.
+    vi.stubGlobal("fetch", async () =>
+      Response.json({
+        lastUpdatedAt: "2026-10-17T02:35:43.475Z",
+        facility: {
+          name: "Indianapolis ARTCC",
+          positions: [
+            {
+              id: "1",
+              callsign: "IND_GND",
+              name: "Ground",
+              radioName: "Indy  Ground",
+              frequency: 121900000,
+              starred: true,
+            },
+          ],
+        },
+      }),
+    );
+    onTestFinished(() => {
+      vi.unstubAllGlobals();
     });
-    expect(await fetchZid("ZID")).toEqual([
+    const server = await import("@indy-center/svelte/server");
+    expect(Object.keys(server)).toEqual(["fetchPositions"]);
+    expect(await server.fetchPositions("ZID")).toEqual([
       {
         id: "1",
         callsign: "IND_GND",

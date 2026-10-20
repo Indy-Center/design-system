@@ -1,10 +1,13 @@
 import { getContext, setContext } from "svelte";
 import type { VnasPosition } from "../aviation/resolvePosition.js";
 
+/** Gives the page's positions when called. */
+type PositionsGetter = () => readonly VnasPosition[];
+
 const key = Symbol("@indy-center/svelte positions");
 
 /** No layout set any: every lookup is unknown. */
-const none = () => [];
+const none: PositionsGetter = () => [];
 
 /**
  * Gives every component below this one the page's positions, so `Position`
@@ -13,7 +16,7 @@ const none = () => [];
  * `load` gave: `setPositions(() => data.positions)`. A function, so the
  * lookups follow when the layout's data reloads.
  */
-export function setPositions(positions: () => readonly VnasPosition[]): void {
+export function setPositions(positions: PositionsGetter): void {
   setContext(key, positions);
 }
 
@@ -22,6 +25,6 @@ export function setPositions(positions: () => readonly VnasPosition[]): void {
  * function to call where they're read, such as in a `$derived`. It gives
  * no positions when no layout set them.
  */
-export function getPositions(): () => readonly VnasPosition[] {
-  return getContext<(() => readonly VnasPosition[]) | undefined>(key) ?? none;
+export function getPositions(): PositionsGetter {
+  return getContext<PositionsGetter | undefined>(key) ?? none;
 }

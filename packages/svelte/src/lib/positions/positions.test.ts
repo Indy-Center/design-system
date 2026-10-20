@@ -2,7 +2,7 @@ import { describe, expect, test } from "vitest";
 import { render } from "vitest-browser-svelte";
 import type { VnasPosition } from "../aviation/resolvePosition.ts";
 import PositionName from "./PositionName.test.svelte";
-import Layout from "./positions.test.svelte";
+import Layout from "./PositionsLayout.test.svelte";
 
 const indyCenter: VnasPosition = {
   id: "01GFTXMTZDDJ9XKMJ7AX0EXKQF",

@@ -10,16 +10,14 @@ if (BROWSER) {
   );
 }
 
-export {
-  createPositionsFetcher,
-  type PositionsFetcherOptions,
-} from "./positions/fetchPositions.js";
-
 /**
  * An ARTCC's positions from vNAS Data Admin, slimmed to `VnasPosition`,
  * shared by every caller in this server process and checked hourly.
+ *
+ * To be replaced by identity's `getFacilityPositions()` RPC, so apps stop
+ * each pulling Data Admin; apps then change only the line that calls this.
  */
 export const fetchPositions = createPositionsFetcher({
-  // Looked up on each call, so a fetch patched after import is used.
+  // Looked up on each call, so a test can stub the global fetch.
   fetch: (input, init) => globalThis.fetch(input, init),
 });
