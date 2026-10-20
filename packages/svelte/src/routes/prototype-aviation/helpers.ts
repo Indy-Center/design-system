@@ -124,7 +124,8 @@ export function formatDate(d: Date, style: DateStyle): string {
       if (days === 0) return "Today";
       if (days === 1) return "Tomorrow";
       if (days > 1 && days < 7) return fmt(d, { weekday: "long" });
-      return formatDate(d, "A");
+      // Chosen in round 3: D, with the day before the month after a week.
+      return formatDate(d, "E");
     }
     case "E":
       return (
@@ -205,12 +206,12 @@ export const AIRPORTS = [
   { icao: "KLEX", name: "Blue Grass" },
 ];
 
-// Round 3: a cab position's airport, from its callsign's prefix. Approach and
-// center positions cover many airports (DAY_APP is "Columbus Approach"), so
-// they have none. The real component would take it from data, not guess.
+// A position's airport, from its callsign's prefix: a cab's own airport, or
+// an approach's primary one. Centers have none. The real component would
+// take it from data, not guess.
 export function airportOf(callsign: string) {
   const parts = callsign.split("_");
-  if (!["TWR", "GND", "DEL", "RMP"].includes(parts[parts.length - 1]))
+  if (!["TWR", "GND", "DEL", "RMP", "APP"].includes(parts[parts.length - 1]))
     return undefined;
   const icao = `K${parts[0]}`;
   return AIRPORTS.find((a) => a.icao === icao) ?? { icao, name: "" };

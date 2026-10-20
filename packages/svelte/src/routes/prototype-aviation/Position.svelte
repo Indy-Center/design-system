@@ -11,11 +11,13 @@
 </script>
 
 <script lang="ts">
-  // Round 3: a Position that shows any subset of its fields. Codes (the short
-  // name, the airport) sit in a column on the left; the radio name leads, the
-  // sector follows muted; the frequency sits right of the first line (stacked)
-  // or at the end (one line). A relief login shows as the position it
-  // resolves to, with no note: it may not be a relief at all.
+  // Round 4: a Position that shows any subset of its fields. Stacked: the
+  // radio name leads with the frequency on its right; beneath it the short
+  // name, then the sector ("IND_83_CTR · Falmouth 83"). Without a radio name
+  // the sector leads, then the short name. The airport goes in a narrow
+  // left column or at the end of the second line. A relief login shows as
+  // the position it resolves to: it may not be a relief at all. An unknown
+  // callsign shows alone.
   import {
     airportOf,
     formatFrequency,
@@ -37,30 +39,52 @@
     decimals?: 2 | 3;
   } = $props();
 
+  type Part = { field: Field; text: string; mono?: boolean; sub?: string };
+
   const r = $derived(resolvePosition(login));
   const has = (f: Field) => show.includes(f);
   const airport = $derived(
     r.kind !== "unknown" && has("airport") ? airportOf(r.login) : undefined,
   );
-  const texts = $derived(
-    r.kind === "unknown"
-      ? []
-      : [
-          has("radioName") ? r.position.radioName : "",
-          has("name") ? r.position.name : "",
-        ].filter(Boolean),
-  );
-  // With no words to lead, a code leads instead; an unknown callsign has
-  // nothing else to show, so it shows alone.
-  const codeLeads = $derived(r.kind === "unknown" || texts.length === 0);
-  const codes = $derived(
-    [
-      has("callsign") || r.kind === "unknown" ? login : "",
-      airport && (airportAt === "left" || codeLeads) ? airport.icao : "",
-    ].filter(Boolean),
-  );
-  const under = $derived(
-    airport && airportAt === "under" && !codeLeads ? airport : undefined,
+
+  // Parts in reading order, the leading one first.
+  const parts = $derived.by((): Part[] => {
+    if (r.kind === "unknown")
+      return [{ field: "callsign", text: login, mono: true }];
+    const p = r.position;
+    const short: Part | false = has("callsign") && {
+      field: "callsign",
+      text: r.login,
+      mono: true,
+    };
+    const radio: Part | false = has("radioName") && {
+      field: "radioName",
+      text: p.radioName,
+    };
+    const sector: Part | false = has("name") && {
+      field: "name",
+      text: p.name,
+    };
+    const lead = radio || sector || short;
+    const rest = [short, sector].filter((x): x is Part => !!x && x !== lead);
+    const out = [lead, ...rest].filter((x): x is Part => !!x);
+    if (airport && (airportAt === "under" || !out.length))
+      out.push({
+        field: "airport",
+        text: airport.icao,
+        mono: true,
+        sub: out.length ? airport.name : "",
+      });
+    return out;
+  });
+  const lead = $derived(parts[0]);
+  const rest = $derived(parts.slice(1));
+  const leftColumn = $derived(
+    r.kind !== "unknown" &&
+      has("airport") &&
+      airportAt === "left" &&
+      parts.length > 0 &&
+      parts[0].field !== "airport",
   );
   const hz = $derived(
     r.kind !== "unknown" && has("frequency") ? r.position.frequency : undefined,
@@ -75,55 +99,41 @@
   >
 {/snippet}
 
+{#snippet part(p: Part)}<span class={p.mono ? "font-mono" : ""}>{p.text}</span
+  >{#if p.sub}{" "}{p.sub}{/if}{/snippet}
+
 {#if layout === "inline"}
   <span>
-    {#if codes.length}<span
-        class={[
-          "font-mono",
-          codeLeads ? "font-semibold text-foreground" : "text-foreground-soft",
-        ]}>{codes.join(" ")}</span
+    {#if leftColumn && airport}<span class="font-mono text-foreground-soft"
+        >{airport.icao}{" "}</span
       >{/if}
-    {#each texts as t, i (t)}
+    {#each parts as p, i (p.field)}
       <span
         class={i ? "text-muted-foreground" : "font-semibold text-foreground"}
-        >{i || codes.length ? " · " : ""}{t}</span
+        >{i ? " · " : ""}{@render part(p)}</span
       >
     {/each}
-    {#if under}<span class="text-muted-foreground">
-        · <span class="font-mono">{under.icao}</span></span
-      >{/if}
-    {#if hz}{#if codes.length || texts.length}<span
-          class="text-muted-foreground">{" · "}</span
+    {#if hz}{#if parts.length}<span class="text-muted-foreground">{" · "}</span
         >{/if}{@render freq(hz)}{/if}
   </span>
 {:else}
   <span class="flex items-baseline gap-3">
-    {#if !codeLeads && (has("callsign") || (has("airport") && airportAt === "left"))}
+    {#if leftColumn}
       <!-- Kept even when empty, so rows in a list line up. -->
-      <span
-        class={[
-          "shrink-0 font-mono text-sm text-foreground-soft",
-          has("callsign") ? "w-[11ch]" : "w-[4ch]",
-        ]}>{codes.join(" ")}</span
+      <span class="w-[4ch] shrink-0 font-mono text-sm text-foreground-soft"
+        >{airport?.icao ?? ""}</span
       >
     {/if}
     <span class="block min-w-0 flex-1">
       <span class="flex items-baseline justify-between gap-3">
-        {#if codeLeads}
-          <span class="font-mono font-semibold text-foreground"
-            >{codes.join(" ")}</span
-          >
-        {:else}
-          <span class="font-semibold text-foreground">{texts[0]}</span>
-        {/if}
+        {#if lead}<span class="font-semibold text-foreground"
+            >{@render part(lead)}</span
+          >{/if}
         {#if hz}{@render freq(hz)}{/if}
       </span>
-      {#if texts[1] || under}
+      {#if rest.length}
         <span class="block text-sm text-muted-foreground">
-          {#if texts[1]}{texts[1]}{/if}{#if texts[1] && under}{" · "}{/if}{#if under}<span
-              class="font-mono">{under.icao}</span
-            >
-            {under.name}{/if}
+          {#each rest as p, i (p.field)}{i ? " · " : ""}{@render part(p)}{/each}
         </span>
       {/if}
     </span>

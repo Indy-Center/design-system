@@ -1,8 +1,8 @@
 <script lang="ts">
-  // Throwaway prototype (ticket centerline-packages/08), round 3. Rounds 1
-  // and 2 are in this branch's history (221dbef, 7499bb3). Settled picks at
-  // the top; open: the Position's presets (controllers and pilots), relief
-  // logins in lists, and the date. Positions come from a slim snapshot of
+  // Throwaway prototype (ticket centerline-packages/08), round 4. Earlier
+  // rounds are in this branch's history (221dbef, 7499bb3, d3f050d). Settled
+  // picks at the top; open: the Position's presets (controllers and pilots)
+  // and one position held by two people. Positions come from a slim snapshot of
   // ZID's vNAS Data Admin, read 2026-10-20. Members are made up.
   import { goto } from "$app/navigation";
   import { page } from "$app/state";
@@ -39,7 +39,9 @@
     .split(",")
     .filter((f): f is Field => allFields.includes(f as Field));
   let fields = $state<Field[]>(
-    fromQuery.length ? fromQuery : ["radioName", "name", "frequency"],
+    fromQuery.length
+      ? fromQuery
+      : ["callsign", "radioName", "name", "frequency"],
   );
   let layout = $state<"inline" | "stacked">(
     q.get("layout") === "inline" ? "inline" : "stacked",
@@ -92,19 +94,35 @@
   const controllerPresets: Preset[] = [
     {
       letter: "C1",
-      pick: true,
-      note: "Default: radio name, sector beneath, frequency right.",
+      note: "Radio name, sector beneath, frequency right.",
       show: ["radioName", "name", "frequency"],
     },
     {
       letter: "C2",
-      note: "With the short name on the left (the callsign until vNAS publishes it).",
+      pick: true,
+      note: "C1 with the short name first on the second line (the callsign until vNAS publishes it).",
       show: ["callsign", "radioName", "name", "frequency"],
     },
     {
       letter: "C3",
-      note: "C1 on one line, for tight spots.",
-      show: ["radioName", "name", "frequency"],
+      note: "C2 on one line, for tight spots.",
+      show: ["callsign", "radioName", "name", "frequency"],
+      layout: "inline",
+    },
+    {
+      letter: "C4",
+      note: "No radio name: the sector leads, the short name beneath.",
+      show: ["callsign", "name", "frequency"],
+    },
+    {
+      letter: "C5",
+      note: "No radio name or short name: sector and frequency.",
+      show: ["name", "frequency"],
+    },
+    {
+      letter: "C6",
+      note: "C4 on one line.",
+      show: ["callsign", "name", "frequency"],
       layout: "inline",
     },
   ];
@@ -117,7 +135,7 @@
     {
       letter: "P2",
       pick: true,
-      note: "P1, the airport on the left like a short name. Center and approach have none.",
+      note: "P1, the airport on the left. An approach shows its primary airport; a center has none.",
       show: ["airport", "radioName", "frequency"],
     },
     {
@@ -134,7 +152,7 @@
     for (const l of pilotRows) {
       const a = airportOf(l);
       const key = a?.icao ?? "enroute";
-      const title = a ? `${a.icao} ${a.name}` : "Enroute and approach";
+      const title = a ? `${a.icao} ${a.name}` : "Enroute";
       if (!out.has(key)) out.set(key, { title, logins: [] });
       out.get(key)!.logins.push(l);
     }
@@ -150,15 +168,19 @@
     { login: "IND_831_CTR", member: jordan },
     { login: "LEX_TWR", member: sam },
   ];
-  const pilotOnline = $derived.by(() => {
-    const seen = new Set<string>();
-    return online.filter((o) => {
+  // One entry per position, with everyone on it.
+  const byPosition = $derived.by(() => {
+    const out = new Map<
+      string,
+      { login: string; members: (typeof online)[number]["member"][] }
+    >();
+    for (const o of online) {
       const r = resolvePosition(o.login);
       const key = r.kind === "unknown" ? o.login : r.position.callsign;
-      if (seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    });
+      if (!out.has(key)) out.set(key, { login: key, members: [] });
+      out.get(key)!.members.push(o.member);
+    }
+    return [...out.values()];
   });
 
   const events = [
@@ -183,23 +205,6 @@
       end: "2027-03-05T03:00:00Z",
     },
   ].map((e) => ({ ...e, start: new Date(e.start), end: new Date(e.end) }));
-  const dateStyles: { letter: DateStyle; note: string; pick?: boolean }[] = [
-    {
-      letter: "A",
-      pick: true,
-      note: "Short weekday and month: Tue, Oct 20 (round 1's).",
-    },
-    { letter: "B", note: "Spelled out: Tuesday, October 20." },
-    { letter: "C", note: "No weekday: Oct 20." },
-    {
-      letter: "D",
-      note: "Today, Tomorrow, a weekday this week; A after that.",
-    },
-    {
-      letter: "E",
-      note: "Day before month, as aviation writes it: Tue 20 Oct.",
-    },
-  ];
 
   const loggedIn = new Date("2026-10-20T19:37:00Z");
 
@@ -234,7 +239,7 @@
 </script>
 
 <svelte:head
-  ><title>Aviation prototype, round 3 · Centerline playground</title
+  ><title>Aviation prototype, round 4 · Centerline playground</title
   ></svelte:head
 >
 
@@ -267,10 +272,10 @@
 {/snippet}
 
 <h1 class="mb-2 font-heading text-3xl font-semibold text-foreground">
-  Aviation prototype, round 3
+  Aviation prototype, round 4
 </h1>
 <p class={lede}>
-  Throwaway. Rounds 1 and 2 are settled below; the rest is your feedback, built
+  Throwaway. Rounds 1 to 3 are settled below; the rest is your feedback, built
   out. Positions and frequencies are ZID's real Data Admin entries; members are
   made up. Clock pinned to 21:00Z, Oct 20, shown in Indianapolis time. The
   switches are kept in the URL, so a set-up can be shared.
@@ -285,6 +290,12 @@
       <time datetime="2026-10-20T23:00:00Z"
         >{localTime(events[0].start)} · {zulu(events[0].start)}</time
       >
+    </dd>
+    <dt class="text-muted-foreground">Date</dt>
+    <dd>
+      {#each events as e (e.name)}<span class="block"
+          >{@render range(e, "D")}</span
+        >{/each}
     </dd>
     <dt class="text-muted-foreground">Relative</dt>
     <dd>
@@ -375,9 +386,11 @@
 <!-- ───────────────────────── Position ───────────────────────── -->
 <h2 class={h2}>1. Position presets</h2>
 <p class={lede}>
-  Stacked by default, one line as an option. Codes (the short name, an airport)
-  sit in a column on the left. A relief login shows as the position it resolves
-  to, with no note; an unknown callsign still shows alone.
+  Stacked by default, one line as an option. The radio name leads, frequency on
+  its right; beneath it the short name, then the sector. Without a radio name
+  the sector leads and the short name goes beneath. The airport sits in a narrow
+  column on the left or at the end of the second line. A relief login shows as
+  the position it resolves to; an unknown callsign shows alone.
 </p>
 
 <h3 class={h3}>Try it</h3>
@@ -480,10 +493,9 @@
 
 <h3 class={h3}>For pilots</h3>
 <p class={lede}>
-  Only cab positions (tower, ground, clearance, ramp) get an airport: an
-  approach covers several (DAY_APP is "Columbus Approach") and a center has
-  none. The prototype takes the airport from the callsign; the component would
-  get it from data.
+  Cab positions show their airport and an approach its primary one; a center has
+  none. The prototype guesses the airport from the callsign's prefix; the
+  component would get it from data.
 </p>
 <div
   class="grid gap-3 rounded-lg border border-border bg-background p-4 sm:grid-cols-2 xl:grid-cols-4"
@@ -511,25 +523,26 @@
 <!-- ───────────────────────── Relief in lists ───────────────────────── -->
 <h2 class={h2}>2. Two people on one position</h2>
 <p class={lede}>
-  IND_83_CTR and IND_831_CTR are both on. Where names show, the position shows
-  twice, once per person. For pilots it shows once: they only need what to call
-  and where to tune.
+  IND_83_CTR and IND_831_CTR are both on. The position shows once, with everyone
+  on it stacked beneath. Pilots see it once with no names.
 </p>
 <Pair>
   <div class="grid gap-6 sm:grid-cols-2">
     <div>
       <h3 class="mb-2 text-sm font-semibold text-foreground">
-        Controllers (with names)
+        Controllers (C2, with names)
       </h3>
       <ul class="divide-y divide-border text-sm">
-        {#each online as o (o.login)}
+        {#each byPosition as g (g.login)}
           <li class="py-2">
             <Position
-              login={o.login}
-              show={["radioName", "name", "frequency"]}
+              login={g.login}
+              show={["callsign", "radioName", "name", "frequency"]}
               {decimals}
             />
-            <span class="mt-0.5 block text-sm"><Member {...o.member} /></span>
+            <ul class="mt-1 space-y-0.5">
+              {#each g.members as m (m.cid)}<li><Member {...m} /></li>{/each}
+            </ul>
           </li>
         {/each}
       </ul>
@@ -537,10 +550,10 @@
     <div>
       <h3 class="mb-2 text-sm font-semibold text-foreground">Pilots (P2)</h3>
       <ul class="divide-y divide-border text-sm">
-        {#each pilotOnline as o (o.login)}
+        {#each byPosition as g (g.login)}
           <li class="py-2">
             <Position
-              login={o.login}
+              login={g.login}
               show={["airport", "radioName", "frequency"]}
               {decimals}
             />
@@ -551,36 +564,10 @@
   </div>
 </Pair>
 
-<!-- ───────────────────────── Date ───────────────────────── -->
-<h2 class={h2}>3. Date (still open)</h2>
-<p class={lede}>
-  The time stays 7A; only the date part changes. Four events: tonight, tomorrow,
-  next week, and next March (which shows the year and EST). The Zulu range
-  carries no date of its own, even when it crosses Zulu midnight.
-</p>
-<div
-  class="grid gap-3 rounded-lg border border-border bg-background p-4 lg:grid-cols-2"
->
-  {#each dateStyles as d (d.letter)}
-    <Variant letter={d.letter} pick={d.pick} note={d.note}>
-      <ul class="space-y-2 text-sm">
-        {#each events as e (e.name)}
-          <li>
-            <span class="block font-semibold text-foreground">{e.name}</span
-            >{@render range(e, d.letter)}
-          </li>
-        {/each}
-      </ul>
-    </Variant>
-  {/each}
-</div>
-
 <!-- ───────────────────────── OnlineController ───────────────────────── -->
-<h2 class={h2}>4. OnlineController</h2>
+<h2 class={h2}>3. OnlineController (next, once Position settles)</h2>
 <p class={lede}>
-  Uses the fields and layout from "Try it" above, and the settled member (Name ·
-  CID, first name when private). The callsign logged in with is in the open
-  part. Tap a row to open it.
+  Unchanged for now apart from following "Try it" above. Tap a row to open it.
 </p>
 <Schemes>
   <ul
