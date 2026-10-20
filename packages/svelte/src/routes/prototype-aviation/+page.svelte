@@ -54,6 +54,11 @@
         : "right",
   );
   let decimals = $state<2 | 3>(q.get("decimals") === "3" ? 3 : 2);
+  // How far the airport code beside the radio name is lifted, in px.
+  let nudge = $state(Number(q.get("nudge") ?? 1) || 0);
+  $effect(() => {
+    document.documentElement.style.setProperty("--airport-nudge", `${nudge}px`);
+  });
 
   $effect(() => {
     const u = new URL(page.url.href);
@@ -61,6 +66,7 @@
     u.searchParams.set("layout", layout);
     u.searchParams.set("airport", airportAt);
     u.searchParams.set("decimals", String(decimals));
+    u.searchParams.set("nudge", String(nudge));
     if (u.search !== page.url.search)
       goto(u, { state: {}, shallow: true, replace: true, reset: false });
   });
@@ -482,6 +488,21 @@
       {/each}
     </div>
   </fieldset>
+  <label class="flex flex-col gap-2 text-sm">
+    <span class="text-muted-foreground"
+      >Lift the airport code: <span class="font-mono text-foreground"
+        >{nudge}px</span
+      ></span
+    >
+    <input
+      type="range"
+      min="0"
+      max="4"
+      step="0.5"
+      bind:value={nudge}
+      class="h-11 w-48 accent-primary"
+    />
+  </label>
 </div>
 <pre
   class="mb-3 overflow-x-auto rounded-md bg-muted p-2 font-mono text-xs text-foreground">&lt;Position callsign="LEX_TWR" show=&#123;[{fields
