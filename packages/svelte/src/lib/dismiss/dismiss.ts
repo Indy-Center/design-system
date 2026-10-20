@@ -5,9 +5,8 @@ export type DismissOptions = {
   open: boolean;
   /**
    * What shows the panel: its button, or a combobox's input (from
-   * `bind:this` on a `$state`). A
-   * press on it isn't outside, so its own click can toggle; Escape puts
-   * focus back on it.
+   * `bind:this` on a `$state`). A press on it isn't outside, so its own
+   * click can toggle; Escape puts focus back on it.
    */
   trigger: HTMLElement | undefined;
   /** Closes the panel: set the component's `open` to false. */
@@ -30,7 +29,8 @@ export const dismiss: Action<HTMLElement, DismissOptions> = (
   let listening = false;
 
   function onkeydown(event: KeyboardEvent) {
-    if (event.key !== "Escape") return;
+    // While composing, Escape cancels the input method's text.
+    if (event.key !== "Escape" || event.isComposing) return;
     // This Escape is the panel's, so a dialog it sits in stays open.
     event.preventDefault();
     // Focus in the panel would be lost when it hides. Focus elsewhere on
@@ -55,9 +55,9 @@ export const dismiss: Action<HTMLElement, DismissOptions> = (
   function listen(on: boolean) {
     if (on === listening) return;
     listening = on;
-    // Capture, so a handler that stops the press doesn't keep it open.
     if (on) {
       document.addEventListener("keydown", onkeydown);
+      // Capture, so a handler that stops the press doesn't keep it open.
       document.addEventListener("pointerdown", onpointerdown, true);
     } else {
       document.removeEventListener("keydown", onkeydown);
