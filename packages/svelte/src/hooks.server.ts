@@ -10,6 +10,8 @@ const device = colorSchemeHandle({ fallback: "device" });
 
 export const handle: Handle = (input) => {
   const { url } = input.event;
+  // PROTOTYPE (ticket 11): "Use my device's setting" needs the device fallback.
+  if (url.pathname.startsWith("/prototype-preferences")) return device(input);
   if (!url.pathname.startsWith("/color-scheme"))
     return input.resolve(input.event);
   return url.searchParams.get("fallback") === "device"
