@@ -20,6 +20,28 @@ describe("Spinner", () => {
       .toHaveTextContent("Saving");
   });
 
+  // Readers announce a live region's text when it changes, not always when
+  // the region arrives with it, so the label goes in after the region.
+  test("puts its label into the status after the status is on the page", async () => {
+    const changes: MutationRecord[] = [];
+    const observer = new MutationObserver((records) =>
+      changes.push(...records),
+    );
+    observer.observe(document.body, {
+      childList: true,
+      characterData: true,
+      subtree: true,
+    });
+    const screen = await renderIn("light", Spinner, {});
+    const status = screen.getByRole("status").element();
+    await expect.element(status).toHaveTextContent("Loading");
+    observer.disconnect();
+    const insideStatus = changes.filter(
+      (c) => c.target !== status.parentNode && status.contains(c.target),
+    );
+    expect(insideStatus).not.toEqual([]);
+  });
+
   test("shows the label to screen readers only", async () => {
     const screen = await renderIn("light", Spinner, {});
     await expect.element(screen.getByText("Loading")).toHaveStyle({

@@ -7,7 +7,8 @@ description: A busy indicator that says what is happening to screen readers and 
 
 - [ ] Use it while something loads or saves and its length isn't known.
       For a known amount done, use `ProgressBar`. On a button, use
-      `Button busy`, which shows one for you.
+      `Button busy`, which shows one for you. (Both arrive in this
+      release; until then, use Spinner beside the button.)
 - [ ] Set `label` when "Loading" isn't what is happening: "Saving",
       "Signing in".
 - [ ] Take it away when the work is done, and show the result.
@@ -48,5 +49,5 @@ description: A busy indicator that says what is happening to screen readers and 
   the ring itself is `aria-hidden`.
 - `status` is a polite live region: readers say the label without
   interrupting. Some readers announce a live region only when its text
-  changes, not when it first appears, so for a long wait that must be
-  heard, keep a status region on the page and change its text.
+  changes, not when it arrives with text in it, so Spinner puts its label
+  in just after it appears on the page.

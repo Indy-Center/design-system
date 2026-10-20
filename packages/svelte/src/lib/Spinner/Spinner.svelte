@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from "svelte";
   import type { HTMLAttributes } from "svelte/elements";
 
   type Props = HTMLAttributes<HTMLSpanElement> & {
@@ -7,6 +8,13 @@
   };
 
   let { label = "Loading", class: className, ...rest }: Props = $props();
+
+  // Readers announce a live region's text when it changes, not always when
+  // the region arrives holding it, so the label goes in after mount.
+  let mounted = $state(false);
+  onMount(() => {
+    mounted = true;
+  });
 </script>
 
 <span role="status" {...rest} class={["inline-flex", className]}>
@@ -29,5 +37,5 @@
       stroke-linecap="round"
     />
   </svg>
-  <span class="sr-only">{label}</span>
+  <span class="sr-only">{mounted ? label : ""}</span>
 </span>
