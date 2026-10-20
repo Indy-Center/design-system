@@ -23,6 +23,7 @@ describe("the packed package", () => {
         "LICENSE",
         "README.md",
         "package.json",
+        "base.css",
         "dist/tokens.css",
         "dist/theme.css",
         "dist/_tokens.scss",

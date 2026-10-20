@@ -2,4 +2,5 @@
 @import "tailwindcss";
 @import "@indy-center/tokens/tokens.css";
 @import "@indy-center/tokens/theme.css";
+@import "@indy-center/tokens/base.css";
 @import "@indy-center/tokens/fonts.css";

@@ -11,7 +11,8 @@
   },
   "files": [
     "dist",
-    "fonts"
+    "fonts",
+    "base.css"
   ],
   "exports": {
     "./tokens.css": "./dist/tokens.css",
@@ -20,6 +21,7 @@
     "./tokens.json": "./dist/tokens.json",
     "./tables.md": "./dist/tables.md",
     "./fonts.css": "./fonts/fonts.css",
+    "./base.css": "./base.css",
     "./package.json": "./package.json"
   },
   "publishConfig": {
