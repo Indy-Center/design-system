@@ -99,10 +99,7 @@
 
 {#snippet beside()}{#if besideLead}<span
       class="font-normal text-muted-foreground"
-      >{" · "}<span
-        class="relative bottom-(--airport-nudge,0.5px) font-mono text-sm"
-        >{besideLead}</span
-      ></span
+      >{" · "}<span class="font-mono text-sm">{besideLead}</span></span
     >{/if}{/snippet}
 
 {#snippet freq(hz: number)}
