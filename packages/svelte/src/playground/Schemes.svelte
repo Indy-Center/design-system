@@ -9,7 +9,7 @@
     "mb-3 text-xs font-semibold tracking-wider text-muted-foreground uppercase";
 </script>
 
-<div class="grid gap-4 lg:grid-cols-3">
+<div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
   <section class="rounded-lg border border-border bg-background p-4">
     <h2 class={label}>Light</h2>
     <div class="text-foreground-soft">{@render children()}</div>
