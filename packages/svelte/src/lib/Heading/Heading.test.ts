@@ -1,0 +1,130 @@
+import { createRawSnippet } from "svelte";
+import { describe, expect, test } from "vitest";
+import { renderIn } from "../../../test/schemes.ts";
+import Heading from "./Heading.svelte";
+
+const text = (s: string) =>
+  createRawSnippet(() => ({ render: () => `<span>${s}</span>` }));
+
+describe("Heading", () => {
+  test.each([
+    [1, 4],
+    [2, 1],
+    [3, "label"],
+    [4, 2],
+    [5, 3],
+    [6, 1],
+  ] as const)(
+    "is a heading at level %i, even in look %s",
+    async (level, look) => {
+      const screen = await renderIn("light", Heading, {
+        level,
+        look,
+        children: text("Upcoming events"),
+      });
+      const heading = screen.getByRole("heading", {
+        name: "Upcoming events",
+        level,
+      });
+      await expect.element(heading).toBeInTheDocument();
+      expect(heading.element().tagName).toBe(`H${level}`);
+    },
+  );
+
+  // Sizes chosen in ticket 10: h1 3xl, h2 xl, h3 lg, h4 base (Tailwind's
+  // 30, 20, 18 and 16px), all semibold in Source Sans 3.
+  test.each([
+    [3, 1, "30px"],
+    [1, 2, "20px"],
+    [2, 3, "18px"],
+    [2, 4, "16px"],
+  ] as const)(
+    "at level %i in look %i is %s semibold in the heading font",
+    async (level, look, size) => {
+      const screen = await renderIn("light", Heading, {
+        level,
+        look,
+        children: text("Upcoming events"),
+      });
+      const heading = screen.getByRole("heading");
+      await expect.element(heading).toHaveStyle({
+        fontSize: size,
+        fontWeight: "600",
+      });
+      expect(getComputedStyle(heading.element()).fontFamily).toMatch(
+        /^"Source Sans 3"/,
+      );
+    },
+  );
+
+  test.each([
+    [1, "30px"],
+    [2, "20px"],
+    [3, "18px"],
+    [4, "16px"],
+    [5, "16px"],
+    [6, "16px"],
+  ] as const)("at level %i without a look is %s", async (level, size) => {
+    const screen = await renderIn("light", Heading, {
+      level,
+      children: text("Upcoming events"),
+    });
+    await expect
+      .element(screen.getByRole("heading"))
+      .toHaveStyle({ fontSize: size });
+  });
+
+  // The section label chosen in ticket 10: uppercase xs semibold, wider
+  // tracking (0.05em of 12px), in the body font, not the heading font.
+  test("in the label look is small uppercase body text", async () => {
+    const screen = await renderIn("light", Heading, {
+      level: 2,
+      look: "label",
+      children: text("Upcoming events"),
+    });
+    const heading = screen.getByRole("heading", { level: 2 });
+    await expect.element(heading).toHaveStyle({
+      fontSize: "12px",
+      fontWeight: "600",
+      textTransform: "uppercase",
+      letterSpacing: "0.6px",
+    });
+    expect(getComputedStyle(heading.element()).fontFamily).toMatch(
+      /^ui-sans-serif/,
+    );
+  });
+
+  // The guide's roles: `foreground` (#0F172A light, #FFFFFF dark) for the
+  // sized looks, `muted-foreground` (#475569 light, #9CA3AF dark) for label.
+  test.each([
+    ["light", 2, "rgb(15, 23, 42)"],
+    ["dark", 2, "rgb(255, 255, 255)"],
+    ["dark-header", 2, "rgb(255, 255, 255)"],
+    ["light", "label", "rgb(71, 85, 105)"],
+    ["dark", "label", "rgb(156, 163, 175)"],
+    ["dark-header", "label", "rgb(156, 163, 175)"],
+  ] as const)("in %s, look %s is %s", async (scheme, look, colour) => {
+    const screen = await renderIn(scheme, Heading, {
+      level: 2,
+      look,
+      children: text("Upcoming events"),
+    });
+    await expect
+      .element(screen.getByRole("heading"))
+      .toHaveStyle({ color: colour });
+  });
+
+  test("adds a caller's class and attributes to its own", async () => {
+    const screen = await renderIn("light", Heading, {
+      level: 2,
+      id: "events",
+      class: "mt-6",
+      children: text("Upcoming events"),
+    });
+    const heading = screen.getByRole("heading");
+    await expect.element(heading).toHaveAttribute("id", "events");
+    await expect
+      .element(heading)
+      .toHaveStyle({ marginTop: "24px", fontSize: "20px" });
+  });
+});

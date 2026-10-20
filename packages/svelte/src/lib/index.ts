@@ -1,5 +1,6 @@
 // One line per component, in alphabetical order.
 export { default as Field, type FieldControl } from "./Field/Field.svelte";
+export { default as Heading } from "./Heading/Heading.svelte";
 export { default as Icon } from "./Icon/Icon.svelte";
 export { default as Input } from "./Input/Input.svelte";
 export { default as Link } from "./Link/Link.svelte";
