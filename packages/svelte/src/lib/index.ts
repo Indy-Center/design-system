@@ -7,6 +7,7 @@ export { default as Link } from "./Link/Link.svelte";
 export { default as Select } from "./Select/Select.svelte";
 export { default as SkipLink } from "./SkipLink/SkipLink.svelte";
 export { default as Spinner } from "./Spinner/Spinner.svelte";
+export { default as Text } from "./Text/Text.svelte";
 export { default as Textarea } from "./Textarea/Textarea.svelte";
 
 // The colour scheme, in the browser. Its server hook is in ./hooks.ts.
