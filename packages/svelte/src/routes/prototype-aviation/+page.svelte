@@ -673,7 +673,7 @@
       <tr
         ><th class="py-1 pr-3 font-medium">Controller info</th><th
           class="py-1 pr-3 font-medium">Booking</th
-        ><th class="py-1 font-medium">Off at</th></tr
+        ><th class="py-1 font-medium">Online until</th></tr
       >
     </thead>
     <tbody>
