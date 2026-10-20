@@ -35,7 +35,7 @@
     login: string;
     show: Field[];
     layout?: "inline" | "stacked";
-    airportAt?: "left" | "under";
+    airportAt?: "left" | "right" | "under";
     decimals?: 2 | 3;
   } = $props();
 
@@ -86,10 +86,21 @@
       parts.length > 0 &&
       parts[0].field !== "airport",
   );
+  // "right": the code just after the leading name, on the first line.
+  const besideLead = $derived(
+    airport && airportAt === "right" && parts[0]?.field !== "airport"
+      ? airport.icao
+      : "",
+  );
   const hz = $derived(
     r.kind !== "unknown" && has("frequency") ? r.position.frequency : undefined,
   );
 </script>
+
+{#snippet beside()}{#if besideLead}{" "}<span
+      class="font-mono text-sm font-normal text-muted-foreground"
+      >{besideLead}</span
+    >{/if}{/snippet}
 
 {#snippet freq(hz: number)}
   <span class="font-mono text-foreground tabular-nums"
@@ -110,7 +121,7 @@
     {#each parts as p, i (p.field)}
       <span
         class={i ? "text-muted-foreground" : "font-semibold text-foreground"}
-        >{i ? " · " : ""}{@render part(p)}</span
+        >{i ? " · " : ""}{@render part(p)}{#if !i}{@render beside()}{/if}</span
       >
     {/each}
     {#if hz}{#if parts.length}<span class="text-muted-foreground">{" · "}</span
@@ -127,7 +138,7 @@
     <span class="block min-w-0 flex-1">
       <span class="flex items-baseline justify-between gap-3">
         {#if lead}<span class="font-semibold text-foreground"
-            >{@render part(lead)}</span
+            >{@render part(lead)}{@render beside()}</span
           >{/if}
         {#if hz}{@render freq(hz)}{/if}
       </span>

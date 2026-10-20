@@ -46,8 +46,12 @@
   let layout = $state<"inline" | "stacked">(
     q.get("layout") === "inline" ? "inline" : "stacked",
   );
-  let airportAt = $state<"left" | "under">(
-    q.get("airport") === "under" ? "under" : "left",
+  let airportAt = $state<"left" | "right" | "under">(
+    q.get("airport") === "under"
+      ? "under"
+      : q.get("airport") === "left"
+        ? "left"
+        : "right",
   );
   let decimals = $state<2 | 3>(q.get("decimals") === "3" ? 3 : 2);
 
@@ -88,7 +92,7 @@
     note: string;
     show: Field[];
     layout?: "inline" | "stacked";
-    airportAt?: "left" | "under";
+    airportAt?: "left" | "right" | "under";
     pick?: boolean;
   };
   const controllerPresets: Preset[] = [
@@ -125,6 +129,12 @@
       show: ["callsign", "name", "frequency"],
       layout: "inline",
     },
+    {
+      letter: "C7",
+      note: "C2 with the airport code right of the radio name.",
+      show: ["callsign", "airport", "radioName", "name", "frequency"],
+      airportAt: "right",
+    },
   ];
   const pilotPresets: Preset[] = [
     {
@@ -133,9 +143,15 @@
       show: ["radioName", "frequency"],
     },
     {
-      letter: "P2",
+      letter: "P5",
       pick: true,
-      note: "P1, the airport on the left. An approach shows its primary airport; a center has none.",
+      note: "P1, the airport code right of the radio name. An approach shows its primary airport; a center has none.",
+      show: ["airport", "radioName", "frequency"],
+      airportAt: "right",
+    },
+    {
+      letter: "P2",
+      note: "P1, the airport on the left.",
       show: ["airport", "radioName", "frequency"],
     },
     {
@@ -235,7 +251,9 @@
   const showProp = (p: Preset) =>
     `show={[${p.show.map((f) => `"${f}"`).join(", ")}]}` +
     (p.layout === "inline" ? ' layout="inline"' : "") +
-    (p.airportAt === "under" ? ' airportAt="under"' : "");
+    (p.airportAt && p.airportAt !== "left"
+      ? ` airportAt="${p.airportAt}"`
+      : "");
 </script>
 
 <svelte:head
@@ -429,7 +447,7 @@
   <fieldset>
     <legend class="mb-2 text-sm text-muted-foreground">Airport</legend>
     <div class="flex flex-wrap gap-2">
-      {#each ["left", "under"] as const as a (a)}
+      {#each ["right", "left", "under"] as const as a (a)}
         <label class={seg}
           ><input
             type="radio"
@@ -437,7 +455,11 @@
             name="airport"
             value={a}
             bind:group={airportAt}
-          />{a === "left" ? "On the left" : "Beneath"}</label
+          />{a === "right"
+            ? "Right of the radio name"
+            : a === "left"
+              ? "On the left"
+              : "Beneath"}</label
         >
       {/each}
     </div>
@@ -466,7 +488,8 @@
     .map((f) => `"${f}"`)
     .join(", ")}]&#125;{layout === "inline"
     ? ' layout="inline"'
-    : ""}{airportAt === "under" ? ' airportAt="under"' : ""}{decimals === 3
+    : ""}{airportAt !== "left" ? ` airportAt="${airportAt}"` : ""}{decimals ===
+  3
     ? " decimals={3}"
     : ""} /&gt;</pre>
 <Schemes>
@@ -498,7 +521,7 @@
   component would get it from data.
 </p>
 <div
-  class="grid gap-3 rounded-lg border border-border bg-background p-4 sm:grid-cols-2 xl:grid-cols-4"
+  class="grid gap-3 rounded-lg border border-border bg-background p-4 sm:grid-cols-2 xl:grid-cols-3"
 >
   {#each pilotPresets as p (p.letter)}{@render presetCard(p, pilotRows)}{/each}
   <Variant
@@ -548,13 +571,14 @@
       </ul>
     </div>
     <div>
-      <h3 class="mb-2 text-sm font-semibold text-foreground">Pilots (P2)</h3>
+      <h3 class="mb-2 text-sm font-semibold text-foreground">Pilots (P5)</h3>
       <ul class="divide-y divide-border text-sm">
         {#each byPosition as g (g.login)}
           <li class="py-2">
             <Position
               login={g.login}
               show={["airport", "radioName", "frequency"]}
+              airportAt="right"
               {decimals}
             />
           </li>
