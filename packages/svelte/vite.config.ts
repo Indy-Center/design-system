@@ -15,6 +15,9 @@ export default defineConfig({
   // The tokens package is linked from beside this one; its font is served
   // from there.
   server: { fs: { allow: ["../tokens"] } },
+  // The tests' server renders (`serverRender`) run the icons' CommonJS
+  // build otherwise, which Vite's module runner can't.
+  ssr: { resolve: { mainFields: ["module"] } },
   test: {
     // expect.element retries until the test times out, so keep this short.
     testTimeout: 10_000,
