@@ -7,6 +7,7 @@
   setPositions(() => samplePositions);
 
   const pilots = ["airport", "radioName", "frequency"] as const;
+  const klex = { code: "KLEX", name: "Blue Grass" };
 </script>
 
 <svelte:head><title>Position · Centerline playground</title></svelte:head>
@@ -44,13 +45,13 @@
           callsign="LEX_TWR"
           show={pilots}
           airportAt="right"
-          airport="KLEX"
+          airport={klex}
         />
         <Position
           callsign="LEX_E_APP"
           show={pilots}
           airportAt="right"
-          airport="KLEX"
+          airport={klex}
         />
         <Position callsign="IND_83_CTR" show={pilots} airportAt="right" />
       </dd>
@@ -62,7 +63,7 @@
           callsign="LEX_TWR"
           show={pilots}
           airportAt="left"
-          airport="KLEX"
+          airport={klex}
         />
         <Position callsign="IND_83_CTR" show={pilots} airportAt="left" />
       </dd>
@@ -74,8 +75,7 @@
           callsign="LEX_TWR"
           show={pilots}
           airportAt="under"
-          airport="KLEX"
-          airportName="Blue Grass"
+          airport={klex}
         />
       </dd>
     </div>

@@ -6,6 +6,7 @@
 
 <script lang="ts">
   import type { HTMLAttributes } from "svelte/elements";
+  import type { AirportInfo } from "../aviation/airport.js";
   import { resolvePosition } from "../aviation/resolvePosition.js";
   import Frequency from "../Frequency/Frequency.svelte";
   import { toHertz } from "../Frequency/hertz.js";
@@ -22,10 +23,8 @@
     layout?: "stacked" | "inline";
     /** Where the airport goes: `"right"` of the radio name (the default), a `"left"` column, or `"under"`. */
     airportAt?: "right" | "left" | "under";
-    /** The airport's code, `"KLEX"`: a cab position's, or an approach's primary one. */
-    airport?: string;
-    /** The airport's name, shown with `airportAt="under"`. */
-    airportName?: string;
+    /** A cab position's airport, or an approach's primary one: `{ code: "KLEX", name: "Blue Grass" }`. The name shows only with `airportAt="under"`. */
+    airport?: AirportInfo;
     /** Wins over the radio name the positions give. */
     radioName?: string;
     /** Wins over the frequency the positions give: hertz, or megahertz as written. */
@@ -41,7 +40,6 @@
     layout = "stacked",
     airportAt = "right",
     airport,
-    airportName,
     radioName,
     frequency,
     decimals = 2,
@@ -84,7 +82,7 @@
   const hz = $derived(
     has("frequency") ? (givenHz ?? found?.frequency) : undefined,
   );
-  const code = $derived(has("airport") ? airport : undefined);
+  const code = $derived(has("airport") ? airport?.code : undefined);
 
   // The radio name leads; without it the sector, then the short name.
   const lead = $derived(radio ?? sector ?? shortName);
@@ -114,7 +112,7 @@
 {/snippet}
 
 {#snippet under()}<span class="font-mono">{code}</span
-  >{#if airportName}{" "}{airportName}{/if}{/snippet}
+  >{#if airport?.name}{" "}{airport.name}{/if}{/snippet}
 
 {#if !known}
   <span {...rest} class={["font-mono", className]}>{callsign}</span>

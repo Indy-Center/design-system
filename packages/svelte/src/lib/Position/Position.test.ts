@@ -1,5 +1,6 @@
 import type { ComponentProps } from "svelte";
 import { describe, expect, test } from "vitest";
+import type { AirportInfo } from "../aviation/airport.ts";
 import type { VnasPosition } from "../aviation/resolvePosition.ts";
 import {
   indyCenter,
@@ -15,6 +16,8 @@ import WithPositions from "../../../test/WithPositions.svelte";
 import Position from "./Position.svelte";
 
 const PILOTS = ["airport", "radioName", "frequency"] as const;
+// Its name shows only with airportAt="under".
+const KLEX: AirportInfo = { code: "KLEX", name: "Blue Grass" };
 
 /** Renders Position below a layout that set `positions`. */
 async function show(
@@ -127,13 +130,13 @@ describe("Position", () => {
       const { root } = await show({
         callsign: "LEX_TWR",
         show: ["airport"],
-        airport: "KLEX",
+        airport: KLEX,
       });
       expect(onScreen(root)).toBe("KLEX");
     });
 
     test("leaves the airport off unless asked", async () => {
-      const { root } = await show({ callsign: "LEX_TWR", airport: "KLEX" });
+      const { root } = await show({ callsign: "LEX_TWR", airport: KLEX });
       expect(onScreen(root)).not.toContain("KLEX");
     });
 
@@ -191,7 +194,7 @@ describe("Position", () => {
         callsign: "LEX_TWR",
         show: [...PILOTS],
         airportAt: "right",
-        airport: "KLEX",
+        airport: KLEX,
       });
       expect(onScreen(root)).toBe("Lexington Tower · KLEX 119.10");
       const code = part(root, "KLEX");
@@ -212,7 +215,7 @@ describe("Position", () => {
             callsign: "LEX_TWR",
             show: [...PILOTS],
             airportAt: "right",
-            airport: "KLEX",
+            airport: KLEX,
           },
           { scheme },
         );
@@ -227,7 +230,7 @@ describe("Position", () => {
         callsign: "LEX_E_APP",
         show: [...PILOTS],
         airportAt: "right",
-        airport: "KLEX",
+        airport: KLEX,
       });
       expect(readOut(root)).toBe(
         "Lexington Approach KLEX one two zero point one five",
@@ -239,7 +242,7 @@ describe("Position", () => {
         callsign: "LEX_TWR",
         show: [...PILOTS],
         airportAt: "left",
-        airport: "KLEX",
+        airport: KLEX,
       });
       expect(onScreen(root)).toBe("KLEX Lexington Tower 119.10");
       const code = part(root, "KLEX");
@@ -256,7 +259,7 @@ describe("Position", () => {
             callsign: "LEX_TWR",
             show: [...PILOTS],
             airportAt: "left",
-            airport: "KLEX",
+            airport: KLEX,
           },
           { scheme },
         );
@@ -271,7 +274,7 @@ describe("Position", () => {
         callsign: "LEX_TWR",
         show: [...PILOTS],
         airportAt: "left",
-        airport: "KLEX",
+        airport: KLEX,
       });
       const without = await show({
         callsign: "IND_83_CTR",
@@ -289,8 +292,7 @@ describe("Position", () => {
         callsign: "LEX_TWR",
         show: [...PILOTS],
         airportAt: "under",
-        airport: "KLEX",
-        airportName: "Blue Grass",
+        airport: KLEX,
       });
       expect(onScreen(root)).toBe("Lexington Tower 119.10 KLEX Blue Grass");
       const second = part(root, "KLEX Blue Grass");
@@ -313,7 +315,7 @@ describe("Position", () => {
       const { root } = await show({
         callsign: "IND_X_CTR",
         show: ["shortName", "airport", "radioName", "name", "frequency"],
-        airport: "KIND",
+        airport: { code: "KIND" },
       });
       expect(onScreen(root)).toBe("IND_X_CTR");
       expect(getComputedStyle(part(root, "IND_X_CTR")).fontFamily).toMatch(

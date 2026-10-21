@@ -104,6 +104,13 @@ slim shape the positions lookup supplies:
 | `facility`  | `string`  | The facility's name: "Indianapolis ARTCC".       |
 | `starred`   | `boolean` | Starred in Data Admin.                           |
 
+## Airports
+
+`AirportInfo` is the type for an airport, `{ code, name? }`: the ICAO code
+(`"KLEX"`) and, where the app has it, the name (`"Blue Grass"`).
+`Position` takes one as `airport`. vNAS positions carry no airport, so the
+app supplies it.
+
 ## Ratings
 
 `RATINGS` is VATSIM's controller table, `{ id, short, long }`, from `-1`

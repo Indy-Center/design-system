@@ -19,9 +19,9 @@ description: A controller position from its callsign alone, labelled by radio na
     `["shortName", "radioName", "name", "frequency"]`.
   - Pilots: `show={["airport", "radioName", "frequency"]}` with
     `airportAt="right"` and the position's `airport`.
-- [ ] Pass `airport` for a cab position (its own field) and an approach
-      (its primary airport); a center has none. vNAS doesn't say which, so
-      the app does.
+- [ ] Pass `airport`, an `AirportInfo` (`{ code, name }`), for a cab
+      position (its own field) and an approach (its primary airport); a
+      center has none. vNAS doesn't say which, so the app does.
 - [ ] Pass `radioName` or `frequency` only to override vNAS, such as a
       frequency changed for an event, or a position another ARTCC owns.
 - [ ] Don't change its colours or weights. `class` is for layout.
@@ -42,7 +42,7 @@ description: A controller position from its callsign alone, labelled by radio na
   callsign="LEX_TWR"
   show={["airport", "radioName", "frequency"]}
   airportAt="right"
-  airport="KLEX"
+  airport={{ code: "KLEX", name: "Blue Grass" }}
 />
 
 <!-- Indy Center · IND_83_CTR · Falmouth 83 · 128.22 -->
@@ -51,20 +51,19 @@ description: A controller position from its callsign alone, labelled by radio na
 
 ## Props
 
-| Prop          | Type                           | Notes                                                                                                                                    |
-| ------------- | ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| `callsign`    | `string`                       | Required. The callsign logged in, a relief login included.                                                                               |
-| `positionId`  | `string`                       | The vNAS position id from the vNAS feed, when online: matched instead of the callsign.                                                   |
-| `show`        | `PositionField[]`              | Any of `"shortName"`, `"airport"`, `"radioName"`, `"name"` (the sector) and `"frequency"`, in any order. Controllers' preset by default. |
-| `layout`      | `"stacked" \| "inline"`        | `"stacked"` by default: two lines. `"inline"`: one line, parts between `·`, the frequency last.                                          |
-| `airportAt`   | `"right" \| "left" \| "under"` | Where `airport` goes when `show` has it. `"right"` by default.                                                                           |
-| `airport`     | `string`                       | The airport's code, `"KLEX"`.                                                                                                            |
-| `airportName` | `string`                       | The airport's name, shown after the code with `airportAt="under"`.                                                                       |
-| `radioName`   | `string`                       | Wins over vNAS's radio name.                                                                                                             |
-| `frequency`   | `number \| string`             | Wins over vNAS's frequency: hertz, or megahertz as written. Ignored if it isn't a number.                                                |
-| `decimals`    | `2 \| 3`                       | The frequency's decimals; see `Frequency`.                                                                                               |
-| `class`       | `string`                       | Layout only, on its root.                                                                                                                |
-| others        | global attributes              | `id`, `aria-*` and the rest, on its root `<span>`.                                                                                       |
+| Prop         | Type                           | Notes                                                                                                                                    |
+| ------------ | ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `callsign`   | `string`                       | Required. The callsign logged in, a relief login included.                                                                               |
+| `positionId` | `string`                       | The vNAS position id from the vNAS feed, when online: matched instead of the callsign.                                                   |
+| `show`       | `PositionField[]`              | Any of `"shortName"`, `"airport"`, `"radioName"`, `"name"` (the sector) and `"frequency"`, in any order. Controllers' preset by default. |
+| `layout`     | `"stacked" \| "inline"`        | `"stacked"` by default: two lines. `"inline"`: one line, parts between `·`, the frequency last.                                          |
+| `airportAt`  | `"right" \| "left" \| "under"` | Where `airport` goes when `show` has it. `"right"` by default.                                                                           |
+| `airport`    | `AirportInfo`                  | `{ code: "KLEX", name: "Blue Grass" }`; `name` is optional and shows only with `airportAt="under"`.                                      |
+| `radioName`  | `string`                       | Wins over vNAS's radio name.                                                                                                             |
+| `frequency`  | `number \| string`             | Wins over vNAS's frequency: hertz, or megahertz as written. Ignored if it isn't a number.                                                |
+| `decimals`   | `2 \| 3`                       | The frequency's decimals; see `Frequency`.                                                                                               |
+| `class`      | `string`                       | Layout only, on its root.                                                                                                                |
+| others       | global attributes              | `id`, `aria-*` and the rest, on its root `<span>`.                                                                                       |
 
 ## What it shows
 
@@ -76,7 +75,7 @@ description: A controller position from its callsign alone, labelled by radio na
 - **`airportAt`:** `"right"` puts ` · KLEX` after the radio name, on its
   line and baseline. `"left"` puts it in a narrow column before the rest,
   kept empty for a position without one so a list lines up. `"under"`
-  puts the code and `airportName` on the second line.
+  puts the code and the airport's `name` on the second line.
 - **An unknown callsign** shows alone, in mono, whatever `show` asks for,
   unless `radioName` or `frequency` is passed: then those show with it.
 - With no positions set by the layout, every callsign is unknown.

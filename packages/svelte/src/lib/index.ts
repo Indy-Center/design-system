@@ -102,6 +102,7 @@ export {
 } from "./colorScheme/saveColorScheme.js";
 
 // Aviation helpers: plain functions, for components and apps alike.
+export type { AirportInfo } from "./aviation/airport.js";
 export {
   comparePositionTypes,
   isPosition,
