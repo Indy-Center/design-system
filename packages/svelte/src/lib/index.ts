@@ -10,6 +10,7 @@ export {
   type Crumb,
 } from "./Breadcrumbs/Breadcrumbs.svelte";
 export { default as Button } from "./Button/Button.svelte";
+export { default as Card } from "./Card/Card.svelte";
 export { default as Checkbox } from "./Checkbox/Checkbox.svelte";
 export { default as ChoiceCard } from "./ChoiceCard/ChoiceCard.svelte";
 export {
@@ -33,8 +34,10 @@ export { default as Heading } from "./Heading/Heading.svelte";
 export { default as Icon } from "./Icon/Icon.svelte";
 export { default as Input } from "./Input/Input.svelte";
 export { default as Link } from "./Link/Link.svelte";
+export { default as PageHeader } from "./PageHeader/PageHeader.svelte";
 export { default as PageHero } from "./PageHero/PageHero.svelte";
 export { default as Pagination } from "./Pagination/Pagination.svelte";
+export { default as Panel } from "./Panel/Panel.svelte";
 export { default as ProgressBar } from "./ProgressBar/ProgressBar.svelte";
 export { default as Prose } from "./Prose/Prose.svelte";
 export { default as Radio } from "./Radio/Radio.svelte";
