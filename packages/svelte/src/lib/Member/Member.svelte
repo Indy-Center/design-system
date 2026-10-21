@@ -25,7 +25,7 @@
 
 <span {...rest} class={className}
   >{#if href}<Link {href}>{name}</Link>{:else}{name}{/if}{#if showCid}<span
-      class="text-sm text-muted-foreground"
+      class="text-sm whitespace-nowrap text-muted-foreground"
       >{" "}<span aria-hidden="true">·</span> CID
       <span class="font-mono">{cid}</span></span
     >{/if}</span

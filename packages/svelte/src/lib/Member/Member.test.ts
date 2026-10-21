@@ -39,6 +39,14 @@ describe("Member", () => {
     expect(getComputedStyle(cid).fontFamily).toMatch(/monospace/);
   });
 
+  // In a narrow card, "CID" at a line's end and the number on the next
+  // read as two things.
+  test("keeps the CID and its label on one line", async () => {
+    const screen = await renderIn("light", Member, jordan);
+    const cid = screen.getByText("1000001").element().parentElement!;
+    expect(getComputedStyle(cid).whiteSpace).toBe("nowrap");
+  });
+
   test("leaves the CID out with showCid off", async () => {
     const screen = await renderIn("light", Member, {
       ...jordan,

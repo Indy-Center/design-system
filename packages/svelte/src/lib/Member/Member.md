@@ -51,7 +51,8 @@ description: A member's name, then their CID muted in mono: "Jordan Sample · CI
 - The name: the colour and font of the text around it, or `Link`'s look
   with `href`.
 - ` · CID 1000001`: `text-sm`, `muted-foreground`, the number in
-  `font-mono`. It passes 4.5:1 on the page and on a card in every scheme.
+  `font-mono`, kept on one line. It passes 4.5:1 on the page and on a
+  card in every scheme.
 
 ## Accessibility
 
