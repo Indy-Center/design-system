@@ -84,7 +84,10 @@
     class="flex flex-wrap gap-x-4 text-sm text-muted-foreground"
   >
     {#if local && value}
-      <span>Local: <Time {value} show="datetime" /></span>
+      <!-- Under Zulu, Time draws local times in Zulu too: one line will do. -->
+      {#if !member.zulu}
+        <span>Local: <Time {value} show="datetime" /></span>
+      {/if}
       <span>Zulu: <Time {value} show="datetime" zone="zulu" /></span>
     {:else if boxZone}
       In your time zone, {zoneName(boxZone)}.
