@@ -12,9 +12,13 @@ description: A titled block on the card surface, a section with a heading at the
       inside a section with an `h2`. It looks the same at any level.
 - [ ] Write `title` in sentence case ("Controllers online"); it isn't
       shown in capitals.
-- [ ] `flush` when the body runs to the edges, such as a divided list or
-      a `Table`; the body then brings its own padding (`px-4 py-3` rows
-      line up with the title).
+- [ ] `flush` when the body runs to the edges, such as a divided list;
+      the body then brings its own padding (`px-4 py-3` rows line up with
+      the title). Not for a `Table`: it has its own border, so leave the
+      body padded.
+- [ ] In a flush body, give focusable rows that reach the edges an inset
+      ring (`focus-visible:-outline-offset-2`), as `Tabs` does: the
+      panel's corners clip an outer one.
 - [ ] An `icon` is optional; give every panel on a page one, or none.
 - [ ] Don't colour it or resize the title with classes. `class` is for
       layout, such as `h-full` to fill a grid row.
@@ -46,7 +50,7 @@ description: A titled block on the card surface, a section with a heading at the
 | `flush`    | `boolean`              | No padding round the body. `false` by default (`p-4`).               |
 | `children` | `Snippet`              | The body.                                                            |
 | `class`    | `string`               | Added to the section. Layout only.                                   |
-| others     | `<section>` attributes | Passed to the section, such as `id`.                                 |
+| others     | `<section>` attributes | Passed to the section, such as `id`; not `aria-labelledby`.          |
 
 ## Looks
 
@@ -65,6 +69,8 @@ As chosen in the surfaces prototype (ticket 10):
 - Renders a `<section>` named by its heading (`aria-labelledby`), so it
   is a region a screen reader can list and jump to, and the heading sits
   in the page's outline at `level`.
+- A caller's `aria-labelledby` is ignored: the title always names the
+  region, so the name on screen and the name read out stay the same.
 - The icon is `aria-hidden`: it stays out of the heading and the
   region's name.
 - With many panels on a page, each is a region; keep titles distinct so

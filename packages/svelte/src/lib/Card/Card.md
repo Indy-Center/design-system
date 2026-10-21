@@ -1,6 +1,6 @@
 ---
 title: Card
-description: The one raised surface, a bordered box on the card role, for an item that stands apart from the page.
+description: The one card surface, a bordered box on the card role, for an item that stands apart from the page.
 ---
 
 ## Checklist
@@ -13,8 +13,12 @@ description: The one raised surface, a bordered box on the card role, for an ite
       a part of the page with its own heading. A `div` otherwise.
 - [ ] Give it a heading at the page's next level with `Heading`, not a
       styled `div`.
-- [ ] `flush` when the content runs to the edges, such as a divided list
-      or a `Table`; the content then brings its own padding.
+- [ ] `flush` when the content runs to the edges, such as a divided list;
+      the content then brings its own padding. Not for a `Table`: it has
+      its own border, so give it the padded body.
+- [ ] In a flush card, give focusable rows that reach the edges an inset
+      ring (`focus-visible:-outline-offset-2`), as `Tabs` does: the
+      card's corners clip an outer one.
 - [ ] Don't colour it, shadow it or make it translucent: there is one
       card surface. `class` is for layout, such as a margin, a grid
       span or `h-full`.
