@@ -47,9 +47,9 @@ src/routes/name/+page.svelte its playground page (lower-case folder)
   classes), `buttonClasses` (Button's variants, which DropdownMenu's arrow
   shares), `CloseButton` (Alert's and Toast's close button), `IconTile`
   (the tinted icon tile of ErrorPage, EmptyState and StatCard),
-  `AbbrTooltip` (a code in an `<abbr>` with its long name as visually
-  hidden text and in an `aria-hidden` Tooltip, a tab stop only when
-  `focusable`, for Rating, Credential and Airport), `headerMenu` (the header's disclosure button and panel, its link
+  `AbbrTooltip` (a code in an `<abbr>` with its long name hidden for
+  screen readers and in a Tooltip, for Rating, Credential and Airport),
+  `headerMenu` (the header's disclosure button and panel, its link
   classes, and the trailing-slash rule for the current page, for
   AppsMenu, AppNav, AppNavMenu and UserMenu), `preferenceControl` (the
   settings' rows and "What's saved?" note), `preferenceCookie` (the
