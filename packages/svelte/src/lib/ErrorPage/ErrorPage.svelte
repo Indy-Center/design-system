@@ -118,7 +118,7 @@
            Keep these classes in step with Heading's `label`. -->
       <p
         id={linksId}
-        class="mb-3 text-xs font-semibold tracking-wider text-muted-foreground uppercase"
+        class="mb-3 font-sans text-xs font-semibold tracking-wider text-muted-foreground uppercase"
       >
         Or try one of these
       </p>
