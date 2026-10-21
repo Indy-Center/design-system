@@ -38,14 +38,16 @@
     >
   </div>
   <!-- A <label for> names <progress> in browsers but not in every reader,
-       so the bar points at its label instead. -->
+       so the bar points at its label instead. The `input` edge keeps the
+       empty track in sight on any background: `muted` alone all but
+       vanishes on the light page. -->
   <progress
     aria-labelledby="{id}-label"
     aria-valuetext={valueLabel}
     {value}
     {max}
     class={[
-      "block h-2 w-full appearance-none overflow-hidden rounded-full border-0 bg-muted",
+      "block h-2 w-full appearance-none overflow-hidden rounded-full border border-input bg-muted",
       "[&::-webkit-progress-bar]:bg-muted",
       "[&::-webkit-progress-value]:rounded-full [&::-webkit-progress-value]:bg-info",
       "[&::-moz-progress-bar]:rounded-full [&::-moz-progress-bar]:bg-info",

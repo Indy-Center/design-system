@@ -41,10 +41,13 @@ description: A labelled bar showing how much of something is done, with the amou
 
 - The label in `foreground-soft`, medium weight, and the value in words
   in `muted-foreground` at the right, both small text.
-- Under them, a rounded bar 8px tall: the track in `muted`, the filled
-  part in `info`. `info` rather than `primary`, because `primary` is too
-  faint on the dark track; `info` keeps at least 3:1 against the track in
-  both schemes.
+- Under them, a rounded bar 8px tall: the track in `muted` with a 1px
+  edge in `input`, the filled part in `info`. The edge keeps at least 3:1
+  against the page and cards in both schemes; `muted` alone all but
+  vanishes on the light page.
+- In light, `info` and `primary` are the same Sky. In dark, `primary`
+  stays Sky and is too faint on the dark track (1.75:1), so the fill is
+  `info`, which keeps at least 4.8:1 against the track in both schemes.
 - The percentage is kept between 0% and 100%, as the bar is.
 
 ## Accessibility

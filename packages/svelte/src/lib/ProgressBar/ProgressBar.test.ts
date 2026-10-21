@@ -85,8 +85,9 @@ describe("ProgressBar", () => {
   });
 
   // From the brand guide's Roles table: the track is `muted`, the fill
-  // `info` (`primary` is too faint on the dark track), the label
-  // `foreground-soft` and the value `muted-foreground`.
+  // `info` (`primary` is too faint on the dark track), the track's edge
+  // `input` in both schemes, the label `foreground-soft` and the value
+  // `muted-foreground`.
   const light = {
     track: "rgb(226, 232, 240)",
     fill: "rgb(3, 105, 161)",
@@ -114,6 +115,11 @@ describe("ProgressBar", () => {
       // The fill covers the first 40%; the track shows past it.
       expect(await colourAt(bar, 0.2)).toBe(expected.fill);
       expect(await colourAt(bar, 0.7)).toBe(expected.track);
+      await expect.element(bar).toHaveStyle({
+        borderWidth: "1px",
+        borderStyle: "solid",
+        borderColor: "rgb(100, 116, 139)",
+      });
       await expect
         .element(screen.getByText("Course progress"))
         .toHaveStyle({ color: expected.label });
