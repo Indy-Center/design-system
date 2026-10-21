@@ -247,15 +247,16 @@ describe("Combobox", () => {
         .not.toBeInTheDocument();
     });
 
+    /** Searches the roster; "Ann" is slow, so "Dan"'s list stays a while. */
+    const slowAnn = (query: string) =>
+      new Promise<typeof roster>((resolve) =>
+        setTimeout(
+          () => resolve(roster.filter((c) => c.name.includes(query))),
+          query === "Ann" ? 300 : 20,
+        ),
+      );
+
     test("while searching, the arrows and Enter don't reach the last list", async () => {
-      // "Ann" is slow to answer, so the list still shows "Dan"'s.
-      const slowAnn = (query: string) =>
-        new Promise<typeof roster>((resolve) =>
-          setTimeout(
-            () => resolve(roster.filter((c) => c.name.includes(query))),
-            query === "Ann" ? 300 : 20,
-          ),
-        );
       const screen = await renderIn("light", Picker, { options: slowAnn });
       const input = screen.getByRole("combobox");
       await input.fill("Dan");
@@ -266,6 +267,20 @@ describe("Combobox", () => {
       await userEvent.keyboard("{ArrowDown}");
       expect(input).not.toHaveAttribute("aria-activedescendant");
       await userEvent.keyboard("{Enter}");
+      await expect.element(input).toHaveValue("Ann");
+      await expect
+        .element(screen.getByTestId("picked"))
+        .toHaveTextContent("none");
+    });
+
+    test("while searching, a click doesn't pick from the last list", async () => {
+      const screen = await renderIn("light", Picker, { options: slowAnn });
+      const input = screen.getByRole("combobox");
+      await input.fill("Dan");
+      const dan = screen.getByRole("option", { name: "Dan Andrews" });
+      await expect.element(dan).toBeVisible();
+      await input.fill("Ann");
+      await dan.click();
       await expect.element(input).toHaveValue("Ann");
       await expect
         .element(screen.getByTestId("picked"))

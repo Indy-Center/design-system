@@ -115,8 +115,9 @@ option.
 - A click on the box opens the list; a click on an option picks it; a
   click outside closes it.
 - While a search function is still looking for new text, the arrows
-  don't move into the list it found for the old text, so Enter can't pick
-  an option that no longer matches.
+  don't move into the list it found for the old text and a click on it
+  does nothing, so neither Enter nor the mouse can pick an option that no
+  longer matches.
 - A status region says how many options match while the list is open
   ("3 results", "No matches", "Couldn't search"), then "Ann Archer,
   selected" on a pick.

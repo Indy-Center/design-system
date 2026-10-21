@@ -207,6 +207,8 @@
   }
 
   function onlistclick(event: MouseEvent & { currentTarget: HTMLElement }) {
+    // The list still answers older text: its options may no longer match.
+    if (stale) return;
     const row = (event.target as Element).closest("[role=option]");
     const index = row ? [...event.currentTarget.children].indexOf(row) : -1;
     if (index >= 0) choose(results[index]);
