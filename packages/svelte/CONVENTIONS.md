@@ -170,6 +170,16 @@ A short example importing from "@indy-center/svelte".
 
 | Prop | Type | Notes |
 
+## What it shows (optional)
+
+What the member sees in each state, when the props alone don't say it:
+an empty value, a value that crosses midnight, a value it can't read.
+
+## Server and browser (optional)
+
+What the server draws and what changes once the page loads, when they
+differ: anything that needs the member's zone or device.
+
 ## Looks
 
 Which roles it uses, in each scheme.
