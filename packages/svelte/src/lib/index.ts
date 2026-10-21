@@ -85,6 +85,9 @@ export {
   type TooltipTrigger,
 } from "./Tooltip/Tooltip.svelte";
 
+// Every Indy Center app, for AppsMenu.
+export { INDY_CENTER_APPS } from "./AppsMenu/apps.js";
+
 // The severity scale, for Alert and Toast; and the functions that raise a
 // toast, in the browser and from the server.
 export {

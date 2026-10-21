@@ -3,8 +3,7 @@
   // so it is shown in a dark header band on a light page and on a dark
   // page, rather than in <Schemes>' bare light column. Its tests cover all
   // three schemes.
-  import { AppsMenu } from "../../lib/index.ts";
-  import { apps } from "../../playground/chrome.ts";
+  import { AppsMenu, INDY_CENTER_APPS } from "../../lib/index.ts";
 
   const label =
     "mb-3 text-xs font-semibold tracking-wider text-muted-foreground uppercase";
@@ -28,7 +27,10 @@
         data-theme="dark"
         class="flex justify-end rounded-md bg-background p-2"
       >
-        <AppsMenu {apps} current="https://training.flyindycenter.com" />
+        <AppsMenu
+          apps={INDY_CENTER_APPS}
+          current="https://training.flyindycenter.com"
+        />
       </header>
     </section>
   {/each}

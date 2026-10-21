@@ -24,8 +24,8 @@
   } from "../headerMenu/headerMenu.js";
 
   type Props = HTMLAttributes<HTMLDivElement> & {
-    /** Every Indy Center app, in the order they show. */
-    apps: App[];
+    /** Every Indy Center app, in the order they show: `INDY_CENTER_APPS`. */
+    apps: readonly App[];
     /** The `href` of the app this page is in, marked in the list. */
     current?: string;
   };

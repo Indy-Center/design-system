@@ -7,10 +7,13 @@ import {
 } from "../../../test/contrast.ts";
 import { role } from "../../../test/roles.ts";
 import { renderIn } from "../../../test/schemes.ts";
-import { apps } from "../../playground/chrome.ts";
 import AppsMenu from "./AppsMenu.svelte";
+import { INDY_CENTER_APPS } from "./apps.ts";
 
-const props = () => ({ apps, current: "https://training.flyindycenter.com" });
+const props = () => ({
+  apps: INDY_CENTER_APPS,
+  current: "https://training.flyindycenter.com",
+});
 
 const button = (screen: Awaited<ReturnType<typeof renderIn>>) =>
   screen.getByRole("button", { name: "Apps" });
@@ -34,11 +37,37 @@ describe("AppsMenu", () => {
       .toHaveAttribute("aria-expanded", "true");
     const links = screen.getByRole("link").elements();
     expect(links.map((a) => a.getAttribute("href"))).toEqual(
-      apps.map((app) => app.href),
+      INDY_CENTER_APPS.map((app) => app.href),
     );
     await expect
       .element(screen.getByRole("link", { name: /Library/ }))
       .toHaveAccessibleName("Library Courses for pilots and controllers");
+  });
+
+  test("lists the Indy Center apps the package ships", async () => {
+    const screen = await renderIn("light", AppsMenu, {
+      apps: INDY_CENTER_APPS,
+      current: "https://library.flyindycenter.com",
+    });
+    await button(screen).click();
+    const links = screen.getByRole("link");
+    expect(links.elements().map((a) => a.getAttribute("href"))).toEqual([
+      "https://flyindycenter.com",
+      "https://training.flyindycenter.com",
+      "https://library.flyindycenter.com",
+      "https://charts.flyindycenter.com",
+    ]);
+    const names = [
+      "Indy Center Events, roster, staff, feedback",
+      "Training Your training, sessions, certifications",
+      "Library Courses for pilots and controllers",
+      "Charts Airport charts for your session",
+    ];
+    for (const [i, name] of names.entries())
+      await expect.element(links.nth(i)).toHaveAccessibleName(name);
+    await expect
+      .element(screen.getByRole("link", { name: /Library/ }))
+      .toHaveAttribute("aria-current", "true");
   });
 
   test("marks the current app, and only it", async () => {

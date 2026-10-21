@@ -110,6 +110,19 @@ describe("the packed package", () => {
     );
   });
 
+  test("exports the header's parts and the Indy Center apps, with docs", async () => {
+    const index = await readFile(new URL("dist/index.d.ts", root), "utf8");
+    for (const name of ["AppsMenu", "App", "AppNav", "INDY_CENTER_APPS"])
+      expect(index).toMatch(new RegExp(`\\b${name}\\b`));
+    expect(files).toEqual(
+      expect.arrayContaining([
+        "dist/AppsMenu/AppsMenu.md",
+        "dist/AppsMenu/apps.js",
+        "dist/AppNav/AppNav.md",
+      ]),
+    );
+  });
+
   test("the built aviation helpers run, their imports resolved", async () => {
     const { resolvePosition } = await import(
       new URL("dist/aviation/resolvePosition.js", root).href

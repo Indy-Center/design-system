@@ -7,10 +7,12 @@ description: The header's Apps button and the list of Indy Center apps it opens,
 
 - [ ] It belongs in the header, at its right, before the user menu. The
       `Header` places it; an app doesn't place it by itself.
-- [ ] Pass every Indy Center app as `apps`, in the same order in every
-      app, and the `href` of the app the page is in as `current`.
-- [ ] Give each app its own name ("Training") and a few words on what it
-      holds. Link its home page.
+- [ ] Pass `INDY_CENTER_APPS` as `apps`, so every app lists the same
+      apps in the same order, and the `href` of the app the page is in as
+      `current`.
+- [ ] An app that needs its own list passes it instead: each app with its
+      own name ("Training") and a few words on what it holds, linking its
+      home page.
 - [ ] Links between apps open in the same tab: don't add `target`.
 - [ ] Don't colour it or change its sizes. It is dark in both schemes by
       itself. `class` is for layout only, such as a margin.
@@ -19,45 +21,29 @@ description: The header's Apps button and the list of Indy Center apps it opens,
 
 ```svelte
 <script>
-  import { mdiBookOpenVariant, mdiHome, mdiSchool } from "@mdi/js";
-  import { AppsMenu } from "@indy-center/svelte";
-
-  const apps = [
-    {
-      href: "https://flyindycenter.com",
-      label: "Indy Center",
-      description: "Events, roster, staff, feedback",
-      icon: mdiHome,
-    },
-    {
-      href: "https://training.flyindycenter.com",
-      label: "Training",
-      description: "Your training, sessions, certifications",
-      icon: mdiSchool,
-    },
-    {
-      href: "https://library.flyindycenter.com",
-      label: "Library",
-      description: "Courses for pilots and controllers",
-      icon: mdiBookOpenVariant,
-    },
-  ];
+  import { AppsMenu, INDY_CENTER_APPS } from "@indy-center/svelte";
 </script>
 
-<AppsMenu {apps} current="https://training.flyindycenter.com" />
+<AppsMenu
+  apps={INDY_CENTER_APPS}
+  current="https://training.flyindycenter.com"
+/>
 ```
 
 ## Props
 
 | Prop      | Type               | Notes                                                                                       |
 | --------- | ------------------ | ------------------------------------------------------------------------------------------- |
-| `apps`    | `App[]`            | Required. `{ href: string; label: string; description?: string; icon?: string }`, in order. |
-| `current` | `string`           | The `href` of the app this page is in. None marked if left out.                            |
-| `class`   | `string`           | Added to its root `<div>`. Layout only.                                                    |
-| others    | `<div>` attributes | Passed to its root `<div>`: `id` and the rest.                                             |
+| `apps`    | `readonly App[]`   | Required. `{ href: string; label: string; description?: string; icon?: string }`, in order. |
+| `current` | `string`           | The `href` of the app this page is in. None marked if left out.                             |
+| `class`   | `string`           | Added to its root `<div>`. Layout only.                                                     |
+| others    | `<div>` attributes | Passed to its root `<div>`: `id` and the rest.                                              |
 
 `icon` is an MDI path, such as `mdiSchool` from `@mdi/js`. The type `App`
 is exported beside it.
+
+`INDY_CENTER_APPS` lists Indy Center (flyindycenter.com), Training,
+Library and Charts, each with a description and an icon.
 
 ## Looks
 
