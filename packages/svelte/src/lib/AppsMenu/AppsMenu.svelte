@@ -46,12 +46,12 @@
     {/snippet}
     <ul class="space-y-1">
       {#each apps as app}
-        {@const here = app.href === current}
+        {@const isCurrent = app.href === current}
         <li>
           <a
             href={app.href}
-            aria-current={here ? "true" : undefined}
-            class={[menuRow, "py-2", here && currentClass]}
+            aria-current={isCurrent ? "true" : undefined}
+            class={[menuRow, "py-2", isCurrent && currentClass]}
           >
             {#if app.icon}<Icon path={app.icon} size={20} />{/if}
             <span class="flex-1">

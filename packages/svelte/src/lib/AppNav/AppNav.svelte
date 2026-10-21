@@ -22,8 +22,8 @@
 
   const isGroup = (item: NavItem): item is NavGroup => "children" in item;
 
-  /** `href` is `path`, or `path` is a page under it ("/" only itself). */
-  function holds(href: string, path: string) {
+  /** `path` is `href`'s page, or a page under it ("/" only itself). */
+  function isAtOrUnder(path: string, href: string) {
     if (href === path) return true;
     const base = href.replace(/\/$/, "");
     return base !== "" && path.startsWith(`${base}/`);
@@ -33,12 +33,12 @@
    * The href of the link that marks `path` as current: the closest of
    * those it is, or is under.
    */
-  function currentHref(items: NavItem[], path: string | undefined) {
+  function findCurrentHref(items: NavItem[], path: string | undefined) {
     if (path === undefined) return undefined;
     return items
       .flatMap((item) => (isGroup(item) ? item.children : [item]))
       .map((link) => link.href)
-      .filter((href) => holds(href, path))
+      .filter((href) => isAtOrUnder(path, href))
       .sort((a, b) => b.length - a.length)[0];
   }
 </script>
@@ -77,9 +77,9 @@
     ...rest
   }: Props = $props();
 
-  const here = $derived(currentHref(items, current));
-  const holdsHere = (group: NavGroup) =>
-    group.children.some((link) => link.href === here);
+  const currentHref = $derived(findCurrentHref(items, current));
+  const holdsCurrent = (group: NavGroup) =>
+    group.children.some((link) => link.href === currentHref);
 
   // The menu's groups the member opened or closed, by label, so a group
   // added later (an admin group after sign-in) doesn't take another's
@@ -92,11 +92,11 @@
 </script>
 
 {#snippet link(item: NavLink, style: ClassValue)}
-  {@const isHere = item.href === here}
+  {@const isCurrent = item.href === currentHref}
   <a
     href={item.href}
-    aria-current={isHere ? "page" : undefined}
-    class={[style, isHere && currentClass]}
+    aria-current={isCurrent ? "page" : undefined}
+    class={[style, isCurrent && currentClass]}
   >
     {#if item.icon}<Icon path={item.icon} size={iconSize} />{/if}{item.label}
   </a>
@@ -120,7 +120,7 @@
         <li>
           {#if isGroup(item)}
             <HeaderMenu
-              buttonClass={[barItem, holdsHere(item) && currentClass]}
+              buttonClass={[barItem, holdsCurrent(item) && currentClass]}
               panelClass="w-56"
             >
               {#snippet trigger(open)}
@@ -146,7 +146,7 @@
       {#each items as item, i}
         <li>
           {#if isGroup(item)}
-            {@const open = toggled[item.label] ?? holdsHere(item)}
+            {@const open = toggled[item.label] ?? holdsCurrent(item)}
             {@const id = `app-nav-${uid}-${i}`}
             <button
               type="button"
@@ -155,7 +155,7 @@
               class={[
                 menuRow,
                 "cursor-pointer",
-                holdsHere(item) && currentClass,
+                holdsCurrent(item) && currentClass,
               ]}
               onclick={() => (toggled[item.label] = !open)}
             >
