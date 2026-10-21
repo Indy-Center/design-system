@@ -83,11 +83,12 @@
   // failed search is tried again).
   $effect(() => {
     if (Array.isArray(options) || !open) return;
-    if (untrack(() => foundFor === query && !failed)) return;
+    // Read outside `untrack`, so new text asks again.
+    const text = query;
+    if (untrack(() => foundFor === text && !failed)) return;
     let current = true;
     searching = true;
     const search = options;
-    const text = query;
     // A function that throws fails the same way as one that rejects.
     new Promise<T[]>((resolve) => resolve(search(text))).then(
       (answer) => settle(answer, false),

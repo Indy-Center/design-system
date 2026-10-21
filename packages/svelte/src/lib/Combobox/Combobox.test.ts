@@ -327,6 +327,23 @@ describe("Combobox", () => {
       expect(input).not.toHaveAttribute("aria-activedescendant");
     });
 
+    test("reopened on the same text, typing new text searches it", async () => {
+      const screen = await renderIn("light", Picker, { options: search });
+      const input = screen.getByRole("combobox");
+      await input.fill("Dan");
+      await expect
+        .element(screen.getByRole("option", { name: "Dan Andrews" }))
+        .toBeVisible();
+      await userEvent.keyboard("{Escape}{ArrowDown}");
+      await expect
+        .poll(() => activeOption(screen))
+        .toEqual({ text: "Dan Andrews", selected: "true" });
+      await input.fill("Ann");
+      await expect
+        .element(screen.getByRole("option", { name: "Ann Archer" }))
+        .toBeVisible();
+    });
+
     /** Searches the roster; "Ann" is slow, so "Dan"'s list stays a while. */
     const slowAnn = (query: string) =>
       new Promise<typeof roster>((resolve) =>
