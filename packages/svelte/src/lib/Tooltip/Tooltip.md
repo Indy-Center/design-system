@@ -17,11 +17,13 @@ description: A short description of a control that shows on hover and on focus.
       trigger, so its text becomes the trigger's description. It replaces
       any `aria-describedby` already there, so don't put it on a control
       in a `Field` that has a hint or an error.
-- [ ] `Rating` breaks both rules on purpose: its visually hidden text
-      already reads the tooltip's words, so it leaves the attributes off
-      and passes `aria-hidden="true"`, and its chip takes focus only when
-      `focusable`. Don't copy that unless the trigger's own text says
-      the same.
+- [ ] `Rating`, `Credential` and `Airport` (with `nameAt="tooltip"`)
+      break both rules on purpose: their visually hidden text already
+      reads the tooltip's words, so they leave the attributes off and
+      pass `aria-hidden="true"`, and they take focus only when
+      `focusable`. Don't copy that unless the trigger's own text says the
+      same. For an airport's name, use `Airport` rather than a `Tooltip`
+      of your own.
 - [ ] Write `text` as plain words, short enough for a line or two; no
       links or buttons. It is a description, not a name: an icon button
       still needs its own `aria-label`.
