@@ -6,9 +6,9 @@
 <script lang="ts">
   import { DEV } from "esm-env";
   import type { HTMLAttributes } from "svelte/elements";
+  import AbbrTooltip from "../AbbrTooltip/AbbrTooltip.svelte";
   import Chip from "../Chip/Chip.svelte";
   import { isValid } from "../Time/format.js";
-  import Tooltip from "../Tooltip/Tooltip.svelte";
 
   type Props = Omit<HTMLAttributes<HTMLSpanElement>, "children"> & {
     /** The short code, as training writes it: `"S-GC"`, `"APP-SOLO"`. */
@@ -62,32 +62,13 @@
     >{/if}{/snippet}
 
 {#if name}
-  <!-- As Rating: the hidden text reads the long name, so the tooltip is
-       hidden from screen readers and the trigger's aria-describedby left
-       off. -->
-  <Tooltip text={name} aria-hidden="true" class={className}>
-    {#snippet children()}
-      <!-- The focus lands on the abbr inside, but the ring goes round the
-           chip. -->
-      <Chip
-        {...rest}
-        variant={kind}
-        class={[
-          focusable &&
-            "has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-ring",
-        ]}
+  <AbbrTooltip {code} {name} {focusable} class={className}>
+    {#snippet frame(abbr, ring)}
+      <Chip {...rest} variant={kind} class={ring}
+        >{@render abbr()}{@render expiryText()}</Chip
       >
-        <!-- When focusable, a keyboard can show the tooltip too. No title:
-             some screen readers would say the long name twice. -->
-        <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-        <abbr
-          tabindex={focusable ? 0 : undefined}
-          class="no-underline outline-none"
-          >{code}<span class="sr-only">{" "}{name}</span></abbr
-        >{@render expiryText()}
-      </Chip>
     {/snippet}
-  </Tooltip>
+  </AbbrTooltip>
 {:else}
   <Chip {...rest} variant={kind} class={className}
     >{code}{@render expiryText()}</Chip
