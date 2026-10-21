@@ -86,16 +86,38 @@ describe("FilterChip", () => {
     expect(clicks).toBe(1);
   });
 
-  test("does nothing when disabled", async () => {
+  test("is dimmed when disabled, and takes no fill on hover", async () => {
     const screen = await renderIn("light", FilterChip, {
       disabled: true,
       children: text("Online"),
     });
     const chip = screen.getByRole("button", { name: "Online" });
     await expect.element(chip).toBeDisabled();
-    await chip.click({ force: true });
-    await expect.element(chip).toHaveAttribute("aria-pressed", "false");
+    await userEvent.hover(chip, { force: true });
+    await expect.element(chip).toHaveStyle({
+      opacity: "0.6",
+      // No fill of its own.
+      backgroundColor: "rgba(0, 0, 0, 0)",
+    });
   });
+
+  // Off and hovered: a `muted` fill, with the text lifted to
+  // `foreground-soft` to stay readable on it.
+  test.each(SCHEMES)(
+    "stays readable when hovered off in %s",
+    async (scheme) => {
+      const screen = await renderIn(scheme, FilterChip, {
+        children: text("Online"),
+      });
+      const chip = screen.getByRole("button");
+      await userEvent.hover(chip);
+      await expect.element(chip).toHaveStyle({
+        backgroundColor: role("muted", scheme),
+        color: role("foreground-soft", scheme),
+      });
+      expectReadable(chip.element(), scheme);
+    },
+  );
 
   // On: the guide's `primary` border on a 10% `primary` tint, as a checked
   // ChoiceCard, with `foreground` text.

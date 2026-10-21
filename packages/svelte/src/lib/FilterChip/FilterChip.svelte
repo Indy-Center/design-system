@@ -32,8 +32,10 @@
     onclick?.(event);
   }}
   class={[
-    "inline-flex min-h-11 min-w-11 cursor-pointer items-center justify-center rounded-lg border px-3 text-sm font-medium transition-colors",
-    "border-input text-muted-foreground line-through not-aria-pressed:hover:bg-muted",
+    "inline-flex min-h-11 min-w-11 cursor-pointer items-center justify-center rounded-lg border px-3 text-sm font-medium motion-safe:transition-colors",
+    "border-input text-muted-foreground line-through",
+    // Hovered while off, the text lifts to stay 4.5:1 on the muted fill.
+    "enabled:not-aria-pressed:hover:bg-muted enabled:not-aria-pressed:hover:text-foreground-soft",
     "aria-pressed:border-primary aria-pressed:bg-primary/10 aria-pressed:text-foreground aria-pressed:no-underline",
     "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
     "disabled:cursor-not-allowed disabled:opacity-60",

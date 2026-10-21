@@ -57,7 +57,8 @@ chips and a `Select` for the sort.
 - On: a `primary` border on a 10% `primary` tint, with `foreground`
   text, as a checked `ChoiceCard`.
 - Off: an `input` border, no fill, `muted-foreground` text, struck
-  through, so off isn't shown by colour alone. A `muted` fill on hover.
+  through, so off isn't shown by colour alone. On hover, a `muted` fill
+  with `foreground-soft` text, which stays 4.5:1.
 - A `ring` outline when reached by keyboard; 44px tall and wide at least.
 - Each state's text is 4.5:1 or more on the page and on a card, in each
   scheme.
