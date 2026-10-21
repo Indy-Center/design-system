@@ -400,6 +400,37 @@ describe("Combobox", () => {
     await expect.poll(() => form.checkValidity()).toBe(true);
   });
 
+  test("a form reset clears the box and the pick it sends", async () => {
+    const screen = await renderIn("light", Picker, {});
+    const input = screen.getByRole("combobox");
+    const form = input.element().closest("form")!;
+    await userEvent.tab();
+    await userEvent.keyboard("{ArrowDown}{Enter}");
+    await expect.element(input).toHaveValue("Ann Archer");
+    expect(new FormData(form).get("controller")).toBe("1000001");
+    form.reset();
+    await expect.element(input).toHaveValue("");
+    await expect
+      .element(screen.getByTestId("picked"))
+      .toHaveTextContent("none");
+    expect(new FormData(form).get("controller")).toBe("");
+    expect(form.checkValidity()).toBe(true);
+  });
+
+  test("a reset the page cancels keeps the pick", async () => {
+    const screen = await renderIn("light", Picker, {});
+    const input = screen.getByRole("combobox");
+    const form = input.element().closest("form")!;
+    form.addEventListener("reset", (event) => event.preventDefault());
+    await userEvent.tab();
+    await userEvent.keyboard("{ArrowDown}{Enter}");
+    form.reset();
+    // Long enough for a reset to have landed.
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    await expect.element(input).toHaveValue("Ann Archer");
+    expect(new FormData(form).get("controller")).toBe("1000001");
+  });
+
   test("not required, text with no pick fails the form; an empty box passes", async () => {
     const screen = await renderIn("light", Picker, {});
     const input = screen.getByRole("combobox");

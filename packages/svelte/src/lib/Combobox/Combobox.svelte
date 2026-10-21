@@ -142,7 +142,7 @@
   const keyOf = (option: T | null) => (option == null ? null : getKey(option));
 
   // The key of the pick the box's text was last written from. When `value`
-  // changes from outside (a form reset), the box follows it. Keys, not the
+  // changes from outside (the page clears it), the box follows it. Keys, not the
   // options, are compared: a bound value comes back as a proxy.
   let shownKey: string | null = null;
   $effect.pre(() => {
@@ -158,6 +158,23 @@
   $effect(() => {
     const unpicked = value == null && query !== "";
     input?.setCustomValidity(unpicked ? "Pick an option from the list." : "");
+  });
+
+  // A form reset empties the box but leaves the hidden input's value, so
+  // the pick goes too. The reset lands after its event, unless cancelled.
+  $effect(() => {
+    const form = input?.form;
+    if (!form) return;
+    const onreset = (event: Event) => {
+      queueMicrotask(() => {
+        if (event.defaultPrevented) return;
+        pick(null);
+        query = "";
+        pickedMessage = "";
+      });
+    };
+    form.addEventListener("reset", onreset);
+    return () => form.removeEventListener("reset", onreset);
   });
 
   /**
