@@ -33,6 +33,7 @@ export { default as Select } from "./Select/Select.svelte";
 export { default as SkipLink } from "./SkipLink/SkipLink.svelte";
 export { default as Spinner } from "./Spinner/Spinner.svelte";
 export { default as Steps, type Step } from "./Steps/Steps.svelte";
+export { default as Switch } from "./Switch/Switch.svelte";
 export { default as Table } from "./Table/Table.svelte";
 export { default as Tabs, type Tab } from "./Tabs/Tabs.svelte";
 export { default as Text } from "./Text/Text.svelte";
