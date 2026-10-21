@@ -12,6 +12,10 @@ description: A line that opens to show more, built on the native details element
       (`AppsMenu`, `UserMenu`), not this.
 - [ ] Write the summary as what opens: "Why do I need a rating?", not
       "More" or "Click to expand".
+- [ ] Build the summary from text and inline elements (`<span>`, an
+      `Icon`), not `<div>`s or headings: it sits in a `<span>` inside
+      `<summary>`, which holds only inline content. For a summary in
+      parts, such as a name and a date, use spans with flex classes.
 - [ ] Give several the same `name` when only one should be open at a time.
 - [ ] Don't colour it or change its sizes. `class` is for layout only, such
       as a margin or a border between rows.
