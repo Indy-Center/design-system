@@ -97,9 +97,9 @@ src/routes/name/+page.svelte its playground page (lower-case folder)
   applies the choice at once. Read the scheme in use from
   `document.documentElement.dataset.theme` after mount. See
   `src/lib/colorScheme/colorScheme.md`.
-- `font-heading` for headings, `font-mono` for CIDs and controller ratings
-  (`S3`, `C1`; not star ratings); Tailwind's
-  default sizes.
+- `font-heading` for headings, `font-mono` for CIDs, controller ratings
+  (`S3`, `C1`; not star ratings) and HTTP status codes (ErrorPage's
+  `404`); Tailwind's default sizes.
 - Focus: `focus-visible:outline-2 focus-visible:outline-offset-2
 focus-visible:outline-ring`. Where a parent's `overflow-hidden` (or a
   scrolling list) would clip that ring, inset it instead with
