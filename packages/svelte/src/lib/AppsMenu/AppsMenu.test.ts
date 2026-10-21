@@ -1,5 +1,6 @@
 // How the menu opens and closes, its 44px targets and ring are
 // HeaderMenu's, tested in headerMenu/HeaderMenu.test.ts.
+import { mdiSchool } from "@mdi/js";
 import { describe, expect, test } from "vitest";
 import { expectReadable, translucent } from "../../../test/contrast.ts";
 import { role } from "../../../test/roles.ts";
@@ -69,6 +70,24 @@ describe("AppsMenu", () => {
     await expect
       .element(other.getByRole("link", { name: "Y" }))
       .toHaveAttribute("aria-current", "true");
+  });
+
+  test("draws an app's icon before its name, hidden from screen readers, and none for an app without one", async () => {
+    const screen = await renderIn("light", AppsMenu, {
+      apps: [
+        { href: "#a", label: "A", icon: mdiSchool },
+        { href: "#b", label: "B" },
+      ],
+    });
+    await button(screen).click();
+    const a = screen.getByRole("link", { name: "A" }).element();
+    const icon = a.firstElementChild!;
+    expect(icon.tagName).toBe("svg");
+    expect(icon.querySelector("path")!.getAttribute("d")).toBe(mdiSchool);
+    expect(icon).toHaveAttribute("aria-hidden", "true");
+    expect(
+      screen.getByRole("link", { name: "B" }).element().querySelector("svg"),
+    ).toBeNull();
   });
 
   // Its HeaderMenu is wired in.
