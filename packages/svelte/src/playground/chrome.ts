@@ -23,25 +23,25 @@ import type { NavItem } from "../lib/AppNav/AppNav.svelte";
 export const apps: App[] = [
   {
     href: "https://flyindycenter.com",
-    name: "Indy Center",
+    label: "Indy Center",
     description: "Events, roster, staff, feedback",
     icon: mdiHome,
   },
   {
     href: "https://training.flyindycenter.com",
-    name: "Training",
+    label: "Training",
     description: "Your training, sessions, certifications",
     icon: mdiSchool,
   },
   {
     href: "https://library.flyindycenter.com",
-    name: "Library",
+    label: "Library",
     description: "Courses for pilots and controllers",
     icon: mdiBookOpenVariant,
   },
   {
     href: "https://charts.flyindycenter.com",
-    name: "Charts",
+    label: "Charts",
     description: "Airport charts for your session",
     icon: mdiMap,
   },

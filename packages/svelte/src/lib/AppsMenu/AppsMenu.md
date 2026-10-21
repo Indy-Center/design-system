@@ -25,19 +25,19 @@ description: The header's Apps button and the list of Indy Center apps it opens,
   const apps = [
     {
       href: "https://flyindycenter.com",
-      name: "Indy Center",
+      label: "Indy Center",
       description: "Events, roster, staff, feedback",
       icon: mdiHome,
     },
     {
       href: "https://training.flyindycenter.com",
-      name: "Training",
+      label: "Training",
       description: "Your training, sessions, certifications",
       icon: mdiSchool,
     },
     {
       href: "https://library.flyindycenter.com",
-      name: "Library",
+      label: "Library",
       description: "Courses for pilots and controllers",
       icon: mdiBookOpenVariant,
     },
@@ -49,9 +49,9 @@ description: The header's Apps button and the list of Indy Center apps it opens,
 
 ## Props
 
-| Prop      | Type               | Notes                                                                                      |
-| --------- | ------------------ | ------------------------------------------------------------------------------------------ |
-| `apps`    | `App[]`            | Required. `{ href: string; name: string; description?: string; icon?: string }`, in order. |
+| Prop      | Type               | Notes                                                                                       |
+| --------- | ------------------ | ------------------------------------------------------------------------------------------- |
+| `apps`    | `App[]`            | Required. `{ href: string; label: string; description?: string; icon?: string }`, in order. |
 | `current` | `string`           | The `href` of the app this page is in. None marked if left out.                            |
 | `class`   | `string`           | Added to its root `<div>`. Layout only.                                                    |
 | others    | `<div>` attributes | Passed to its root `<div>`: `id` and the rest.                                             |

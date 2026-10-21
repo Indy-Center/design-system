@@ -88,7 +88,7 @@ describe("AppsMenu", () => {
   // Following a link changes the page; the menu shouldn't stay open on it.
   test("closes when a link in it is followed", async () => {
     const screen = await renderIn("light", AppsMenu, {
-      apps: [{ href: "#library", name: "Library" }],
+      apps: [{ href: "#library", label: "Library" }],
     });
     await button(screen).click();
     await screen.getByRole("link", { name: "Library" }).click();
@@ -102,7 +102,7 @@ describe("AppsMenu", () => {
     "stays open when a link is opened elsewhere (%s)",
     async (key) => {
       const screen = await renderIn("light", AppsMenu, {
-        apps: [{ href: "#library", name: "Library" }],
+        apps: [{ href: "#library", label: "Library" }],
       });
       await button(screen).click();
       // Keep the test's page from opening a tab or window.
@@ -126,7 +126,7 @@ describe("AppsMenu", () => {
 
   test("gives the button and every row a 44px target", async () => {
     const screen = await renderIn("light", AppsMenu, {
-      apps: [{ href: "/", name: "Hi" }],
+      apps: [{ href: "/", label: "Hi" }],
     });
     await button(screen).click();
     for (const el of [

@@ -4,7 +4,7 @@
     /** The app's home page. */
     href: string;
     /** Its name: "Training". */
-    name: string;
+    label: string;
     /** A few words on what it holds. */
     description?: string;
     /** An MDI path, such as `mdiSchool` from `@mdi/js`. */
@@ -55,7 +55,7 @@
           >
             {#if app.icon}<Icon path={app.icon} size={20} />{/if}
             <span class="flex-1">
-              <span class="block">{app.name}</span>
+              <span class="block">{app.label}</span>
               {#if app.description}
                 <!-- inline-block, so the name's underline doesn't reach it -->
                 <span
