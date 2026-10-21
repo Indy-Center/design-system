@@ -19,6 +19,7 @@ export {
   type ChipVariant,
 } from "./Chip/Chip.svelte";
 export { default as Combobox } from "./Combobox/Combobox.svelte";
+export { default as ConfirmDialog } from "./ConfirmDialog/ConfirmDialog.svelte";
 export { default as CopyButton } from "./CopyButton/CopyButton.svelte";
 export { default as DescriptionList } from "./DescriptionList/DescriptionList.svelte";
 export { default as Disclosure } from "./Disclosure/Disclosure.svelte";
@@ -34,6 +35,7 @@ export { default as Heading } from "./Heading/Heading.svelte";
 export { default as Icon } from "./Icon/Icon.svelte";
 export { default as Input } from "./Input/Input.svelte";
 export { default as Link } from "./Link/Link.svelte";
+export { default as Modal } from "./Modal/Modal.svelte";
 export { default as PageHeader } from "./PageHeader/PageHeader.svelte";
 export { default as PageHero } from "./PageHero/PageHero.svelte";
 export { default as Pagination } from "./Pagination/Pagination.svelte";
@@ -67,6 +69,12 @@ export {
 } from "./severity/severity.js";
 export { toast } from "./Toast/toast.svelte.js";
 export { toastFromServer, type ToastCookies } from "./Toast/toastFromServer.js";
+
+// Asks the member to confirm an action, in place of confirm().
+export {
+  confirmAction,
+  type ConfirmActionOptions,
+} from "./ConfirmDialog/confirmAction.js";
 
 // The colour scheme, in the browser. Its server hook is in ./hooks.ts.
 export type { ColorScheme } from "./colorScheme/colorScheme.js";
