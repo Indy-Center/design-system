@@ -100,15 +100,15 @@
 {#snippet text(p: Part)}<span class={{ "font-mono": p.mono }}>{p.text}</span
   >{/snippet}
 
+<!-- Nothing when show has no text field: the airport at "right" needs a lead. -->
 {#snippet leading()}
-  <span class="font-semibold text-foreground"
-    >{#if lead}{@render text(lead)}{:else if airportLeads}<span
-        class="font-mono">{code}</span
-      >{/if}{#if code && where === "right"}<span
-        class="font-normal text-muted-foreground"
-        >{@render dot()}<span class="font-mono text-sm">{code}</span></span
-      >{/if}</span
-  >
+  {#if lead || airportLeads}<span class="font-semibold text-foreground"
+      >{#if lead}{@render text(lead)}{:else}<span class="font-mono">{code}</span
+        >{/if}{#if code && where === "right"}<span
+          class="font-normal text-muted-foreground"
+          >{@render dot()}<span class="font-mono text-sm">{code}</span></span
+        >{/if}</span
+    >{/if}
 {/snippet}
 
 {#snippet under()}<span class="font-mono">{code}</span

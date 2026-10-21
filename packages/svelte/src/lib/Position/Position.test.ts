@@ -135,6 +135,18 @@ describe("Position", () => {
       expect(onScreen(root)).toBe("KLEX");
     });
 
+    test.each(["stacked", "inline"] as const)(
+      "%s, with no text field, renders no empty leading span",
+      async (layout) => {
+        const { root } = await show({
+          callsign: "IND_83_CTR",
+          show: ["frequency"],
+          layout,
+        });
+        expect(root.querySelector(".font-semibold")).toBeNull();
+      },
+    );
+
     test("leaves the airport off unless asked", async () => {
       const { root } = await show({ callsign: "LEX_TWR", airport: KLEX });
       expect(onScreen(root)).not.toContain("KLEX");
