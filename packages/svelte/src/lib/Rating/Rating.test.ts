@@ -6,8 +6,8 @@ import { renderIn } from "../../../test/schemes.ts";
 import Rating from "./Rating.svelte";
 
 /** The chip's markup for `rating`, cleaned up after. */
-async function chipFor(rating: number | string) {
-  const screen = await renderIn("light", Rating, { rating });
+async function chipFor(rating: number | string, kind?: "controller" | "pilot") {
+  const screen = await renderIn("light", Rating, { rating, kind });
   const html = screen.container.innerHTML;
   screen.unmount();
   return html;
@@ -82,15 +82,21 @@ describe("Rating", () => {
   });
 
   describe("for a pilot", () => {
-    test.each([3, "IR", "Instrument Rating"])(
-      "%j is IR, Instrument Rating",
+    test("IR reads as IR, Instrument Rating", async () => {
+      const screen = await renderIn("light", Rating, {
+        rating: "IR",
+        kind: "pilot",
+      });
+      const abbr = screen.getByTitle("Instrument Rating");
+      await expect.element(abbr).toHaveTextContent("IR Instrument Rating");
+    });
+
+    test.each([3, "ir", "Instrument Rating"])(
+      "%j gives the same chip as IR",
       async (rating) => {
-        const screen = await renderIn("light", Rating, {
-          rating,
-          kind: "pilot",
-        });
-        const abbr = screen.getByTitle("Instrument Rating");
-        await expect.element(abbr).toHaveTextContent("IR Instrument Rating");
+        expect(await chipFor(rating, "pilot")).toBe(
+          await chipFor("IR", "pilot"),
+        );
       },
     );
 

@@ -28,8 +28,10 @@
   });
 </script>
 
+<!-- The focus lands on the abbr inside, but the ring goes round the chip. -->
 <Chip
   {...rest}
+  variant="muted"
   class={[
     "relative has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-ring",
     className,

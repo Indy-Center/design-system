@@ -46,7 +46,8 @@ long name, and warns in development.
 (`#E2E8F0` light, `#334155` dark) in `foreground`. The long name shows
 beneath the chip on keyboard focus, in sans, `background` on `foreground`;
 a mouse gets the browser's own `title` tooltip. A `ring` outline goes
-round the chip on keyboard focus.
+round the whole chip on keyboard focus (`has-focus-visible:`), though the
+focus itself is on the `<abbr>` inside it.
 
 ## Accessibility
 
