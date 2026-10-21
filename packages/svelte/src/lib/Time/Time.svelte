@@ -8,6 +8,7 @@
     type TimeShown,
     type TimeZoneShown,
   } from "./format.js";
+  import { getTimeZone } from "../timeZone/timeZoneContext.svelte.js";
   import { now } from "./now.svelte.js";
 
   type When = Date | string | number;
@@ -32,12 +33,18 @@
     ...rest
   }: Props = $props();
 
-  // The server can't know the member's zone, so it draws Zulu; the browser
-  // switches to its own zone once mounted.
-  let memberZone = $state<string>();
+  // The member's saved zone, from the root layout's setTimeZone. With none,
+  // the server can't know their zone, so it draws Zulu, and the browser
+  // switches to the device's zone once mounted.
+  const timeZone = getTimeZone();
+  let mounted = $state(false);
   onMount(() => {
-    memberZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    timeZone.mount();
+    mounted = true;
   });
+  const memberZone = $derived(timeZone.zone(mounted));
+  // Chosen Zulu: every time in Zulu, alone.
+  const shownZone = $derived(timeZone.zulu ? "zulu" : zone);
 
   const start = $derived(new Date(value));
   const finish = $derived(end === undefined ? undefined : new Date(end));
@@ -55,7 +62,7 @@
       start,
       end: finish,
       show,
-      zone,
+      zone: shownZone,
       memberZone,
       now,
     }),
