@@ -187,29 +187,29 @@ describe("ErrorPage", () => {
         .toHaveStyle({ color: role("foreground", scheme) });
 
       const lead = screen.getByText(/couldn't find the page/).element();
-      expect(getComputedStyle(lead).color).toBe(
-        role("muted-foreground", scheme),
-      );
+      await expect
+        .element(lead)
+        .toHaveStyle({ color: role("muted-foreground", scheme) });
       expectReadable(lead, scheme);
 
       const path = screen.getByText("/evnts").element();
-      expect(getComputedStyle(path)).toMatchObject({
+      await expect.element(path).toHaveStyle({
         color: role("foreground-soft", scheme),
         backgroundColor: role("muted", scheme),
       });
       expectReadable(path, scheme);
 
       const other = screen.getByRole("link", { name: "Events" }).element();
-      expect(getComputedStyle(other).color).toBe(
-        role("foreground-soft", scheme),
-      );
+      await expect
+        .element(other)
+        .toHaveStyle({ color: role("foreground-soft", scheme) });
       expectReadable(other, scheme);
 
       const circle = screen
         .getByRole("heading", { level: 1 })
         .element()
-        .parentElement!.querySelector("[aria-hidden='true']")!;
-      expect(getComputedStyle(circle)).toMatchObject({
+        .parentElement!.querySelector<HTMLElement>("[aria-hidden='true']")!;
+      await expect.element(circle).toHaveStyle({
         backgroundColor: translucent(role("primary", scheme), 15),
         color: role("link", scheme),
       });

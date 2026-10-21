@@ -111,12 +111,12 @@ describe("EmptyState, large", () => {
       const line = screen
         .getByText("New events show here once staff publish them.")
         .element();
-      expect(getComputedStyle(line).color).toBe(
-        role("muted-foreground", scheme),
-      );
+      await expect
+        .element(line)
+        .toHaveStyle({ color: role("muted-foreground", scheme) });
       expectReadable(line, scheme);
       const circle = screen.getByTestId("icon").element().parentElement!;
-      expect(getComputedStyle(circle)).toMatchObject({
+      await expect.element(circle).toHaveStyle({
         backgroundColor: role("muted", scheme),
         color: role("muted-foreground", scheme),
       });
@@ -157,7 +157,7 @@ describe("EmptyState, inline", () => {
       const line = screen
         .getByText("No sessions yet.")
         .element().parentElement!;
-      expect(getComputedStyle(line)).toMatchObject({
+      await expect.element(line).toHaveStyle({
         fontSize: "14px",
         color: role("muted-foreground", scheme),
       });
