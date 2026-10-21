@@ -32,6 +32,7 @@ export { default as Spinner } from "./Spinner/Spinner.svelte";
 export { default as Tabs, type Tab } from "./Tabs/Tabs.svelte";
 export { default as Text } from "./Text/Text.svelte";
 export { default as Textarea } from "./Textarea/Textarea.svelte";
+export { default as Time } from "./Time/Time.svelte";
 
 // The colour scheme, in the browser. Its server hook is in ./hooks.ts.
 export type { ColorScheme } from "./colorScheme/colorScheme.js";
