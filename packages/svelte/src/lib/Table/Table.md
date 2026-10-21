@@ -71,11 +71,14 @@ description: A data table with a caption, header cells that say what they head, 
 
 ### Th
 
-| Prop       | Type                                         | Notes                                |
-| ---------- | -------------------------------------------- | ------------------------------------ |
-| `scope`    | `"col" \| "row" \| "colgroup" \| "rowgroup"` | Required. Which cells it heads.      |
-| `children` | `Snippet`                                    | Required. The header's text.         |
-| others     | `<th>` attributes                            | Passed to the `<th>`, `colspan` too. |
+| Prop       | Type              | Notes                                |
+| ---------- | ----------------- | ------------------------------------ |
+| `scope`    | `ThScope`         | Required. Which cells it heads.      |
+| `children` | `Snippet`         | Required. The header's text.         |
+| others     | `<th>` attributes | Passed to the `<th>`, `colspan` too. |
+
+`ThScope`, exported from the package, is `"col"`, `"row"`, `"colgroup"`
+or `"rowgroup"`.
 
 ## Looks
 

@@ -57,8 +57,9 @@ describe("the packed package", () => {
     );
     const index = await readFile(new URL("dist/index.d.ts", root), "utf8");
     for (const name of ["DescriptionList", "Table", "Th"]) {
-      expect(index).toMatch(new RegExp(`export \\{ default as ${name} \\}`));
+      expect(index).toMatch(new RegExp(`export \\{ default as ${name}[ ,]`));
     }
+    expect(index).toMatch(/type ThScope/);
   });
 
   test("exports saveColorScheme from the package root, with types", async () => {
