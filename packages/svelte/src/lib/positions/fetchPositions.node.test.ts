@@ -240,6 +240,27 @@ describe("createPositionsFetcher", () => {
       expect(await fetchPositions("ZID")).toHaveLength(3);
       expect(urls).toHaveLength(2);
     });
+
+    test("with a maxAge under a minute, tries again after maxAge", async () => {
+      const { fetch, urls } = fakeFetch(
+        new TypeError("fetch failed"),
+        artcc("2026-10-17T02:35:43.475Z"),
+      );
+      let now = Date.UTC(2026, 9, 20, 12);
+      const fetchPositions = createPositionsFetcher({
+        fetch,
+        now: () => now,
+        maxAge: 10_000,
+      });
+
+      await fetchPositions("ZID");
+      now += 9_000;
+      await fetchPositions("ZID");
+      expect(urls).toHaveLength(1);
+      now += 2_000;
+      expect(await fetchPositions("ZID")).toHaveLength(3);
+      expect(urls).toHaveLength(2);
+    });
   });
 
   test("keeps each ARTCC apart", async () => {

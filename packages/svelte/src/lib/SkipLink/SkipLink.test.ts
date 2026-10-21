@@ -66,6 +66,47 @@ describe("SkipLink", () => {
     await expect.element(target).toHaveFocus();
   });
 
+  // A link's hash is percent-encoded; the id it names isn't.
+  test("finds an id written encoded in the href", async () => {
+    await renderIn("light", SkipLink, { href: "#r%C3%A9sum%C3%A9" });
+    const target = content("résumé");
+    await userEvent.tab();
+    await userEvent.keyboard("{Enter}");
+    await expect.element(target).toHaveFocus();
+  });
+
+  test("keeps a tabindex the content already has", async () => {
+    await renderIn("light", SkipLink, {});
+    const main = content();
+    main.tabIndex = 0;
+    await userEvent.tab();
+    await userEvent.keyboard("{Enter}");
+    await expect.element(main).toHaveFocus();
+    expect(main.getAttribute("tabindex")).toBe("0");
+  });
+
+  test("calls a caller's onclick, then still moves focus", async () => {
+    const clicks: MouseEvent[] = [];
+    await renderIn("light", SkipLink, {
+      onclick: (event: MouseEvent) => clicks.push(event),
+    });
+    const main = content();
+    await userEvent.tab();
+    await userEvent.keyboard("{Enter}");
+    expect(clicks).toHaveLength(1);
+    await expect.element(main).toHaveFocus();
+  });
+
+  test("adds a caller's class and attributes to the link", async () => {
+    const screen = await renderIn("light", SkipLink, {
+      id: "skip",
+      class: "ml-4",
+    });
+    const link = screen.getByRole("link");
+    await expect.element(link).toHaveAttribute("id", "skip");
+    await expect.element(link).toHaveStyle({ marginLeft: "16px" });
+  });
+
   // The `card` role behind `link` text, with the `ring` outline.
   test("shows as a link on a card, with a ring", async () => {
     const screen = await renderIn("light", SkipLink, {});

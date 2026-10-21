@@ -49,16 +49,29 @@ describe("ErrorPage", () => {
       .toHaveTextContent("Internal Error. Please try again in a moment.");
   });
 
-  // SvelteKit's messages have no full stop; a load's own may.
-  test("ends the message with one full stop", async () => {
-    const screen = await renderIn("light", ErrorPage, {
-      status: 503,
-      message: "The roster is down for maintenance.",
-    });
+  // SvelteKit's messages have no full stop; a load's own may end a
+  // sentence already, so it gets none added.
+  test.each([".", "!", "?"])(
+    "adds no full stop to a message ending in %s",
+    async (end) => {
+      const screen = await renderIn("light", ErrorPage, {
+        status: 503,
+        message: `The roster is down for maintenance${end}`,
+      });
+      await expect
+        .element(screen.getByText(/maintenance/))
+        .toHaveTextContent(
+          `The roster is down for maintenance${end} Please try again in a moment.`,
+        );
+    },
+  );
+
+  test("says an unexpected error occurred when there is no message", async () => {
+    const screen = await renderIn("light", ErrorPage, { status: 500 });
     await expect
-      .element(screen.getByText(/maintenance/))
+      .element(screen.getByText(/unexpected/))
       .toHaveTextContent(
-        "The roster is down for maintenance. Please try again in a moment.",
+        "An unexpected error occurred. Please try again in a moment.",
       );
   });
 

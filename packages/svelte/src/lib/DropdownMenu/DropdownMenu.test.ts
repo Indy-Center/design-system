@@ -1,5 +1,5 @@
 // Escape and a click outside are dismiss's, tested in dismiss/dismiss.test.ts.
-import { describe, expect, test } from "vitest";
+import { describe, expect, onTestFinished, test } from "vitest";
 import { userEvent } from "vitest/browser";
 import type { RenderResult } from "vitest-browser-svelte";
 import { role } from "../../../test/roles.ts";
@@ -86,6 +86,47 @@ describe("DropdownMenu", () => {
       .element(arrow(screen))
       .toHaveAttribute("aria-expanded", "false");
     await expect.element(arrow(screen)).toHaveFocus();
+  });
+
+  test("choosing a link row follows it and closes the menu", async () => {
+    const screen = await renderIn("light", Menu, {});
+    onTestFinished(() => history.replaceState(null, "", location.pathname));
+    await arrow(screen).click();
+
+    await screen.getByRole("link", { name: "View profile" }).click();
+
+    expect(location.hash).toBe("#profile");
+    await expect
+      .element(arrow(screen))
+      .toHaveAttribute("aria-expanded", "false");
+  });
+
+  test("a disabled row looks it, and clicking it leaves the menu open", async () => {
+    const screen = await renderIn("light", Menu, { removeDisabled: true });
+    await arrow(screen).click();
+    const remove = screen.getByRole("button", { name: "Remove" });
+
+    await expect.element(remove).toBeDisabled();
+    await expect.element(remove).toHaveStyle({ opacity: "0.6" });
+    await remove.click({ force: true });
+    await expect
+      .element(arrow(screen))
+      .toHaveAttribute("aria-expanded", "true");
+  });
+
+  // The `ring` role, inset so the panel's overflow-hidden doesn't clip it.
+  test("shows an inset ring outline on a row tabbed to", async () => {
+    const screen = await renderIn("light", Menu, {});
+    await userEvent.tab();
+    await userEvent.keyboard("{Enter}");
+    await userEvent.tab();
+    const link = screen.getByRole("link", { name: "View profile" });
+    await expect.element(link).toHaveFocus();
+    await expect.element(link).toHaveStyle({
+      outlineStyle: "solid",
+      outlineColor: role("ring", "light"),
+      outlineOffset: "-2px",
+    });
   });
 
   test("disabled, it looks it and doesn't open", async () => {

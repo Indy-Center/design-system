@@ -53,6 +53,16 @@ describe("textControlClasses", () => {
     });
   });
 
+  test("dims when disabled", async () => {
+    const screen = await renderIn("light", Part, {
+      part: "text",
+      disabled: true,
+    });
+    await expect
+      .element(screen.getByRole("textbox"))
+      .toHaveStyle({ opacity: "0.6", cursor: "not-allowed" });
+  });
+
   test("is at least 44px tall", async () => {
     const screen = await renderIn("light", Part, { part: "text" });
     const box = screen.getByRole("textbox").element();
@@ -85,6 +95,19 @@ describe("choice classes", () => {
       outlineStyle: "solid",
       outlineColor: role("ring", "light"),
     });
+  });
+
+  test("dims the row and its pointer when disabled", async () => {
+    const screen = await renderIn("light", Part, {
+      part: "choice",
+      disabled: true,
+    });
+    const row = screen.container.querySelector("label")!;
+    expect(getComputedStyle(row).opacity).toBe("0.6");
+    expect(getComputedStyle(row).cursor).toBe("not-allowed");
+    await expect
+      .element(screen.getByRole("checkbox"))
+      .toHaveStyle({ cursor: "not-allowed" });
   });
 
   test("is a row at least 44px tall", async () => {

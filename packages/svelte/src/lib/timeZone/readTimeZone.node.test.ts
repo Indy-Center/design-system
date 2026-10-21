@@ -22,6 +22,10 @@ describe("reading the time-zone cookie on the server", () => {
     });
   });
 
+  test("UTC is a zone, though the browser's list leaves it out", () => {
+    expect(readTimeZone(cookies("UTC"))).toEqual({ kind: "zone", zone: "UTC" });
+  });
+
   test("device:<zone> follows the device, last seen in that zone", () => {
     expect(readTimeZone(cookies("device:Europe/London"))).toEqual({
       kind: "device",
@@ -93,6 +97,9 @@ describe("with the member's profile setting", () => {
     expect(readTimeZone(cookies("Nowhere"), { profile: "zulu" })).toEqual({
       kind: "zulu",
     });
+    expect(
+      readTimeZone(cookies("device:Nowhere"), { profile: "America/Denver" }),
+    ).toEqual({ kind: "zone", zone: "America/Denver" });
   });
 
   test("no setting, or one that isn't valid, leaves the cookie's", () => {

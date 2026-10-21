@@ -646,6 +646,85 @@ describe("Combobox", () => {
       .toHaveAttribute("aria-activedescendant");
   });
 
+  test("a key the caller's handler prevents doesn't reach the list", async () => {
+    const screen = await renderIn("light", Combobox, {
+      "aria-label": "Position",
+      options: ["IND_CTR", "IND_APP"],
+      onkeydown: (event) => event.preventDefault(),
+    });
+    await userEvent.tab();
+    await userEvent.keyboard("{ArrowDown}");
+    const input = screen.getByRole("combobox");
+    await expect.element(input).toHaveAttribute("aria-expanded", "false");
+    await expect.element(input).not.toHaveAttribute("aria-activedescendant");
+  });
+
+  // An input method composing a character (Japanese, Chinese) sends its own
+  // arrows and Enter; they are the composition's, not the list's.
+  test("ignores keys while an input method is composing", async () => {
+    const screen = await renderIn("light", Combobox, {
+      "aria-label": "Position",
+      options: ["IND_CTR", "IND_APP"],
+    });
+    const input = screen.getByRole("combobox");
+    const press = (isComposing: boolean) =>
+      input.element().dispatchEvent(
+        new KeyboardEvent("keydown", {
+          key: "ArrowDown",
+          isComposing,
+          bubbles: true,
+        }),
+      );
+    press(true);
+    await tick();
+    await expect.element(input).toHaveAttribute("aria-expanded", "false");
+    // The same key, not composing, opens it.
+    press(false);
+    await expect.element(input).toHaveAttribute("aria-expanded", "true");
+  });
+
+  test("keeps the active option in view in a long list", async () => {
+    const options = Array.from({ length: 20 }, (_, i) => `Option ${i + 1}`);
+    const screen = await renderIn("light", Combobox, {
+      "aria-label": "Option",
+      options,
+    });
+    await userEvent.tab();
+    await userEvent.keyboard("{ArrowUp}");
+    const list = screen.getByRole("listbox").element();
+    const last = screen.getByRole("option", { name: "Option 20" }).element();
+    await expect
+      .poll(() => {
+        const box = list.getBoundingClientRect();
+        const row = last.getBoundingClientRect();
+        return row.top >= box.top && row.bottom <= box.bottom;
+      })
+      .toBe(true);
+    expect(list.scrollTop).toBeGreaterThan(0);
+  });
+
+  test("searches again on the same text after a failed search", async () => {
+    let fail = true;
+    const screen = await renderIn("light", Picker, {
+      options: async (query: string) => {
+        if (fail) throw new Error("offline");
+        return [{ cid: "1000001", name: `Ann ${query}` }];
+      },
+    });
+    const input = screen.getByRole("combobox");
+    await input.fill("a");
+    const status = screen.getByRole("status");
+    await expect.element(status).toHaveTextContent("Couldn't search");
+    fail = false;
+    await userEvent.keyboard("{Escape}");
+    await expect.element(input).toHaveAttribute("aria-expanded", "false");
+    await userEvent.keyboard("{Alt>}{ArrowDown}{/Alt}");
+    await expect
+      .element(screen.getByRole("option", { name: "Ann a" }))
+      .toBeVisible();
+    await expect.element(status).toHaveTextContent("1 result");
+  });
+
   test("says so when the search fails", async () => {
     const screen = await renderIn("light", Picker, {
       options: () => Promise.reject(new Error("offline")),

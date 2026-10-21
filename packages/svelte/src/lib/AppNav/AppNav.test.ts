@@ -1,6 +1,7 @@
 // Which link is current is nav.ts's, tested in nav.node.test.ts. How a bar
 // group opens and closes, the 44px targets and the ring are HeaderMenu's,
 // tested in headerMenu/HeaderMenu.test.ts.
+import { mdiAirplane, mdiCalendar, mdiChevronDown } from "@mdi/js";
 import { describe, expect, test } from "vitest";
 import { userEvent } from "vitest/browser";
 import { expectReadable, translucent } from "../../../test/contrast.ts";
@@ -19,9 +20,38 @@ const SOFT_FILL = () => translucent(role("foreground", "dark"), 10);
 
 describe("AppNav and AppNavMenu", () => {
   describe.each([
-    { name: "AppNav", Nav: AppNav },
-    { name: "AppNavMenu", Nav: AppNavMenu },
-  ])("$name", ({ Nav }) => {
+    { name: "AppNav", Nav: AppNav, iconSize: "16" },
+    { name: "AppNavMenu", Nav: AppNavMenu, iconSize: "20" },
+  ])("$name", ({ Nav, iconSize }) => {
+    test("draws a link's and a group's icon before its label, hidden from screen readers", async () => {
+      const screen = await renderIn("light", Nav, {
+        items: [
+          { href: "/events", label: "Events", icon: mdiCalendar },
+          { label: "Flying", icon: mdiAirplane, children: [] },
+          { href: "/roster", label: "Roster" },
+        ],
+      });
+      const icons = (el: Element) =>
+        [...el.querySelectorAll("svg")].map((svg) => ({
+          d: svg.querySelector("path")!.getAttribute("d"),
+          width: svg.getAttribute("width"),
+          hidden: svg.getAttribute("aria-hidden"),
+        }));
+      const events = screen.getByRole("link", { name: "Events" }).element();
+      expect(icons(events)).toEqual([
+        { d: mdiCalendar, width: iconSize, hidden: "true" },
+      ]);
+      expect(events.firstElementChild?.tagName).toBe("svg");
+      // The group's icon, then its chevron.
+      expect(icons(group(screen, "Flying").element())).toEqual([
+        { d: mdiAirplane, width: iconSize, hidden: "true" },
+        { d: mdiChevronDown, width: "16", hidden: "true" },
+      ]);
+      expect(
+        icons(screen.getByRole("link", { name: "Roster" }).element()),
+      ).toEqual([]);
+    });
+
     test("is a navigation named Main, its top-level links and groups in order", async () => {
       const screen = await renderIn("light", Nav, {
         items: hubNav,

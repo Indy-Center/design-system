@@ -1,4 +1,5 @@
 import { describe, expect, test } from "vitest";
+import { userEvent } from "vitest/browser";
 import { role } from "../../../test/roles.ts";
 import { renderIn } from "../../../test/schemes.ts";
 import Breadcrumbs from "./Breadcrumbs.svelte";
@@ -58,10 +59,27 @@ describe("Breadcrumbs", () => {
     expect(first.querySelector("[aria-hidden='true']")).toBeNull();
     expect(second.querySelector("[aria-hidden='true']")).not.toBeNull();
     expect(last.querySelector("[aria-hidden='true']")).not.toBeNull();
-    // Nothing else beside the link carries text.
+    // Nothing else beside the link carries text, and the chevron is
+    // `muted-foreground`.
     for (const li of [second, last]) {
-      expect(li.querySelector("[aria-hidden='true']")!.textContent).toBe("");
+      const separator = li.querySelector("[aria-hidden='true']")!;
+      expect(separator.textContent).toBe("");
+      expect(getComputedStyle(separator).fill).toBe(
+        role("muted-foreground", "light"),
+      );
     }
+  });
+
+  // The current crumb isn't a Link, so it has its own ring.
+  test("the current crumb shows a ring outline when tabbed to", async () => {
+    const screen = await renderIn("light", Breadcrumbs, props());
+    for (let i = 0; i < 3; i++) await userEvent.tab();
+    const current = screen.getByRole("link", { name: "ZID Center SOP" });
+    await expect.element(current).toHaveFocus();
+    await expect.element(current).toHaveStyle({
+      outlineStyle: "solid",
+      outlineColor: role("ring", "light"),
+    });
   });
 
   // The pages above are Links, whose looks (colour, underline, ring) are

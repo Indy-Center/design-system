@@ -41,6 +41,22 @@ describe("Alert", () => {
       .toHaveStyle({ color: role("foreground", "light"), fontWeight: "600" });
   });
 
+  test("adds a caller's class and attributes to its box", async () => {
+    const screen = await renderIn("light", Alert, {
+      level: "info",
+      class: "mb-6",
+      id: "roster-note",
+      "aria-describedby": "roster-help",
+      children: text("The roster updates nightly."),
+    });
+    const box = screen.getByRole("status");
+    await expect.element(box).toHaveClass("mb-6", "rounded-lg");
+    await expect.element(box).toHaveAttribute("id", "roster-note");
+    await expect
+      .element(box)
+      .toHaveAttribute("aria-describedby", "roster-help");
+  });
+
   test("has no close button unless it's dismissible", async () => {
     const screen = await renderIn("light", Alert, {
       level: "info",

@@ -39,6 +39,22 @@ describe("Checkbox", () => {
       .toBeChecked();
   });
 
+  // The dimmed row is formControl's; this checks it reaches the row.
+  test("disabled, its row is dimmed and doesn't tick", async () => {
+    const screen = await renderIn("light", Checkbox, {
+      label: "Visiting controller",
+      disabled: true,
+    });
+    const box = screen.getByRole("checkbox", { name: "Visiting controller" });
+    await expect.element(box).toBeDisabled();
+    const label = screen.getByText("Visiting controller");
+    await label.click({ force: true });
+    await expect.element(box).not.toBeChecked();
+    expect(getComputedStyle(label.element().closest("label")!).opacity).toBe(
+      "0.6",
+    );
+  });
+
   test("binds checked both ways", async () => {
     let checked = true;
     const screen = await renderIn("light", Checkbox, {

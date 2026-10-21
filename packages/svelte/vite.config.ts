@@ -36,11 +36,12 @@ export default defineConfig({
     testTimeout: 10_000,
     projects: [
       {
-        // Component tests, beside each component, in headless Chromium.
+        // Component tests, beside each component, in headless Chromium,
+        // and the test helpers' checks that need a page.
         extends: true,
         test: {
           name: "components",
-          include: ["src/lib/**/*.test.ts"],
+          include: ["src/lib/**/*.test.ts", "test/**/*.browser.test.ts"],
           exclude: [...configDefaults.exclude, "src/lib/**/*.node.test.ts"],
           setupFiles: ["test/setup.ts"],
           browser: {
@@ -71,6 +72,7 @@ export default defineConfig({
         test: {
           name: "node",
           include: ["src/lib/**/*.node.test.ts", "test/**/*.test.ts"],
+          exclude: [...configDefaults.exclude, "test/**/*.browser.test.ts"],
           environment: "node",
         },
       },

@@ -146,6 +146,18 @@ describe("Switch", () => {
     await expect.element(toggle).toBeChecked();
   });
 
+  test("disabled, doesn't flip from a click on its row", async () => {
+    const screen = await renderIn("light", Switch, {
+      label: "Email me about events",
+      disabled: true,
+    });
+    await screen.getByText("Email me about events").click({ force: true });
+    await expect.element(screen.getByRole("switch")).not.toBeChecked();
+    await expect
+      .element(screen.getByRole("switch"))
+      .toHaveStyle({ cursor: "not-allowed" });
+  });
+
   test("puts a caller's class on the row and attributes on the input", async () => {
     const screen = await renderIn("light", Switch, {
       label: "Email me about events",

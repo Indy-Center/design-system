@@ -2,6 +2,7 @@ import { describe, expect, test } from "vitest";
 import { userEvent } from "vitest/browser";
 import { role } from "../../../test/roles.ts";
 import { renderIn } from "../../../test/schemes.ts";
+import { lessonHtml } from "../../playground/lesson.ts";
 import ProseLesson from "./Prose.test.svelte";
 
 // The plugin puts backticks round inline code and marks round quotes, in
@@ -129,10 +130,15 @@ describe("Prose", () => {
     });
   });
 
-  // Heading's looks: h2 xl, h3 lg, h4 base, semibold in the heading font.
+  // Heading's looks: h1 3xl, h2 xl, h3 lg, h4 base, semibold in the
+  // heading font. The lesson starts at h2, as the doc page asks; an h1 is
+  // added for the one size it lacks.
   test("headings are Heading's size for their level", async () => {
-    const screen = await renderIn("light", ProseLesson, {});
+    const screen = await renderIn("light", ProseLesson, {
+      html: `<h1>Ground lesson</h1>${lessonHtml}`,
+    });
     for (const [level, name, size] of [
+      [1, "Ground lesson", "30px"],
       [2, "Taxi clearances", "20px"],
       [3, "Phraseology", "18px"],
       [4, "Readbacks", "16px"],
@@ -145,5 +151,22 @@ describe("Prose", () => {
         /^"Source Sans 3",/,
       );
     }
+  });
+
+  // An app's own component inside the body (a Card, a Button) sits in
+  // not-prose, so neither the plugin nor prose-centerline styles it.
+  test("leaves what is inside not-prose alone", async () => {
+    const screen = await renderIn("light", ProseLesson, {
+      html: `<div class="not-prose"><h2>Book a session</h2><a href="#book">Book</a></div>`,
+    });
+    await expect
+      .element(screen.getByRole("heading", { name: "Book a session" }))
+      .toHaveStyle({ fontSize: "16px", fontWeight: "400" });
+    await expect
+      .element(screen.getByRole("link", { name: "Book" }))
+      .toHaveStyle({
+        color: role("foreground-soft", "light"),
+        textDecorationLine: "none",
+      });
   });
 });

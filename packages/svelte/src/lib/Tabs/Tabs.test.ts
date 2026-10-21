@@ -99,8 +99,17 @@ describe("Tabs", () => {
     expect(box.width).toBeGreaterThanOrEqual(44);
   });
 
-  // The `ring` role.
-  test("shows a ring outline when tabbed to", async () => {
+  test("a tab that isn't current turns foreground on hover", async () => {
+    const screen = await renderIn("light", Tabs, props());
+    const feedback = screen.getByRole("link", { name: "Feedback" });
+    await userEvent.hover(feedback);
+    await expect
+      .element(feedback)
+      .toHaveStyle({ color: role("foreground", "light") });
+  });
+
+  // The `ring` role, inset so the scrolling list doesn't clip it.
+  test("shows an inset ring outline when tabbed to", async () => {
     const screen = await renderIn("light", Tabs, props());
     await userEvent.tab();
     const first = screen.getByRole("link", { name: "Overview" });
@@ -108,6 +117,7 @@ describe("Tabs", () => {
     await expect.element(first).toHaveStyle({
       outlineStyle: "solid",
       outlineColor: role("ring", "light"),
+      outlineOffset: "-2px",
     });
   });
 

@@ -153,6 +153,24 @@ describe("dismiss", () => {
     await expect.element(trigger(screen)).toHaveFocus();
   });
 
+  // A panel removed while open (its row filtered away) forgets it was open,
+  // so the next Escape is the outer panel's.
+  test("a panel unmounted while open leaves Escape to the one still open", async () => {
+    const screen = await renderIn("light", Disclosure, { nested: true });
+    const more = screen.getByRole("button", { name: "More" });
+    await trigger(screen).click();
+    await more.click();
+    await expect.element(more).toHaveAttribute("aria-expanded", "true");
+
+    await screen.rerender({ nested: false });
+    await expect.element(more).not.toBeInTheDocument();
+    await userEvent.keyboard("{Escape}");
+
+    await expect
+      .element(trigger(screen))
+      .toHaveAttribute("aria-expanded", "false");
+  });
+
   // A tooltip hovered elsewhere opens last, but focus is in the menu: the
   // Escape is the menu's.
   test("Escape closes the panel holding focus before one opened later", async () => {
