@@ -7,9 +7,10 @@ const props = () => ({
   label: "Admin",
   items: [
     { href: "/admin", label: "Overview" },
-    { href: "/admin/users", label: "Users", current: true },
+    { href: "/admin/users", label: "Users" },
     { href: "/admin/feedback", label: "Feedback" },
   ],
+  current: "/admin/users",
 });
 
 describe("Tabs", () => {
@@ -40,6 +41,14 @@ describe("Tabs", () => {
         .element(screen.getByRole("link", { name }))
         .not.toHaveAttribute("aria-current");
     }
+  });
+
+  test("marks no tab on a page outside the tabs", async () => {
+    const screen = await renderIn("light", Tabs, {
+      ...props(),
+      current: "/admin/settings",
+    });
+    expect(screen.container.querySelector("[aria-current]")).toBeNull();
   });
 
   // Not by colour alone (WCAG 1.4.1): the current tab also has a bar under

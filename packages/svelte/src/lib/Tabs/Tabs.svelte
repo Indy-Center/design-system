@@ -1,11 +1,6 @@
 <script lang="ts" module>
   /** One tab: a link to a section's page. */
-  export type Tab = {
-    href: string;
-    label: string;
-    /** Whether this is the page being shown. */
-    current?: boolean;
-  };
+  export type Tab = { href: string; label: string };
 </script>
 
 <script lang="ts">
@@ -14,11 +9,13 @@
   type Props = HTMLAttributes<HTMLElement> & {
     /** What the tabs move between, for screen readers: "Admin", "Course". */
     label: string;
-    /** The tabs, in order. Mark the page being shown with `current`. */
+    /** The tabs, in order. */
     items: Tab[];
+    /** The `href` of the tab for the page being shown. None if left out. */
+    current?: string;
   };
 
-  let { label, items, class: className, ...rest }: Props = $props();
+  let { label, items, current, class: className, ...rest }: Props = $props();
 </script>
 
 <!-- Sized by its container, not its tabs, so a grid or flex parent doesn't
@@ -26,14 +23,15 @@
 <nav aria-label={label} {...rest} class={["[contain:inline-size]", className]}>
   <!-- Scrolls sideways when the tabs are wider than a phone. -->
   <ul class="flex overflow-x-auto border-b border-border">
-    {#each items as tab (tab.href)}
+    {#each items as tab}
+      {@const isCurrent = tab.href === current}
       <li class="shrink-0">
         <a
           href={tab.href}
-          aria-current={tab.current ? "page" : undefined}
+          aria-current={isCurrent ? "page" : undefined}
           class={[
             "inline-flex min-h-11 min-w-11 items-center justify-center border-b-2 px-3 text-sm whitespace-nowrap",
-            tab.current
+            isCurrent
               ? "border-link font-semibold text-foreground"
               : "border-transparent text-muted-foreground hover:text-foreground",
             // Inset, so the scrolling list doesn't clip it.

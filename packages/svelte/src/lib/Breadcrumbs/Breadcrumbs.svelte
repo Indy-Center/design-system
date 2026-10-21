@@ -29,7 +29,7 @@
 
 <nav aria-label={label} {...rest} class={className}>
   <ol class="flex flex-wrap items-center text-sm">
-    {#each items as crumb, i (crumb.href)}
+    {#each items as crumb, i}
       {@const current = i === items.length - 1}
       <li class="inline-flex items-center">
         {#if i > 0}

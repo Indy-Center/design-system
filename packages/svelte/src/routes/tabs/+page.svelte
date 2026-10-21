@@ -4,7 +4,7 @@
 
   const items = [
     { href: "#overview", label: "Overview" },
-    { href: "#users", label: "Users", current: true },
+    { href: "#users", label: "Users" },
     { href: "#events", label: "Events" },
     { href: "#feedback", label: "Feedback" },
     { href: "#partners", label: "Partners" },
@@ -17,5 +17,5 @@
 <h1 class="mb-4 font-heading text-3xl font-semibold text-foreground">Tabs</h1>
 
 <Schemes>
-  <Tabs label="Admin" {items} />
+  <Tabs label="Admin" {items} current="#users" />
 </Schemes>

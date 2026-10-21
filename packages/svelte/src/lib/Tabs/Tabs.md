@@ -13,9 +13,9 @@ description: Links between the pages of one section, the current one marked.
       feature.
 - [ ] Give it a `label` naming the section ("Admin"), so screen readers can
       tell this navigation from the header's.
-- [ ] Mark the page being shown with `current: true`, worked out from the
-      URL (`page.url.pathname`). Exactly one tab, or none on a page outside
-      the tabs.
+- [ ] Pass the `href` of the tab for the page being shown as `current`,
+      worked out from the URL (`page.url.pathname`). On a page outside the
+      tabs, leave it out and no tab is marked.
 - [ ] Keep tab labels to a word or two.
 - [ ] Don't colour it or change its sizes. `class` is for layout only, such
       as a margin.
@@ -34,23 +34,18 @@ description: Links between the pages of one section, the current one marked.
   ];
 </script>
 
-<Tabs
-  label="Admin"
-  items={sections.map((tab) => ({
-    ...tab,
-    current: page.url.pathname === tab.href,
-  }))}
-/>
+<Tabs label="Admin" items={sections} current={page.url.pathname} />
 ```
 
 ## Props
 
-| Prop    | Type                                                   | Notes                                              |
-| ------- | ------------------------------------------------------ | -------------------------------------------------- |
-| `label` | `string`                                               | Required. Names the navigation for screen readers. |
-| `items` | `{ href: string; label: string; current?: boolean }[]` | Required. The tabs, in order. Type `Tab`.          |
-| `class` | `string`                                               | Added to the `<nav>`. Layout only.                 |
-| others  | `<nav>` attributes                                     | Passed to the `<nav>`: `id` and the rest.          |
+| Prop      | Type                                | Notes                                                       |
+| --------- | ----------------------------------- | ----------------------------------------------------------- |
+| `label`   | `string`                            | Required. Names the navigation for screen readers.          |
+| `items`   | `{ href: string; label: string }[]` | Required. The tabs, in order. Type `Tab`.                   |
+| `current` | `string`                            | The `href` of the tab for the page shown. None if left out. |
+| `class`   | `string`                            | Added to the `<nav>`. Layout only.                          |
+| others    | `<nav>` attributes                  | Passed to the `<nav>`: `id` and the rest.                   |
 
 ## Looks
 
