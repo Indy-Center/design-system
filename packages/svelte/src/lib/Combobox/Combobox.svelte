@@ -11,12 +11,14 @@
 
   type Props = Omit<
     HTMLInputAttributes,
-    "type" | "value" | "role" | "name" | "children"
+    "type" | "value" | "defaultValue" | "role" | "name" | "children"
   > & {
     /** The options: a list, or a function that searches for the typed text. */
     options: T[] | Search;
     /** The option picked, or null; bindable. */
     value?: T | null;
+    /** The option a form reset goes back to, and the first pick when `value` is null. */
+    defaultValue?: T | null;
     /** Sends the picked option's key with a form under this name. */
     name?: string;
     /** An option's text: shown in the box once picked, and matched against. */
@@ -30,6 +32,7 @@
   let {
     options,
     value = $bindable(null),
+    defaultValue = null,
     name,
     getText = String,
     getKey = getText,
@@ -43,6 +46,12 @@
     onblur: callerBlur,
     ...rest
   }: Props = $props();
+
+  // As Svelte's own inputs: a value given first wins, unless it's null.
+  // Only the first `defaultValue` counts here; a reset reads it afresh.
+  untrack(() => {
+    if (value == null && defaultValue != null) value = defaultValue;
+  });
 
   const madeId = $props.id();
   const inputId = $derived(id ?? madeId);
@@ -177,17 +186,18 @@
     input?.setCustomValidity(unpicked ? "Pick an option from the list." : "");
   });
 
-  // A form reset empties the box but leaves the hidden input's value, so
-  // the pick goes too, and an open list closes. The reset lands after its
-  // event, unless the event is cancelled.
+  // A form reset would empty the box but leave the hidden input's value,
+  // so the pick goes back to `defaultValue` (none when it's left out), and
+  // an open list closes. The reset lands after its event, unless the event
+  // is cancelled.
   $effect(() => {
     const form = input?.form;
     if (!form) return;
     const onreset = (event: Event) => {
       queueMicrotask(() => {
         if (event.defaultPrevented) return;
-        pick(null);
-        query = "";
+        pick(defaultValue);
+        query = defaultValue == null ? "" : getText(defaultValue);
         pickedMessage = "";
         close();
       });

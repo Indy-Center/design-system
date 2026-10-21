@@ -28,6 +28,11 @@ description: A text box that searches a list as you type, to pick one option fro
       option from the list."), so typed text is never dropped silently; an
       empty box sends nothing. With `required` (on it or its `Field`), an
       empty box stops it too.
+- [ ] On an edit form, give `defaultValue` the saved pick, so a reset of
+      the form goes back to it; without one, a reset clears the pick.
+      SvelteKit's `use:enhance` resets the form after each successful
+      send, so an edit form that stays on the page passes
+      `update({ reset: false })`.
 - [ ] Don't colour it or its list. `class` is for layout only, on the
       wrapper round the box and its list.
 
@@ -73,16 +78,17 @@ With a search function:
 
 ## Props
 
-| Prop      | Type                                    | Notes                                                                                                                                                                                                                            |
-| --------- | --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `options` | `T[] \| (query) => T[] \| Promise<T[]>` | Required. A list is matched on `getText`, ignoring case; a function does its own search.                                                                                                                                         |
-| `value`   | `T \| null`                             | Bindable: `bind:value`. The pick; null until one is made. Typing in the box, or a reset of its form, clears it.                                                                                                                  |
-| `getText` | `(option: T) => string`                 | The option's words: shown in the box once picked, and matched. `String` by default.                                                                                                                                              |
-| `getKey`  | `(option: T) => string`                 | Unique per option; sent with the form. `getText` by default.                                                                                                                                                                     |
-| `name`    | `string`                                | Sends the pick's key with a form, from a hidden input.                                                                                                                                                                           |
-| `option`  | `Snippet<[T]>`                          | Draws one option in the list. Its text when left out.                                                                                                                                                                            |
-| `class`   | `string`                                | Added to the wrapper. Layout only.                                                                                                                                                                                               |
-| others    | `<input>` attributes                    | Passed to the box: `id`, `placeholder`, `required`, `disabled`, `aria-*` and the rest. Your `oninput`, `onkeydown`, `onclick` and `onblur` run before the combobox's own; `preventDefault()` in `onkeydown` keeps a key from it. |
+| Prop           | Type                                    | Notes                                                                                                                                                                                                                            |
+| -------------- | --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `options`      | `T[] \| (query) => T[] \| Promise<T[]>` | Required. A list is matched on `getText`, ignoring case; a function does its own search.                                                                                                                                         |
+| `value`        | `T \| null`                             | Bindable: `bind:value`. The pick; null until one is made. Typing in the box clears it; a reset of its form sets it to `defaultValue`.                                                                                            |
+| `defaultValue` | `T \| null`                             | The pick a reset of its form goes back to; null (no pick) by default. Also the first pick when `value` starts null, as with Svelte's own inputs.                                                                                 |
+| `getText`      | `(option: T) => string`                 | The option's words: shown in the box once picked, and matched. `String` by default.                                                                                                                                              |
+| `getKey`       | `(option: T) => string`                 | Unique per option; sent with the form. `getText` by default.                                                                                                                                                                     |
+| `name`         | `string`                                | Sends the pick's key with a form, from a hidden input.                                                                                                                                                                           |
+| `option`       | `Snippet<[T]>`                          | Draws one option in the list. Its text when left out.                                                                                                                                                                            |
+| `class`        | `string`                                | Added to the wrapper. Layout only.                                                                                                                                                                                               |
+| others         | `<input>` attributes                    | Passed to the box: `id`, `placeholder`, `required`, `disabled`, `aria-*` and the rest. Your `oninput`, `onkeydown`, `onclick` and `onblur` run before the combobox's own; `preventDefault()` in `onkeydown` keeps a key from it. |
 
 ## Looks
 

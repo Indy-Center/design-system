@@ -12,6 +12,8 @@
       Controller[] | ((query: string) => Controller[] | Promise<Controller[]>);
     /** The controller picked to start with. */
     value?: Controller | null;
+    /** The controller a form reset goes back to. */
+    defaultValue?: Controller | null;
     /** Field's hint. */
     hint?: string;
     /** Field's error. */
@@ -29,6 +31,7 @@
       { cid: "1000003", name: "Cara Cole" },
     ],
     value = $bindable(null),
+    defaultValue,
     hint,
     error,
     withCid = false,
@@ -45,6 +48,7 @@
           {...control}
           {options}
           bind:value
+          {defaultValue}
           name="controller"
           getText={(c) => c.name}
           getKey={(c) => c.cid}

@@ -537,6 +537,59 @@ describe("Combobox", () => {
     expect(new FormData(form).get("controller")).toBe("1000001");
   });
 
+  describe("with a defaultValue", () => {
+    const ann = { cid: "1000001", name: "Ann Archer" };
+    const ben = { cid: "1000002", name: "Ben Baker" };
+
+    test("starts on it when no value is given", async () => {
+      const screen = await renderIn("light", Picker, { defaultValue: ben });
+      const input = screen.getByRole("combobox");
+      await expect.element(input).toHaveValue("Ben Baker");
+      await expect
+        .element(screen.getByTestId("picked"))
+        .toHaveTextContent("1000002");
+      const form = input.element().closest("form")!;
+      expect(new FormData(form).get("controller")).toBe("1000002");
+    });
+
+    test("a given value comes first", async () => {
+      const screen = await renderIn("light", Picker, {
+        value: ann,
+        defaultValue: ben,
+      });
+      await expect
+        .element(screen.getByRole("combobox"))
+        .toHaveValue("Ann Archer");
+    });
+
+    test("a form reset goes back to it", async () => {
+      const screen = await renderIn("light", Picker, {
+        value: ann,
+        defaultValue: ben,
+      });
+      const input = screen.getByRole("combobox");
+      const form = input.element().closest("form")!;
+      await input.fill("Car");
+      await userEvent.keyboard("{ArrowDown}{Enter}");
+      await expect.element(input).toHaveValue("Cara Cole");
+      form.reset();
+      await expect.element(input).toHaveValue("Ben Baker");
+      await expect
+        .element(screen.getByTestId("picked"))
+        .toHaveTextContent("1000002");
+      expect(new FormData(form).get("controller")).toBe("1000002");
+      expect(form.checkValidity()).toBe(true);
+    });
+
+    test("a form reset goes back to it as it is now", async () => {
+      const screen = await renderIn("light", Picker, { defaultValue: ann });
+      const input = screen.getByRole("combobox");
+      await screen.rerender({ defaultValue: ben });
+      input.element().closest("form")!.reset();
+      await expect.element(input).toHaveValue("Ben Baker");
+    });
+  });
+
   test("not required, text with no pick fails the form; an empty box passes", async () => {
     const screen = await renderIn("light", Picker, {});
     const input = screen.getByRole("combobox");
