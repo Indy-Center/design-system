@@ -8,6 +8,8 @@ test.each([
   ["https://x.example/", "https://x.example"],
   ["https://x.example", "https://x.example"],
   ["/", "/"],
+  ["//", "/"],
+  ["", ""],
 ])("withoutTrailingSlash(%j) is %j", (url, expected) => {
   expect(withoutTrailingSlash(url)).toBe(expected);
 });

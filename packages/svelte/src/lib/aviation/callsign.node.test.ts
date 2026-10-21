@@ -38,6 +38,7 @@ describe("parseCallsign", () => {
 describe("isPosition, VATUSA's pattern", () => {
   test.each([
     "IND_GND",
+    "IND_TWR",
     "ZID_CTR",
     "IND_83_CTR",
     "IND_E_APP",
