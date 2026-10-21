@@ -83,9 +83,10 @@ description: A radio or checkbox drawn as a card, with room under its label to s
   in `foreground-soft`, the children small in `muted-foreground`, a `ring`
   outline round the mark when focused.
 - At least 44px tall, and all of it, padding included, picks the option.
-  Disabled, its contents dim.
+  Disabled, the whole card dims.
 - Stacked, each card but the last keeps a 12px gap below it, so cards in
-  a `Fieldset` don't touch.
+  a `Fieldset` don't touch. Laying them out in a grid instead, pass
+  `class="not-last:mb-0"` and space them with the grid's `gap`.
 
 ## Accessibility
 

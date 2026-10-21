@@ -3,6 +3,7 @@ import { userEvent } from "vitest/browser";
 import { SCHEMES } from "../../../test/contrast.ts";
 import { role } from "../../../test/roles.ts";
 import { renderIn } from "../../../test/schemes.ts";
+import { text } from "../../../test/snippets.ts";
 import Switch from "./Switch.svelte";
 
 describe("Switch", () => {
@@ -125,6 +126,28 @@ describe("Switch", () => {
       });
     },
   );
+
+  test("is named by its label alone and described by its children", async () => {
+    const screen = await renderIn("light", Switch, {
+      label: "Email me about events",
+      "aria-describedby": "elsewhere",
+      children: text("About once a week"),
+    });
+    const toggle = screen.getByRole("switch", {
+      name: "Email me about events",
+    });
+    await expect
+      .element(toggle)
+      .toHaveAttribute(
+        "aria-describedby",
+        expect.stringMatching(/^elsewhere \S+-hint$/),
+      );
+    await expect
+      .element(toggle)
+      .toHaveAccessibleDescription("About once a week");
+    await screen.getByText("About once a week").click();
+    await expect.element(toggle).toBeChecked();
+  });
 
   test("is a row at least 44px tall", async () => {
     const screen = await renderIn("light", Switch, {

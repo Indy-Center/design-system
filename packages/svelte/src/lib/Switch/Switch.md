@@ -14,6 +14,10 @@ description: An on-or-off setting, a native checkbox read as a switch, with its 
       it's saved (a `toast`). In a form, it sends `on` under its `name`
       when on, and nothing when off, as a checkbox does.
 - [ ] Put several in a `Fieldset` whose legend groups them ("Emails").
+      The Fieldset's `error` marks each switch invalid, as it does
+      checkboxes.
+- [ ] Say more about a setting in `children`, a short line under the
+      label ("About once a week"); keep the label itself short.
 - [ ] Don't colour or resize it: no `bg-*`, `text-*` or size classes.
       `class` goes on the row and is for layout only.
 
@@ -39,12 +43,13 @@ description: An on-or-off setting, a native checkbox read as a switch, with its 
 
 ## Props
 
-| Prop      | Type                 | Notes                                                                                    |
-| --------- | -------------------- | ---------------------------------------------------------------------------------------- |
-| `label`   | `string`             | Required. The text beside the switch, which names it.                                    |
-| `checked` | `boolean`            | Bindable: `bind:checked`. Whether it's on; `false` when left out.                        |
-| `class`   | `string`             | Added to the row (the `<label>`) after its own classes. Layout only.                     |
-| others    | `<input>` attributes | Passed to the `<input>`: `name`, `value`, `disabled`, `onchange`, `aria-*` and the rest. |
+| Prop       | Type                 | Notes                                                                                     |
+| ---------- | -------------------- | ----------------------------------------------------------------------------------------- |
+| `label`    | `string`             | Required. The text beside the switch, which names it.                                     |
+| `checked`  | `boolean`            | Bindable: `bind:checked`. Whether it's on; `false` when left out.                         |
+| `children` | snippet              | Optional. More about the setting, in small text under the label; it describes the switch. |
+| `class`    | `string`             | Added to the row (the `<label>`) after its own classes. Layout only.                      |
+| others     | `<input>` attributes | Passed to the `<input>`: `name`, `value`, `disabled`, `onchange`, `aria-*` and the rest.  |
 
 ## Looks
 
@@ -63,5 +68,8 @@ description: An on-or-off setting, a native checkbox read as a switch, with its 
 - It renders a native `<input type="checkbox" role="switch">` inside its
   `<label>`, so the label names it, a screen reader says "switch, on" or
   "off", and Space flips it.
+- With `children`, the label alone names it and the children describe it
+  (`aria-describedby`, after any ids you pass).
+- In a `Fieldset` with an `error`, it takes `aria-invalid`.
 - The thumb and tick are drawn for sight only and hidden from screen
   readers.
