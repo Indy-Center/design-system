@@ -10,7 +10,7 @@
   import { isValid } from "../Time/format.js";
   import Tooltip from "../Tooltip/Tooltip.svelte";
 
-  type Props = HTMLAttributes<HTMLSpanElement> & {
+  type Props = Omit<HTMLAttributes<HTMLSpanElement>, "children"> & {
     /** The short code, as training writes it: `"S-GC"`, `"APP-SOLO"`. */
     code: string;
     /** Its long name: `"Simple Ground Control"`. Without one, the code shows alone. */

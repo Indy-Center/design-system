@@ -41,18 +41,21 @@ description: A member's certification, endorsement or solo as a short code in a 
 
 ## Props
 
-| Prop        | Type                                         | Notes                                                                                              |
-| ----------- | -------------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| `code`      | `string`                                     | Required. The short code: `"S-GC"`, `"APP-SOLO"`.                                                  |
-| `name`      | `string`                                     | The long name: `"Simple Ground Control"`. Without it, the code shows alone, with no tooltip.       |
-| `kind`      | `"certification" \| "endorsement" \| "solo"` | Required. Sets the colour. `CredentialKind`, exported from the package.                            |
-| `until`     | `Date \| string`                             | A solo's expiry: a date (`"2026-11-03"`) or an instant, read in Zulu. Shown for any kind given it. |
-| `focusable` | `boolean`                                    | Makes it a tab stop. `false` by default.                                                           |
-| `class`     | `string`                                     | Added to the `Tooltip` box round the chip. Layout only.                                            |
-| others      | `<span>` attributes                          | Passed to the chip's `<span>`.                                                                     |
+| Prop        | Type                                         | Notes                                                                                                                          |
+| ----------- | -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `code`      | `string`                                     | Required. The short code: `"S-GC"`, `"APP-SOLO"`.                                                                              |
+| `name`      | `string`                                     | The long name: `"Simple Ground Control"`. Without it, the code shows alone, with no tooltip.                                   |
+| `kind`      | `"certification" \| "endorsement" \| "solo"` | Required. Sets the colour. `CredentialKind`, exported from the package.                                                        |
+| `until`     | `Date \| string`                             | A solo's expiry: a date (`"2026-11-03"`), or a `Date` or ISO instant with its zone, read in Zulu. Shown for any kind given it. |
+| `focusable` | `boolean`                                    | Makes it a tab stop, when it has a `name`. `false` by default.                                                                 |
+| `class`     | `string`                                     | Added to the `Tooltip` box round the chip. Layout only.                                                                        |
+| others      | `<span>` attributes                          | Passed to the chip's `<span>`.                                                                                                 |
 
 Without a `name`, the chip has no `Tooltip` box, so it takes `class` as
-well as the other attributes.
+well as the other attributes, and it is no tab stop. A date-time string
+without a zone (`"2026-11-03T22:00"`) is read in the device's zone, so
+the server and the browser may disagree on its day: pass a date alone or
+an instant with its zone.
 
 ## What it shows
 

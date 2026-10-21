@@ -76,16 +76,6 @@ describe("Member", () => {
       await expect.element(link).toHaveAccessibleName("Jordan Sample");
       await expect.element(link).toHaveAttribute("href", "/roster/1000001");
     });
-
-    test("draws the name as a Link", async () => {
-      const screen = await renderIn("light", Member, {
-        ...jordan,
-        href: "/roster/1000001",
-      });
-      await expect
-        .element(screen.getByRole("link"))
-        .toHaveStyle({ color: role("link", "light") });
-    });
   });
 
   test("has no link without an href", async () => {
@@ -104,13 +94,25 @@ describe("Member", () => {
       expectReadable(cid, scheme);
     });
 
-    // The name takes the colour of the text around it.
+    // Link's own look, the guide's `link` role.
+    test("draws a linked name as a Link", async () => {
+      const screen = await renderIn(scheme, Member, {
+        ...jordan,
+        href: "/roster/1000001",
+      });
+      await expect
+        .element(screen.getByRole("link"))
+        .toHaveStyle({ color: role("link", scheme) });
+    });
+
+    // The name takes the colour of the text around it: a colour the test
+    // sets on the page, not a role.
     test("leaves the name in the surrounding colour", async () => {
       const screen = await renderIn(scheme, Member, jordan);
-      const root = screen.container.firstElementChild!;
-      expect(getComputedStyle(root).color).toBe(
-        getComputedStyle(screen.container).color,
-      );
+      screen.container.style.color = "rgb(1, 2, 3)";
+      await expect
+        .element(page.elementLocator(screen.container.firstElementChild!))
+        .toHaveStyle({ color: "rgb(1, 2, 3)" });
     });
   });
 
