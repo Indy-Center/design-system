@@ -267,6 +267,25 @@ describe("Combobox", () => {
         .not.toBeInTheDocument();
     });
 
+    test("reopened on the same text, one Down Arrow lands on the first option", async () => {
+      const screen = await renderIn("light", Picker, { options: search });
+      const input = screen.getByRole("combobox");
+      await input.fill("Dan Andrews");
+      await expect
+        .element(screen.getByRole("option", { name: "Dan Andrews" }))
+        .toBeVisible();
+      await userEvent.keyboard("{Escape}{ArrowDown}");
+      await expect
+        .poll(() => activeOption(screen))
+        .toEqual({ text: "Dan Andrews", selected: "true" });
+      // Long enough for a second search to have landed and cleared it.
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      expect(activeOption(screen)).toEqual({
+        text: "Dan Andrews",
+        selected: "true",
+      });
+    });
+
     test.each([
       ["{ArrowDown}", "Ann Archer"],
       ["{ArrowUp}", "Dan Andrews"],

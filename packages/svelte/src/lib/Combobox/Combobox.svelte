@@ -1,6 +1,6 @@
 <script lang="ts" generics="T">
   import { mdiChevronDown } from "@mdi/js";
-  import type { Snippet } from "svelte";
+  import { untrack, type Snippet } from "svelte";
   import type { HTMLInputAttributes } from "svelte/elements";
   import { dismiss } from "../dismiss/dismiss.js";
   import { textControlClasses } from "../formControl/formControl.js";
@@ -76,8 +76,11 @@
   });
 
   // Asks a search function for each new text while the list is open.
+  // Reopened on text the list already answers, it doesn't ask again (a
+  // failed search is tried again).
   $effect(() => {
     if (Array.isArray(options) || !open) return;
+    if (untrack(() => foundFor === query && !failed)) return;
     let current = true;
     searching = true;
     const search = options;
