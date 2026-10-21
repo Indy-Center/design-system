@@ -43,7 +43,10 @@
       <Chip
         {...rest}
         variant="muted"
-        class="has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-ring"
+        class={[
+          focusable &&
+            "has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-ring",
+        ]}
       >
         <!-- When focusable, a keyboard can show the tooltip too. No title:
              some screen readers would say the long name twice. -->

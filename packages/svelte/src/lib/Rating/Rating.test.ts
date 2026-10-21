@@ -7,7 +7,8 @@ import { renderIn } from "../../../test/schemes.ts";
 import Rating from "./Rating.svelte";
 import InCell from "./Rating.test.svelte";
 
-type Screen = RenderResult<typeof Rating>;
+// A Rating rendered alone or in a table cell.
+type Screen = RenderResult<typeof Rating> | RenderResult<typeof InCell>;
 
 // An abbr has no role, so it is found by its tag.
 const abbr = (screen: Screen) =>
@@ -22,10 +23,10 @@ const tooltip = (screen: Screen) =>
     whole markup differs by the tooltip's made-up id.) */
 async function chipFor(rating: number | string, kind?: "controller" | "pilot") {
   const screen = await renderIn("light", Rating, { rating, kind });
-  const shown = [
-    chip(screen).element().outerHTML,
-    tooltip(screen).element().textContent,
-  ];
+  const shown = {
+    chip: chip(screen).element().outerHTML,
+    tooltip: tooltip(screen).element().textContent,
+  };
   screen.unmount();
   return shown;
 }
@@ -103,16 +104,12 @@ describe("Rating", () => {
       focusable: true,
     });
     await userEvent.tab();
-    await expect
-      .element(screen.getByRole("tooltip", { includeHidden: true }))
-      .toBeVisible();
+    await expect.element(tooltip(screen)).toBeVisible();
 
     await expect
       .element(screen.getByRole("cell"))
       .toHaveAccessibleName("C1 Enroute Controller");
-    await expect
-      .element(page.elementLocator(screen.container.querySelector("abbr")!))
-      .not.toHaveAccessibleDescription();
+    await expect.element(abbr(screen)).not.toHaveAccessibleDescription();
   });
 
   describe.each(SCHEMES)("in %s", (scheme) => {
