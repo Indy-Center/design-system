@@ -80,5 +80,5 @@ The types `FooterColumn` and `FooterLink` are exported beside it.
   over a list, so readers announce the heading and how many links follow.
   If the page has another navigation named "Footer", pass another `label`.
 - The logo is an image named "Indy Center".
-- Each link is at least 44px tall.
+- Each link is at least 44px tall and 44px wide.
 - The copyright year is the year the page was drawn.

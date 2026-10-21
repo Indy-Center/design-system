@@ -1,7 +1,8 @@
 import { describe, expect, test } from "vitest";
 import { userEvent } from "vitest/browser";
 import { render } from "vitest-browser-svelte";
-import { expectReadable } from "../../../test/contrast.ts";
+import { SCHEMES, expectReadable } from "../../../test/contrast.ts";
+import { role } from "../../../test/roles.ts";
 import { renderIn } from "../../../test/schemes.ts";
 import Footer, { type FooterColumn } from "./Footer.svelte";
 
@@ -82,17 +83,40 @@ describe("Footer", () => {
       .toBeVisible();
   });
 
-  // Two footers on one page (the playground has three) keep the logo's
-  // masks apart, so each draws.
+  // Two footers on one page keep the logo's masks apart, so each draws.
   test("gives each logo its own mask ids", async () => {
     const one = await render(Footer, { columns });
     const two = await render(Footer, { columns });
     const ids = (c: HTMLElement) =>
       [...c.querySelectorAll("svg [id]")].map((e) => e.id);
-    expect(ids(one.container)).toHaveLength(3);
-    expect(ids(one.container)).not.toEqual(
-      expect.arrayContaining(ids(two.container)),
-    );
+    const all = [...ids(one.container), ...ids(two.container)];
+    expect(all).toHaveLength(6);
+    expect(new Set(all).size).toBe(6);
+  });
+
+  test("draws two links to the same page", async () => {
+    const screen = await render(Footer, {
+      columns: [
+        {
+          heading: "Policies",
+          links: [
+            { href: "/soon", label: "Privacy" },
+            { href: "/soon", label: "Accessibility" },
+          ],
+        },
+      ],
+    });
+    expect(screen.getByRole("link").elements()).toHaveLength(2);
+  });
+
+  test("stays dark when a caller passes its own data-theme", async () => {
+    const screen = await render(Footer, {
+      columns,
+      "data-theme": "light",
+    });
+    await expect
+      .element(screen.getByRole("contentinfo"))
+      .toHaveAttribute("data-theme", "dark");
   });
 
   test("puts a caller's class and attributes on the <footer>", async () => {
@@ -107,71 +131,69 @@ describe("Footer", () => {
   });
 
   test("gives each link a 44px target", async () => {
-    const screen = await render(Footer, { columns });
-    const link = screen.getByRole("link", { name: "Discord" }).element();
-    expect(link.getBoundingClientRect().height).toBeGreaterThanOrEqual(44);
+    const screen = await render(Footer, {
+      columns: [{ heading: "Apps", links: [{ href: "/", label: "Hi" }] }],
+    });
+    const box = screen.getByRole("link", { name: "Hi" }).element();
+    expect(box.getBoundingClientRect().height).toBeGreaterThanOrEqual(44);
+    expect(box.getBoundingClientRect().width).toBeGreaterThanOrEqual(44);
   });
 
-  // Dark in both schemes, so the guide's dark roles everywhere:
-  // background #111827, foreground #FFFFFF, foreground-soft #D1D5DB,
-  // muted-foreground #9CA3AF, border #334155.
-  describe.each(["light", "dark", "dark-header"] as const)(
-    "in %s",
-    (scheme) => {
-      const footerIn = async () => {
-        const screen = await renderIn(scheme, Footer, { columns });
-        return { screen, footer: screen.container.querySelector("footer")! };
-      };
+  // Dark in both schemes, so the dark roles everywhere.
+  describe.each(SCHEMES)("in %s", (scheme) => {
+    const footerIn = async () => {
+      const screen = await renderIn(scheme, Footer, { columns });
+      return { screen, footer: screen.container.querySelector("footer")! };
+    };
 
-      test("is the dark background with a border on top", async () => {
-        const { footer } = await footerIn();
-        await expect.element(footer).toHaveStyle({
-          backgroundColor: "rgb(17, 24, 39)",
-          borderTopColor: "rgb(51, 65, 85)",
-        });
+    test("is the dark background with a border on top", async () => {
+      const { footer } = await footerIn();
+      await expect.element(footer).toHaveStyle({
+        backgroundColor: role("background", "dark"),
+        borderTopColor: role("border", "dark"),
       });
+    });
 
-      test("draws links soft, headings and fine print muted, the logo white", async () => {
-        const { screen } = await footerIn();
-        await expect
-          .element(screen.getByRole("link", { name: "Discord" }))
-          .toHaveStyle({ color: "rgb(209, 213, 219)" });
-        await expect
-          .element(screen.getByRole("heading", { name: "Apps" }))
-          .toHaveStyle({ color: "rgb(156, 163, 175)" });
-        const disclaimer = screen.getByText(/not affiliated/);
-        await expect
-          .element(disclaimer)
-          .toHaveStyle({ color: "rgb(156, 163, 175)" });
-        await expect
-          .element(disclaimer.element().parentElement!)
-          .toHaveStyle({ borderTopColor: "rgb(51, 65, 85)" });
-        await expect
-          .element(screen.getByRole("img", { name: "Indy Center" }))
-          .toHaveStyle({ color: "rgb(255, 255, 255)" });
-      });
+    test("draws links soft, headings and fine print muted, the logo white", async () => {
+      const { screen } = await footerIn();
+      await expect
+        .element(screen.getByRole("link", { name: "Discord" }))
+        .toHaveStyle({ color: role("foreground-soft", "dark") });
+      await expect
+        .element(screen.getByRole("heading", { name: "Apps" }))
+        .toHaveStyle({ color: role("muted-foreground", "dark") });
+      const disclaimer = screen.getByText(/not affiliated/);
+      await expect
+        .element(disclaimer)
+        .toHaveStyle({ color: role("muted-foreground", "dark") });
+      await expect
+        .element(disclaimer.element().parentElement!)
+        .toHaveStyle({ borderTopColor: role("border", "dark") });
+      await expect
+        .element(screen.getByRole("img", { name: "Indy Center" }))
+        .toHaveStyle({ color: role("foreground", "dark") });
+    });
 
-      test("keeps its text readable", async () => {
-        const { screen } = await footerIn();
-        for (const el of [
-          screen.getByRole("link", { name: "Discord" }).element(),
-          screen.getByRole("heading", { name: "Apps" }).element(),
-          screen.getByText(/not affiliated/).element(),
-        ]) {
-          expectReadable(el, "dark");
-        }
-      });
+    test("keeps its text readable", async () => {
+      const { screen } = await footerIn();
+      for (const el of [
+        screen.getByRole("link", { name: "Discord" }).element(),
+        screen.getByRole("heading", { name: "Apps" }).element(),
+        screen.getByText(/not affiliated/).element(),
+      ]) {
+        expectReadable(el, "dark");
+      }
+    });
 
-      test("shows a ring outline on a link tabbed to", async () => {
-        const { screen } = await footerIn();
-        await userEvent.tab();
-        const link = screen.getByRole("link", { name: "Community" });
-        await expect.element(link).toHaveFocus();
-        await expect.element(link).toHaveStyle({
-          outlineStyle: "solid",
-          outlineColor: "rgb(14, 165, 233)",
-        });
+    test("shows a ring outline on a link tabbed to", async () => {
+      const { screen } = await footerIn();
+      await userEvent.tab();
+      const link = screen.getByRole("link", { name: "Community" });
+      await expect.element(link).toHaveFocus();
+      await expect.element(link).toHaveStyle({
+        outlineStyle: "solid",
+        outlineColor: role("ring", "dark"),
       });
-    },
-  );
+    });
+  });
 });

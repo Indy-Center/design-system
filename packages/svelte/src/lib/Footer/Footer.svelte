@@ -26,10 +26,11 @@
   const year = new Date().getFullYear();
 </script>
 
-<!-- Dark in both schemes: the roles inside follow data-theme="dark". -->
+<!-- Dark in both schemes: the roles inside follow data-theme="dark", set
+     after the caller's attributes so none can override it. -->
 <footer
-  data-theme="dark"
   {...rest}
+  data-theme="dark"
   class={["border-t border-border bg-background", className]}
 >
   <div class="mx-auto grid max-w-6xl gap-8 px-4 py-8 md:grid-cols-3">
@@ -38,7 +39,8 @@
       aria-label={label}
       class="grid grid-cols-2 gap-6 sm:grid-cols-3 md:col-span-2"
     >
-      {#each columns as column (column.heading)}
+      <!-- Unkeyed: two links may share an href (a placeholder page). -->
+      {#each columns as column}
         <div>
           <h2
             class="mb-1 text-xs font-semibold tracking-wider text-muted-foreground uppercase"
@@ -46,12 +48,12 @@
             {column.heading}
           </h2>
           <ul>
-            {#each column.links as link (link.href)}
+            {#each column.links as link}
               <li>
                 <a
                   href={link.href}
                   class={[
-                    "inline-flex min-h-11 items-center rounded-sm text-sm text-foreground-soft underline-offset-4",
+                    "inline-flex min-h-11 min-w-11 items-center rounded-sm text-sm text-foreground-soft underline-offset-4",
                     "hover:text-foreground hover:underline",
                     "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
                   ]}>{link.label}</a
