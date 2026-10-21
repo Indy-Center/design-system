@@ -8,7 +8,10 @@
 
   type Props = Omit<
     HTMLButtonAttributes,
-    // The arrow's own handlers, which open and close the menu.
+    // What the arrow sets itself: `children` (the rows are the menu's,
+    // drawn in the panel), `type` (always "button"), `popovertarget` and
+    // `popovertargetaction` (the menu shows its panel itself), and the
+    // `onclick` and `onfocusout` handlers that open and close it.
     | "children"
     | "type"
     | "popovertarget"
