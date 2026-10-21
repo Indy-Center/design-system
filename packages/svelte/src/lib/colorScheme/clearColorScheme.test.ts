@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, test, vi } from "vitest";
+import { afterEach, describe, expect, onTestFinished, test, vi } from "vitest";
 import { commands } from "vitest/browser";
 import { forgetColorScheme } from "../../playground/forgetColorScheme.ts";
 import { htmlTheme, serve } from "../../../test/serve.ts";
@@ -50,6 +50,7 @@ describe("going back to the device's setting", () => {
 
   test("deletes it on the domain it was saved on", () => {
     const written = vi.spyOn(Document.prototype, "cookie", "set");
+    onTestFinished(() => written.mockRestore());
     clearColorScheme({ domain: location.hostname });
     expect(written).toHaveBeenCalledWith(
       expect.stringMatching(
@@ -58,6 +59,5 @@ describe("going back to the device's setting", () => {
         ),
       ),
     );
-    written.mockRestore();
   });
 });

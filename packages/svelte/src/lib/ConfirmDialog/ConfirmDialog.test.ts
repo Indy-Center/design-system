@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, test, vi } from "vitest";
+import { afterEach, describe, expect, onTestFinished, test, vi } from "vitest";
 import { page, userEvent } from "vitest/browser";
 import { SCHEMES } from "../../../test/contrast.ts";
 import { role } from "../../../test/roles.ts";
@@ -34,6 +34,13 @@ function askFrom(ask: () => Promise<boolean>) {
   button.focus();
   let answer: Promise<boolean> | undefined;
   button.addEventListener("click", () => (answer = ask()));
+  // A test that fails before answering would leave its modal dialog up,
+  // and the next test's page inert behind it: Back cancels it.
+  onTestFinished(() => {
+    if (document.querySelector("dialog")) {
+      window.dispatchEvent(new PopStateEvent("popstate"));
+    }
+  });
   button.click();
   return { button, answer: () => answer! };
 }

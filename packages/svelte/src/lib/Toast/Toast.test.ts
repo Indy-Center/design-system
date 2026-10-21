@@ -12,9 +12,12 @@ import { toastFromServer, type ToastCookies } from "./toastFromServer.ts";
 const notifications = () => document.querySelector("section[aria-label]");
 
 describe("Toast", () => {
-  // The toasts' clock runs only when a test moves it on.
+  // The toasts' clock, and the timer that clears a read line, run only when
+  // a test moves them on, so neither reaches into the next test.
   beforeEach(() => {
-    vi.useFakeTimers({ toFake: ["setInterval", "clearInterval"] });
+    vi.useFakeTimers({
+      toFake: ["setInterval", "clearInterval", "setTimeout", "clearTimeout"],
+    });
   });
   afterEach(() => {
     vi.useRealTimers();

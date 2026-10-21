@@ -3,7 +3,8 @@ import { commands } from "vitest/browser";
 import { renderIn } from "../../../test/schemes.ts";
 import Spinner from "./Spinner.svelte";
 
-afterEach(() => commands.emulateReducedMotion(null));
+// The suite runs with reduced motion (test/setup.ts); put it back.
+afterEach(() => commands.emulateReducedMotion("reduce"));
 
 describe("Spinner", () => {
   test('is a status that says "Loading"', async () => {
@@ -52,6 +53,7 @@ describe("Spinner", () => {
   });
 
   test("spins", async () => {
+    await commands.emulateReducedMotion("no-preference");
     const screen = await renderIn("light", Spinner, {});
     const svg = screen.container.querySelector("svg");
     await expect.element(svg).toHaveAttribute("aria-hidden", "true");

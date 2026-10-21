@@ -1,4 +1,4 @@
-import { describe, expect, test } from "vitest";
+import { describe, expect, onTestFinished, test } from "vitest";
 import { userEvent } from "vitest/browser";
 import ControllerTable from "../../../test/ControllerTable.svelte";
 import { SCHEMES } from "../../../test/contrast.ts";
@@ -146,11 +146,11 @@ describe("Table", () => {
     const grid = document.createElement("div");
     grid.style.display = "grid";
     grid.style.width = "200px";
+    onTestFinished(() => grid.remove());
     screen.container.before(grid);
     grid.append(screen.container);
     const region = screen.getByRole("region").element();
     expect(screen.container.clientWidth).toBeLessThanOrEqual(200);
     expect(region.scrollWidth).toBeGreaterThan(region.clientWidth);
-    grid.remove();
   });
 });

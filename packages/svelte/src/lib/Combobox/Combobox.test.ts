@@ -1,3 +1,4 @@
+import { tick } from "svelte";
 import { describe, expect, onTestFinished, test } from "vitest";
 import { page, userEvent } from "vitest/browser";
 import type { RenderResult } from "vitest-browser-svelte";
@@ -26,6 +27,15 @@ function activeOption(screen: Screen) {
         selected: option.getAttribute("aria-selected"),
       }
     : null;
+}
+
+/**
+ * Once the work already queued has run and the page has updated: answers
+ * given and resets made, which land in microtasks.
+ */
+async function settled() {
+  await new Promise((resolve) => setTimeout(resolve));
+  await tick();
 }
 
 describe("Combobox", () => {
@@ -238,14 +248,31 @@ describe("Combobox", () => {
       { cid: "1000001", name: "Ann Archer" },
       { cid: "1000004", name: "Dan Andrews" },
     ];
-    /** Searches the roster; the first letter's answer comes back last. */
-    const search = (query: string) =>
-      new Promise<typeof roster>((resolve) =>
-        setTimeout(
-          () => resolve(roster.filter((c) => c.name.includes(query))),
-          query.length === 1 ? 300 : 20,
-        ),
-      );
+    const find = (query: string) =>
+      roster.filter((c) => c.name.includes(query));
+    /** Searches the roster, answering at once. */
+    const search = async (query: string) => find(query);
+
+    /**
+     * A search function whose answers come only when the test gives them,
+     * so a test can act while a search is out, with no clock to race.
+     */
+    function heldSearch() {
+      const out: { query: string; give: (answer: typeof roster) => void }[] =
+        [];
+      return {
+        search: (query: string) =>
+          new Promise<typeof roster>((give) => out.push({ query, give })),
+        /** Every text the function has been asked for, in order. */
+        asked: () => out.map((search) => search.query),
+        /** Answers each search for `query` still out. */
+        answer(query: string) {
+          for (const search of out.filter((s) => s.query === query)) {
+            search.give(find(query));
+          }
+        },
+      };
+    }
 
     test("lists what the function finds for the typed text", async () => {
       const screen = await renderIn("light", Picker, { options: search });
@@ -257,9 +284,11 @@ describe("Combobox", () => {
     });
 
     test("says it is searching until the answer comes", async () => {
-      const screen = await renderIn("light", Picker, { options: search });
+      const held = heldSearch();
+      const screen = await renderIn("light", Picker, { options: held.search });
       await screen.getByRole("combobox").fill("A");
       await expect.element(screen.getByText("Searching…")).toBeVisible();
+      held.answer("A");
       await expect
         .element(screen.getByRole("option", { name: "Dan Andrews" }))
         .toBeVisible();
@@ -269,9 +298,11 @@ describe("Combobox", () => {
     });
 
     test("reopened on the same text, one Down Arrow lands on the first option", async () => {
-      const screen = await renderIn("light", Picker, { options: search });
+      const held = heldSearch();
+      const screen = await renderIn("light", Picker, { options: held.search });
       const input = screen.getByRole("combobox");
       await input.fill("Dan Andrews");
+      held.answer("Dan Andrews");
       await expect
         .element(screen.getByRole("option", { name: "Dan Andrews" }))
         .toBeVisible();
@@ -279,12 +310,8 @@ describe("Combobox", () => {
       await expect
         .poll(() => activeOption(screen))
         .toEqual({ text: "Dan Andrews", selected: "true" });
-      // Long enough for a second search to have landed and cleared it.
-      await new Promise((resolve) => setTimeout(resolve, 100));
-      expect(activeOption(screen)).toEqual({
-        text: "Dan Andrews",
-        selected: "true",
-      });
+      // No second search, which would clear it.
+      expect(held.asked()).toEqual(["Dan Andrews"]);
     });
 
     test.each([
@@ -293,9 +320,13 @@ describe("Combobox", () => {
     ])(
       "%s on a closed box opens it on %s once the answer comes",
       async (key, name) => {
-        const screen = await renderIn("light", Picker, { options: search });
+        const held = heldSearch();
+        const screen = await renderIn("light", Picker, {
+          options: held.search,
+        });
         await userEvent.tab();
         await userEvent.keyboard(key);
+        held.answer("");
         await expect
           .poll(() => activeOption(screen))
           .toEqual({ text: name, selected: "true" });
@@ -318,10 +349,13 @@ describe("Combobox", () => {
     });
 
     test("typing before the answer comes cancels the Down Arrow's move", async () => {
-      const screen = await renderIn("light", Picker, { options: search });
+      const held = heldSearch();
+      const screen = await renderIn("light", Picker, { options: held.search });
       const input = screen.getByRole("combobox");
       await userEvent.tab();
       await userEvent.keyboard("{ArrowDown}A");
+      held.answer("");
+      held.answer("A");
       await expect
         .element(screen.getByRole("option", { name: "Dan Andrews" }))
         .toBeVisible();
@@ -365,9 +399,9 @@ describe("Combobox", () => {
       const dan = screen.getByRole("option", { name: "Dan Andrews" });
       await expect.element(dan).toBeVisible();
       const otherRoster = [{ cid: "1000009", name: "Dana Dunn" }];
+      let give: (answer: typeof otherRoster) => void = () => {};
       await screen.rerender({
-        options: () =>
-          new Promise((resolve) => setTimeout(() => resolve(otherRoster), 300)),
+        options: () => new Promise((resolve) => (give = resolve)),
       });
       await userEvent.keyboard("{ArrowDown}");
       expect(input).not.toHaveAttribute("aria-activedescendant");
@@ -375,6 +409,7 @@ describe("Combobox", () => {
       await expect
         .element(screen.getByTestId("picked"))
         .toHaveTextContent("none");
+      give(otherRoster);
       await expect
         .element(screen.getByRole("option", { name: "Dana Dunn" }))
         .toBeVisible();
@@ -404,19 +439,12 @@ describe("Combobox", () => {
       expect(searches.filter((query) => query === "Dan")).toHaveLength(1);
     });
 
-    /** Searches the roster; "Ann" is slow, so "Dan"'s list stays a while. */
-    const slowAnn = (query: string) =>
-      new Promise<typeof roster>((resolve) =>
-        setTimeout(
-          () => resolve(roster.filter((c) => c.name.includes(query))),
-          query === "Ann" ? 300 : 20,
-        ),
-      );
-
     test("while searching, the arrows and Enter don't reach the last list", async () => {
-      const screen = await renderIn("light", Picker, { options: slowAnn });
+      const held = heldSearch();
+      const screen = await renderIn("light", Picker, { options: held.search });
       const input = screen.getByRole("combobox");
       await input.fill("Dan");
+      held.answer("Dan");
       await expect
         .element(screen.getByRole("option", { name: "Dan Andrews" }))
         .toBeVisible();
@@ -431,9 +459,11 @@ describe("Combobox", () => {
     });
 
     test("while searching, a click doesn't pick from the last list", async () => {
-      const screen = await renderIn("light", Picker, { options: slowAnn });
+      const held = heldSearch();
+      const screen = await renderIn("light", Picker, { options: held.search });
       const input = screen.getByRole("combobox");
       await input.fill("Dan");
+      held.answer("Dan");
       const dan = screen.getByRole("option", { name: "Dan Andrews" });
       await expect.element(dan).toBeVisible();
       await input.fill("Ann");
@@ -445,16 +475,18 @@ describe("Combobox", () => {
     });
 
     test("ignores an answer that comes back after a newer one", async () => {
-      const screen = await renderIn("light", Picker, { options: search });
+      const held = heldSearch();
+      const screen = await renderIn("light", Picker, { options: held.search });
       const input = screen.getByRole("combobox");
       await userEvent.click(input);
       await userEvent.keyboard("A");
       await userEvent.keyboard("r");
+      held.answer("Ar");
       await expect
         .element(screen.getByRole("option", { name: "Ann Archer" }))
         .toBeVisible();
-      // Long enough for the answer to "A" to land.
-      await new Promise((resolve) => setTimeout(resolve, 400));
+      held.answer("A");
+      await settled();
       expect(screen.getByRole("option").elements()).toHaveLength(1);
     });
   });
@@ -531,8 +563,7 @@ describe("Combobox", () => {
     await userEvent.tab();
     await userEvent.keyboard("{ArrowDown}{Enter}");
     form.reset();
-    // Long enough for a reset to have landed.
-    await new Promise((resolve) => setTimeout(resolve, 50));
+    await settled();
     await expect.element(input).toHaveValue("Ann Archer");
     expect(new FormData(form).get("controller")).toBe("1000001");
   });

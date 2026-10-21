@@ -1,4 +1,4 @@
-import { describe, expect, test } from "vitest";
+import { describe, expect, onTestFinished, test } from "vitest";
 import { userEvent } from "vitest/browser";
 import {
   SCHEMES,
@@ -158,19 +158,22 @@ describe("AppsMenu", () => {
         apps: [{ href: "#library", label: "Library" }],
       });
       await button(screen).click();
-      // Keep the test's page from opening a tab or window.
+      // Keep the test's page from opening a tab or window, which leaves it
+      // throttled for the tests after. Only a cancelable click can be
+      // stopped.
       const stop = (event: Event) => event.preventDefault();
       window.addEventListener("click", stop);
-      try {
-        screen
-          .getByRole("link", { name: "Library" })
-          .element()
-          .dispatchEvent(
-            new MouseEvent("click", { bubbles: true, [key]: true }),
-          );
-      } finally {
-        window.removeEventListener("click", stop);
-      }
+      onTestFinished(() => window.removeEventListener("click", stop));
+      screen
+        .getByRole("link", { name: "Library" })
+        .element()
+        .dispatchEvent(
+          new MouseEvent("click", {
+            bubbles: true,
+            cancelable: true,
+            [key]: true,
+          }),
+        );
       await expect
         .element(button(screen))
         .toHaveAttribute("aria-expanded", "true");

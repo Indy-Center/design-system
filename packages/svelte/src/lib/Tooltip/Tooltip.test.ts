@@ -1,4 +1,4 @@
-import { describe, expect, test } from "vitest";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { userEvent } from "vitest/browser";
 import type { RenderResult } from "vitest-browser-svelte";
 import { SCHEMES } from "../../../test/contrast.ts";
@@ -14,7 +14,18 @@ const trigger = (screen: Screen) =>
 const tooltip = (screen: Screen) =>
   screen.getByRole("tooltip", { includeHidden: true });
 
+// The pause before a tooltip goes once the pointer leaves.
+const LEAVE_DELAY = 100;
+
 describe("Tooltip", () => {
+  // The leave timer runs only when a test moves it on.
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   test("its text is the trigger's description, shown or not", async () => {
     const screen = await renderIn("light", Described, {});
 
@@ -44,6 +55,7 @@ describe("Tooltip", () => {
     await expect.element(tooltip(screen)).toBeVisible();
 
     await trigger(screen).unhover();
+    vi.advanceTimersByTime(LEAVE_DELAY);
     await expect.element(tooltip(screen)).not.toBeVisible();
   });
 
@@ -55,6 +67,7 @@ describe("Tooltip", () => {
     await trigger(screen).click();
     await expect.element(tooltip(screen)).toBeVisible();
     await trigger(screen).unhover();
+    vi.advanceTimersByTime(LEAVE_DELAY);
 
     await expect.element(trigger(screen)).toHaveFocus();
     await expect.element(tooltip(screen)).not.toBeVisible();
@@ -88,6 +101,7 @@ describe("Tooltip", () => {
 
     await trigger(screen).hover();
     await tooltip(screen).hover();
+    vi.advanceTimersByTime(LEAVE_DELAY * 2);
 
     await expect.element(tooltip(screen)).toBeVisible();
   });

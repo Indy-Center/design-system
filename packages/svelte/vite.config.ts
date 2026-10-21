@@ -19,6 +19,18 @@ export default defineConfig({
   // playground's), take a package's ES module (`@mdi/js`'s) over its
   // CommonJS `main`, which can't run inlined.
   ssr: { resolve: { mainFields: ["module", "main"] } },
+  // The dependencies the components and their tests load that the Svelte
+  // plugins don't list, bundled before the first test file loads. Found
+  // mid-run instead, on a cold cache, Vite re-bundles and reloads the
+  // browser, and the files already loading fail to import.
+  optimizeDeps: {
+    include: [
+      "@mdi/js",
+      "esm-env",
+      "@sveltejs/kit > devalue",
+      "vitest-browser-svelte",
+    ],
+  },
   test: {
     // expect.element retries until the test times out, so keep this short.
     testTimeout: 10_000,

@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, test, vi } from "vitest";
+import { afterEach, describe, expect, onTestFinished, test, vi } from "vitest";
 import { commands, userEvent } from "vitest/browser";
 import { SCHEMES } from "../../../test/contrast.ts";
 import { role } from "../../../test/roles.ts";
@@ -189,6 +189,7 @@ describe("the cookie's domain", () => {
   test("comes from setColorScheme, for saving and deleting", async () => {
     // Chrome stores Domain=localhost as host-only, so read what is written.
     const written = vi.spyOn(Document.prototype, "cookie", "set");
+    onTestFinished(() => written.mockRestore());
     // The test page isn't on flyindycenter.com; its own host stands in.
     const screen = await renderIn("light", Layout, {
       ...device,
@@ -203,6 +204,5 @@ describe("the cookie's domain", () => {
     expect(written).toHaveBeenCalledTimes(2);
     expect(written).toHaveBeenNthCalledWith(1, domain);
     expect(written).toHaveBeenNthCalledWith(2, domain);
-    written.mockRestore();
   });
 });
