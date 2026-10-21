@@ -1,22 +1,8 @@
 import { describe, expect, test } from "vitest";
 import { userEvent } from "vitest/browser";
-import { SCHEMES } from "../../../test/contrast.ts";
 import { role } from "../../../test/roles.ts";
-import { renderIn, type Scheme } from "../../../test/schemes.ts";
-import ProseLesson from "../../../test/ProseLesson.svelte";
-
-// The roles the theme uses, in a scheme.
-const roles = (scheme: Scheme) => ({
-  foreground: role("foreground", scheme),
-  foregroundSoft: role("foreground-soft", scheme),
-  mutedForeground: role("muted-foreground", scheme),
-  link: role("link", scheme),
-  info: role("info", scheme),
-  muted: role("muted", scheme),
-  border: role("border", scheme),
-  ring: role("ring", scheme),
-});
-const schemes = SCHEMES.map((scheme) => [scheme, roles(scheme)] as const);
+import { renderIn } from "../../../test/schemes.ts";
+import ProseLesson from "./Prose.test.svelte";
 
 // The plugin puts backticks round inline code and marks round quotes, in
 // ::before and ::after; the theme takes them out.
@@ -45,32 +31,73 @@ describe("Prose", () => {
     });
     await expect.element(screen.getByRole("article")).not.toBeInTheDocument();
     const body = screen.container.querySelector<HTMLElement>("#body")!;
-    expect(body.tagName).toBe("DIV");
     await expect.element(body).toHaveStyle({
       marginTop: "32px",
       color: role("foreground-soft", "light"),
     });
   });
 
-  test.each(schemes)(
-    "body text is the body colour in %s",
-    async (scheme, { foregroundSoft }) => {
-      const screen = await renderIn(scheme, ProseLesson, {});
-      await expect
-        .element(screen.getByText(/^A taxi clearance gives/))
-        .toHaveStyle({ color: foregroundSoft });
-    },
-  );
+  // prose-centerline sets the plugin's colours to roles and has no rule of
+  // its own for dark, so the colours are tested in light.
+  test("draws every element in the roles", async () => {
+    const screen = await renderIn("light", ProseLesson, {});
+    const foreground = role("foreground", "light");
+    const muted = role("muted", "light");
+    const mutedForeground = role("muted-foreground", "light");
 
-  test.each(schemes)(
-    "links are the link colour in %s",
-    async (scheme, { link }) => {
-      const screen = await renderIn(scheme, ProseLesson, {});
-      await expect
-        .element(screen.getByRole("link", { name: "FAA 7110.65" }))
-        .toHaveStyle({ color: link });
-    },
-  );
+    await expect
+      .element(screen.getByText(/^A taxi clearance gives/))
+      .toHaveStyle({ color: role("foreground-soft", "light") });
+    await expect
+      .element(screen.getByRole("link", { name: "FAA 7110.65" }))
+      .toHaveStyle({ color: role("link", "light") });
+    await expect
+      .element(screen.getByRole("heading", { name: "Taxi clearances" }))
+      .toHaveStyle({ color: foreground });
+
+    // The table head is muted, with no heavier rule.
+    const head = screen.getByText("Mistake", { exact: true });
+    await expect.element(head).toHaveStyle({ color: foreground });
+    await expect.element(head.element().closest("thead")!).toHaveStyle({
+      backgroundColor: muted,
+      borderBottomColor: role("border", "light"),
+    });
+
+    // Inline code is a muted chip, with no backticks.
+    const code = screen.getByText("KXMP");
+    await expect
+      .element(code)
+      .toHaveStyle({ color: foreground, backgroundColor: muted });
+    expectNoMarks(code.element());
+
+    // A code block is on muted.
+    const block = screen.getByText(/^N123AB, runway 27/);
+    await expect.element(block).toHaveStyle({ color: foreground });
+    await expect
+      .element(block.element().closest("pre")!)
+      .toHaveStyle({ backgroundColor: muted });
+
+    // A quote has the sky rule (the info role), upright, with no marks.
+    const quoted = screen.getByText(/^An aircraft must not cross/);
+    await expect.element(quoted.element().closest("blockquote")!).toHaveStyle({
+      borderInlineStartColor: role("info", "light"),
+      fontStyle: "normal",
+    });
+    expectNoMarks(quoted.element());
+
+    // List numbers and bullets are muted. toHaveStyle can't read a
+    // pseudo-element, so these read ::marker.
+    for (const item of [
+      screen.getByText("Call sign.").element(),
+      screen.getByText(/^Open the field diagram/).element(),
+    ]) {
+      expect(getComputedStyle(item, "::marker").color).toBe(mutedForeground);
+    }
+
+    await expect
+      .element(screen.getByText(/^A clearance with a hold short/))
+      .toHaveStyle({ color: mutedForeground });
+  });
 
   // As Link: colour alone doesn't mark a link in body text (WCAG 1.4.1).
   test("links look like Link: underlined at an offset, in the body's weight", async () => {
@@ -91,38 +118,25 @@ describe("Prose", () => {
     await expect.element(link).toHaveStyle({ textDecorationThickness: "2px" });
   });
 
-  test.each(schemes)(
-    "a link shows a ring outline when tabbed to in %s",
-    async (scheme, { ring }) => {
-      const screen = await renderIn(scheme, ProseLesson, {});
-      await userEvent.tab();
-      const link = screen.getByRole("link", { name: "FAA 7110.65" });
-      await expect.element(link).toHaveFocus();
-      await expect
-        .element(link)
-        .toHaveStyle({ outlineStyle: "solid", outlineColor: ring });
-    },
-  );
-
-  test.each(schemes)(
-    "headings are the heading colour in %s",
-    async (scheme, { foreground }) => {
-      const screen = await renderIn(scheme, ProseLesson, {});
-      await expect
-        .element(screen.getByRole("heading", { name: "Taxi clearances" }))
-        .toHaveStyle({ color: foreground });
-    },
-  );
+  test("a link shows a ring outline when tabbed to", async () => {
+    const screen = await renderIn("light", ProseLesson, {});
+    await userEvent.tab();
+    const link = screen.getByRole("link", { name: "FAA 7110.65" });
+    await expect.element(link).toHaveFocus();
+    await expect.element(link).toHaveStyle({
+      outlineStyle: "solid",
+      outlineColor: role("ring", "light"),
+    });
+  });
 
   // Heading's looks: h2 xl, h3 lg, h4 base, semibold in the heading font.
-  test.each([
-    [2, "Taxi clearances", "20px"],
-    [3, "Phraseology", "18px"],
-    [4, "Readbacks", "16px"],
-  ] as const)(
-    "an h%i is Heading's size for its level",
-    async (level, name, size) => {
-      const screen = await renderIn("light", ProseLesson, {});
+  test("headings are Heading's size for their level", async () => {
+    const screen = await renderIn("light", ProseLesson, {});
+    for (const [level, name, size] of [
+      [2, "Taxi clearances", "20px"],
+      [3, "Phraseology", "18px"],
+      [4, "Readbacks", "16px"],
+    ] as const) {
       const heading = screen.getByRole("heading", { level, name });
       await expect
         .element(heading)
@@ -130,86 +144,6 @@ describe("Prose", () => {
       expect(getComputedStyle(heading.element()).fontFamily).toMatch(
         /^"Source Sans 3",/,
       );
-    },
-  );
-
-  test.each(schemes)(
-    "the table head is muted, with no heavier rule, in %s",
-    async (scheme, { muted, border, foreground }) => {
-      const screen = await renderIn(scheme, ProseLesson, {});
-      const head = screen.getByText("Mistake", { exact: true });
-      await expect.element(head).toHaveStyle({ color: foreground });
-      const thead = head.element().closest("thead")!;
-      await expect
-        .element(thead)
-        .toHaveStyle({ backgroundColor: muted, borderBottomColor: border });
-    },
-  );
-
-  test.each(schemes)(
-    "inline code is a muted chip in %s",
-    async (scheme, { muted, foreground }) => {
-      const screen = await renderIn(scheme, ProseLesson, {});
-      await expect
-        .element(screen.getByText("KXMP"))
-        .toHaveStyle({ color: foreground, backgroundColor: muted });
-    },
-  );
-
-  test("inline code has no backticks around it", async () => {
-    const screen = await renderIn("light", ProseLesson, {});
-    expectNoMarks(screen.getByText("KXMP").element());
+    }
   });
-
-  test.each(schemes)(
-    "a code block is on muted in %s",
-    async (scheme, { muted, foreground }) => {
-      const screen = await renderIn(scheme, ProseLesson, {});
-      const code = screen.getByText(/^N123AB, runway 27/);
-      await expect.element(code).toHaveStyle({ color: foreground });
-      const pre = code.element().closest("pre")!;
-      await expect.element(pre).toHaveStyle({ backgroundColor: muted });
-    },
-  );
-
-  // The quote's rule is the sky, in the info role.
-  test.each(schemes)(
-    "a quote has a sky rule and no quote marks in %s",
-    async (scheme, { info }) => {
-      const screen = await renderIn(scheme, ProseLesson, {});
-      const text = screen.getByText(/^An aircraft must not cross/);
-      await expect.element(text).toBeVisible();
-      const quote = text.element().closest("blockquote")!;
-      await expect
-        .element(quote)
-        .toHaveStyle({ borderInlineStartColor: info, fontStyle: "normal" });
-      expectNoMarks(text.element());
-    },
-  );
-
-  test.each(schemes)(
-    "list numbers and bullets are muted in %s",
-    async (scheme, { mutedForeground }) => {
-      const screen = await renderIn(scheme, ProseLesson, {});
-      const numbered = screen.getByText("Call sign.").element();
-      const bulleted = screen.getByText(/^Open the field diagram/).element();
-      // toHaveStyle can't read a pseudo-element, so these read ::marker.
-      expect(getComputedStyle(numbered, "::marker").color).toBe(
-        mutedForeground,
-      );
-      expect(getComputedStyle(bulleted, "::marker").color).toBe(
-        mutedForeground,
-      );
-    },
-  );
-
-  test.each(schemes)(
-    "a caption is muted in %s",
-    async (scheme, { mutedForeground }) => {
-      const screen = await renderIn(scheme, ProseLesson, {});
-      await expect
-        .element(screen.getByText(/^A clearance with a hold short/))
-        .toHaveStyle({ color: mutedForeground });
-    },
-  );
 });

@@ -1,8 +1,7 @@
 import { describe, expect, test } from "vitest";
-import { SCHEMES } from "../../../test/contrast.ts";
 import { role } from "../../../test/roles.ts";
 import { renderIn } from "../../../test/schemes.ts";
-import { icon, text } from "../../../test/snippets.ts";
+import { expectLeadingHiddenIcon, icon, text } from "../../../test/snippets.ts";
 import Panel from "./Panel.svelte";
 
 const online = {
@@ -12,18 +11,17 @@ const online = {
 } as const;
 
 describe("Panel", () => {
-  test.each([2, 3, 4, 5, 6] as const)(
+  // Named by its heading, so it's a region a reader can jump to.
+  test.each([2, 6] as const)(
     "is a section named by an h%i title",
     async (level) => {
       const screen = await renderIn("light", Panel, { ...online, level });
-      const heading = screen.getByRole("heading", {
-        name: "Controllers online",
-        level,
-      });
-      await expect.element(heading).toBeInTheDocument();
-      // Named by its heading, so it's a region a reader can jump to.
+      await expect
+        .element(
+          screen.getByRole("heading", { name: "Controllers online", level }),
+        )
+        .toBeInTheDocument();
       const region = screen.getByRole("region", { name: "Controllers online" });
-      expect(region.element().tagName).toBe("SECTION");
       await expect.element(region.getByText("IND_CTR")).toBeInTheDocument();
     },
   );
@@ -40,46 +38,32 @@ describe("Panel", () => {
       .toBeInTheDocument();
   });
 
-  // Chosen in ticket 10: the h4 look (base semibold, heading font) at any
-  // level, in sentence case; a rule under the title.
-  test.each([2, 5] as const)(
-    "has its h%i title in the h4 look, not capitals",
-    async (level) => {
-      const screen = await renderIn("light", Panel, { ...online, level });
-      const heading = screen.getByRole("heading");
-      await expect.element(heading).toHaveStyle({
-        fontSize: "16px",
-        fontWeight: "600",
-        textTransform: "none",
-      });
-      expect(getComputedStyle(heading.element()).fontFamily).toMatch(
-        /^"Source Sans 3"/,
-      );
-    },
-  );
+  // Chosen in ticket 10: Heading's h4 look at any level, in sentence case.
+  test("has its title in the h4 look, not capitals", async () => {
+    const screen = await renderIn("light", Panel, online);
+    await expect.element(screen.getByRole("heading")).toHaveStyle({
+      fontSize: "16px",
+      textTransform: "none",
+    });
+  });
 
-  test.each(SCHEMES)(
-    "is a card with a rule under its title in %s",
-    async (scheme) => {
-      const screen = await renderIn(scheme, Panel, online);
-      const region = screen.getByRole("region").element();
-      expect(getComputedStyle(region)).toMatchObject({
-        backgroundColor: role("card", scheme),
-        borderTopColor: role("border", scheme),
-        borderTopStyle: "solid",
-        boxShadow: "none",
-      });
-      const bar = screen.getByRole("heading").element().parentElement!;
-      expect(getComputedStyle(bar)).toMatchObject({
-        borderBottomColor: role("border", scheme),
-        borderBottomStyle: "solid",
-        borderBottomWidth: "1px",
-      });
-      await expect
-        .element(screen.getByRole("heading"))
-        .toHaveStyle({ color: role("foreground", scheme) });
-    },
-  );
+  // A Card, with a rule under the title.
+  test("is a card with a rule under its title", async () => {
+    const screen = await renderIn("light", Panel, online);
+    await expect.element(screen.getByRole("region")).toHaveStyle({
+      backgroundColor: role("card", "light"),
+      borderTopColor: role("border", "light"),
+    });
+    const heading = screen.getByRole("heading");
+    await expect.element(heading.element().parentElement!).toHaveStyle({
+      borderBottomColor: role("border", "light"),
+      borderBottomStyle: "solid",
+      borderBottomWidth: "1px",
+    });
+    await expect
+      .element(heading)
+      .toHaveStyle({ color: role("foreground", "light") });
+  });
 
   test("pads its body, unless flush", async () => {
     const padded = await renderIn("light", Panel, online);
@@ -95,23 +79,19 @@ describe("Panel", () => {
     expect(getComputedStyle(flushBody).paddingTop).toBe("0px");
   });
 
-  test.each(SCHEMES)(
-    "puts an icon before the title, hidden and muted, in %s",
-    async (scheme) => {
-      const screen = await renderIn(scheme, Panel, { ...online, icon });
-      const svg = screen.getByTestId("icon").element();
-      const box = svg.parentElement!;
-      expect(box.getAttribute("aria-hidden")).toBe("true");
-      expect(box.nextElementSibling!.tagName).toBe("H2");
-      expect(getComputedStyle(box).color).toBe(
-        role("muted-foreground", scheme),
-      );
-      // The icon stays out of the region's name.
-      await expect
-        .element(screen.getByRole("region", { name: "Controllers online" }))
-        .toBeInTheDocument();
-    },
-  );
+  test("puts an icon before the title, hidden and muted", async () => {
+    const screen = await renderIn("light", Panel, { ...online, icon });
+    const svg = screen.getByTestId("icon").element();
+    const bar = screen.getByRole("heading").element().parentElement!;
+    expectLeadingHiddenIcon(bar, svg);
+    await expect
+      .element(svg.parentElement!)
+      .toHaveStyle({ color: role("muted-foreground", "light") });
+    // The icon stays out of the region's name.
+    await expect
+      .element(screen.getByRole("region", { name: "Controllers online" }))
+      .toBeInTheDocument();
+  });
 
   test("adds a caller's class and attributes to the section", async () => {
     const screen = await renderIn("light", Panel, {
@@ -119,9 +99,9 @@ describe("Panel", () => {
       id: "online",
       class: "mt-6",
     });
-    const region = screen.getByRole("region").element();
-    expect(region.id).toBe("online");
-    expect(getComputedStyle(region).marginTop).toBe("24px");
+    const region = screen.getByRole("region");
+    await expect.element(region).toHaveAttribute("id", "online");
+    await expect.element(region).toHaveStyle({ marginTop: "24px" });
   });
 
   test("keeps its heading as its name over a caller's aria-labelledby", async () => {

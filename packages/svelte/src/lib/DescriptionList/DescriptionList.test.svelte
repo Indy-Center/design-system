@@ -1,7 +1,7 @@
 <script lang="ts">
   // A description list as a page writes one, for DescriptionList's tests.
   import type { ComponentProps } from "svelte";
-  import DescriptionList from "../src/lib/DescriptionList/DescriptionList.svelte";
+  import DescriptionList from "./DescriptionList.svelte";
 
   let props: Omit<
     ComponentProps<typeof DescriptionList>,

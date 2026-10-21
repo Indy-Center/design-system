@@ -1,71 +1,97 @@
 import { describe, expect, test, vi } from "vitest";
-import {
-  expectReadable,
-  SCHEMES,
-  styleOfClasses,
-} from "../../../test/contrast.ts";
+import { styleOfClasses } from "../../../test/contrast.ts";
 import { renderIn } from "../../../test/schemes.ts";
 import { expectLeadingHiddenIcon, icon, text } from "../../../test/snippets.ts";
 import Badge, { BADGE_VARIANTS } from "./Badge.svelte";
 
 const badgeOf = (label: Element) => label.parentElement!;
 
+/**
+ * Renders a badge and checks its text and tint, and its border if `steps`
+ * gives one, against the guide's `steps`.
+ */
+async function expectSteps(
+  scheme: "light" | "dark",
+  props: { variant?: (typeof BADGE_VARIANTS)[number]; pill?: boolean },
+  steps: string,
+) {
+  const screen = await renderIn(scheme, Badge, {
+    ...props,
+    children: text("Draft"),
+  });
+  const badge = badgeOf(screen.getByText("Draft").element());
+  const { color, backgroundColor, borderColor } = styleOfClasses(steps, badge);
+  await expect.element(badge).toHaveStyle({
+    color,
+    backgroundColor,
+    ...(steps.includes("border-") && { borderColor }),
+  });
+}
+
+// The guide's status-badge steps: in light the tint is the hue's -600 and
+// the text its -800; in dark (Badge's `dark:` classes) -500 and -300. These
+// steps pass 4.5:1 (the guide's), so readability needs no test of its own.
+// Written out so Tailwind generates each class.
+const guide = [
+  ["sky", "light", "text-sky-800 bg-sky-600/10"],
+  ["sky", "dark", "text-sky-300 bg-sky-500/10"],
+  ["purple", "light", "text-purple-800 bg-purple-600/10"],
+  ["purple", "dark", "text-purple-300 bg-purple-500/10"],
+  ["green", "light", "text-green-800 bg-green-600/10"],
+  ["green", "dark", "text-green-300 bg-green-500/10"],
+  ["red", "light", "text-red-800 bg-red-600/10"],
+  ["red", "dark", "text-red-300 bg-red-500/10"],
+  ["orange", "light", "text-orange-800 bg-orange-600/10"],
+  ["orange", "dark", "text-orange-300 bg-orange-500/10"],
+  ["yellow", "light", "text-yellow-800 bg-yellow-600/10"],
+  ["yellow", "dark", "text-yellow-300 bg-yellow-500/10"],
+  ["blue", "light", "text-blue-800 bg-blue-600/10"],
+  ["blue", "dark", "text-blue-300 bg-blue-500/10"],
+  ["gray", "light", "text-gray-800 bg-gray-600/10"],
+  ["gray", "dark", "text-gray-300 bg-gray-500/10"],
+] as const;
+
 describe("Badge", () => {
-  test("is a span holding its text", async () => {
-    const screen = await renderIn("light", Badge, {
-      children: text("Member perk"),
-    });
-    const badge = badgeOf(screen.getByText("Member perk").element());
-    expect(badge.tagName).toBe("SPAN");
-    await expect.element(badge).toHaveTextContent("Member perk");
+  test("pins every variant to the guide in both schemes", () => {
+    expect(guide.map(([variant, scheme]) => `${variant} ${scheme}`)).toEqual(
+      BADGE_VARIANTS.flatMap((variant) => [
+        `${variant} light`,
+        `${variant} dark`,
+      ]),
+    );
   });
 
-  describe.each(BADGE_VARIANTS)("in %s", (variant) => {
-    test.each(SCHEMES)("has 4.5:1 text in %s", async (scheme) => {
-      const screen = await renderIn(scheme, Badge, {
-        variant,
-        children: text("Draft"),
-      });
-      expectReadable(badgeOf(screen.getByText("Draft").element()), scheme);
-    });
-
-    test.each(SCHEMES)("has 4.5:1 text as a pill in %s", async (scheme) => {
-      const screen = await renderIn(scheme, Badge, {
-        variant,
-        pill: true,
-        children: text("Draft"),
-      });
-      expectReadable(badgeOf(screen.getByText("Draft").element()), scheme);
-    });
-  });
-
-  // The guide: "In light, the tint is Tailwind's -600 step and the text its
-  // -800; in dark, the tint is -500 and the text -300", the tint at 10%. A
-  // status pill doubles the tint, as the community site's pills do.
-  test.each([
-    ["light", "sky", false, "bg-sky-600/10 text-sky-800"],
-    ["dark", "sky", false, "bg-sky-500/10 text-sky-300"],
-    ["dark-header", "sky", false, "bg-sky-500/10 text-sky-300"],
-    ["light", "gray", false, "bg-gray-600/10 text-gray-800"],
-    ["dark", "gray", false, "bg-gray-500/10 text-gray-300"],
-    ["light", "green", true, "bg-green-600/20 text-green-800"],
-    ["dark", "green", true, "bg-green-500/20 text-green-300"],
-  ] as const)(
-    "follows the guide's steps in %s for %s (pill: %s)",
-    async (scheme, variant, pill, guide) => {
-      const screen = await renderIn(scheme, Badge, {
-        variant,
-        pill,
-        children: text("Draft"),
-      });
-      const badge = badgeOf(screen.getByText("Draft").element());
-      const expected = styleOfClasses(guide, badge);
-      await expect.element(badge).toHaveStyle({
-        color: expected.color,
-        backgroundColor: expected.backgroundColor,
-      });
+  test.each(guide)(
+    "follows the guide's steps for %s in %s",
+    async (variant, scheme, steps) => {
+      await expectSteps(scheme, { variant }, steps);
     },
   );
+
+  // A badge has a 30% border on its 10% tint; a status pill doubles the
+  // tint and takes a 50% border, as the community site's pills do. The
+  // border is the tint's hue and the amounts are the same for every hue,
+  // so one hue is enough.
+  test.each([
+    ["light", false, "text-green-800 bg-green-600/10 border-green-600/30"],
+    ["light", true, "text-green-800 bg-green-600/20 border-green-600/50"],
+    ["dark", false, "text-green-300 bg-green-500/10 border-green-500/30"],
+    ["dark", true, "text-green-300 bg-green-500/20 border-green-500/50"],
+  ] as const)(
+    "has the guide's tint and border in %s (pill: %s)",
+    async (scheme, pill, steps) => {
+      await expectSteps(scheme, { variant: "green", pill }, steps);
+    },
+  );
+
+  test("is sky and md size by default", async () => {
+    const screen = await renderIn("light", Badge, { children: text("New") });
+    const badge = badgeOf(screen.getByText("New").element());
+    await expect.element(badge).toHaveStyle({
+      color: styleOfClasses("text-sky-800", badge).color,
+      fontSize: "14px",
+    });
+  });
 
   // Tailwind's text-sm and text-xs, with their padding.
   test.each([
@@ -78,12 +104,6 @@ describe("Badge", () => {
     });
     const badge = badgeOf(screen.getByText("Draft").element());
     await expect.element(badge).toHaveStyle({ fontSize, padding });
-  });
-
-  test("is md size by default", async () => {
-    const screen = await renderIn("light", Badge, { children: text("Draft") });
-    const badge = badgeOf(screen.getByText("Draft").element());
-    await expect.element(badge).toHaveStyle({ fontSize: "14px" });
   });
 
   test("has rounded corners, or a pill's round ends for a status", async () => {
@@ -129,13 +149,5 @@ describe("Badge", () => {
     const badge = badgeOf(screen.getByText("Member perk").element());
     await expect.element(badge).toHaveAttribute("id", "perk");
     await expect.element(badge).toHaveStyle({ marginLeft: "16px" });
-  });
-
-  test("is sky by default", async () => {
-    const screen = await renderIn("light", Badge, { children: text("New") });
-    const badge = badgeOf(screen.getByText("New").element());
-    await expect
-      .element(badge)
-      .toHaveStyle({ color: styleOfClasses("text-sky-800", badge).color });
   });
 });

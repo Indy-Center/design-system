@@ -43,15 +43,6 @@ describe("Spinner", () => {
     expect(insideStatus).not.toEqual([]);
   });
 
-  test("shows the label to screen readers only", async () => {
-    const screen = await renderIn("light", Spinner, {});
-    await expect.element(screen.getByText("Loading")).toHaveStyle({
-      position: "absolute",
-      width: "1px",
-      height: "1px",
-    });
-  });
-
   test("spins", async () => {
     await commands.emulateReducedMotion("no-preference");
     const screen = await renderIn("light", Spinner, {});

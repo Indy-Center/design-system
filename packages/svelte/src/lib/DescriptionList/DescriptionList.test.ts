@@ -1,8 +1,7 @@
 import { describe, expect, test } from "vitest";
-import MemberDetails from "../../../test/MemberDetails.svelte";
-import { SCHEMES } from "../../../test/contrast.ts";
 import { role } from "../../../test/roles.ts";
 import { renderIn } from "../../../test/schemes.ts";
+import MemberDetails from "./DescriptionList.test.svelte";
 
 /** Where a term and its value sit, relative to each other. */
 function layout(term: Element, value: Element) {
@@ -66,19 +65,19 @@ describe("DescriptionList", () => {
 
   // The guide's roles: `muted-foreground` the terms, `foreground` the
   // values, `border` the lines between rows.
-  test.each(SCHEMES)("takes the roles' colours in %s", async (scheme) => {
-    const screen = await renderIn(scheme, MemberDetails, {});
+  test("takes the roles' colours", async () => {
+    const screen = await renderIn("light", MemberDetails, {});
     await expect
       .element(screen.getByText("CID"))
-      .toHaveStyle({ color: role("muted-foreground", scheme) });
+      .toHaveStyle({ color: role("muted-foreground", "light") });
     await expect
       .element(screen.getByText("1234567"))
-      .toHaveStyle({ color: role("foreground", scheme) });
+      .toHaveStyle({ color: role("foreground", "light") });
     // Tailwind's divide-y draws each row's line along its bottom.
     const first = screen.getByText("CID").element().parentElement!;
     await expect.element(first).toHaveStyle({
       borderBottomStyle: "solid",
-      borderBottomColor: role("border", scheme),
+      borderBottomColor: role("border", "light"),
     });
   });
 

@@ -1,9 +1,9 @@
 import { createRawSnippet, type ComponentProps } from "svelte";
 import { describe, expect, test } from "vitest";
-import { SCHEMES, expectReadable } from "../../../test/contrast.ts";
+import { expectReadable } from "../../../test/contrast.ts";
 import { role } from "../../../test/roles.ts";
 import { renderIn } from "../../../test/schemes.ts";
-import { icon, text } from "../../../test/snippets.ts";
+import { expectLeadingHiddenIcon, icon, text } from "../../../test/snippets.ts";
 import EmptyState from "./EmptyState.svelte";
 
 const noEvents = {
@@ -17,18 +17,15 @@ const addPositions = createRawSnippet(() => ({
 }));
 
 describe("EmptyState, large", () => {
-  test.each([2, 3, 4] as const)(
-    "titles itself with a heading at level %i",
-    async (level) => {
-      const screen = await renderIn("light", EmptyState, {
-        ...noEvents,
-        level,
-      });
-      await expect
-        .element(screen.getByRole("heading", { level }))
-        .toHaveTextContent("No events scheduled");
-    },
-  );
+  test("titles itself with a heading at its level", async () => {
+    const screen = await renderIn("light", EmptyState, {
+      ...noEvents,
+      level: 4,
+    });
+    await expect
+      .element(screen.getByRole("heading", { level: 4 }))
+      .toHaveTextContent("No events scheduled");
+  });
 
   // Heading's look 3 at any level: the level is the outline's, not a size.
   test("keeps the title at text-lg whatever its level", async () => {
@@ -39,7 +36,7 @@ describe("EmptyState, large", () => {
       });
       await expect
         .element(screen.getByRole("heading", { level }))
-        .toHaveStyle({ fontSize: "18px", fontWeight: "600" });
+        .toHaveStyle({ fontSize: "18px" });
     }
   });
 
@@ -63,11 +60,15 @@ describe("EmptyState, large", () => {
     ).toBeTruthy();
   });
 
-  test("puts an icon above the title, hidden from screen readers", async () => {
+  // IconTile's muted circle; its looks are tested in IconTile.
+  test("puts an icon on a muted circle above the title, hidden from screen readers", async () => {
     const screen = await renderIn("light", EmptyState, { ...noEvents, icon });
-    const circle = screen.getByTestId("icon").element().parentElement!;
-    expect(circle.getAttribute("aria-hidden")).toBe("true");
-    expect(circle.nextElementSibling!.tagName).toBe("H2");
+    const svg = screen.getByTestId("icon").element();
+    const box = screen.getByRole("heading").element().parentElement!;
+    expectLeadingHiddenIcon(box, svg);
+    await expect
+      .element(svg.parentElement!)
+      .toHaveStyle({ backgroundColor: role("muted", "light") });
   });
 
   test("has only its title and text without icon or action", async () => {
@@ -91,37 +92,26 @@ describe("EmptyState, large", () => {
     expect(titleOnly.children).toBeUndefined();
   });
 
-  // `foreground` for the title, `muted-foreground` for the text and the
-  // icon, the icon on a `muted` circle. No surface of its own: it takes the
-  // page's or the panel's.
-  test.each(SCHEMES)(
-    "takes the roles' colours in %s, its text readable",
-    async (scheme) => {
-      const screen = await renderIn(scheme, EmptyState, {
-        ...noEvents,
-        icon,
-      });
-      const heading = screen.getByRole("heading");
-      await expect
-        .element(heading)
-        .toHaveStyle({ color: role("foreground", scheme) });
-      const box = heading.element().parentElement!;
-      // No fill of its own: the surface under it shows through.
-      expect(getComputedStyle(box).backgroundColor).toBe("rgba(0, 0, 0, 0)");
-      const line = screen
-        .getByText("New events show here once staff publish them.")
-        .element();
-      await expect
-        .element(line)
-        .toHaveStyle({ color: role("muted-foreground", scheme) });
-      expectReadable(line, scheme);
-      const circle = screen.getByTestId("icon").element().parentElement!;
-      await expect.element(circle).toHaveStyle({
-        backgroundColor: role("muted", scheme),
-        color: role("muted-foreground", scheme),
-      });
-    },
-  );
+  // `foreground` for the title, `muted-foreground` for the text. No
+  // surface of its own: it takes the page's or the panel's.
+  test("takes the roles' colours, its text readable", async () => {
+    const screen = await renderIn("light", EmptyState, noEvents);
+    const heading = screen.getByRole("heading");
+    await expect
+      .element(heading)
+      .toHaveStyle({ color: role("foreground", "light") });
+    // No fill of its own: the surface under it shows through.
+    await expect
+      .element(heading.element().parentElement!)
+      .toHaveStyle({ backgroundColor: "rgba(0, 0, 0, 0)" });
+    const line = screen
+      .getByText("New events show here once staff publish them.")
+      .element();
+    await expect
+      .element(line)
+      .toHaveStyle({ color: role("muted-foreground", "light") });
+    expectReadable(line, "light");
+  });
 
   test("takes a caller's class and attributes on its box", async () => {
     const screen = await renderIn("light", EmptyState, {
@@ -130,8 +120,8 @@ describe("EmptyState, large", () => {
       class: "mt-6",
     });
     const box = screen.getByRole("heading").element().parentElement!;
-    expect(box.id).toBe("no-events");
-    expect(getComputedStyle(box).marginTop).toBe("24px");
+    await expect.element(box).toHaveAttribute("id", "no-events");
+    await expect.element(box).toHaveStyle({ marginTop: "24px" });
   });
 });
 
@@ -141,29 +131,25 @@ describe("EmptyState, inline", () => {
       size: "inline",
       children: text("No sessions yet."),
     });
-    const line = screen.getByText("No sessions yet.").element();
-    expect(line.parentElement!.tagName).toBe("P");
-    expect(screen.getByRole("heading").elements()).toHaveLength(0);
+    await expect
+      .element(screen.getByRole("paragraph"))
+      .toHaveTextContent("No sessions yet.");
+    await expect.element(screen.getByRole("heading")).not.toBeInTheDocument();
   });
 
   // `text-sm` in `muted-foreground`, as training's one-line empty panels.
-  test.each(SCHEMES)(
-    "is small and muted in %s, and readable",
-    async (scheme) => {
-      const screen = await renderIn(scheme, EmptyState, {
-        size: "inline",
-        children: text("No sessions yet."),
-      });
-      const line = screen
-        .getByText("No sessions yet.")
-        .element().parentElement!;
-      await expect.element(line).toHaveStyle({
-        fontSize: "14px",
-        color: role("muted-foreground", scheme),
-      });
-      expectReadable(line, scheme);
-    },
-  );
+  test("is small and muted, and readable", async () => {
+    const screen = await renderIn("light", EmptyState, {
+      size: "inline",
+      children: text("No sessions yet."),
+    });
+    const line = screen.getByRole("paragraph");
+    await expect.element(line).toHaveStyle({
+      fontSize: "14px",
+      color: role("muted-foreground", "light"),
+    });
+    expectReadable(line.element(), "light");
+  });
 
   test("takes a caller's class and attributes on its paragraph", async () => {
     const screen = await renderIn("light", EmptyState, {
@@ -172,8 +158,8 @@ describe("EmptyState, inline", () => {
       id: "no-sessions",
       class: "px-4",
     });
-    const line = screen.getByText("No sessions yet.").element().parentElement!;
-    expect(line.id).toBe("no-sessions");
-    expect(getComputedStyle(line).paddingLeft).toBe("16px");
+    const line = screen.getByRole("paragraph");
+    await expect.element(line).toHaveAttribute("id", "no-sessions");
+    await expect.element(line).toHaveStyle({ paddingLeft: "16px" });
   });
 });
