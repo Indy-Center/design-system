@@ -17,6 +17,7 @@ export {
   type ChipVariant,
 } from "./Chip/Chip.svelte";
 export { default as Combobox } from "./Combobox/Combobox.svelte";
+export { default as CopyButton } from "./CopyButton/CopyButton.svelte";
 export { default as DescriptionList } from "./DescriptionList/DescriptionList.svelte";
 export { default as Disclosure } from "./Disclosure/Disclosure.svelte";
 export { default as Field, type FieldControl } from "./Field/Field.svelte";
