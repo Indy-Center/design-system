@@ -104,6 +104,32 @@ describe("DateTimeInput", () => {
     await expect.element(screen.getByTestId("bound")).toHaveTextContent("none");
   });
 
+  // The box reports "" while any part is blank: the other parts must stay.
+  test("keeps the other parts while one is typed again", async () => {
+    const screen = await renderIn("light", EventStartField, {
+      value: "2026-10-27T23:00:00Z",
+    });
+    await screen.getByLabelText("Start").click();
+    await userEvent.keyboard("{Home}{Backspace}");
+    await expect.element(screen.getByTestId("bound")).toHaveTextContent("none");
+    await userEvent.keyboard("11");
+    await expect
+      .element(screen.getByTestId("bound"))
+      .toHaveTextContent("2026-11-28T00:00:00.000Z");
+  });
+
+  // The year passes through 0002, 0020 and 0202 on the way.
+  test("takes a year typed a digit at a time", async () => {
+    const screen = await renderIn("light", EventStartField, {
+      value: "2026-10-27T23:00:00Z",
+    });
+    await screen.getByLabelText("Start").click();
+    await userEvent.keyboard("{Home}{ArrowRight}{ArrowRight}2027");
+    await expect
+      .element(screen.getByTestId("bound"))
+      .toHaveTextContent("2027-10-27T23:00:00.000Z");
+  });
+
   test("follows a value the page changes", async () => {
     const screen = await renderIn("light", EventStartField, {
       value: "2026-10-27T23:00:00Z",

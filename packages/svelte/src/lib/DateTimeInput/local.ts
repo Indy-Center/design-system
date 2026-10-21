@@ -6,8 +6,10 @@
 export function toLocal(iso: string): string {
   const at = new Date(iso);
   if (Number.isNaN(at.getTime())) return "";
-  const pad = (n: number) => String(n).padStart(2, "0");
-  const date = [at.getFullYear(), pad(at.getMonth() + 1), pad(at.getDate())];
+  const pad = (n: number, digits = 2) => String(n).padStart(digits, "0");
+  // Four-digit years: the box passes through 0002 as a year is typed.
+  const year = pad(at.getFullYear(), 4);
+  const date = [year, pad(at.getMonth() + 1), pad(at.getDate())];
   return `${date.join("-")}T${pad(at.getHours())}:${pad(at.getMinutes())}`;
 }
 
