@@ -22,7 +22,8 @@ export type TimeZoneChoice =
  * The choice as the member's identity profile holds it: an IANA name,
  * `"device"` or `"zulu"`.
  */
-export type TimeZoneProfileSetting = string;
+// `string & {}` keeps the two words in editors' suggestions.
+export type TimeZoneProfileSetting = "zulu" | "device" | (string & {});
 
 /** The cookie every Indy Center app shares; written only on a choice. */
 export const COOKIE_NAME = "indy-time-zone";

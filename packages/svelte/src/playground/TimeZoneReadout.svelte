@@ -3,6 +3,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { Time } from "../lib/index.ts";
+  import { readPreferenceCookie } from "../lib/preferenceCookie/preferenceCookie.ts";
   import { COOKIE_NAME } from "../lib/timeZone/timeZone.ts";
   import { forgetTimeZone } from "./forgetTimeZone.ts";
 
@@ -15,11 +16,7 @@
 
   let cookie = $state<string>();
   function read() {
-    cookie =
-      document.cookie
-        .split("; ")
-        .find((pair) => pair.startsWith(`${COOKIE_NAME}=`))
-        ?.slice(COOKIE_NAME.length + 1) ?? "nothing";
+    cookie = readPreferenceCookie(COOKIE_NAME) ?? "nothing";
   }
   onMount(() => {
     read();
