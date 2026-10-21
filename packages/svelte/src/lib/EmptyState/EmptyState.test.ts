@@ -1,4 +1,4 @@
-import { createRawSnippet } from "svelte";
+import { createRawSnippet, type ComponentProps } from "svelte";
 import { describe, expect, test } from "vitest";
 import { SCHEMES, expectReadable } from "../../../test/contrast.ts";
 import { role } from "../../../test/roles.ts";
@@ -70,13 +70,25 @@ describe("EmptyState, large", () => {
     expect(circle.nextElementSibling!.tagName).toBe("H2");
   });
 
-  test("has only its title without text, icon or action", async () => {
+  test("has only its title and text without icon or action", async () => {
     const screen = await renderIn("light", EmptyState, {
       title: "Nothing to review",
       level: 3,
+      children: text("Sessions waiting for review show here."),
     });
     const box = screen.getByRole("heading").element().parentElement!;
-    expect(box.children).toHaveLength(1);
+    expect(box.children).toHaveLength(2);
+  });
+
+  // It always says why it is empty or what to do: `npm run check` fails
+  // if a title alone stops being a type error.
+  test("needs its text: a title alone doesn't type-check", () => {
+    // @ts-expect-error: a large EmptyState requires `children`.
+    const titleOnly: ComponentProps<typeof EmptyState> = {
+      title: "Nothing to review",
+      level: 3,
+    };
+    expect(titleOnly.children).toBeUndefined();
   });
 
   // `foreground` for the title, `muted-foreground` for the text and the

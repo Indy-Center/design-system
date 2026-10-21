@@ -14,8 +14,8 @@ description: What a page, panel or list shows when it has nothing in it, and wha
 - [ ] Large: `title` says what is missing ("No events scheduled"), in
       sentence case. Give `level` one below the heading it sits under: 2
       under the page's `h1`, 3 inside a panel titled with an `h2`.
-- [ ] The text says why it is empty or what happens next, in a sentence
-      or two. Add an `action` (a `Button`) only when the member can fix it
+- [ ] The text (required) says why it is empty or what happens next, in
+      a sentence or two. Add an `action` (a `Button`) only when the member can fix it
       from here, such as "Add positions".
 - [ ] Inline: one short sentence, such as "No sessions yet." A link in it
       is fine; it has no title, icon or action.
@@ -49,13 +49,14 @@ description: What a page, panel or list shows when it has nothing in it, and wha
 | `title`    | `string`                | Large: required. What is missing; the heading's text.                                     |
 | `level`    | `2 \| 3 \| 4 \| 5 \| 6` | Large: required. The title's heading level. It always looks like Heading's look 3 (`lg`). |
 | `icon`     | `Snippet`               | Large: an icon above the title, such as `Icon`; 30px at its default `1em`. Decorative.    |
-| `children` | `Snippet`               | Large: the text under the title, optional. Inline: required, the line itself.             |
+| `children` | `Snippet`               | Required. Large: the text under the title. Inline: the line itself.                       |
 | `action`   | `Snippet`               | Large: what to do, such as a `Button`, under the text. Optional.                          |
 | `class`    | `string`                | Added to the box (large) or the paragraph (inline). Layout only.                          |
 | others     | `<div>` / `<p>` attrs   | Passed to the same element, such as `id`.                                                 |
 
-Inline takes no `title`, `level`, `icon` or `action`: TypeScript flags
-them.
+Large needs its text, so it always says why it is empty or what to do;
+inline takes no `title`, `level`, `icon` or `action`. TypeScript flags
+both.
 
 ## Looks
 

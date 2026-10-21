@@ -12,8 +12,8 @@
     level: 2 | 3 | 4 | 5 | 6;
     /** An icon above the title, such as `<Icon path={mdiCalendar} />`. Decorative: hidden from screen readers. */
     icon?: Snippet;
-    /** Why it is empty, or what to do: a sentence or two. */
-    children?: Snippet;
+    /** Why it is empty, or what to do: a sentence or two. Required, so it always says. */
+    children: Snippet;
     /** What to do about it: a Button, such as "Add positions". */
     action?: Snippet;
   };
@@ -49,7 +49,7 @@
 
 {#if size === "inline"}
   <p {...rest} class={["text-sm text-muted-foreground", className]}>
-    {@render children?.()}
+    {@render children()}
   </p>
 {:else}
   <div
@@ -66,11 +66,9 @@
     {/if}
     <!-- Heading's look 3, whatever the level: an empty state is no section title. -->
     <Heading level={level!} look={3}>{title}</Heading>
-    {#if children}
-      <div class="mt-2 max-w-md text-muted-foreground">
-        {@render children()}
-      </div>
-    {/if}
+    <div class="mt-2 max-w-md text-muted-foreground">
+      {@render children()}
+    </div>
     {#if action}
       <div class="mt-6">{@render action()}</div>
     {/if}
