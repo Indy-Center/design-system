@@ -2,16 +2,31 @@
 // surface it sits on. Runs in the browser: a canvas turns any CSS colour
 // (Tailwind's oklch included) into sRGB and blends see-through fills as the
 // page does.
+import tokens from "@indy-center/tokens/tokens.json" with { type: "json" };
+import { expect } from "vitest";
+import type { Scheme } from "./schemes.ts";
 
-/** The guide's surfaces (background and card) in each scheme. */
-export const SURFACES = {
-  light: { background: "#F1F5F9", card: "#FFFFFF" },
-  dark: { background: "#111827", card: "#1E293B" },
-} as const;
+const surfacesOf = (scheme: "light" | "dark") => ({
+  background: tokens[scheme].color.background,
+  card: tokens[scheme].color.card,
+});
 
 /**
- * The computed style of a span with `classes`, placed beside `element` so
- * it sits in the same scheme. For checking a component against the
+ * The surfaces a component can sit on in each scheme, the page and a card,
+ * from the tokens. The dark header sits on dark surfaces.
+ */
+export const SURFACES: Record<Scheme, { background: string; card: string }> = {
+  light: surfacesOf("light"),
+  dark: surfacesOf("dark"),
+  "dark-header": surfacesOf("dark"),
+};
+
+/** Every scheme, for `test.each`. */
+export const SCHEMES = Object.keys(SURFACES) as Scheme[];
+
+/**
+ * The colours of a span with `classes`, placed beside `element` so it sits
+ * in the same scheme, then removed. For checking a component against the
  * guide's Tailwind steps ("text in -800"), which the guide names by step
  * rather than by hex.
  */
@@ -19,7 +34,9 @@ export function styleOfClasses(classes: string, element: Element) {
   const probe = document.createElement("span");
   probe.className = classes;
   element.parentElement!.append(probe);
-  return getComputedStyle(probe);
+  const { color, backgroundColor, borderColor } = getComputedStyle(probe);
+  probe.remove();
+  return { color, backgroundColor, borderColor };
 }
 
 /** `colours` painted in order onto a pixel; its sRGB bytes. */
@@ -53,4 +70,14 @@ export function contrastOn(element: Element, surface: string) {
     (a, b) => b - a,
   );
   return (lighter + 0.05) / (darker + 0.05);
+}
+
+/**
+ * WCAG 2.2 AA: `element`'s text is 4.5:1 or more on the page and on a card
+ * in `scheme`.
+ */
+export function expectReadable(element: Element, scheme: Scheme) {
+  const { background, card } = SURFACES[scheme];
+  expect(contrastOn(element, background)).toBeGreaterThanOrEqual(4.5);
+  expect(contrastOn(element, card)).toBeGreaterThanOrEqual(4.5);
 }
