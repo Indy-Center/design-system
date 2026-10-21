@@ -1,7 +1,7 @@
 <script lang="ts">
-  // A modal as a page opens one, from a button, for Modal's tests.
+  // A modal as a page opens one, from a button, for Modal.test.ts.
   import type { ComponentProps } from "svelte";
-  import Modal from "../src/lib/Modal/Modal.svelte";
+  import Modal from "./Modal.svelte";
 
   type Props = Omit<
     ComponentProps<typeof Modal>,

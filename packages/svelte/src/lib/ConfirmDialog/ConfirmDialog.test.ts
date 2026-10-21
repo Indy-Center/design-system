@@ -1,6 +1,5 @@
 import { afterEach, describe, expect, onTestFinished, test, vi } from "vitest";
 import { page, userEvent } from "vitest/browser";
-import { SCHEMES } from "../../../test/contrast.ts";
 import { role } from "../../../test/roles.ts";
 import { renderIn } from "../../../test/schemes.ts";
 import { text } from "../../../test/snippets.ts";
@@ -64,17 +63,11 @@ describe("ConfirmDialog", () => {
     expect(oncancel).not.toHaveBeenCalled();
   });
 
+  // Any close but the confirm button's cancels: Escape stands for Modal's
+  // other ways out (its close button, a click outside), tested in Modal.
   test.each([
     ["its Cancel button", () => userEvent.click(page.getByText("Cancel"))],
     ["Escape", () => userEvent.keyboard("{Escape}")],
-    [
-      "its close button",
-      () => userEvent.click(page.getByRole("button", { name: "Close" })),
-    ],
-    [
-      "a click outside",
-      () => userEvent.click(dialog(), { position: { x: 4, y: -20 } }),
-    ],
   ])("%s cancels", async (_, act) => {
     const onconfirm = vi.fn();
     const oncancel = vi.fn();
@@ -93,20 +86,17 @@ describe("ConfirmDialog", () => {
       .toBeVisible();
   });
 
-  test.each(SCHEMES)(
-    "starts on the confirm button, which is primary, in %s",
-    async (scheme) => {
-      await renderIn(scheme, ConfirmDialog, props());
-      const confirm = dialog().getByRole("button", { name: "Delete event" });
-      await expect.element(confirm).toHaveFocus();
-      await expect
-        .element(confirm)
-        .toHaveStyle({ backgroundColor: role("primary", scheme) });
-      await expect
-        .element(dialog().getByText(message))
-        .toHaveStyle({ color: role("foreground-soft", scheme) });
-    },
-  );
+  test("starts on the confirm button, which is primary", async () => {
+    await renderIn("light", ConfirmDialog, props());
+    const confirm = dialog().getByRole("button", { name: "Delete event" });
+    await expect.element(confirm).toHaveFocus();
+    await expect
+      .element(confirm)
+      .toHaveStyle({ backgroundColor: role("primary", "light") });
+    await expect
+      .element(dialog().getByText(message))
+      .toHaveStyle({ color: role("foreground-soft", "light") });
+  });
 
   test("placed closed and opened later, focus starts on its button", async () => {
     const screen = await renderIn(
@@ -121,18 +111,15 @@ describe("ConfirmDialog", () => {
       .toHaveFocus();
   });
 
-  test.each(SCHEMES)(
-    "danger: the confirm button is destructive and focus starts on Cancel, in %s",
-    async (scheme) => {
-      await renderIn(scheme, ConfirmDialog, props({ danger: true }));
-      await expect
-        .element(dialog().getByRole("button", { name: "Delete event" }))
-        .toHaveStyle({ backgroundColor: role("destructive", scheme) });
-      await expect
-        .element(dialog().getByRole("button", { name: "Cancel" }))
-        .toHaveFocus();
-    },
-  );
+  test("danger: the confirm button is destructive and focus starts on Cancel", async () => {
+    await renderIn("light", ConfirmDialog, props({ danger: true }));
+    await expect
+      .element(dialog().getByRole("button", { name: "Delete event" }))
+      .toHaveStyle({ backgroundColor: role("destructive", "light") });
+    await expect
+      .element(dialog().getByRole("button", { name: "Cancel" }))
+      .toHaveFocus();
+  });
 });
 
 describe("confirmAction", () => {

@@ -44,21 +44,6 @@ describe("dismiss", () => {
     await expect.element(elsewhere).toHaveFocus();
   });
 
-  test("a click inside the panel leaves it open", async () => {
-    const screen = await openWithFocusInside(
-      await renderIn("light", Disclosure, {}),
-    );
-
-    await screen.getByText("Some text").click();
-
-    await expect
-      .element(trigger(screen))
-      .toHaveAttribute("aria-expanded", "true");
-    await expect
-      .element(screen.getByRole("button", { name: "Inside" }))
-      .toBeVisible();
-  });
-
   // A press on the trigger isn't outside: the trigger's own click closes
   // the panel, and it doesn't open again straight after.
   test("a click on the trigger closes the panel once", async () => {

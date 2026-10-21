@@ -1,20 +1,18 @@
-import { createRawSnippet } from "svelte";
+// Each level's label, role and icon are severity's, tested in
+// severity/severity.node.test.ts and SeverityIcon.test.ts; the close
+// button's looks are CloseButton's.
 import { describe, expect, test } from "vitest";
 import { userEvent } from "vitest/browser";
-import { SCHEMES } from "../../../test/contrast.ts";
-import { role, type Role } from "../../../test/roles.ts";
+import { translucent } from "../../../test/contrast.ts";
+import { role } from "../../../test/roles.ts";
 import { renderIn } from "../../../test/schemes.ts";
-import type { Severity } from "../severity/severity.ts";
+import { text } from "../../../test/snippets.ts";
+import { SEVERITIES, type Severity } from "../severity/severity.ts";
 import Alert from "./Alert.svelte";
-
-const text = (s: string) =>
-  createRawSnippet(() => ({ render: () => `<span>${s}</span>` }));
 
 describe("Alert", () => {
   test.each([
     ["info", "status", "Info: The roster updates nightly."],
-    ["success", "status", "Success: The roster updates nightly."],
-    ["caution", "status", "Caution: The roster updates nightly."],
     ["danger", "alert", "Danger: The roster updates nightly."],
   ] as [Severity, string, string][])(
     "%s is a %s that reads its label first",
@@ -51,10 +49,11 @@ describe("Alert", () => {
     await expect.element(screen.getByRole("button")).not.toBeInTheDocument();
   });
 
-  test("when dismissible, a 44px button named after the message closes it from the keyboard", async () => {
+  test("when dismissible, a button named after the message, not its title, closes it", async () => {
     let dismissed = 0;
     const screen = await renderIn("light", Alert, {
       level: "danger",
+      title: "Not saved",
       dismissible: true,
       ondismiss: () => dismissed++,
       children: text("We couldn't save the roster."),
@@ -62,9 +61,6 @@ describe("Alert", () => {
     const close = screen.getByRole("button", {
       name: "Dismiss We couldn't save the roster.",
     });
-    await expect
-      .element(close)
-      .toHaveStyle({ minWidth: "44px", minHeight: "44px" });
 
     await userEvent.tab();
     await expect.element(close).toHaveFocus();
@@ -73,55 +69,35 @@ describe("Alert", () => {
     expect(dismissed).toBe(1);
   });
 
-  test("names the close button after the message, even with a title", async () => {
+  test("draws its level's icon, and the message in body text", async () => {
     const screen = await renderIn("light", Alert, {
-      level: "info",
-      title: "Roster updates",
-      dismissible: true,
+      level: "caution",
       children: text("The roster updates nightly."),
     });
+    const icon = screen.getByRole("status").element().querySelector("svg path");
+    expect(icon?.getAttribute("d")).toBe(SEVERITIES.caution.icon);
     await expect
-      .element(
-        screen.getByRole("button", {
-          name: "Dismiss The roster updates nightly.",
-        }),
-      )
-      .toBeInTheDocument();
+      .element(screen.getByText("The roster updates nightly."))
+      .toHaveStyle({ color: role("foreground-soft", "light") });
   });
 
-  // The level's role for the icon, and foreground-soft (body text) for the
-  // message.
-  const levelRole: Record<Severity, Role> = {
-    info: "info",
-    success: "success",
-    caution: "warning",
-    danger: "destructive",
-  };
-
-  describe.each(SCHEMES)("in %s", (scheme) => {
-    test.each(["info", "success", "caution", "danger"] as Severity[])(
-      "%s has its role's icon and tint, and body text",
-      async (level) => {
-        const screen = await renderIn(scheme, Alert, {
-          level,
-          children: text("The roster updates nightly."),
+  // A wash and a faint border of the level's role, so the page shows
+  // through.
+  test.each(Object.keys(SEVERITIES) as Severity[])(
+    "%s is tinted in its role",
+    async (level) => {
+      const screen = await renderIn("light", Alert, {
+        level,
+        children: text("The roster updates nightly."),
+      });
+      const colour = role(SEVERITIES[level].role, "light");
+      await expect
+        .element(screen.getByRole(SEVERITIES[level].live))
+        .toHaveStyle({
+          backgroundColor: translucent(colour, 10),
+          borderTopColor: translucent(colour, 40),
+          borderTopWidth: "1px",
         });
-        const box = screen.container.querySelector<HTMLElement>(
-          "[role=alert], [role=status]",
-        )!;
-        await expect
-          .element(box.querySelector<SVGElement>("svg path"))
-          .toHaveStyle({ fill: role(levelRole[level], scheme) });
-        await expect
-          .element(screen.getByText("The roster updates nightly."))
-          .toHaveStyle({ color: role("foreground-soft", scheme) });
-        // A wash and a faint border of the role's colour, so the page shows
-        // through.
-        const style = getComputedStyle(box);
-        expect(style.backgroundColor).toMatch(/\/ 0\.1\)$/);
-        expect(style.borderTopColor).toMatch(/\/ 0\.4\)$/);
-        expect(style.borderTopWidth).toBe("1px");
-      },
-    );
-  });
+    },
+  );
 });

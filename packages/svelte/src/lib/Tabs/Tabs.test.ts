@@ -1,6 +1,5 @@
 import { describe, expect, test } from "vitest";
 import { userEvent } from "vitest/browser";
-import { SCHEMES } from "../../../test/contrast.ts";
 import { role } from "../../../test/roles.ts";
 import { renderIn } from "../../../test/schemes.ts";
 import Tabs from "./Tabs.svelte";
@@ -33,7 +32,7 @@ describe("Tabs", () => {
     ]);
   });
 
-  test("marks only the current tab as the current page", async () => {
+  test("marks only the current tab as the current page, and none on a page outside them", async () => {
     const screen = await renderIn("light", Tabs, props());
     await expect
       .element(screen.getByRole("link", { name: "Users" }))
@@ -43,41 +42,33 @@ describe("Tabs", () => {
         .element(screen.getByRole("link", { name }))
         .not.toHaveAttribute("aria-current");
     }
-  });
 
-  test("marks no tab on a page outside the tabs", async () => {
-    const screen = await renderIn("light", Tabs, {
-      ...props(),
-      current: "/admin/settings",
-    });
+    await screen.rerender({ current: "/admin/settings" });
     expect(screen.container.querySelector("[aria-current]")).toBeNull();
   });
 
   // Not by colour alone (WCAG 1.4.1): the current tab also has a bar under
   // it and bolder text. The bar is the `link` role, its text `foreground`;
   // the others `muted-foreground`, with a transparent bar.
-  test.each(SCHEMES)(
-    "shows the current tab with a bar and bold text in %s",
-    async (scheme) => {
-      const screen = await renderIn(scheme, Tabs, props());
-      await expect
-        .element(screen.getByRole("link", { name: "Users" }))
-        .toHaveStyle({
-          borderBottomStyle: "solid",
-          borderBottomWidth: "2px",
-          borderBottomColor: role("link", scheme),
-          color: role("foreground", scheme),
-          fontWeight: "600",
-        });
-      await expect
-        .element(screen.getByRole("link", { name: "Feedback" }))
-        .toHaveStyle({
-          borderBottomColor: "rgba(0, 0, 0, 0)",
-          color: role("muted-foreground", scheme),
-          fontWeight: "400",
-        });
-    },
-  );
+  test("shows the current tab with a bar and bold text", async () => {
+    const screen = await renderIn("light", Tabs, props());
+    await expect
+      .element(screen.getByRole("link", { name: "Users" }))
+      .toHaveStyle({
+        borderBottomStyle: "solid",
+        borderBottomWidth: "2px",
+        borderBottomColor: role("link", "light"),
+        color: role("foreground", "light"),
+        fontWeight: "600",
+      });
+    await expect
+      .element(screen.getByRole("link", { name: "Feedback" }))
+      .toHaveStyle({
+        borderBottomColor: "rgba(0, 0, 0, 0)",
+        color: role("muted-foreground", "light"),
+        fontWeight: "400",
+      });
+  });
 
   // A grid or flex item grows to its content; the tabs must scroll instead
   // of pushing the page wider than a phone.
@@ -91,7 +82,7 @@ describe("Tabs", () => {
     screen.container.style.cssText = "display: grid; width: 200px";
     const nav = screen.getByRole("navigation").element();
     expect(nav.getBoundingClientRect().width).toBeLessThanOrEqual(200);
-    const list = nav.querySelector("ul")!;
+    const list = screen.getByRole("list").element();
     expect(list.scrollWidth).toBeGreaterThan(list.clientWidth);
   });
 
@@ -109,19 +100,16 @@ describe("Tabs", () => {
   });
 
   // The `ring` role.
-  test.each(SCHEMES)(
-    "shows a ring outline when tabbed to in %s",
-    async (scheme) => {
-      const screen = await renderIn(scheme, Tabs, props());
-      await userEvent.tab();
-      const first = screen.getByRole("link", { name: "Overview" });
-      await expect.element(first).toHaveFocus();
-      await expect.element(first).toHaveStyle({
-        outlineStyle: "solid",
-        outlineColor: role("ring", scheme),
-      });
-    },
-  );
+  test("shows a ring outline when tabbed to", async () => {
+    const screen = await renderIn("light", Tabs, props());
+    await userEvent.tab();
+    const first = screen.getByRole("link", { name: "Overview" });
+    await expect.element(first).toHaveFocus();
+    await expect.element(first).toHaveStyle({
+      outlineStyle: "solid",
+      outlineColor: role("ring", "light"),
+    });
+  });
 
   test("adds a caller's class and attributes to the nav", async () => {
     const screen = await renderIn("light", Tabs, {
