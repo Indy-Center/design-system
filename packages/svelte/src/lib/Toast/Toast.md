@@ -72,7 +72,8 @@ for the whole page.
 - Two live regions, on the page from the start: polite (`role="status"`)
   for `info`, `success` and `caution`, assertive (`role="alert"`) for
   `danger`. Each toast is read once there, with its level ("Success:
-  Roster saved."); the toasts themselves aren't live.
+  Roster saved."), when it first shows; one that is waiting is read when
+  its turn comes. The toasts themselves aren't live.
 - Each toast stays 5 seconds. Its clock stops while the pointer or focus
   is on the toasts, so there's time to read it.
 - Each has a 44px close button named after its message. Escape closes the

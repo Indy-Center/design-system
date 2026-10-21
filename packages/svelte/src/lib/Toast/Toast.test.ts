@@ -222,6 +222,32 @@ describe("Toast", () => {
       ]);
     });
 
+    test("a waiting toast is read when it shows, not before", async () => {
+      const screen = await renderIn("light", Toaster, {});
+      for (const n of [1, 2, 3, 4]) toast("info", `Toast ${n}.`);
+      const status = screen.getByRole("status");
+      await expect
+        .element(status)
+        .toHaveTextContent("Info: Toast 1.Info: Toast 2.Info: Toast 3.");
+      await userEvent.keyboard("{Escape}");
+      await expect
+        .element(status)
+        .toHaveTextContent(
+          "Info: Toast 1.Info: Toast 2.Info: Toast 3.Info: Toast 4.",
+        );
+    });
+
+    test("a toast sent back to the queue isn't read again when it returns", async () => {
+      const screen = await renderIn("light", Toaster, {});
+      for (const n of [1, 2, 3]) toast("info", `Info ${n}.`);
+      toast("danger", "Not saved.");
+      await userEvent.keyboard("{Escape}");
+      expect((await shown())[0]).toBe("Info: Info 1.");
+      await expect
+        .element(screen.getByRole("status"))
+        .toHaveTextContent("Info: Info 1.Info: Info 2.Info: Info 3.");
+    });
+
     test("waiting toasts show in the order they came", async () => {
       await renderIn("light", Toaster, {});
       for (const n of [1, 2, 3]) toast("danger", `Danger ${n}.`);
@@ -258,6 +284,30 @@ describe("Toast", () => {
       await userEvent.unhover(item);
       vi.advanceTimersByTime(5000);
       await expect.element(item).not.toBeInTheDocument();
+    });
+
+    test("runs again after the pointer closes the last toast", async () => {
+      const screen = await renderIn("light", Toaster, {});
+      toast("info", "ZID_CTR is open.");
+      await screen
+        .getByRole("button", { name: "Dismiss ZID_CTR is open." })
+        .click();
+      await expect
+        .element(screen.getByRole("listitem"))
+        .not.toBeInTheDocument();
+      // Somewhere the toasts never are.
+      const elsewhere = document.createElement("p");
+      elsewhere.textContent = "Elsewhere";
+      elsewhere.style.cssText = "position: fixed; left: 0; bottom: 0";
+      document.body.append(elsewhere);
+      await userEvent.hover(elsewhere);
+
+      toast("info", "Roster saved.");
+      const item = screen.getByRole("listitem");
+      await expect.element(item).toBeInTheDocument();
+      vi.advanceTimersByTime(5000);
+      await expect.element(item).not.toBeInTheDocument();
+      elsewhere.remove();
     });
 
     test("stops while focus is on the toasts", async () => {

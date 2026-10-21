@@ -63,7 +63,7 @@ description: A tinted box that tells the member something about the page, at one
   `role="status"`, read when the reader is free.
 - Readers hear the level's word first ("Caution: …"), from text only
   they see. The icon is hidden from them.
-- The close button is 44px square and named after the title, or the
-  message when there's no title ("Dismiss Not saved"). Once it's
+- The close button is 44px square and named after the message ("Dismiss
+  We couldn't save the roster. Try again."). Once it's
   closed, focus is on the page; move it somewhere useful in `ondismiss`
   if the member was in the middle of something.

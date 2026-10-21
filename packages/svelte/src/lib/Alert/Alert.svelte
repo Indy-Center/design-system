@@ -52,14 +52,14 @@
     <div class="min-w-0 flex-1 text-foreground-soft">
       <span class="sr-only">{severity.label}:</span>
       {#if title}
-        <p id="{id}-title" class="font-semibold text-foreground">{title}</p>
+        <p class="font-semibold text-foreground">{title}</p>
       {/if}
       <div id="{id}-message">{@render children()}</div>
     </div>
     {#if dismissible}
       <span id="{id}-dismiss" hidden>Dismiss</span>
       <CloseButton
-        aria-labelledby="{id}-dismiss {id}-{title ? 'title' : 'message'}"
+        aria-labelledby="{id}-dismiss {id}-message"
         onclick={dismiss}
       />
     {/if}

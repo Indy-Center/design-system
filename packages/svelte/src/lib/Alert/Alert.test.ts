@@ -71,7 +71,7 @@ describe("Alert", () => {
     expect(dismissed).toBe(1);
   });
 
-  test("names the close button after the title when there is one", async () => {
+  test("names the close button after the message, even with a title", async () => {
     const screen = await renderIn("light", Alert, {
       level: "info",
       title: "Roster updates",
@@ -79,7 +79,11 @@ describe("Alert", () => {
       children: text("The roster updates nightly."),
     });
     await expect
-      .element(screen.getByRole("button", { name: "Dismiss Roster updates" }))
+      .element(
+        screen.getByRole("button", {
+          name: "Dismiss The roster updates nightly.",
+        }),
+      )
       .toBeInTheDocument();
   });
 

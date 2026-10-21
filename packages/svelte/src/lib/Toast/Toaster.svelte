@@ -11,6 +11,12 @@
   let section = $state<HTMLElement>();
   let pointerOn = false;
 
+  // The toasts' section goes when the last toast does, and no
+  // pointerleave fires as it goes, so the pointer is off it then.
+  $effect(() => {
+    if (!toasts.shown.length) pointerOn = false;
+  });
+
   const STEP = 100;
   onMount(() => {
     mounted = true;

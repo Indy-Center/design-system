@@ -16,6 +16,8 @@ export type ShownToast = {
   message: string;
   /** Milliseconds left on its clock. */
   left: number;
+  /** Whether a live region has read it: once, when it first shows. */
+  announced: boolean;
 };
 
 /**
@@ -33,10 +35,15 @@ class Toasts {
   #nextId = 1;
 
   raise(level: Severity, message: string) {
-    const added = { id: this.#nextId++, level, message, left: TOAST_DURATION };
-    this.#announce(added);
+    const added: ShownToast = {
+      id: this.#nextId++,
+      level,
+      message,
+      left: TOAST_DURATION,
+      announced: false,
+    };
     if (this.shown.length < MOST_SHOWN) {
-      this.shown.unshift(added);
+      this.#show(added);
       return;
     }
     // The least important showing, the oldest among equals (newest first,
@@ -47,7 +54,7 @@ class Toasts {
     if (rank(level) > rank(least.level)) {
       this.shown = this.shown.filter((t) => t !== least);
       this.queued.unshift({ ...least });
-      this.shown.unshift(added);
+      this.#show(added);
     } else {
       this.queued.push(added);
     }
@@ -111,12 +118,22 @@ class Toasts {
     this.lines = { status: [], alert: [] };
   }
 
+  // Puts a toast at the top, and reads it the first time it shows, so
+  // nobody hears about a toast that is still waiting.
+  #show(t: ShownToast) {
+    if (!t.announced) {
+      t.announced = true;
+      this.#announce(t);
+    }
+    this.shown.unshift(t);
+  }
+
   // Shows the toast at the front of the queue in each free place, with a
   // full clock.
   #promote() {
     while (this.shown.length < MOST_SHOWN && this.queued.length) {
       const next = this.queued.shift()!;
-      this.shown.unshift({ ...next, left: TOAST_DURATION });
+      this.#show({ ...next, left: TOAST_DURATION });
     }
   }
 
