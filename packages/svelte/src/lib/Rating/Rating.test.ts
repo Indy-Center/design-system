@@ -48,17 +48,20 @@ describe("Rating", () => {
     );
   });
 
-  test("shows a ring around the chip on keyboard focus", async () => {
-    const screen = await renderIn("light", Rating, { rating: "S2" });
-    const chip = screen.getByTitle("Tower Controller").element().parentElement!;
-    await userEvent.tab();
-    await expect.element(chip).toHaveStyle({
-      outlineStyle: "solid",
-      outlineColor: role("ring", "light"),
-    });
-  });
-
   describe.each(SCHEMES)("in %s", (scheme) => {
+    // The guide's `ring` role.
+    test("shows a ring around the chip on keyboard focus", async () => {
+      const screen = await renderIn(scheme, Rating, { rating: "S2" });
+      const chip = screen
+        .getByTitle("Tower Controller")
+        .element().parentElement!;
+      await userEvent.tab();
+      await expect.element(chip).toHaveStyle({
+        outlineStyle: "solid",
+        outlineColor: role("ring", scheme),
+      });
+    });
+
     // The guide's `muted` fill and `foreground` text, as Chip's default.
     test("is the soft neutral chip, readable", async () => {
       const screen = await renderIn(scheme, Rating, { rating: "S3" });
