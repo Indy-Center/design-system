@@ -3,6 +3,7 @@ import { userEvent } from "vitest/browser";
 import { role } from "../../../test/roles.ts";
 import { renderIn } from "../../../test/schemes.ts";
 import Pagination from "./Pagination.svelte";
+import PaginationBound from "./Pagination.test.svelte";
 
 /** The visible page buttons' names, in order, with "…" for a gap. */
 function shown(nav: HTMLElement): string[] {
@@ -29,11 +30,31 @@ describe("Pagination", () => {
     ]);
   });
 
-  test("renders nothing when everything fits on one page", async () => {
-    const screen = await renderIn("light", Pagination, { pageCount: 1 });
+  test("is named by its label when given one", async () => {
+    const screen = await renderIn("light", Pagination, {
+      pageCount: 3,
+      label: "Results pages",
+    });
+    await expect
+      .element(screen.getByRole("navigation", { name: "Results pages" }))
+      .toBeInTheDocument();
+  });
+
+  test.each([0, 1])("renders nothing for %i pages", async (pageCount) => {
+    const screen = await renderIn("light", Pagination, { pageCount });
     await expect
       .element(screen.getByRole("navigation"))
       .not.toBeInTheDocument();
+  });
+
+  test("binds page both ways", async () => {
+    const screen = await renderIn("light", PaginationBound, { pageCount: 5 });
+    await screen.getByRole("button", { name: "Page 4" }).click();
+    await expect.element(screen.getByRole("status")).toHaveTextContent("4");
+    await screen.getByRole("button", { name: "Show page 2" }).click();
+    await expect
+      .element(screen.getByRole("button", { name: "Page 2" }))
+      .toHaveAttribute("aria-current", "page");
   });
 
   test("marks the current page", async () => {
