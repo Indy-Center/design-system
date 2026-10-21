@@ -1,4 +1,5 @@
 // One line per component, in alphabetical order.
+export { default as Airport } from "./Airport/Airport.svelte";
 export { default as Alert } from "./Alert/Alert.svelte";
 export { default as AppNav } from "./AppNav/AppNav.svelte";
 export { default as AppNavMenu } from "./AppNav/AppNavMenu.svelte";
