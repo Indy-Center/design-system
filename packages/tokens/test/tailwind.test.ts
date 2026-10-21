@@ -1,35 +1,9 @@
-import { readFile } from "node:fs/promises";
-import { createRequire } from "node:module";
-import { dirname, join } from "node:path";
-import { compile } from "tailwindcss";
 import { afterAll, describe, expect, test } from "vitest";
 import { closeBrowser, pageWith } from "./browser.ts";
+import { tailwind } from "./compile.ts";
 import { brandColours, rgb, roles } from "./guide.ts";
 
 afterAll(closeBrowser);
-
-/**
- * Compiles an app's stylesheet the way Tailwind's Vite plugin would,
- * resolving each @import as an app would find it in node_modules.
- */
-async function tailwind(css: string, candidates: string[]): Promise<string> {
-  const compiler = await compile(css, {
-    base: import.meta.dirname,
-    async loadStylesheet(id, base) {
-      const require = createRequire(join(base, "app.css"));
-      // Bare "tailwindcss" is its "style" export, which require can't pick.
-      const path = require.resolve(
-        id === "tailwindcss" ? "tailwindcss/index.css" : id,
-      );
-      return {
-        path,
-        base: dirname(path),
-        content: await readFile(path, "utf8"),
-      };
-    },
-  });
-  return compiler.build(candidates);
-}
 
 const appCss = `
 @import "tailwindcss";

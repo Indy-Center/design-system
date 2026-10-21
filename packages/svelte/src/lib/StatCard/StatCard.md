@@ -52,7 +52,8 @@ description: One count on a dashboard, with its label, a sub-line and an icon ti
 As chosen in the surfaces prototype (ticket 10), today's dashboard layout
 on the roles:
 
-- The card: `card` fill with a `border` edge, rounded, no shadow.
+- The card: a `Card` (`card` fill, `border` edge, rounded, no shadow,
+  padded).
 - The label: `text-sm` in `muted-foreground`.
 - The count: `text-2xl` semibold in `font-heading`, `foreground`.
 - The sub-line: `text-sm` in `muted-foreground` (the community site's was

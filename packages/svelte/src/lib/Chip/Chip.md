@@ -8,7 +8,8 @@ description: A small mono label for a short code, such as operating initials, a 
 - [ ] Use it for a short code read as a code: operating initials, a
       staff role, a certification. For a VATSIM rating, use `Rating`,
       which looks up its long name. For a word or two of plain text
-      ("Draft", "Member perk"), use `Badge`.
+      ("Draft", "Member perk"), use `Badge`. For a chip that turns a
+      filter on and off, use `FilterChip`.
 - [ ] Pick `variant` for what it shows: `initials` for operating
       initials; `senior`, `training` or `team` for a staff group;
       `certification` for a certification; `muted` (the default) for
