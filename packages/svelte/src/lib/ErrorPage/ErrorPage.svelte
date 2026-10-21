@@ -24,7 +24,7 @@
   } from "@mdi/js";
   import type { HTMLAttributes } from "svelte/elements";
   import Button from "../Button/Button.svelte";
-  import Heading from "../Heading/Heading.svelte";
+  import Heading, { labelClasses } from "../Heading/Heading.svelte";
   import Icon from "../Icon/Icon.svelte";
 
   type Props = HTMLAttributes<HTMLDivElement> & {
@@ -120,14 +120,8 @@
 
   {#if notFound && links.length > 0}
     <nav aria-labelledby={linksId} class="mt-10 border-t border-border pt-6">
-      <!-- Heading's label look, on a <p>: the page's h1 is its one heading.
-           Keep these classes in step with Heading's `label`. -->
-      <p
-        id={linksId}
-        class="mb-3 font-sans text-xs font-semibold tracking-wider text-muted-foreground uppercase"
-      >
-        Or try one of these
-      </p>
+      <!-- Heading's label look, on a <p>: the page's h1 is its one heading. -->
+      <p id={linksId} class={["mb-3", labelClasses]}>Or try one of these</p>
       <ul class="flex flex-wrap justify-center gap-2">
         {#each links as link (link.href)}
           <li>
