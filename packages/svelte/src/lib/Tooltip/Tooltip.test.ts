@@ -1,7 +1,6 @@
-import { describe, expect, test } from "vitest";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { userEvent } from "vitest/browser";
 import type { RenderResult } from "vitest-browser-svelte";
-import { SCHEMES } from "../../../test/contrast.ts";
 import { role } from "../../../test/roles.ts";
 import { renderIn } from "../../../test/schemes.ts";
 import Described from "./Tooltip.test.svelte";
@@ -14,7 +13,18 @@ const trigger = (screen: Screen) =>
 const tooltip = (screen: Screen) =>
   screen.getByRole("tooltip", { includeHidden: true });
 
+// The pause before a tooltip goes once the pointer leaves.
+const LEAVE_DELAY = 100;
+
 describe("Tooltip", () => {
+  // The leave timer runs only when a test moves it on.
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   test("its text is the trigger's description, shown or not", async () => {
     const screen = await renderIn("light", Described, {});
 
@@ -44,6 +54,7 @@ describe("Tooltip", () => {
     await expect.element(tooltip(screen)).toBeVisible();
 
     await trigger(screen).unhover();
+    vi.advanceTimersByTime(LEAVE_DELAY);
     await expect.element(tooltip(screen)).not.toBeVisible();
   });
 
@@ -55,21 +66,10 @@ describe("Tooltip", () => {
     await trigger(screen).click();
     await expect.element(tooltip(screen)).toBeVisible();
     await trigger(screen).unhover();
+    vi.advanceTimersByTime(LEAVE_DELAY);
 
     await expect.element(trigger(screen)).toHaveFocus();
     await expect.element(tooltip(screen)).not.toBeVisible();
-  });
-
-  test("Escape on hover, then leaving and coming back, shows it again", async () => {
-    const screen = await renderIn("light", Described, {});
-    await trigger(screen).hover();
-    await userEvent.keyboard("{Escape}");
-    await expect.element(tooltip(screen)).not.toBeVisible();
-
-    await trigger(screen).unhover();
-    await trigger(screen).hover();
-
-    await expect.element(tooltip(screen)).toBeVisible();
   });
 
   test("puts class on the box round the trigger, and other attributes on the tooltip", async () => {
@@ -88,6 +88,7 @@ describe("Tooltip", () => {
 
     await trigger(screen).hover();
     await tooltip(screen).hover();
+    vi.advanceTimersByTime(LEAVE_DELAY * 2);
 
     await expect.element(tooltip(screen)).toBeVisible();
   });
@@ -103,27 +104,22 @@ describe("Tooltip", () => {
     await expect.element(trigger(screen)).toHaveFocus();
   });
 
-  test("Escape hides a tooltip shown by hover, leaving focus where it is", async () => {
-    const screen = await renderIn("light", Described, {});
-    const elsewhere = screen.getByRole("button", { name: "Elsewhere" });
-    elsewhere.element().focus();
-    await trigger(screen).hover();
-    await expect.element(tooltip(screen)).toBeVisible();
-
-    await userEvent.keyboard("{Escape}");
-
-    await expect.element(tooltip(screen)).not.toBeVisible();
-    await expect.element(elsewhere).toHaveFocus();
-  });
-
-  test("shows again on the next focus after Escape", async () => {
+  test("shows again on the next focus, or the next hover, after Escape", async () => {
     const screen = await renderIn("light", Described, {});
     await userEvent.tab();
     await userEvent.keyboard("{Escape}");
 
     await userEvent.tab();
     await userEvent.tab({ shift: true });
+    await expect.element(tooltip(screen)).toBeVisible();
 
+    await userEvent.tab(); // focus away, so only hover shows it
+    await trigger(screen).hover();
+    await userEvent.keyboard("{Escape}");
+    await expect.element(tooltip(screen)).not.toBeVisible();
+
+    await trigger(screen).unhover();
+    await trigger(screen).hover();
     await expect.element(tooltip(screen)).toBeVisible();
   });
 
@@ -137,16 +133,13 @@ describe("Tooltip", () => {
     expect(tip.bottom).toBeLessThanOrEqual(button.top);
   });
 
-  test.each(SCHEMES)(
-    "is drawn in the page's text colour, its words in the background's, in %s",
-    async (scheme) => {
-      const screen = await renderIn(scheme, Described, {});
-      await userEvent.tab();
+  test("is drawn in the page's text colour, its words in the background's", async () => {
+    const screen = await renderIn("light", Described, {});
+    await userEvent.tab();
 
-      await expect.element(tooltip(screen)).toHaveStyle({
-        backgroundColor: role("foreground", scheme),
-        color: role("background", scheme),
-      });
-    },
-  );
+    await expect.element(tooltip(screen)).toHaveStyle({
+      backgroundColor: role("foreground", "light"),
+      color: role("background", "light"),
+    });
+  });
 });

@@ -1,5 +1,7 @@
 import { execFileSync } from "node:child_process";
+import { readdirSync } from "node:fs";
 import { readFile } from "node:fs/promises";
+import ts from "typescript";
 import { describe, expect, onTestFinished, test, vi } from "vitest";
 
 // Run after `npm run build`, as the test script does.
@@ -14,124 +16,209 @@ function packed(): string[] {
   return JSON.parse(out)[0].files.map((f: { path: string }) => f.path);
 }
 
+/** The names a built module exports, split into values and type-only ones. */
+async function exportsOf(path: string) {
+  const file = ts.createSourceFile(
+    path,
+    await readFile(new URL(path, root), "utf8"),
+    ts.ScriptTarget.Latest,
+  );
+  const values: string[] = [];
+  const types: string[] = [];
+  for (const statement of file.statements) {
+    if (!ts.isExportDeclaration(statement)) continue;
+    const clause = statement.exportClause;
+    if (!clause || !ts.isNamedExports(clause)) continue;
+    for (const element of clause.elements) {
+      const typeOnly = statement.isTypeOnly || element.isTypeOnly;
+      (typeOnly ? types : values).push(element.name.text);
+    }
+  }
+  return { values: values.sort(), types: types.sort() };
+}
+
+/** Each file under src/lib, relative to it, tests left out. */
+const sources = readdirSync(new URL("src/lib", root), {
+  recursive: true,
+  encoding: "utf8",
+}).filter((f) => /\.(svelte|ts|md)$/.test(f) && !/\.test\./.test(f));
+
+/** The folders with a doc page: the package's public pieces. */
+const documented = sources
+  .filter((f) => /^([^/]+)\/\1\.md$/.test(f))
+  .map((f) => f.split("/")[0]);
+
 describe("the packed package", () => {
   const files = packed();
 
-  test("holds each component, its generated types and its doc page", () => {
-    expect(files).toEqual(
+  test("ships each module in src/lib, built, with its types and doc page, and the root exports each documented folder", async () => {
+    const expected = sources.flatMap((f) => {
+      if (f.endsWith(".svelte")) return [`dist/${f}`, `dist/${f}.d.ts`];
+      if (f.endsWith(".ts"))
+        return [
+          `dist/${f.replace(/\.ts$/, ".js")}`,
+          `dist/${f.replace(/\.ts$/, ".d.ts")}`,
+        ];
+      return [`dist/${f}`];
+    });
+    expect(files).toEqual(expect.arrayContaining(expected));
+    // Guards the walk itself: one that found nothing would expect nothing.
+    expect(documented).toEqual(
       expect.arrayContaining([
-        "dist/index.js",
-        "dist/index.d.ts",
-        "dist/Link/Link.svelte",
-        "dist/Link/Link.svelte.d.ts",
-        "dist/Link/Link.md",
-        "dist/colorScheme/colorScheme.md",
-        "dist/aviation/aviation.md",
+        "Link",
+        "Table",
+        "Toast",
+        "aviation",
+        "severity",
       ]),
     );
-  });
 
-  test("carries the MIT licence", () => {
-    expect(files).toContain("LICENSE");
-  });
-
-  test("leaves out tests", () => {
-    expect(files.filter((f) => /\.test\./.test(f))).toEqual([]);
-  });
-
-  test("exports Link from the package root, with types", async () => {
-    const index = await readFile(new URL("dist/index.d.ts", root), "utf8");
-    expect(index).toMatch(/export \{ default as Link \}/);
-  });
-
-  test("ships Table, Th and DescriptionList from the package root", async () => {
-    expect(files).toEqual(
-      expect.arrayContaining([
-        "dist/Table/Table.svelte",
-        "dist/Table/Th.svelte",
-        "dist/Table/Table.md",
-        "dist/DescriptionList/DescriptionList.svelte",
-        "dist/DescriptionList/DescriptionList.md",
-      ]),
-    );
-    const index = await readFile(new URL("dist/index.d.ts", root), "utf8");
-    for (const name of ["DescriptionList", "Table", "Th"]) {
-      expect(index).toMatch(new RegExp(`export \\{ default as ${name}[ ,]`));
+    const index = await readFile(new URL("dist/index.js", root), "utf8");
+    const { values } = await exportsOf("dist/index.d.ts");
+    for (const folder of documented) {
+      expect(index, folder).toContain(`from "./${folder}/`);
+      // A component folder's own component, under its own name.
+      if (sources.includes(`${folder}/${folder}.svelte`))
+        expect(values, folder).toContain(folder);
     }
-    expect(index).toMatch(/type ThScope/);
   });
 
-  test("exports saveColorScheme from the package root, with types", async () => {
-    const index = await readFile(new URL("dist/index.d.ts", root), "utf8");
-    expect(index).toMatch(/\bsaveColorScheme\b/);
-  });
-
-  test("exports the aviation helpers from the package root, with types", async () => {
-    const index = await readFile(new URL("dist/index.d.ts", root), "utf8");
-    for (const name of [
-      "AirportInfo",
+  test("exports these names from the package root, in its JavaScript and its types", async () => {
+    const values = [
+      "Airport",
+      "Alert",
+      "AppNav",
+      "AppNavMenu",
+      "AppsMenu",
+      "BADGE_VARIANTS",
+      "Badge",
+      "Breadcrumbs",
+      "Button",
+      "CHIP_VARIANTS",
+      "Card",
+      "Checkbox",
+      "Chip",
+      "ChoiceCard",
+      "ColorSchemeSetting",
+      "Combobox",
+      "ConfirmDialog",
+      "CopyButton",
+      "Credential",
+      "DateTimeInput",
+      "DescriptionList",
+      "Disclosure",
+      "DropdownMenu",
+      "DropdownMenuItem",
+      "EmptyState",
+      "ErrorPage",
+      "Field",
+      "Fieldset",
+      "FilterChip",
+      "Footer",
+      "Frequency",
+      "Heading",
+      "INDY_CENTER_APPS",
+      "Icon",
+      "Input",
+      "Link",
+      "Member",
+      "Modal",
+      "PILOT_RATINGS",
+      "POSITION_TYPES",
+      "PageHeader",
+      "PageHero",
+      "Pagination",
+      "Panel",
+      "Position",
+      "ProgressBar",
+      "Prose",
+      "RATINGS",
+      "Radio",
+      "Rating",
+      "SEVERITIES",
+      "SearchInput",
+      "Select",
+      "SkipLink",
+      "Spinner",
+      "StarDisplay",
+      "StarRating",
+      "StatCard",
+      "Steps",
+      "Switch",
+      "Table",
+      "Tabs",
+      "Text",
+      "Textarea",
+      "Th",
+      "Time",
+      "TimeZoneLine",
+      "TimeZoneSetting",
+      "Toaster",
+      "Tooltip",
+      "clearColorScheme",
       "comparePositionTypes",
+      "confirmAction",
       "findPilotRating",
       "findRating",
       "formatDuration",
       "formatFrequency",
-      "FrequencyOptions",
+      "getPositions",
       "isPosition",
       "parseCallsign",
-      "PILOT_RATINGS",
-      "POSITION_TYPES",
-      "RATINGS",
       "resolvePosition",
+      "saveColorScheme",
+      "setColorScheme",
+      "setPositions",
+      "setTimeZone",
       "spokenFrequency",
-      "VnasPosition",
-    ]) {
-      expect(index).toMatch(new RegExp(`\\b${name}\\b`));
-    }
-  });
-
-  test("exports Alert, Toast and the severity scale, with types and docs", async () => {
-    const index = await readFile(new URL("dist/index.d.ts", root), "utf8");
-    for (const name of [
-      "Alert",
-      "Toaster",
       "toast",
       "toastFromServer",
-      "SEVERITIES",
-      "Severity",
-    ])
-      expect(index).toMatch(new RegExp(`\\b${name}\\b`));
-    expect(files).toEqual(
-      expect.arrayContaining([
-        "dist/Alert/Alert.md",
-        "dist/Toast/Toast.md",
-        "dist/Toast/toast.svelte.js",
-        "dist/severity/severity.md",
-      ]),
-    );
-  });
-
-  test("exports the header's parts and the Indy Center apps, with docs", async () => {
-    const index = await readFile(new URL("dist/index.d.ts", root), "utf8");
-    for (const name of [
-      "AppsMenu",
+    ].sort();
+    const types = [
+      "AirportInfo",
       "App",
-      "INDY_CENTER_APPS",
-      "AppNav",
-      "AppNavMenu",
+      "BadgeVariant",
+      "CallsignParts",
+      "ChipVariant",
+      "ColorScheme",
+      "ConfirmActionOptions",
+      "CredentialKind",
+      "Crumb",
+      "DurationStyle",
+      "ErrorPageLink",
+      "FieldControl",
+      "FooterColumn",
+      "FooterLink",
+      "FrequencyOptions",
+      "NavGroup",
       "NavItem",
       "NavLink",
-      "NavGroup",
-    ])
-      expect(index).toMatch(new RegExp(`\\b${name}\\b`));
-    expect(files).toEqual(
-      expect.arrayContaining([
-        "dist/AppsMenu/AppsMenu.md",
-        "dist/AppsMenu/apps.js",
-        "dist/AppNav/AppNav.md",
-        "dist/AppNav/AppNavMenu.svelte",
-        "dist/AppNav/nav.js",
-      ]),
-    );
+      "PositionField",
+      "PositionMatch",
+      "PositionType",
+      "RatingDetails",
+      "ResolvePositionOptions",
+      "SaveColorSchemeOptions",
+      "SetColorSchemeOptions",
+      "SetTimeZoneOptions",
+      "Severity",
+      "SeverityDetails",
+      "Step",
+      "Tab",
+      "ThScope",
+      "TimeZoneChoice",
+      "TimeZoneProfileSetting",
+      "ToastCookies",
+      "TooltipTrigger",
+      "VnasPosition",
+    ].sort();
+    expect(await exportsOf("dist/index.d.ts")).toEqual({ values, types });
+    expect(await exportsOf("dist/index.js")).toEqual({ values, types: [] });
+  });
+
+  test("carries the MIT licence and leaves out tests", () => {
+    expect(files).toContain("LICENSE");
+    expect(files.filter((f) => /\.test\./.test(f))).toEqual([]);
   });
 
   test("the built aviation helpers run, their imports resolved", async () => {
@@ -142,12 +229,11 @@ describe("the packed package", () => {
     expect(resolvePosition("IND_1_GND", positions)?.position.id).toBe("1");
   });
 
-  test("serves the positions fetcher from /server, in Node, with types", async () => {
+  test("serves the positions fetcher and the time-zone reader from /server, in Node, with types", async () => {
     const pkg = JSON.parse(
       await readFile(new URL("package.json", root), "utf8"),
     );
     expect(files).toContain(pkg.exports["./server"].types.replace("./", ""));
-    expect(files).toContain("dist/positions/positions.md");
 
     // Data Admin stubbed, so the test stays off the network.
     vi.stubGlobal("fetch", async () =>
@@ -187,61 +273,28 @@ describe("the packed package", () => {
         starred: true,
       },
     ]);
-  });
 
-  test("reads the time-zone cookie from /server, in Node", async () => {
-    const { readTimeZone } = await import("@indy-center/svelte/server");
     const cookies = (value: string) => ({ get: () => value });
     // A zone under either of its names, whichever this runtime lists.
-    expect(readTimeZone(cookies("device:Asia/Kolkata"))).toEqual({
+    expect(server.readTimeZone(cookies("device:Asia/Kolkata"))).toEqual({
       kind: "device",
       zone: "Asia/Kolkata",
     });
-    expect(readTimeZone(cookies("America/Indiana/Indianapolis"))).toEqual({
+    expect(
+      server.readTimeZone(cookies("America/Indiana/Indianapolis")),
+    ).toEqual({ kind: "zone", zone: "America/Indiana/Indianapolis" });
+    expect(server.readTimeZone(cookies("UTC"))).toEqual({
       kind: "zone",
-      zone: "America/Indiana/Indianapolis",
+      zone: "UTC",
     });
-    expect(readTimeZone(cookies("UTC"))).toEqual({ kind: "zone", zone: "UTC" });
-    expect(readTimeZone(cookies("Nowhere/Else"))).toBeUndefined();
-  });
-
-  test("exports the time-zone and colour-scheme choices from the package root, with types and docs", async () => {
-    const index = await readFile(new URL("dist/index.d.ts", root), "utf8");
-    for (const name of [
-      "ColorSchemeSetting",
-      "TimeZoneLine",
-      "TimeZoneSetting",
-      "clearColorScheme",
-      "setColorScheme",
-      "SetColorSchemeOptions",
-      "setTimeZone",
-      "TimeZoneChoice",
-      "TimeZoneProfileSetting",
-    ]) {
-      expect(index).toMatch(new RegExp(`\\b${name}\\b`));
-    }
-    expect(files).toEqual(
-      expect.arrayContaining([
-        "dist/ColorSchemeSetting/ColorSchemeSetting.md",
-        "dist/TimeZoneLine/TimeZoneLine.md",
-        "dist/TimeZoneSetting/TimeZoneSetting.md",
-        "dist/timeZone/timeZone.md",
-      ]),
-    );
-  });
-
-  test("exports the positions context from the package root, with types", async () => {
-    const index = await readFile(new URL("dist/index.d.ts", root), "utf8");
-    expect(index).toMatch(/\bsetPositions\b/);
-    expect(index).toMatch(/\bgetPositions\b/);
+    expect(server.readTimeZone(cookies("Nowhere/Else"))).toBeUndefined();
   });
 
   test("serves the colour-scheme hook from /hooks, in Node, with types", async () => {
     const pkg = JSON.parse(
       await readFile(new URL("package.json", root), "utf8"),
     );
-    const hooks = pkg.exports["./hooks"];
-    expect(files).toContain(hooks.types.replace("./", ""));
+    expect(files).toContain(pkg.exports["./hooks"].types.replace("./", ""));
     const { colorSchemeHandle } = await import("@indy-center/svelte/hooks");
     expect(colorSchemeHandle({ fallback: "dark" })).toBeTypeOf("function");
   });

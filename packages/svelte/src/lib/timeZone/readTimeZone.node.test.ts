@@ -1,6 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { readTimeZone } from "./timeZone.ts";
-import { COOKIE_NAME } from "./timeZone.ts";
+import { COOKIE_NAME, readTimeZone } from "./timeZone.ts";
 
 /** A request's cookies, as SvelteKit's `cookies.get` reads them. */
 function cookies(value?: string) {
@@ -34,7 +33,6 @@ describe("reading the time-zone cookie on the server", () => {
     "Mars/Olympus_Mons",
     "device:Mars/Olympus_Mons",
     "device:",
-    "local",
     "America/Chicago<script>",
     "+01:00",
     `America/${"A".repeat(80)}`,

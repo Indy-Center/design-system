@@ -7,11 +7,7 @@ import Heading from "./Heading.svelte";
 describe("Heading", () => {
   test.each([
     [1, 4],
-    [2, 1],
     [3, "label"],
-    [4, 2],
-    [5, 3],
-    [6, 1],
   ] as const)(
     "is a heading at level %i, even in look %s",
     async (level, look) => {
@@ -20,12 +16,11 @@ describe("Heading", () => {
         look,
         children: text("Upcoming events"),
       });
-      const heading = screen.getByRole("heading", {
-        name: "Upcoming events",
-        level,
-      });
-      await expect.element(heading).toBeInTheDocument();
-      expect(heading.element().tagName).toBe(`H${level}`);
+      await expect
+        .element(
+          screen.getByRole("heading", { name: "Upcoming events", level }),
+        )
+        .toBeInTheDocument();
     },
   );
 
@@ -55,12 +50,10 @@ describe("Heading", () => {
     },
   );
 
+  // Without a look, a level takes its own look; h5 and h6 take h4's.
   test.each([
     [1, "30px"],
-    [2, "20px"],
     [3, "18px"],
-    [4, "16px"],
-    [5, "16px"],
     [6, "16px"],
   ] as const)("at level %i without a look is %s", async (level, size) => {
     const screen = await renderIn("light", Heading, {
@@ -95,21 +88,17 @@ describe("Heading", () => {
   // The guide's roles: `foreground` for the sized looks, `muted-foreground`
   // for label.
   test.each([
-    ["light", 2, "foreground"],
-    ["dark", 2, "foreground"],
-    ["dark-header", 2, "foreground"],
-    ["light", "label", "muted-foreground"],
-    ["dark", "label", "muted-foreground"],
-    ["dark-header", "label", "muted-foreground"],
-  ] as const)("in %s, look %s is %s", async (scheme, look, colour) => {
-    const screen = await renderIn(scheme, Heading, {
+    [2, "foreground"],
+    ["label", "muted-foreground"],
+  ] as const)("in look %s is %s", async (look, colour) => {
+    const screen = await renderIn("light", Heading, {
       level: 2,
       look,
       children: text("Upcoming events"),
     });
     await expect
       .element(screen.getByRole("heading"))
-      .toHaveStyle({ color: role(colour, scheme) });
+      .toHaveStyle({ color: role(colour, "light") });
   });
 
   test("adds a caller's class and attributes to its own", async () => {

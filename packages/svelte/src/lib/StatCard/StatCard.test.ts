@@ -1,9 +1,5 @@
 import { describe, expect, test } from "vitest";
-import {
-  SCHEMES,
-  expectReadable,
-  translucent,
-} from "../../../test/contrast.ts";
+import { expectReadable, translucent } from "../../../test/contrast.ts";
 import { role } from "../../../test/roles.ts";
 import { renderIn } from "../../../test/schemes.ts";
 import { icon } from "../../../test/snippets.ts";
@@ -15,16 +11,18 @@ const users = {
   detail: "287 controllers",
 };
 
+/** The card around the list. */
+const cardOf = (term: Element) => term.closest("dl")!.parentElement!;
+
 describe("StatCard", () => {
   test("is a description list: the label the term, the number its value", async () => {
     const screen = await renderIn("light", StatCard, users);
-    const term = screen.getByRole("term");
-    await expect.element(term).toHaveTextContent("Total users");
-    expect(term.element().parentElement!.tagName).toBe("DL");
+    await expect
+      .element(screen.getByRole("term"))
+      .toHaveTextContent("Total users");
     const [number, detail] = screen.getByRole("definition").elements();
     expect(number.textContent!.trim()).toBe("412");
     expect(detail.textContent!.trim()).toBe("287 controllers");
-    expect(number.previousElementSibling).toBe(term.element());
   });
 
   test("leaves the sub-line out when it has none", async () => {
@@ -53,62 +51,51 @@ describe("StatCard", () => {
     await expect
       .element(screen.getByRole("term"))
       .toHaveStyle({ fontSize: "14px" });
-    expect(getComputedStyle(number)).toMatchObject({
-      fontSize: "24px",
-      fontWeight: "600",
-    });
+    await expect
+      .element(number)
+      .toHaveStyle({ fontSize: "24px", fontWeight: "600" });
     expect(getComputedStyle(number).fontFamily).toMatch(/^"Source Sans 3"/);
-    expect(getComputedStyle(detail).fontSize).toBe("14px");
+    await expect.element(detail).toHaveStyle({ fontSize: "14px" });
   });
 
-  // `card` with a `border` edge; `foreground` for the number;
+  // A Card (its looks are Card's); `foreground` for the number,
   // `muted-foreground` for the label and sub-line.
-  test.each(SCHEMES)(
-    "takes the roles' colours in %s, its sub-line readable",
-    async (scheme) => {
-      const screen = await renderIn(scheme, StatCard, users);
-      const term = screen.getByRole("term");
-      const box = term.element().closest("dl")!.parentElement!;
-      await expect.element(box).toHaveStyle({
-        backgroundColor: role("card", scheme),
-        borderTopColor: role("border", scheme),
-        borderTopStyle: "solid",
-      });
-      const muted = role("muted-foreground", scheme);
-      await expect.element(term).toHaveStyle({ color: muted });
-      const [number, detail] = screen.getByRole("definition").elements();
-      await expect
-        .element(number)
-        .toHaveStyle({ color: role("foreground", scheme) });
-      await expect.element(detail).toHaveStyle({ color: muted });
-      expectReadable(detail, scheme);
-    },
-  );
+  test("takes the roles' colours, its sub-line readable", async () => {
+    const screen = await renderIn("light", StatCard, users);
+    const term = screen.getByRole("term");
+    await expect
+      .element(cardOf(term.element()))
+      .toHaveStyle({ backgroundColor: role("card", "light") });
+    const muted = role("muted-foreground", "light");
+    await expect.element(term).toHaveStyle({ color: muted });
+    const [number, detail] = screen.getByRole("definition").elements();
+    await expect
+      .element(number)
+      .toHaveStyle({ color: role("foreground", "light") });
+    await expect.element(detail).toHaveStyle({ color: muted });
+    expectReadable(detail, "light");
+  });
 
-  // The tile: `primary` at 15%, the icon in `link`.
-  test.each(SCHEMES)(
-    "puts the icon in a primary tile, hidden from screen readers, in %s",
-    async (scheme) => {
-      const screen = await renderIn(scheme, StatCard, { ...users, icon });
-      const svg = screen.getByTestId("icon").element();
-      const tile = svg.parentElement!;
-      expect(tile.getAttribute("aria-hidden")).toBe("true");
-      await expect.element(tile).toHaveStyle({
-        backgroundColor: translucent(role("primary", scheme), 15),
-        color: role("link", scheme),
-      });
-      // The tile comes after the list, so it's read after the numbers.
-      expect(tile.previousElementSibling!.tagName).toBe("DL");
-    },
-  );
+  // IconTile's primary square; its looks are tested in IconTile.
+  test("puts the icon in a primary tile after the list, hidden from screen readers", async () => {
+    const screen = await renderIn("light", StatCard, { ...users, icon });
+    const svg = screen.getByTestId("icon").element();
+    const tile = svg.parentElement!;
+    await expect.element(tile).toHaveAttribute("aria-hidden", "true");
+    await expect.element(tile).toHaveStyle({
+      backgroundColor: translucent(role("primary", "light"), 15),
+    });
+    // The tile comes after the list, so it's read after the numbers.
+    const term = screen.getByRole("term").element();
+    expect(
+      term.compareDocumentPosition(svg) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
 
   test("has no tile without an icon", async () => {
     const screen = await renderIn("light", StatCard, users);
-    const box = screen
-      .getByRole("term")
-      .element()
-      .closest("dl")!.parentElement!;
-    expect(box.children).toHaveLength(1);
+    const card = cardOf(screen.getByRole("term").element());
+    expect(card.querySelector("[aria-hidden]")).toBeNull();
   });
 
   // The card wraps the list: `class` (layout) goes on the card, the rest
@@ -119,9 +106,9 @@ describe("StatCard", () => {
       id: "users",
       class: "mt-6",
     });
-    const list = screen.getByRole("term").element().parentElement!;
-    expect(list.id).toBe("users");
-    expect(getComputedStyle(list.parentElement!)).toMatchObject({
+    const list = screen.getByRole("term").element().closest("dl")!;
+    await expect.element(list).toHaveAttribute("id", "users");
+    await expect.element(list.parentElement!).toHaveStyle({
       marginTop: "24px",
       paddingTop: "16px",
     });

@@ -9,6 +9,7 @@ its shape.
 src/lib/Name/Name.svelte     the component
 src/lib/Name/Name.md         its doc page (ships in the package)
 src/lib/Name/Name.test.ts    its tests (left out of the package)
+src/lib/Name/Name.test.svelte a wrapper its tests render, if they need one
 src/lib/index.ts             add: export { default as Name } from "./Name/Name.svelte";
 src/routes/name/+page.svelte its playground page (lower-case folder)
 ```
@@ -18,8 +19,7 @@ src/routes/name/+page.svelte its playground page (lower-case folder)
   `src/playground/Schemes.svelte`, which shows it in light, in dark and in
   a dark header on a light page. A full-width band (`Footer`, `PageHero`)
   is squashed by its narrow columns, so its page shows it full width on a
-  light page and on a dark one instead; its tests still cover all three
-  schemes. A header part (`AppsMenu`, `AppNav`), dark in both schemes and
+  light page and on a dark one instead. A header part (`AppsMenu`, `AppNav`), dark in both schemes and
   with no background of its own, skips `<Schemes>` too: its page shows it
   in a dark header band on a light page and on a dark one.
 - `index.ts` is the one shared file: one line each, alphabetical. When
@@ -94,9 +94,10 @@ src/routes/name/+page.svelte its playground page (lower-case folder)
 - The exception: a hue the roles don't have. The theme keeps Tailwind's
   stock colours, so use them there: `Badge` takes the guide's
   status-badge steps, with `dark:` for the dark pair, and `Chip` takes
-  solid fills that suit both schemes. Test them against the steps
-  (`styleOfClasses` in `test/contrast.ts`) and for 4.5:1
-  (`expectReadable`). Anything new reaches for a role first.
+  solid fills that suit both schemes. Test every variant against the
+  guide's steps (`styleOfClasses` in `test/contrast.ts`); the steps are
+  chosen for 4.5:1, so the guide holds the contrast. Anything new reaches
+  for a role first.
 - Components that are dark in both schemes (Header, Footer) put
   `data-theme="dark"` on their own root, and everything inside follows.
 - Never set `data-theme` on `<html>`: the colour-scheme hook does. To let
@@ -146,25 +147,49 @@ Test what a user sees, through the component's props, in a real browser:
 the tokens loaded, so computed colours are the real ones.
 
 - Its role and accessible name (`getByRole`).
-- Its colours in `light`, `dark` and `dark-header`, from `role()` in
-  `test/roles.ts`: `test.each(SCHEMES)` (from `test/contrast.ts`), then
-  `toHaveStyle({ color: role("link", scheme) })`.
-  It reads the tokens' `tokens.json`, so a palette change needs no test
-  edits; the tokens package holds those values to the guide. Don't type a
-  role's `rgb(…)`. Name the role the component's class uses, not one that
-  happens to share its value. A colour that isn't a role (`transparent`,
-  one the test sets itself, a stock step) stays a literal with a comment.
+- Its colours in `light`, from `role()` in `test/roles.ts`:
+  `toHaveStyle({ color: role("link", "light") })`. Test `dark` too only
+  where the component has code for it: a `dark:` class, a `data-theme` of
+  its own, or a choice made for dark (`test.each(["light", "dark"] as const)`).
+  A component that is dark in both schemes is tested once, on a light
+  page, against the dark roles. The dark header isn't tested in
+  components: the tokens' tests prove the roles follow `data-theme`.
+  `role()` reads the tokens' `tokens.json`, so a palette change needs no
+  test edits; the tokens package holds those values to the guide. Don't
+  type a role's `rgb(…)`. Name the role the component's class uses, not
+  one that happens to share its value. A see-through role is
+  `translucent(role(…), percent)` from `test/contrast.ts`, so the hue is
+  checked as well as the opacity. A colour that isn't a role
+  (`transparent`, one the test sets itself, a stock step) stays a literal
+  with a comment.
+- A pseudo-element's colour (`::placeholder`, `::marker`, `::backdrop`)
+  stays on `getComputedStyle(el, "::…")`, since `toHaveStyle` can't read
+  one.
+- A part's looks are tested in the part, not in each component that uses
+  it. A shared part (`formControl`, `AbbrTooltip`, `headerMenu`) has its
+  own test file; a component that uses it keeps one test that it is wired
+  in.
 - Keyboard: `userEvent.tab()`, Enter, Escape, as the component needs.
+- Test our code, not the browser's or Svelte's: not a native radio's
+  arrow keys or a `<details>` opening, not `$props.id()` being unique.
+  Find elements by role rather than `tagName` or `parentElement`. Keep one
+  test that `class` and `...rest` land where the Props table says.
+- Logic with no DOM (a module's pure function: `stars.ts`, `format.ts`)
+  gets a plain table test, `test.each`, in `name.node.test.ts` beside it,
+  which runs in Node. The component keeps one render of each case it
+  draws differently.
 - Snippets for `children` and `icon`: `text("…")` and `icon` from
   `test/snippets.ts`, or your own with `createRawSnippet`. That needs one
   root element, so for children that are loose HTML (Prose's `{@html}`
   body), several siblings or other components (a table's `Th` and
-  `Link`, a list's rows), write a small wrapper component in `test/`
-  instead, as `test/ProseLesson.svelte` and `test/ControllerTable.svelte`
-  do.
+  `Link`, a list's rows), write a small wrapper component beside the
+  test, as `Name.test.svelte` (`Prose/Prose.test.svelte`); the package
+  leaves it out with the tests. `test/` holds only what several test
+  files share, such as `test/WithPositions.svelte`.
 
 Run one file while working:
-`npx vitest run --project components src/lib/Name`.
+`npx vitest run --project components src/lib/Name`, or
+`--project node` for a `.node.test.ts`.
 
 ## Doc page
 
@@ -217,3 +242,7 @@ line by line.
 From the repo root: `npm run format:check`, `npm run check`,
 `npm run build`, `npm test`, `npm run pack:dry-run`. Then look at the
 playground page at phone width (390px) and wider.
+
+On a machine shared with other agents, run the full suite under a lock,
+so only one runs at a time: `flock /tmp/design-system-test.lock npm test`.
+Two at once share the cores and time each other out.

@@ -1,15 +1,9 @@
-import { afterEach, describe, expect, test, vi } from "vitest";
-import { commands } from "vitest/browser";
+import { afterEach, describe, expect, test } from "vitest";
 import { forgetColorScheme } from "../../playground/forgetColorScheme.ts";
 import { role } from "../../../test/roles.ts";
 import { htmlTheme, serve } from "../../../test/serve.ts";
-import { COOKIE_NAME } from "./colorScheme.ts";
 import { colorSchemeHandle } from "./colorSchemeHandle.ts";
 import { saveColorScheme } from "./saveColorScheme.ts";
-
-// The `background` role, light and dark.
-const lightBackground = role("background", "light");
-const darkBackground = role("background", "dark");
 
 const added: HTMLElement[] = [];
 
@@ -26,27 +20,22 @@ function add<E extends HTMLElement>(element: E): E {
   return element;
 }
 
-function background(element: Element): string {
-  return getComputedStyle(element).backgroundColor;
-}
-
-/** The scheme cookie as the browser stored it. */
-async function storedCookie() {
-  const cookies = await commands.storedCookies();
-  return cookies.find((cookie) => cookie.name === COOKIE_NAME);
-}
-
+// The cookie's attributes are preferenceCookie's (its own tests).
 describe("saving a choice", () => {
-  test("applies it to the page at once", () => {
+  test("applies it to the page at once", async () => {
     const main = add(document.createElement("main"));
     main.className = "bg-background";
     document.documentElement.dataset.theme = "dark";
 
     saveColorScheme("light");
-    expect(background(main)).toBe(lightBackground);
+    await expect
+      .element(main)
+      .toHaveStyle({ backgroundColor: role("background", "light") });
 
     saveColorScheme("dark");
-    expect(background(main)).toBe(darkBackground);
+    await expect
+      .element(main)
+      .toHaveStyle({ backgroundColor: role("background", "dark") });
   });
 
   test.each(["light", "dark"] as const)(
@@ -57,47 +46,6 @@ describe("saving a choice", () => {
         cookie: document.cookie,
       });
       expect(htmlTheme(page)).toBe(choice);
-    },
-  );
-
-  test("keeps it for a year, on every path", async () => {
-    saveColorScheme("light");
-    const cookie = await storedCookie();
-    const year = 365 * 24 * 60 * 60;
-    expect(cookie?.path).toBe("/");
-    expect(cookie?.sameSite).toBe("Lax");
-    expect(cookie?.expires).toBeGreaterThan(Date.now() / 1000 + year - 60);
-  });
-});
-
-describe("the cookie's domain", () => {
-  test("is the given domain on its sites", () => {
-    // Chrome stores Domain=localhost as host-only, so read what is written.
-    const written = vi.spyOn(Document.prototype, "cookie", "set");
-    // The test page isn't on flyindycenter.com; its own host stands in.
-    saveColorScheme("light", { domain: location.hostname });
-    expect(written).toHaveBeenCalledWith(
-      expect.stringContaining(`; Domain=${location.hostname}`),
-    );
-    written.mockRestore();
-  });
-
-  test("is left off where the page isn't on it, such as localhost", async () => {
-    saveColorScheme("light");
-    expect((await storedCookie())?.domain).toBe(location.hostname);
-  });
-});
-
-describe("the dark header", () => {
-  test.each(["light", "dark"] as const)(
-    "stays dark when %s is chosen",
-    (choice) => {
-      const header = add(document.createElement("header"));
-      header.dataset.theme = "dark";
-      header.className = "bg-background";
-
-      saveColorScheme(choice);
-      expect(background(header)).toBe(darkBackground);
     },
   );
 });

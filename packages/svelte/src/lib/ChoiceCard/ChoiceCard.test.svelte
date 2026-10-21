@@ -1,5 +1,5 @@
 <!-- Choice cards for ChoiceCard.test.ts: a radio group of certifications,
-     or a checkbox group of emails, in a Fieldset, and a button after it. -->
+     or a checkbox group of emails, in a Fieldset. -->
 <script lang="ts">
   import Fieldset from "../Fieldset/Fieldset.svelte";
   import ChoiceCard from "./ChoiceCard.svelte";
@@ -11,20 +11,17 @@
     group?: string;
     /** Whether the events card is ticked, bindable. */
     events?: boolean;
-    /** The Fieldset's error. */
-    error?: string;
   };
 
   let {
     type,
     group = $bindable(),
     events = $bindable(false),
-    error,
   }: Props = $props();
 </script>
 
 {#if type === "radio"}
-  <Fieldset legend="Certification" {error}>
+  <Fieldset legend="Certification">
     <ChoiceCard type="radio" label="Tower" name="cert" value="twr" bind:group>
       Local control at a towered field
     </ChoiceCard>
@@ -40,7 +37,7 @@
     <ChoiceCard type="radio" label="None" name="cert" value="" bind:group />
   </Fieldset>
 {:else}
-  <Fieldset legend="Emails" {error}>
+  <Fieldset legend="Emails">
     <ChoiceCard
       type="checkbox"
       label="Events"
@@ -58,4 +55,3 @@
     />
   </Fieldset>
 {/if}
-<button type="button">Next</button>

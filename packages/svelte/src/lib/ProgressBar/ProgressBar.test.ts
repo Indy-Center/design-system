@@ -1,6 +1,5 @@
 import { describe, expect, test } from "vitest";
 import { page } from "vitest/browser";
-import { SCHEMES } from "../../../test/contrast.ts";
 import { role } from "../../../test/roles.ts";
 import { renderIn } from "../../../test/schemes.ts";
 import ProgressBar from "./ProgressBar.svelte";
@@ -48,7 +47,11 @@ describe("ProgressBar", () => {
     await expect.element(bar).toHaveAttribute("value", "40");
     await expect.element(bar).toHaveAttribute("max", "100");
     await expect.element(bar).toHaveAttribute("aria-valuetext", "40%");
-    await expect.element(screen.getByText("40%")).toBeVisible();
+    // The bar says its value; the words beside it are for the eye, so
+    // readers hear it once.
+    const words = screen.getByText("40%");
+    await expect.element(words).toBeVisible();
+    await expect.element(words).toHaveAttribute("aria-hidden", "true");
   });
 
   test("counts against its max", async () => {
@@ -75,44 +78,31 @@ describe("ProgressBar", () => {
     await expect.element(screen.getByText("3 of 8 lessons")).toBeVisible();
   });
 
-  // The bar already says its value; the words beside it are for the eye.
-  test("says the value to readers once", async () => {
+  // The track is `muted`, the fill `info` (`primary` is too faint on the
+  // dark track), the track's edge `input`, the label `foreground-soft` and
+  // the value `muted-foreground`. ProgressBar has no `dark:` code, so these
+  // are tested in light.
+  test("takes its colours from the roles", async () => {
     const screen = await renderIn("light", ProgressBar, {
       label: "Course progress",
       value: 40,
     });
+    const bar = screen.getByRole("progressbar").element();
+    // The fill covers the first 40%; the track shows past it.
+    expect(await colourAt(bar, 0.2)).toBe(role("info", "light"));
+    expect(await colourAt(bar, 0.7)).toBe(role("muted", "light"));
+    await expect.element(bar).toHaveStyle({
+      borderWidth: "1px",
+      borderStyle: "solid",
+      borderColor: role("input", "light"),
+    });
+    await expect
+      .element(screen.getByText("Course progress"))
+      .toHaveStyle({ color: role("foreground-soft", "light") });
     await expect
       .element(screen.getByText("40%"))
-      .toHaveAttribute("aria-hidden", "true");
+      .toHaveStyle({ color: role("muted-foreground", "light") });
   });
-
-  // The track is `muted`, the fill `info` (`primary` is too faint on the
-  // dark track), the track's edge `input`, the label `foreground-soft` and
-  // the value `muted-foreground`.
-  test.each(SCHEMES)(
-    "takes its colours from the roles in %s",
-    async (scheme) => {
-      const screen = await renderIn(scheme, ProgressBar, {
-        label: "Course progress",
-        value: 40,
-      });
-      const bar = screen.getByRole("progressbar").element();
-      // The fill covers the first 40%; the track shows past it.
-      expect(await colourAt(bar, 0.2)).toBe(role("info", scheme));
-      expect(await colourAt(bar, 0.7)).toBe(role("muted", scheme));
-      await expect.element(bar).toHaveStyle({
-        borderWidth: "1px",
-        borderStyle: "solid",
-        borderColor: role("input", scheme),
-      });
-      await expect
-        .element(screen.getByText("Course progress"))
-        .toHaveStyle({ color: role("foreground-soft", scheme) });
-      await expect
-        .element(screen.getByText("40%"))
-        .toHaveStyle({ color: role("muted-foreground", scheme) });
-    },
-  );
 
   test("is a rounded bar 8px tall, as wide as its place", async () => {
     const screen = await renderIn("light", ProgressBar, {

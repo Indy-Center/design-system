@@ -1,7 +1,7 @@
 import { sveltekit } from "@sveltejs/kit/vite";
 import tailwindcss from "@tailwindcss/vite";
 import { playwright } from "@vitest/browser-playwright";
-import { defineConfig } from "vitest/config";
+import { configDefaults, defineConfig } from "vitest/config";
 import {
   emulateColorScheme,
   emulateReducedMotion,
@@ -19,6 +19,18 @@ export default defineConfig({
   // playground's), take a package's ES module (`@mdi/js`'s) over its
   // CommonJS `main`, which can't run inlined.
   ssr: { resolve: { mainFields: ["module", "main"] } },
+  // The dependencies the components and their tests load that the Svelte
+  // plugins don't list, bundled before the first test file loads. Found
+  // mid-run instead, on a cold cache, Vite re-bundles and reloads the
+  // browser, and the files already loading fail to import.
+  optimizeDeps: {
+    include: [
+      "@mdi/js",
+      "esm-env",
+      "@sveltejs/kit > devalue",
+      "vitest-browser-svelte",
+    ],
+  },
   test: {
     // expect.element retries until the test times out, so keep this short.
     testTimeout: 10_000,
@@ -29,6 +41,7 @@ export default defineConfig({
         test: {
           name: "components",
           include: ["src/lib/**/*.test.ts"],
+          exclude: [...configDefaults.exclude, "src/lib/**/*.node.test.ts"],
           setupFiles: ["test/setup.ts"],
           browser: {
             enabled: true,
@@ -52,11 +65,12 @@ export default defineConfig({
         },
       },
       {
-        // Tests of the built package, in Node.
+        // Tests that need no browser, in Node: pure modules
+        // (`*.node.test.ts`, beside them) and the built package.
         extends: true,
         test: {
-          name: "package",
-          include: ["test/**/*.test.ts"],
+          name: "node",
+          include: ["src/lib/**/*.node.test.ts", "test/**/*.test.ts"],
           environment: "node",
         },
       },

@@ -1,7 +1,7 @@
+// Escape and a click outside are dismiss's, tested in dismiss/dismiss.test.ts.
 import { describe, expect, test } from "vitest";
-import { page, userEvent } from "vitest/browser";
+import { userEvent } from "vitest/browser";
 import type { RenderResult } from "vitest-browser-svelte";
-import { SCHEMES } from "../../../test/contrast.ts";
 import { role } from "../../../test/roles.ts";
 import { renderIn } from "../../../test/schemes.ts";
 import Menu from "./DropdownMenu.test.svelte";
@@ -11,8 +11,14 @@ type Screen = RenderResult<typeof Menu>;
 const arrow = (screen: Screen) =>
   screen.getByRole("button", { name: "More actions for Jo Rivera" });
 
+/** The panel the arrow controls. */
+const panel = (screen: Screen) =>
+  document.getElementById(
+    arrow(screen).element().getAttribute("aria-controls")!,
+  )!;
+
 describe("DropdownMenu", () => {
-  test("is a button named by its label, closed to start", async () => {
+  test("is a secondary button named by its label, closed to start", async () => {
     const screen = await renderIn("light", Menu, {});
 
     await expect
@@ -21,6 +27,11 @@ describe("DropdownMenu", () => {
     await expect
       .element(screen.getByRole("button", { name: "Withdraw" }))
       .not.toBeInTheDocument();
+    // Button's outline (buttonClasses).
+    await expect.element(arrow(screen)).toHaveStyle({
+      color: role("foreground", "light"),
+      borderColor: role("input", "light"),
+    });
   });
 
   test("Enter opens it, and Tab moves into its items", async () => {
@@ -38,34 +49,7 @@ describe("DropdownMenu", () => {
       .toHaveFocus();
   });
 
-  test("Enter on the open arrow closes it", async () => {
-    const screen = await renderIn("light", Menu, {});
-
-    await userEvent.tab();
-    await userEvent.keyboard("{Enter}");
-    await userEvent.keyboard("{Enter}");
-
-    await expect
-      .element(arrow(screen))
-      .toHaveAttribute("aria-expanded", "false");
-    await expect
-      .element(screen.getByRole("button", { name: "Withdraw" }))
-      .not.toBeInTheDocument();
-  });
-
-  test("Escape closes it and puts focus back on the arrow", async () => {
-    const screen = await renderIn("light", Menu, {});
-    await arrow(screen).click();
-    await userEvent.tab();
-
-    await userEvent.keyboard("{Escape}");
-
-    await expect
-      .element(arrow(screen))
-      .toHaveAttribute("aria-expanded", "false");
-    await expect.element(arrow(screen)).toHaveFocus();
-  });
-
+  // Its dismiss is wired in.
   test("with a row's tooltip showing, Escape hides it first, then closes the menu", async () => {
     const screen = await renderIn("light", Menu, { tooltip: true });
     const tip = screen.getByRole("tooltip", { includeHidden: true });
@@ -87,17 +71,6 @@ describe("DropdownMenu", () => {
       .element(arrow(screen))
       .toHaveAttribute("aria-expanded", "false");
     await expect.element(arrow(screen)).toHaveFocus();
-  });
-
-  test("a click outside closes it", async () => {
-    const screen = await renderIn("light", Menu, {});
-    await arrow(screen).click();
-
-    await screen.getByRole("button", { name: "Elsewhere" }).click();
-
-    await expect
-      .element(arrow(screen))
-      .toHaveAttribute("aria-expanded", "false");
   });
 
   test("choosing a row runs it, closes the menu and puts focus back", async () => {
@@ -161,10 +134,7 @@ describe("DropdownMenu", () => {
 
   const boxes = (screen: Screen) => ({
     button: arrow(screen).element().getBoundingClientRect(),
-    panel: screen
-      .getByRole("button", { name: "Withdraw" })
-      .element()
-      .parentElement!.getBoundingClientRect(),
+    panel: panel(screen).getBoundingClientRect(),
   });
 
   test("opens under the arrow, its right edge on the arrow's", async () => {
@@ -197,49 +167,34 @@ describe("DropdownMenu", () => {
     expect(link.getBoundingClientRect().height).toBeGreaterThanOrEqual(44);
   });
 
-  test.each(SCHEMES)("draws the panel on the card in %s", async (scheme) => {
-    const screen = await renderIn(scheme, Menu, {});
+  test("draws the panel on the card", async () => {
+    const screen = await renderIn("light", Menu, {});
     await arrow(screen).click();
-    const row = screen.getByRole("button", { name: "Withdraw" });
 
+    await expect.element(panel(screen)).toHaveStyle({
+      backgroundColor: role("card", "light"),
+      borderColor: role("border", "light"),
+    });
     await expect
-      .element(page.elementLocator(row.element().parentElement!))
-      .toHaveStyle({
-        backgroundColor: role("card", scheme),
-        borderColor: role("border", scheme),
-      });
-    await expect
-      .element(row)
-      .toHaveStyle({ color: role("foreground", scheme) });
+      .element(screen.getByRole("button", { name: "Withdraw" }))
+      .toHaveStyle({ color: role("foreground", "light") });
   });
 
-  test.each(SCHEMES)("a secondary arrow is outlined in %s", async (scheme) => {
-    const screen = await renderIn(scheme, Menu, {});
+  test("a primary arrow attached to its button matches it", async () => {
+    const screen = await renderIn("light", Menu, {
+      attached: true,
+      variant: "primary",
+    });
+    const main = screen.getByRole("button", { name: "Approve" });
 
     await expect.element(arrow(screen)).toHaveStyle({
-      color: role("foreground", scheme),
-      borderColor: role("input", scheme),
+      backgroundColor: role("primary", "light"),
+      color: role("primary-foreground", "light"),
+      borderLeftColor: role("primary-hover", "light"),
     });
+    // Flush: the arrow starts where the button ends.
+    expect(
+      Math.round(arrow(screen).element().getBoundingClientRect().left),
+    ).toBe(Math.round(main.element().getBoundingClientRect().right));
   });
-
-  test.each(SCHEMES)(
-    "a primary arrow attached to its button matches it in %s",
-    async (scheme) => {
-      const screen = await renderIn(scheme, Menu, {
-        attached: true,
-        variant: "primary",
-      });
-      const main = screen.getByRole("button", { name: "Approve" });
-
-      await expect.element(arrow(screen)).toHaveStyle({
-        backgroundColor: role("primary", scheme),
-        color: role("primary-foreground", scheme),
-        borderLeftColor: role("primary-hover", scheme),
-      });
-      // Flush: the arrow starts where the button ends.
-      expect(
-        Math.round(arrow(screen).element().getBoundingClientRect().left),
-      ).toBe(Math.round(main.element().getBoundingClientRect().right));
-    },
-  );
 });

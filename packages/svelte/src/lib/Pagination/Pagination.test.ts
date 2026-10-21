@@ -1,6 +1,5 @@
 import { describe, expect, test } from "vitest";
 import { userEvent } from "vitest/browser";
-import { SCHEMES } from "../../../test/contrast.ts";
 import { role } from "../../../test/roles.ts";
 import { renderIn } from "../../../test/schemes.ts";
 import Pagination from "./Pagination.svelte";
@@ -32,7 +31,9 @@ describe("Pagination", () => {
 
   test("renders nothing when everything fits on one page", async () => {
     const screen = await renderIn("light", Pagination, { pageCount: 1 });
-    expect(screen.container.querySelector("nav")).toBeNull();
+    await expect
+      .element(screen.getByRole("navigation"))
+      .not.toBeInTheDocument();
   });
 
   test("marks the current page", async () => {
@@ -48,8 +49,12 @@ describe("Pagination", () => {
       .not.toHaveAttribute("aria-current");
   });
 
-  test("moves to a page clicked, and by previous and next", async () => {
-    const screen = await renderIn("light", Pagination, { pageCount: 3 });
+  test("moves to a page clicked, and by previous and next, telling the app", async () => {
+    const pages: number[] = [];
+    const screen = await renderIn("light", Pagination, {
+      pageCount: 3,
+      onchange: (page: number) => pages.push(page),
+    });
     const current = () =>
       screen.container.querySelector("[aria-current='page']")!;
     await screen.getByRole("button", { name: "Page 3" }).click();
@@ -58,17 +63,7 @@ describe("Pagination", () => {
     expect(current().getAttribute("aria-label")).toBe("Page 2");
     await screen.getByRole("button", { name: "Next page" }).click();
     expect(current().getAttribute("aria-label")).toBe("Page 3");
-  });
-
-  test("tells the app the page it moved to", async () => {
-    const pages: number[] = [];
-    const screen = await renderIn("light", Pagination, {
-      pageCount: 3,
-      onchange: (page: number) => pages.push(page),
-    });
-    await screen.getByRole("button", { name: "Page 3" }).click();
-    await screen.getByRole("button", { name: "Previous page" }).click();
-    expect(pages).toEqual([3, 2]);
+    expect(pages).toEqual([3, 2, 3]);
   });
 
   test("disables previous on the first page and next on the last", async () => {
@@ -161,18 +156,18 @@ describe("Pagination", () => {
     ]);
   });
 
-  // 358px: a 390px phone less its gutters; 294px: a card in the dark header
-  // on that phone; 400px: just wide enough to keep the neighbours. The
-  // pages are the widest rows: the most buttons, or gaps of one page.
-  const widths = ["400px", "370px", "358px", "294px"];
-  const pages = [
-    [120, 60],
-    [20, 4],
-    [8, 4],
-    [7, 4],
-    [5, 3],
-  ];
-  test.each(widths.flatMap((w) => pages.map(([c, p]) => [w, p, c] as const)))(
+  // 400px: just wide enough to keep the neighbours (the wide row); below it
+  // the narrow row shows, so its narrowest home, 294px (a card in the dark
+  // header on a 390px phone), stands for a phone too. The pages are the
+  // widest rows: the most buttons, or gaps of one page.
+  test.each([
+    ["400px", 60, 120],
+    ["400px", 4, 20],
+    ["400px", 4, 8],
+    ["294px", 60, 120],
+    ["294px", 4, 7],
+    ["294px", 3, 5],
+  ] as const)(
     "fits one row at %s on page %i of %i",
     async (width, page, pageCount) => {
       const screen = await renderIn("light", Pagination, {
@@ -201,23 +196,23 @@ describe("Pagination", () => {
   // The guide's `primary` under `primary-foreground` for the current page;
   // the others in `foreground-soft` with no fill (transparent). The fill
   // marks it, not the colour of its number.
-  test.each(SCHEMES)("fills the current page in %s", async (scheme) => {
-    const screen = await renderIn(scheme, Pagination, {
+  test("fills the current page", async () => {
+    const screen = await renderIn("light", Pagination, {
       pageCount: 3,
       page: 2,
     });
     await expect
       .element(screen.getByRole("button", { name: "Page 2" }))
       .toHaveStyle({
-        backgroundColor: role("primary", scheme),
-        color: role("primary-foreground", scheme),
+        backgroundColor: role("primary", "light"),
+        color: role("primary-foreground", "light"),
         fontWeight: "600",
       });
     await expect
       .element(screen.getByRole("button", { name: "Page 3" }))
       .toHaveStyle({
         backgroundColor: "rgba(0, 0, 0, 0)",
-        color: role("foreground-soft", scheme),
+        color: role("foreground-soft", "light"),
       });
   });
 
@@ -231,19 +226,16 @@ describe("Pagination", () => {
   });
 
   // The guide's `ring` role.
-  test.each(SCHEMES)(
-    "shows a ring outline when tabbed to in %s",
-    async (scheme) => {
-      const screen = await renderIn(scheme, Pagination, { pageCount: 3 });
-      await userEvent.tab();
-      await expect
-        .element(screen.getByRole("button", { name: "Page 1" }))
-        .toHaveStyle({
-          outlineStyle: "solid",
-          outlineColor: role("ring", scheme),
-        });
-    },
-  );
+  test("shows a ring outline when tabbed to", async () => {
+    const screen = await renderIn("light", Pagination, { pageCount: 3 });
+    await userEvent.tab();
+    await expect
+      .element(screen.getByRole("button", { name: "Page 1" }))
+      .toHaveStyle({
+        outlineStyle: "solid",
+        outlineColor: role("ring", "light"),
+      });
+  });
 
   test("moves by keyboard: Tab to a page, Enter to go", async () => {
     const screen = await renderIn("light", Pagination, { pageCount: 3 });

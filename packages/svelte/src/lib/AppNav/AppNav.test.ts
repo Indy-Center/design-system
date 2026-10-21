@@ -1,10 +1,9 @@
+// Which link is current is nav.ts's, tested in nav.node.test.ts. How a bar
+// group opens and closes, the 44px targets and the ring are HeaderMenu's,
+// tested in headerMenu/HeaderMenu.test.ts.
 import { describe, expect, test } from "vitest";
 import { userEvent } from "vitest/browser";
-import {
-  SCHEMES,
-  expectReadable,
-  translucent,
-} from "../../../test/contrast.ts";
+import { expectReadable, translucent } from "../../../test/contrast.ts";
 import { role } from "../../../test/roles.ts";
 import { renderIn } from "../../../test/schemes.ts";
 import { hubNav } from "../../playground/chrome.ts";
@@ -59,7 +58,7 @@ describe("AppNav and AppNavMenu", () => {
       await expect.element(about).toHaveAttribute("aria-expanded", "false");
     });
 
-    test("marks the current page, and a page under it", async () => {
+    test("marks the current page, and only it, on a page under it", async () => {
       const screen = await renderIn("light", Nav, {
         items: hubNav,
         current: "/events/42",
@@ -70,85 +69,6 @@ describe("AppNav and AppNavMenu", () => {
       expect(screen.container.querySelectorAll("[aria-current]")).toHaveLength(
         1,
       );
-    });
-
-    // Home is "/": every path starts with it, so it is current only on
-    // itself.
-    test("marks Home only on the home page", async () => {
-      const home = await renderIn("light", Nav, {
-        items: hubNav,
-        current: "/",
-      });
-      await expect
-        .element(home.getByRole("link", { name: "Home" }))
-        .toHaveAttribute("aria-current", "page");
-      home.unmount();
-
-      const other = await renderIn("light", Nav, {
-        items: hubNav,
-        current: "/admin",
-      });
-      expect(other.container.querySelector("[aria-current]")).toBeNull();
-    });
-
-    // Training has "/teach" and "/teach/sessions": on the second, only it.
-    test("marks the closest link when one sits under another", async () => {
-      const screen = await renderIn("light", Nav, {
-        items: [
-          { label: "My Students", href: "/teach" },
-          { label: "Sessions", href: "/teach/sessions" },
-        ],
-        current: "/teach/sessions/7",
-      });
-      await expect
-        .element(screen.getByRole("link", { name: "Sessions" }))
-        .toHaveAttribute("aria-current", "page");
-      await expect
-        .element(screen.getByRole("link", { name: "My Students" }))
-        .not.toHaveAttribute("aria-current");
-    });
-
-    test("ignores a trailing slash on the path and on the link", async () => {
-      const slashed = await renderIn("light", Nav, {
-        items: hubNav,
-        current: "/events/",
-      });
-      await expect
-        .element(slashed.getByRole("link", { name: "Events" }))
-        .toHaveAttribute("aria-current", "page");
-      slashed.unmount();
-
-      const screen = await renderIn("light", Nav, {
-        items: [
-          { label: "Home", href: "/" },
-          { label: "Events", href: "/events/" },
-        ],
-        current: "/events",
-      });
-      await expect
-        .element(screen.getByRole("link", { name: "Events" }))
-        .toHaveAttribute("aria-current", "page");
-      await expect
-        .element(screen.getByRole("link", { name: "Home" }))
-        .not.toHaveAttribute("aria-current");
-    });
-
-    test("doesn't match a page that only shares the start of a link", async () => {
-      const screen = await renderIn("light", Nav, {
-        items: hubNav,
-        current: "/eventsarchive",
-      });
-      expect(screen.container.querySelector("[aria-current]")).toBeNull();
-    });
-
-    test("takes another name for its navigation", async () => {
-      const screen = await renderIn("light", Nav, {
-        items: hubNav,
-        label: "Training",
-      });
-      await expect
-        .element(screen.getByRole("navigation", { name: "Training" }))
-        .toBeInTheDocument();
     });
 
     // label is the nav's one name: an aria-label can't override it.
@@ -162,23 +82,6 @@ describe("AppNav and AppNavMenu", () => {
       await expect
         .element(screen.getByRole("navigation", { name: "Training" }))
         .toBeInTheDocument();
-    });
-
-    test("gives every link, group and row a 44px target", async () => {
-      const screen = await renderIn("light", Nav, {
-        items: [
-          { label: "Go", href: "/go" },
-          { label: "Up", children: [{ label: "In", href: "/in" }] },
-        ],
-      });
-      await group(screen, "Up").click();
-      for (const name of ["Go", "In"]) {
-        const box = screen.getByRole("link", { name }).element();
-        expect(box.getBoundingClientRect().height).toBeGreaterThanOrEqual(44);
-        expect(box.getBoundingClientRect().width).toBeGreaterThanOrEqual(44);
-      }
-      const box = group(screen, "Up").element().getBoundingClientRect();
-      expect(box.height).toBeGreaterThanOrEqual(44);
     });
 
     test("puts a caller's class and attributes on the <nav>, and stays dark", async () => {
@@ -196,29 +99,6 @@ describe("AppNav and AppNavMenu", () => {
   });
 
   describe("AppNav, the bar", () => {
-    test("Escape closes an open group and puts focus back on its button", async () => {
-      const screen = await renderIn("light", AppNav, { items: hubNav });
-      await group(screen, "About").click();
-      await userEvent.tab();
-      await expect
-        .element(screen.getByRole("link", { name: "Staff" }))
-        .toHaveFocus();
-      await userEvent.keyboard("{Escape}");
-      await expect
-        .element(group(screen, "About"))
-        .toHaveAttribute("aria-expanded", "false");
-      await expect.element(group(screen, "About")).toHaveFocus();
-    });
-
-    test("a click outside closes an open group", async () => {
-      const screen = await renderIn("light", AppNav, { items: hubNav });
-      await group(screen, "About").click();
-      await userEvent.click(document.body, { position: { x: 1, y: 1 } });
-      await expect
-        .element(group(screen, "About"))
-        .toHaveAttribute("aria-expanded", "false");
-    });
-
     test("opening one group closes another", async () => {
       const screen = await renderIn("light", AppNav, { items: hubNav });
       await group(screen, "About").click();
@@ -231,60 +111,44 @@ describe("AppNav and AppNavMenu", () => {
         .toHaveAttribute("aria-expanded", "true");
     });
 
-    test("opening one group by keyboard closes another", async () => {
+    // Dark in both schemes: once, on a light page, in the dark roles.
+    test("draws in the dark roles: links in the link colour, the current page and its group on the soft fill", async () => {
       const screen = await renderIn("light", AppNav, {
-        items: [
-          { label: "One", children: [{ label: "A", href: "#a" }] },
-          { label: "Two", children: [{ label: "B", href: "#b" }] },
-        ],
+        items: hubNav,
+        current: "/staff",
       });
-      await userEvent.tab();
-      await userEvent.keyboard("{Enter}");
-      await expect
-        .element(group(screen, "One"))
-        .toHaveAttribute("aria-expanded", "true");
-      await userEvent.tab(); // into One's panel
-      await userEvent.tab(); // on to Two
-      await expect.element(group(screen, "Two")).toHaveFocus();
-      await userEvent.keyboard("{Enter}");
-      await expect
-        .element(group(screen, "One"))
-        .toHaveAttribute("aria-expanded", "false");
-      await expect
-        .element(group(screen, "Two"))
-        .toHaveAttribute("aria-expanded", "true");
-    });
-
-    test("closes a group when focus Tabs out of it", async () => {
-      const screen = await renderIn("light", AppNav, {
-        items: [
-          { label: "About", children: [{ label: "Staff", href: "#s" }] },
-          { label: "Events", href: "#e" },
-        ],
+      const home = screen.getByRole("link", { name: "Home" });
+      await expect.element(home).toHaveStyle({
+        color: role("link", "dark"),
+        backgroundColor: "rgba(0, 0, 0, 0)", // no fill
+        textDecorationLine: "none",
       });
-      await group(screen, "About").click();
-      await userEvent.tab();
-      await expect
-        .element(screen.getByRole("link", { name: "Staff" }))
-        .toHaveFocus();
-      await userEvent.tab();
-      await expect
-        .element(screen.getByRole("link", { name: "Events" }))
-        .toHaveFocus();
-      await expect
-        .element(group(screen, "About"))
-        .toHaveAttribute("aria-expanded", "false");
-    });
-
-    test("closes a group when a link in it is followed", async () => {
-      const screen = await renderIn("light", AppNav, {
-        items: [{ label: "About", children: [{ label: "Staff", href: "#s" }] }],
+      expectReadable(home.element(), "dark");
+      const about = group(screen, "About");
+      await expect.element(about).toHaveStyle({
+        color: role("link", "dark"),
+        backgroundColor: SOFT_FILL(),
+        textDecorationLine: "underline",
       });
-      await group(screen, "About").click();
-      await screen.getByRole("link", { name: "Staff" }).click();
-      await expect
-        .element(group(screen, "About"))
-        .toHaveAttribute("aria-expanded", "false");
+      await about.click();
+      const panel = document.getElementById(
+        about.element().getAttribute("aria-controls")!,
+      )!;
+      await expect.element(panel).toHaveStyle({
+        backgroundColor: role("card", "dark"),
+        borderTopColor: role("border", "dark"),
+      });
+      const staff = screen.getByRole("link", { name: "Staff" });
+      await expect.element(staff).toHaveStyle({
+        color: role("link", "dark"),
+        backgroundColor: SOFT_FILL(),
+      });
+      // On the panel's card.
+      expectReadable(staff.element(), "dark");
+      expectReadable(
+        screen.getByRole("link", { name: "Partners" }).element(),
+        "dark",
+      );
     });
   });
 
@@ -332,14 +196,12 @@ describe("AppNav and AppNavMenu", () => {
           .toHaveAttribute("aria-expanded", "true");
       }
     });
-  });
 
-  // Dark in both schemes, so the dark roles everywhere.
-  describe.each(SCHEMES)("in %s", (scheme) => {
-    test("draws links and groups in the link colour, underlined only when current", async () => {
-      const screen = await renderIn(scheme, AppNav, {
+    // Dark in both schemes: once, on a light page, in the dark roles.
+    test("draws in the dark roles: rows in the link colour, the current page and its group on the soft fill", async () => {
+      const screen = await renderIn("light", AppNavMenu, {
         items: hubNav,
-        current: "/events",
+        current: "/staff",
       });
       const home = screen.getByRole("link", { name: "Home" });
       await expect.element(home).toHaveStyle({
@@ -347,84 +209,7 @@ describe("AppNav and AppNavMenu", () => {
         backgroundColor: "rgba(0, 0, 0, 0)", // no fill
         textDecorationLine: "none",
       });
-      await expect.element(group(screen, "About")).toHaveStyle({
-        color: role("link", "dark"),
-        textDecorationLine: "none",
-      });
-      await expect
-        .element(screen.getByRole("link", { name: "Events" }))
-        .toHaveStyle({
-          color: role("link", "dark"),
-          backgroundColor: SOFT_FILL(),
-          textDecorationLine: "underline",
-        });
       expectReadable(home.element(), "dark");
-    });
-
-    test("puts the soft fill on a group holding the current page, and on the page in it", async () => {
-      const screen = await renderIn(scheme, AppNav, {
-        items: hubNav,
-        current: "/staff",
-      });
-      const about = group(screen, "About");
-      await expect.element(about).toHaveStyle({
-        backgroundColor: SOFT_FILL(),
-        textDecorationLine: "underline",
-      });
-      await about.click();
-      const panel = screen.getByRole("list").nth(1).element().parentElement!;
-      await expect.element(panel).toHaveStyle({
-        backgroundColor: role("card", "dark"),
-        borderTopColor: role("border", "dark"),
-      });
-      const staff = screen.getByRole("link", { name: "Staff" });
-      await expect.element(staff).toHaveStyle({
-        color: role("link", "dark"),
-        backgroundColor: SOFT_FILL(),
-      });
-      // On the panel's card.
-      expectReadable(staff.element(), "dark");
-      expectReadable(
-        screen.getByRole("link", { name: "Partners" }).element(),
-        "dark",
-      );
-    });
-
-    test("shows a ring outline on a link tabbed to", async () => {
-      const screen = await renderIn(scheme, AppNav, { items: hubNav });
-      await userEvent.tab();
-      const home = screen.getByRole("link", { name: "Home" });
-      await expect.element(home).toHaveFocus();
-      await expect.element(home).toHaveStyle({
-        outlineStyle: "solid",
-        outlineColor: role("ring", "dark"),
-      });
-    });
-
-    test("shows a ring outline on a group button tabbed to", async () => {
-      const screen = await renderIn(scheme, AppNav, {
-        items: [{ label: "About", children: [{ label: "Staff", href: "#s" }] }],
-      });
-      await userEvent.tab();
-      const about = group(screen, "About");
-      await expect.element(about).toHaveFocus();
-      await expect.element(about).toHaveStyle({
-        outlineStyle: "solid",
-        outlineColor: role("ring", "dark"),
-      });
-    });
-
-    test("draws the phone menu's rows in the link colour, the current page and its group on the soft fill", async () => {
-      const screen = await renderIn(scheme, AppNavMenu, {
-        items: hubNav,
-        current: "/staff",
-      });
-      const home = screen.getByRole("link", { name: "Home" });
-      await expect.element(home).toHaveStyle({
-        color: role("link", "dark"),
-        backgroundColor: "rgba(0, 0, 0, 0)", // no fill
-        textDecorationLine: "none",
-      });
       await expect.element(group(screen, "About")).toHaveStyle({
         color: role("link", "dark"),
         backgroundColor: SOFT_FILL(),

@@ -1,19 +1,17 @@
-import { createRawSnippet } from "svelte";
 import { describe, expect, test } from "vitest";
 import { userEvent } from "vitest/browser";
-import { SCHEMES } from "../../../test/contrast.ts";
 import { role } from "../../../test/roles.ts";
 import { renderIn } from "../../../test/schemes.ts";
+import { text } from "../../../test/snippets.ts";
 import Disclosure from "./Disclosure.svelte";
-
-const text = (s: string) =>
-  createRawSnippet(() => ({ render: () => `<span>${s}</span>` }));
 
 const props = () => ({
   summary: text("Why do I need a rating?"),
   children: text("Each position needs its own rating."),
 });
 
+// A native <details>: the browser opens it from the keyboard and gives
+// readers its expanded state.
 describe("Disclosure", () => {
   test("starts closed, its summary showing and its content hidden", async () => {
     const screen = await renderIn("light", Disclosure, props());
@@ -23,20 +21,6 @@ describe("Disclosure", () => {
     await expect
       .element(screen.getByText("Each position needs its own rating."))
       .not.toBeVisible();
-  });
-
-  // A native <summary>: the browser gives readers its expanded state.
-  test("opens and closes from the keyboard", async () => {
-    const screen = await renderIn("light", Disclosure, props());
-    await userEvent.tab();
-    await expect
-      .element(screen.container.querySelector("summary")!)
-      .toHaveFocus();
-    const content = screen.getByText("Each position needs its own rating.");
-    await userEvent.keyboard("{Enter}");
-    await expect.element(content).toBeVisible();
-    await userEvent.keyboard(" ");
-    await expect.element(content).not.toBeVisible();
   });
 
   test("opens on a click, and can start open", async () => {
@@ -59,33 +43,30 @@ describe("Disclosure", () => {
   });
 
   // `foreground` for the summary, `foreground-soft` for what it shows.
-  test.each(SCHEMES)("takes the text roles in %s", async (scheme) => {
-    const screen = await renderIn(scheme, Disclosure, {
+  test("takes the text roles", async () => {
+    const screen = await renderIn("light", Disclosure, {
       ...props(),
       open: true,
     });
     await expect
       .element(screen.container.querySelector("summary")!)
-      .toHaveStyle({ color: role("foreground", scheme) });
+      .toHaveStyle({ color: role("foreground", "light") });
     await expect
       .element(screen.getByText("Each position needs its own rating."))
-      .toHaveStyle({ color: role("foreground-soft", scheme) });
+      .toHaveStyle({ color: role("foreground-soft", "light") });
   });
 
   // The `ring` role.
-  test.each(SCHEMES)(
-    "shows a ring outline when tabbed to in %s",
-    async (scheme) => {
-      const screen = await renderIn(scheme, Disclosure, props());
-      await userEvent.tab();
-      await expect
-        .element(screen.container.querySelector("summary")!)
-        .toHaveStyle({
-          outlineStyle: "solid",
-          outlineColor: role("ring", scheme),
-        });
-    },
-  );
+  test("shows a ring outline when tabbed to", async () => {
+    const screen = await renderIn("light", Disclosure, props());
+    await userEvent.tab();
+    await expect
+      .element(screen.container.querySelector("summary")!)
+      .toHaveStyle({
+        outlineStyle: "solid",
+        outlineColor: role("ring", "light"),
+      });
+  });
 
   // Several with one `name` form a group where only one is open.
   test("passes name through, so a group opens one at a time", async () => {
@@ -94,7 +75,7 @@ describe("Disclosure", () => {
       name: "faq",
     });
     await expect
-      .element(screen.container.querySelector("details")!)
+      .element(screen.getByRole("group"))
       .toHaveAttribute("name", "faq");
   });
 });

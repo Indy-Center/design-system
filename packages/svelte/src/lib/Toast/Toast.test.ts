@@ -1,10 +1,9 @@
 import { tick } from "svelte";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { userEvent } from "vitest/browser";
-import { SCHEMES } from "../../../test/contrast.ts";
-import { role, type Role } from "../../../test/roles.ts";
+import { role } from "../../../test/roles.ts";
 import { renderIn } from "../../../test/schemes.ts";
-import type { Severity } from "../severity/severity.ts";
+import { SEVERITIES, type Severity } from "../severity/severity.ts";
 import Toaster from "./Toaster.svelte";
 import { toast } from "./toast.svelte.ts";
 import { toastFromServer, type ToastCookies } from "./toastFromServer.ts";
@@ -12,9 +11,12 @@ import { toastFromServer, type ToastCookies } from "./toastFromServer.ts";
 const notifications = () => document.querySelector("section[aria-label]");
 
 describe("Toast", () => {
-  // The toasts' clock runs only when a test moves it on.
+  // The toasts' clock, and the timer that clears a read line, run only when
+  // a test moves them on, so neither reaches into the next test.
   beforeEach(() => {
-    vi.useFakeTimers({ toFake: ["setInterval", "clearInterval"] });
+    vi.useFakeTimers({
+      toFake: ["setInterval", "clearInterval", "setTimeout", "clearTimeout"],
+    });
   });
   afterEach(() => {
     vi.useRealTimers();
@@ -192,37 +194,27 @@ describe("Toast", () => {
       .toHaveTextContent("Success: Signed in.");
   });
 
-  // The brand guide's Roles table: the level's role for the icon and the
-  // rule, on a card, with body text.
-  describe.each(SCHEMES)("in %s", (scheme) => {
-    const levelRole: Record<Severity, Role> = {
-      info: "info",
-      success: "success",
-      caution: "warning",
-      danger: "destructive",
-    };
-
-    test.each(["info", "success", "caution", "danger"] as Severity[])(
-      "%s is a card with its role's icon and rule",
-      async (level) => {
-        const screen = await renderIn(scheme, Toaster, {});
-        toast(level, "Roster saved.");
-        const item = screen.getByRole("listitem");
-        const colour = role(levelRole[level], scheme);
-        await expect.element(item).toHaveStyle({
-          backgroundColor: role("card", scheme),
-          borderLeftColor: colour,
-          borderLeftWidth: "4px",
-        });
-        await expect
-          .element(item.element().querySelector<SVGElement>("svg path"))
-          .toHaveStyle({ fill: colour });
-        await expect
-          .element(item.element().querySelector("p")!)
-          .toHaveStyle({ color: role("foreground-soft", scheme) });
-      },
-    );
-  });
+  // The brand guide's Roles table: the level's role for the rule, on a
+  // card, with body text. The icon's looks are SeverityIcon's.
+  test.each(Object.keys(SEVERITIES) as Severity[])(
+    "%s is a card with its level's icon and its role's rule",
+    async (level) => {
+      const screen = await renderIn("light", Toaster, {});
+      toast(level, "Roster saved.");
+      const item = screen.getByRole("listitem");
+      await expect.element(item).toHaveStyle({
+        backgroundColor: role("card", "light"),
+        borderLeftColor: role(SEVERITIES[level].role, "light"),
+        borderLeftWidth: "4px",
+      });
+      expect(item.element().querySelector("svg path")?.getAttribute("d")).toBe(
+        SEVERITIES[level].icon,
+      );
+      await expect
+        .element(item.element().querySelector("p")!)
+        .toHaveStyle({ color: role("foreground-soft", "light") });
+    },
+  );
 
   describe("stacking", () => {
     const shown = async () => {

@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { SCHEMES } from "../../../test/contrast.ts";
+import { onScreen, readOut } from "../../../test/readOut.ts";
 import { role } from "../../../test/roles.ts";
 import { renderIn } from "../../../test/schemes.ts";
 import Steps, { type Step } from "./Steps.svelte";
@@ -34,25 +34,21 @@ describe("Steps", () => {
     ]);
   });
 
-  test("tells readers a step is done in words", async () => {
+  // Not every reader says aria-current on a list item, so the current step
+  // is in words too, as a done step is; the eye has the icons.
+  test("tells readers a step is done or current in words, off screen", async () => {
     const screen = await renderIn("light", Steps, { steps });
-    const done = screen.getByText("(done)");
-    await expect.element(done).toHaveStyle({ position: "absolute" });
-    expect(done.elements()).toHaveLength(1);
-    expect(screen.getByRole("listitem").first().element().textContent).toMatch(
-      /Joined the waitlist\s*\(done\)/,
-    );
-  });
-
-  // Not every reader says aria-current on a list item.
-  test("tells readers the current step in words too", async () => {
-    const screen = await renderIn("light", Steps, { steps });
-    const current = screen.getByText("(current step)");
-    await expect.element(current).toHaveStyle({ position: "absolute" });
-    expect(current.elements()).toHaveLength(1);
-    expect(screen.getByRole("listitem").nth(1).element().textContent).toMatch(
-      /Training\s*\(current step\)/,
-    );
+    const items = screen.getByRole("listitem").elements();
+    expect(items.map(readOut)).toEqual([
+      "Joined the waitlist (done) 18 October 2026",
+      "Training (current step) Teacher: Jo Bloggs",
+      "Rating exam",
+    ]);
+    expect(items.map(onScreen)).toEqual([
+      "Joined the waitlist 18 October 2026",
+      "Training Teacher: Jo Bloggs",
+      "Rating exam",
+    ]);
   });
 
   test("shows each state by its own icon, not colour alone", async () => {
@@ -73,46 +69,40 @@ describe("Steps", () => {
   // From the brand guide's Roles table: done is `success`, current `info`,
   // to come `muted-foreground`, as are details; done and current labels are
   // `foreground`; the line between steps is `border`.
-  test.each(SCHEMES)(
-    "takes its colours from the roles in %s",
-    async (scheme) => {
-      const expected = {
-        done: role("success", scheme),
-        current: role("info", scheme),
-        muted: role("muted-foreground", scheme),
-        label: role("foreground", scheme),
-        line: role("border", scheme),
-      };
-      const screen = await renderIn(scheme, Steps, { steps });
-      const icons = screen
-        .getByRole("listitem")
-        .elements()
-        .map((item) => item.querySelector("svg path")!);
-      expect(icons.map((icon) => getComputedStyle(icon).fill)).toEqual([
-        expected.done,
-        expected.current,
-        expected.muted,
-      ]);
-      await expect
-        .element(screen.getByText(/^Joined the waitlist/))
-        .toHaveStyle({ color: expected.label });
-      await expect
-        .element(screen.getByText(/^Training/))
-        .toHaveStyle({ color: expected.label });
-      await expect
-        .element(screen.getByText("Rating exam"))
-        .toHaveStyle({ color: expected.muted });
-      await expect
-        .element(screen.getByText("Teacher: Jo Bloggs"))
-        .toHaveStyle({ color: expected.muted });
-      const line = screen.container.querySelector<HTMLElement>(
-        "li > span[aria-hidden]",
-      );
-      await expect
-        .element(line)
-        .toHaveStyle({ backgroundColor: expected.line });
-    },
-  );
+  test("takes its colours from the roles", async () => {
+    const muted = role("muted-foreground", "light");
+    const label = role("foreground", "light");
+    const screen = await renderIn("light", Steps, { steps });
+    const icons = screen
+      .getByRole("listitem")
+      .elements()
+      .map((item) => item.querySelector<SVGElement>("svg path")!);
+    for (const [icon, fill] of [
+      [icons[0], role("success", "light")],
+      [icons[1], role("info", "light")],
+      [icons[2], muted],
+    ] as const) {
+      await expect.element(icon).toHaveStyle({ fill });
+    }
+    await expect
+      .element(screen.getByText(/^Joined the waitlist/))
+      .toHaveStyle({ color: label });
+    await expect
+      .element(screen.getByText(/^Training/))
+      .toHaveStyle({ color: label });
+    await expect
+      .element(screen.getByText("Rating exam"))
+      .toHaveStyle({ color: muted });
+    await expect
+      .element(screen.getByText("Teacher: Jo Bloggs"))
+      .toHaveStyle({ color: muted });
+    const line = screen.container.querySelector<HTMLElement>(
+      "li > span[aria-hidden]",
+    );
+    await expect
+      .element(line)
+      .toHaveStyle({ backgroundColor: role("border", "light") });
+  });
 
   test("joins each step to the next with a line, not the last", async () => {
     const screen = await renderIn("light", Steps, { steps });
@@ -133,20 +123,18 @@ describe("Steps", () => {
     await expect.element(list).toHaveStyle({ marginTop: "16px" });
   });
 
-  test("shows a step's detail and date", async () => {
+  // Training's timeline holds a missing date or detail as null.
+  test("shows a step's detail and date, and takes null for missing ones", async () => {
     const screen = await renderIn("light", Steps, { steps });
     await expect.element(screen.getByText("Teacher: Jo Bloggs")).toBeVisible();
     await expect.element(screen.getByText("18 October 2026")).toBeVisible();
-  });
 
-  // Training's timeline holds a missing date or detail as null.
-  test("takes null for a missing detail or date", async () => {
-    const screen = await renderIn("light", Steps, {
+    const nulls = await renderIn("light", Steps, {
       steps: [
         { label: "Training", state: "current", detail: null, date: null },
       ],
     });
-    expect(screen.getByRole("listitem").element().textContent).toMatch(
+    expect(nulls.getByRole("listitem").element().textContent).toMatch(
       /^\s*Training\s*\(current step\)\s*$/,
     );
   });

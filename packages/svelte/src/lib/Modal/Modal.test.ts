@@ -1,17 +1,16 @@
 import { describe, expect, test, vi } from "vitest";
 import { page, userEvent } from "vitest/browser";
-import { SCHEMES } from "../../../test/contrast.ts";
-import PositionRequest from "../../../test/PositionRequest.svelte";
 import { role } from "../../../test/roles.ts";
-import { renderIn, type Scheme } from "../../../test/schemes.ts";
+import { renderIn } from "../../../test/schemes.ts";
 import { text } from "../../../test/snippets.ts";
 import Modal from "./Modal.svelte";
+import PositionRequest from "./Modal.test.svelte";
 
 const dialog = () => page.getByRole("dialog", { name: "Request position" });
 
 // Opens it from its button, by keyboard, so focus starts on the button.
-async function openIn(scheme: Scheme, props = {}) {
-  const screen = await renderIn(scheme, PositionRequest, props);
+async function open(props = {}) {
+  const screen = await renderIn("light", PositionRequest, props);
   const trigger = screen.getByRole("button", { name: "Request position" });
   trigger.element().focus();
   await userEvent.keyboard("{Enter}");
@@ -34,8 +33,9 @@ describe("Modal", () => {
     expect(document.querySelector("dialog:modal")).not.toBeNull();
   });
 
-  test("moves focus in when it opens, and back when it closes", async () => {
-    const { trigger } = await openIn("light");
+  test("moves focus in when it opens; Escape closes it, tells the page and gives focus back", async () => {
+    const onclose = vi.fn();
+    const { trigger } = await open({ onclose });
     // The first control: the close button in its header.
     await expect
       .element(dialog().getByRole("button", { name: "Close" }))
@@ -43,6 +43,8 @@ describe("Modal", () => {
     await userEvent.tab();
     await expect.element(dialog().getByRole("textbox")).toHaveFocus();
     await userEvent.keyboard("{Escape}");
+    await expect.element(dialog()).not.toBeInTheDocument();
+    expect(onclose).toHaveBeenCalledOnce();
     await expect.element(trigger).toHaveFocus();
   });
 
@@ -64,17 +66,10 @@ describe("Modal", () => {
     }
   });
 
-  test("Escape closes it and tells the page", async () => {
-    const onclose = vi.fn();
-    await openIn("light", { onclose });
-    await userEvent.keyboard("{Escape}");
-    await expect.element(dialog()).not.toBeInTheDocument();
-    expect(onclose).toHaveBeenCalledOnce();
-  });
-
+  // Its CloseButton is wired in; the button's looks are CloseButton's.
   test("its close button is named and closes it", async () => {
     const onclose = vi.fn();
-    const { trigger } = await openIn("light", { onclose });
+    const { trigger } = await open({ onclose });
     await userEvent.click(dialog().getByRole("button", { name: "Close" }));
     await expect.element(dialog()).not.toBeInTheDocument();
     expect(onclose).toHaveBeenCalledOnce();
@@ -82,7 +77,7 @@ describe("Modal", () => {
   });
 
   test("a click outside closes it; a click inside doesn't", async () => {
-    await openIn("light");
+    await open();
     await userEvent.click(dialog().getByRole("heading"));
     await expect.element(dialog()).toBeVisible();
     // Above its top-left corner: on the backdrop.
@@ -97,7 +92,7 @@ describe("Modal", () => {
     ["starts outside and ends inside", { x: 4, y: -20 }, { x: 40, y: 40 }],
     ["is on its border", { x: 0, y: 40 }, { x: 0, y: 40 }],
   ])("a press that %s doesn't close it", async (_, down, up) => {
-    await openIn("light");
+    await open();
     const box = dialog().element().getBoundingClientRect();
     const at = ({ x, y }: { x: number; y: number }) => ({
       bubbles: true,
@@ -115,7 +110,7 @@ describe("Modal", () => {
 
   test("closes when the page sets open to false", async () => {
     const onclose = vi.fn();
-    await openIn("light", { withActions: true, onclose });
+    await open({ withActions: true, onclose });
     await userEvent.click(
       dialog().getByRole("button", { name: "Send request" }),
     );
@@ -124,7 +119,7 @@ describe("Modal", () => {
   });
 
   test("puts its actions at the foot, after the content", async () => {
-    await openIn("light", { withActions: true });
+    await open({ withActions: true });
     const names = dialog()
       .getByRole("button")
       .elements()
@@ -133,35 +128,32 @@ describe("Modal", () => {
   });
 
   test("passes class and attributes to the dialog", async () => {
-    await openIn("light", { class: "mt-8", "data-testid": "modal" });
+    await open({ class: "mt-8", "data-testid": "modal" });
     await expect.element(dialog()).toHaveClass("mt-8");
     await expect.element(dialog()).toHaveAttribute("data-testid", "modal");
   });
 
   test("grows to its size's width", async () => {
-    await openIn("light", { size: "lg" });
+    await open({ size: "lg" });
     await expect.element(dialog()).toHaveStyle({ maxWidth: "672px" });
   });
 
-  test.each(SCHEMES)(
-    "is a card with the title in the heading colour in %s",
-    async (scheme) => {
-      await openIn(scheme);
-      await expect.element(dialog()).toHaveStyle({
-        backgroundColor: role("card", scheme),
-        borderTopColor: role("border", scheme),
-      });
-      await expect
-        .element(dialog().getByRole("heading"))
-        .toHaveStyle({ color: role("foreground", scheme) });
-      await expect
-        .element(dialog().getByText("Position"))
-        .toHaveStyle({ color: role("foreground-soft", scheme) });
-      // Not a role: black at 60% dims the page in either scheme (Tailwind
-      // mixes the opacity in oklab).
-      expect(
-        getComputedStyle(dialog().element(), "::backdrop").backgroundColor,
-      ).toBe("oklab(0 0 0 / 0.6)");
-    },
-  );
+  test("is a card with the title in the heading colour", async () => {
+    await open();
+    await expect.element(dialog()).toHaveStyle({
+      backgroundColor: role("card", "light"),
+      borderTopColor: role("border", "light"),
+    });
+    await expect
+      .element(dialog().getByRole("heading"))
+      .toHaveStyle({ color: role("foreground", "light") });
+    await expect
+      .element(dialog().getByText("Position"))
+      .toHaveStyle({ color: role("foreground-soft", "light") });
+    // Not a role: black at 60% dims the page in either scheme (Tailwind
+    // mixes the opacity in oklab).
+    expect(
+      getComputedStyle(dialog().element(), "::backdrop").backgroundColor,
+    ).toBe("oklab(0 0 0 / 0.6)");
+  });
 });

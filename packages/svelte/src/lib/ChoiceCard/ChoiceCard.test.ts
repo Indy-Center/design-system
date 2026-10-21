@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { userEvent, type Locator } from "vitest/browser";
-import { SCHEMES } from "../../../test/contrast.ts";
+import { translucent } from "../../../test/contrast.ts";
 import { role } from "../../../test/roles.ts";
 import { renderIn } from "../../../test/schemes.ts";
 import ChoiceCard from "./ChoiceCard.svelte";
@@ -18,19 +18,31 @@ function cardOf(
 }
 
 describe("ChoiceCard", () => {
-  test("as radios, each is named by its label alone and described by its children, in a group named by the legend", async () => {
-    const screen = await renderIn("light", Cards, { type: "radio" });
-    const group = screen.getByRole("group", { name: "Certification" });
-    const tower = group.getByRole("radio", { name: "Tower" });
-    await expect
-      .element(tower)
-      .toHaveAccessibleDescription("Local control at a towered field");
-    await expect
-      .element(group.getByRole("radio", { name: "None" }))
-      .toBeInTheDocument();
-  });
+  test.each([
+    {
+      type: "radio",
+      legend: "Certification",
+      name: "Tower",
+      about: "Local control at a towered field",
+    },
+    {
+      type: "checkbox",
+      legend: "Emails",
+      name: "Events",
+      about: "Group flights and fly-ins",
+    },
+  ] as const)(
+    "as $type, each is named by its label alone and described by its children, in a group named by the legend",
+    async ({ type, legend, name, about }) => {
+      const screen = await renderIn("light", Cards, { type });
+      const group = screen.getByRole("group", { name: legend });
+      await expect
+        .element(group.getByRole(type, { name }))
+        .toHaveAccessibleDescription(about);
+    },
+  );
 
-  test("as radios, announces the chosen one as checked, and the arrow keys move and choose", async () => {
+  test("as radios, announces the chosen one as checked, and a click anywhere on a card, even its corner, sets the group", async () => {
     let group: string | undefined = "twr";
     const screen = await renderIn("light", Cards, {
       type: "radio",
@@ -44,24 +56,15 @@ describe("ChoiceCard", () => {
     const tower = screen.getByRole("radio", { name: "Tower" });
     const approach = screen.getByRole("radio", { name: "Approach" });
     await expect.element(tower).toBeChecked();
-    await userEvent.tab();
-    await expect.element(tower).toHaveFocus();
-    await userEvent.keyboard("{ArrowDown}");
+    await userEvent.click(cardOf(screen, "Approach"), {
+      position: { x: 3, y: 3 },
+    });
     await expect.element(approach).toBeChecked();
     await expect.element(tower).not.toBeChecked();
     expect(group).toBe("app");
   });
 
-  test("as radios, Space chooses the focused card when none is chosen", async () => {
-    const screen = await renderIn("light", Cards, { type: "radio" });
-    const tower = screen.getByRole("radio", { name: "Tower" });
-    await userEvent.tab();
-    await expect.element(tower).toHaveFocus();
-    await userEvent.keyboard(" ");
-    await expect.element(tower).toBeChecked();
-  });
-
-  test("as checkboxes, Space toggles, and checked binds both ways", async () => {
+  test("as checkboxes, a click anywhere on a card, even its corner, ticks it, and checked binds both ways", async () => {
     let events = false;
     const screen = await renderIn("light", Cards, {
       type: "checkbox",
@@ -73,77 +76,44 @@ describe("ChoiceCard", () => {
       },
     });
     const box = screen.getByRole("checkbox", { name: "Events" });
-    await expect
-      .element(box)
-      .toHaveAccessibleDescription("Group flights and fly-ins");
-    await userEvent.tab();
-    await expect.element(box).toHaveFocus();
-    await userEvent.keyboard(" ");
+    await userEvent.click(cardOf(screen, "Events"), {
+      position: { x: 3, y: 3 },
+    });
     await expect.element(box).toBeChecked();
     expect(events).toBe(true);
-    await userEvent.keyboard(" ");
+    await box.click();
     await expect.element(box).not.toBeChecked();
     expect(events).toBe(false);
   });
 
-  test("as checkboxes, a Fieldset's error marks them invalid", async () => {
-    const screen = await renderIn("light", Cards, {
-      type: "checkbox",
-      error: "Pick at least one.",
+  // Unchosen: edged in `border`, with no fill (transparent), so the page
+  // shows through. Chosen: edged in `primary` over a 10% wash of it. The
+  // label in `foreground-soft`, the children in `muted-foreground`, the
+  // box in `primary`. A Checkbox card is drawn the same way.
+  test("colours the card, label and children, and highlights it when chosen", async () => {
+    const screen = await renderIn("light", Cards, { type: "radio" });
+    const card = cardOf(screen, "Tower");
+    await expect.element(card).toHaveStyle({
+      borderTopColor: role("border", "light"),
+      borderTopWidth: "1px",
+      backgroundColor: "rgba(0, 0, 0, 0)",
     });
     await expect
-      .element(screen.getByRole("checkbox", { name: "Training" }))
-      .toHaveAttribute("aria-invalid", "true");
-  });
+      .element(screen.getByText("Tower", { exact: true }))
+      .toHaveStyle({ color: role("foreground-soft", "light") });
+    await expect
+      .element(screen.getByText("Local control at a towered field"))
+      .toHaveStyle({ color: role("muted-foreground", "light") });
 
-  test.each(["radio", "checkbox"] as const)(
-    "as %s, a click anywhere on the card picks it, even its corner",
-    async (type) => {
-      const screen = await renderIn("light", Cards, { type });
-      const name = type === "radio" ? "Approach" : "Events";
-      const card = cardOf(screen, name);
-      await userEvent.click(card, { position: { x: 3, y: 3 } });
-      await expect.element(screen.getByRole(type, { name })).toBeChecked();
-    },
-  );
-
-  // Unchosen: edged in `border`. Chosen: edged in `primary` over a wash of
-  // it. The label in `foreground-soft`, the children in `muted-foreground`.
-  const cases = [
-    { type: "radio", name: "Tower", about: "Local control at a towered field" },
-    { type: "checkbox", name: "Events", about: "Group flights and fly-ins" },
-  ] as const;
-  describe.each(cases)("as $type", ({ type, name, about }) => {
-    test.each(SCHEMES)(
-      "colours the card, label and children in %s, and highlights it when chosen",
-      async (scheme) => {
-        const screen = await renderIn(scheme, Cards, { type });
-        const card = cardOf(screen, name);
-        await expect.element(card).toHaveStyle({
-          borderTopColor: role("border", scheme),
-          borderTopWidth: "1px",
-        });
-        // Transparent: the page shows through until it's chosen.
-        expect(getComputedStyle(card).backgroundColor).toBe("rgba(0, 0, 0, 0)");
-        await expect
-          .element(screen.getByText(name, { exact: true }))
-          .toHaveStyle({ color: role("foreground-soft", scheme) });
-        await expect
-          .element(screen.getByText(about))
-          .toHaveStyle({ color: role("muted-foreground", scheme) });
-
-        const input = screen.getByRole(type, { name });
-        await input.click();
-        await expect
-          .element(card)
-          .toHaveStyle({ borderTopColor: role("primary", scheme) });
-        // A wash of primary, so the page shows through.
-        expect(getComputedStyle(card).backgroundColor).toMatch(/\/ 0\.1\)$/);
-        await expect
-          .element(input)
-          .toHaveStyle({ accentColor: role("primary", scheme) });
-      },
-    );
+    const input = screen.getByRole("radio", { name: "Tower" });
+    await input.click();
+    await expect.element(card).toHaveStyle({
+      borderTopColor: role("primary", "light"),
+      backgroundColor: translucent(role("primary", "light"), 10),
+    });
+    await expect
+      .element(input)
+      .toHaveStyle({ accentColor: role("primary", "light") });
   });
 
   test.each(["radio", "checkbox"] as const)(

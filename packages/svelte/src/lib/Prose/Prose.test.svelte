@@ -4,8 +4,8 @@
   // around the HTML and so change what prose styles (see CONVENTIONS.md,
   // Tests).
   import type { ComponentProps } from "svelte";
-  import Prose from "../src/lib/Prose/Prose.svelte";
-  import { lessonHtml } from "../src/playground/lesson.ts";
+  import Prose from "./Prose.svelte";
+  import { lessonHtml } from "../../playground/lesson.ts";
 
   let props: Omit<ComponentProps<typeof Prose>, "children"> = $props();
 </script>

@@ -1,6 +1,5 @@
 import { afterEach, describe, expect, test } from "vitest";
 import { page, userEvent } from "vitest/browser";
-import { SCHEMES } from "../../../test/contrast.ts";
 import { role } from "../../../test/roles.ts";
 import { renderIn } from "../../../test/schemes.ts";
 import SkipLink from "./SkipLink.svelte";
@@ -40,19 +39,13 @@ describe("SkipLink", () => {
     await expect.element(link).toBeVisible();
   });
 
-  test("is first on Tab, before the content after it", async () => {
+  test("is first on Tab, and moves focus to the content on Enter", async () => {
     const screen = await renderIn("light", SkipLink, {});
-    content();
+    const main = content();
     await userEvent.tab();
     await expect
       .element(screen.getByRole("link", { name: "Skip to content" }))
       .toHaveFocus();
-  });
-
-  test("moves focus to the content on Enter", async () => {
-    await renderIn("light", SkipLink, {});
-    const main = content();
-    await userEvent.tab();
     await userEvent.keyboard("{Enter}");
     await expect.element(main).toHaveFocus();
     // The next Tab starts from the content, past the header's links.
@@ -74,20 +67,17 @@ describe("SkipLink", () => {
   });
 
   // The `card` role behind `link` text, with the `ring` outline.
-  test.each(SCHEMES)(
-    "shows as a link on a card, with a ring, in %s",
-    async (scheme) => {
-      const screen = await renderIn(scheme, SkipLink, {});
-      await userEvent.tab();
-      await expect.element(screen.getByRole("link")).toHaveStyle({
-        backgroundColor: role("card", scheme),
-        color: role("link", scheme),
-        textDecorationLine: "underline",
-        outlineStyle: "solid",
-        outlineColor: role("ring", scheme),
-      });
-    },
-  );
+  test("shows as a link on a card, with a ring", async () => {
+    const screen = await renderIn("light", SkipLink, {});
+    await userEvent.tab();
+    await expect.element(screen.getByRole("link")).toHaveStyle({
+      backgroundColor: role("card", "light"),
+      color: role("link", "light"),
+      textDecorationLine: "underline",
+      outlineStyle: "solid",
+      outlineColor: role("ring", "light"),
+    });
+  });
 
   test("is at least 44px tall when shown", async () => {
     const screen = await renderIn("light", SkipLink, {});

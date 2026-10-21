@@ -1,58 +1,24 @@
 import { hydrate, tick, unmount } from "svelte";
-import {
-  afterEach,
-  beforeAll,
-  beforeEach,
-  describe,
-  expect,
-  test,
-  vi,
-} from "vitest";
+import { afterEach, beforeAll, describe, expect, test } from "vitest";
 import { commands } from "vitest/browser";
-import { SCHEMES } from "../../../test/contrast.ts";
+import { pinClockInIndianapolis } from "../../../test/clock.ts";
+import { savedTimeZone as saved } from "../../../test/cookies.ts";
 import { role } from "../../../test/roles.ts";
-import { renderIn, type Scheme } from "../../../test/schemes.ts";
+import { renderIn } from "../../../test/schemes.ts";
 import { forgetTimeZone } from "../../playground/forgetTimeZone.ts";
-import { readTimeZone, type TimeZoneChoice } from "../timeZone/timeZone.ts";
+import type { TimeZoneChoice } from "../timeZone/timeZone.ts";
 import Layout from "../timeZone/TimeZoneLayout.test.svelte";
 import TimeZoneLine from "./TimeZoneLine.svelte";
 
 // The device is in Indianapolis; 2300Z on 20 October 2026 is 7:00 PM EDT
 // there and 6:00 PM CDT in Chicago.
-const INDY = "America/Indiana/Indianapolis";
-const NOW = new Date("2026-10-20T21:00:00Z");
 const PATH = "/src/lib/timeZone/TimeZoneLayout.test.svelte";
 
-beforeEach(async () => {
-  vi.useFakeTimers({ toFake: ["Date"], shouldAdvanceTime: true });
-  vi.setSystemTime(NOW);
-  await commands.emulateTimeZone(INDY);
-});
+pinClockInIndianapolis();
+afterEach(forgetTimeZone);
 
-afterEach(async () => {
-  vi.useRealTimers();
-  forgetTimeZone();
-  await commands.emulateTimeZone(null);
-});
-
-function saved() {
-  return readTimeZone({
-    get: (name) =>
-      document.cookie
-        .split("; ")
-        .find((pair) => pair.startsWith(`${name}=`))
-        ?.slice(name.length + 1),
-  });
-}
-
-function line(
-  props: {
-    choice?: TimeZoneChoice;
-    saveToProfile?: (setting: string) => unknown;
-  } = {},
-  scheme: Scheme = "light",
-) {
-  return renderIn(scheme, Layout, { ...props, line: true });
+function line(props: { choice?: TimeZoneChoice } = {}) {
+  return renderIn("light", Layout, { ...props, line: true });
 }
 
 /** The line's text, spaces collapsed. */
@@ -60,6 +26,8 @@ function textOf(element: Element | null) {
   return element?.textContent?.replace(/\s+/g, " ").trim();
 }
 
+// Saving a choice, and sending it to the profile, is setTimeZone's
+// (TimeZoneSetting's tests); here, which choice each button makes.
 describe("TimeZoneLine", () => {
   test("names the zone times are in, and offers Zulu", async () => {
     const screen = await line({
@@ -72,11 +40,9 @@ describe("TimeZoneLine", () => {
     );
   });
 
-  test("Show times in Zulu saves Zulu, applies it at once and sends it to the profile", async () => {
-    const saveToProfile = vi.fn();
+  test("Show times in Zulu chooses Zulu, applied at once", async () => {
     const screen = await line({
       choice: { kind: "zone", zone: "America/Chicago" },
-      saveToProfile,
     });
     await expect.element(screen.getByText("6:00 PM CDT")).toBeInTheDocument();
 
@@ -84,12 +50,10 @@ describe("TimeZoneLine", () => {
 
     await expect.element(screen.getByText("2300Z")).toBeInTheDocument();
     expect(saved()).toEqual({ kind: "zulu" });
-    await expect.poll(() => saveToProfile.mock.calls).toEqual([["zulu"]]);
   });
 
   test("in Zulu, offers the device's zone, which follows the device", async () => {
-    const saveToProfile = vi.fn();
-    const screen = await line({ choice: { kind: "zulu" }, saveToProfile });
+    const screen = await line({ choice: { kind: "zulu" } });
     const offer = screen.getByRole("button", {
       name: "Show them in Indianapolis time?",
     });
@@ -105,7 +69,6 @@ describe("TimeZoneLine", () => {
       kind: "device",
       zone: expect.stringMatching(/Indianapolis$/),
     });
-    await expect.poll(() => saveToProfile.mock.calls).toEqual([["device"]]);
   });
 
   test("with nothing saved, names the device's zone and saves nothing", async () => {
@@ -119,13 +82,13 @@ describe("TimeZoneLine", () => {
     expect(saved()).toBeUndefined();
   });
 
-  test.each(SCHEMES)("its colours follow the roles (%s)", async (scheme) => {
-    const screen = await line({ choice: { kind: "zulu" } }, scheme);
+  test("its colours follow the roles", async () => {
+    const screen = await line({ choice: { kind: "zulu" } });
     const offer = screen.getByRole("button", { name: /^Show them in/ });
-    await expect.element(offer).toHaveStyle({ color: role("link", scheme) });
+    await expect.element(offer).toHaveStyle({ color: role("link", "light") });
     await expect
       .element(offer.element().closest("p"))
-      .toHaveStyle({ color: role("muted-foreground", scheme) });
+      .toHaveStyle({ color: role("muted-foreground", "light") });
   });
 
   test("adds a caller's class and attributes to the line", async () => {

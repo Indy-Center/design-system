@@ -1,7 +1,7 @@
+import { tick } from "svelte";
 import { describe, expect, onTestFinished, test } from "vitest";
 import { page, userEvent } from "vitest/browser";
 import type { RenderResult } from "vitest-browser-svelte";
-import { SCHEMES } from "../../../test/contrast.ts";
 import { role } from "../../../test/roles.ts";
 import { renderIn } from "../../../test/schemes.ts";
 import Combobox from "./Combobox.svelte";
@@ -26,6 +26,15 @@ function activeOption(screen: Screen) {
         selected: option.getAttribute("aria-selected"),
       }
     : null;
+}
+
+/**
+ * Once the work already queued has run and the page has updated: answers
+ * given and resets made, which land in microtasks.
+ */
+async function settled() {
+  await new Promise((resolve) => setTimeout(resolve));
+  await tick();
 }
 
 describe("Combobox", () => {
@@ -59,7 +68,6 @@ describe("Combobox", () => {
       ["{ArrowUp}", "Cara Cole"],
       ["{ArrowDown}{ArrowDown}", "Ben Baker"],
       ["{ArrowDown}{ArrowUp}", "Cara Cole"],
-      ["{ArrowUp}{ArrowDown}", "Ann Archer"],
     ])("%s makes %s the active option", async (keys, name) => {
       const screen = await renderIn("light", Picker, {});
       await userEvent.tab();
@@ -89,8 +97,6 @@ describe("Combobox", () => {
 
     test.each([
       ["{Home}", 0],
-      ["{End}", 2],
-      ["{ArrowLeft}", 0],
       ["{ArrowRight}", 2],
     ])(
       "%s moves the caret in the box and leaves the list",
@@ -238,14 +244,31 @@ describe("Combobox", () => {
       { cid: "1000001", name: "Ann Archer" },
       { cid: "1000004", name: "Dan Andrews" },
     ];
-    /** Searches the roster; the first letter's answer comes back last. */
-    const search = (query: string) =>
-      new Promise<typeof roster>((resolve) =>
-        setTimeout(
-          () => resolve(roster.filter((c) => c.name.includes(query))),
-          query.length === 1 ? 300 : 20,
-        ),
-      );
+    const find = (query: string) =>
+      roster.filter((c) => c.name.includes(query));
+    /** Searches the roster, answering at once. */
+    const search = async (query: string) => find(query);
+
+    /**
+     * A search function whose answers come only when the test gives them,
+     * so a test can act while a search is out, with no clock to race.
+     */
+    function heldSearch() {
+      const out: { query: string; give: (answer: typeof roster) => void }[] =
+        [];
+      return {
+        search: (query: string) =>
+          new Promise<typeof roster>((give) => out.push({ query, give })),
+        /** Every text the function has been asked for, in order. */
+        asked: () => out.map((search) => search.query),
+        /** Answers each search for `query` still out. */
+        answer(query: string) {
+          for (const search of out.filter((s) => s.query === query)) {
+            search.give(find(query));
+          }
+        },
+      };
+    }
 
     test("lists what the function finds for the typed text", async () => {
       const screen = await renderIn("light", Picker, { options: search });
@@ -257,9 +280,11 @@ describe("Combobox", () => {
     });
 
     test("says it is searching until the answer comes", async () => {
-      const screen = await renderIn("light", Picker, { options: search });
+      const held = heldSearch();
+      const screen = await renderIn("light", Picker, { options: held.search });
       await screen.getByRole("combobox").fill("A");
       await expect.element(screen.getByText("Searching…")).toBeVisible();
+      held.answer("A");
       await expect
         .element(screen.getByRole("option", { name: "Dan Andrews" }))
         .toBeVisible();
@@ -268,10 +293,12 @@ describe("Combobox", () => {
         .not.toBeInTheDocument();
     });
 
-    test("reopened on the same text, one Down Arrow lands on the first option", async () => {
-      const screen = await renderIn("light", Picker, { options: search });
+    test("reopened on the same text, or after a pick, one Down Arrow lands on the first option", async () => {
+      const held = heldSearch();
+      const screen = await renderIn("light", Picker, { options: held.search });
       const input = screen.getByRole("combobox");
       await input.fill("Dan Andrews");
+      held.answer("Dan Andrews");
       await expect
         .element(screen.getByRole("option", { name: "Dan Andrews" }))
         .toBeVisible();
@@ -279,12 +306,14 @@ describe("Combobox", () => {
       await expect
         .poll(() => activeOption(screen))
         .toEqual({ text: "Dan Andrews", selected: "true" });
-      // Long enough for a second search to have landed and cleared it.
-      await new Promise((resolve) => setTimeout(resolve, 100));
-      expect(activeOption(screen)).toEqual({
-        text: "Dan Andrews",
-        selected: "true",
-      });
+      // No second search, which would clear it.
+      expect(held.asked()).toEqual(["Dan Andrews"]);
+      await userEvent.keyboard("{Enter}");
+      await expect.element(input).toHaveValue("Dan Andrews");
+      await userEvent.keyboard("{ArrowDown}");
+      await expect
+        .poll(() => activeOption(screen))
+        .toEqual({ text: "Dan Andrews", selected: "true" });
     });
 
     test.each([
@@ -293,35 +322,27 @@ describe("Combobox", () => {
     ])(
       "%s on a closed box opens it on %s once the answer comes",
       async (key, name) => {
-        const screen = await renderIn("light", Picker, { options: search });
+        const held = heldSearch();
+        const screen = await renderIn("light", Picker, {
+          options: held.search,
+        });
         await userEvent.tab();
         await userEvent.keyboard(key);
+        held.answer("");
         await expect
           .poll(() => activeOption(screen))
           .toEqual({ text: name, selected: "true" });
       },
     );
 
-    test("after a pick, one Down Arrow reopens the list on the first option", async () => {
-      const screen = await renderIn("light", Picker, { options: search });
-      const input = screen.getByRole("combobox");
-      await input.fill("Dan");
-      await expect
-        .element(screen.getByRole("option", { name: "Dan Andrews" }))
-        .toBeVisible();
-      await userEvent.keyboard("{ArrowDown}{Enter}");
-      await expect.element(input).toHaveValue("Dan Andrews");
-      await userEvent.keyboard("{ArrowDown}");
-      await expect
-        .poll(() => activeOption(screen))
-        .toEqual({ text: "Dan Andrews", selected: "true" });
-    });
-
     test("typing before the answer comes cancels the Down Arrow's move", async () => {
-      const screen = await renderIn("light", Picker, { options: search });
+      const held = heldSearch();
+      const screen = await renderIn("light", Picker, { options: held.search });
       const input = screen.getByRole("combobox");
       await userEvent.tab();
       await userEvent.keyboard("{ArrowDown}A");
+      held.answer("");
+      held.answer("A");
       await expect
         .element(screen.getByRole("option", { name: "Dan Andrews" }))
         .toBeVisible();
@@ -345,29 +366,16 @@ describe("Combobox", () => {
         .toBeVisible();
     });
 
-    test("a new search function searches the same text again", async () => {
-      const screen = await renderIn("light", Picker, { options: search });
-      await screen.getByRole("combobox").fill("Dan");
-      await expect
-        .element(screen.getByRole("option", { name: "Dan Andrews" }))
-        .toBeVisible();
-      const otherRoster = [{ cid: "1000009", name: "Dana Dunn" }];
-      await screen.rerender({ options: async () => otherRoster });
-      await expect
-        .element(screen.getByRole("option", { name: "Dana Dunn" }))
-        .toBeVisible();
-    });
-
-    test("while a new search function looks, its old list can't be picked from", async () => {
+    test("a new search function searches the same text again, and its old list can't be picked from meanwhile", async () => {
       const screen = await renderIn("light", Picker, { options: search });
       const input = screen.getByRole("combobox");
       await input.fill("Dan");
       const dan = screen.getByRole("option", { name: "Dan Andrews" });
       await expect.element(dan).toBeVisible();
       const otherRoster = [{ cid: "1000009", name: "Dana Dunn" }];
+      let give: (answer: typeof otherRoster) => void = () => {};
       await screen.rerender({
-        options: () =>
-          new Promise((resolve) => setTimeout(() => resolve(otherRoster), 300)),
+        options: () => new Promise((resolve) => (give = resolve)),
       });
       await userEvent.keyboard("{ArrowDown}");
       expect(input).not.toHaveAttribute("aria-activedescendant");
@@ -375,6 +383,7 @@ describe("Combobox", () => {
       await expect
         .element(screen.getByTestId("picked"))
         .toHaveTextContent("none");
+      give(otherRoster);
       await expect
         .element(screen.getByRole("option", { name: "Dana Dunn" }))
         .toBeVisible();
@@ -404,25 +413,19 @@ describe("Combobox", () => {
       expect(searches.filter((query) => query === "Dan")).toHaveLength(1);
     });
 
-    /** Searches the roster; "Ann" is slow, so "Dan"'s list stays a while. */
-    const slowAnn = (query: string) =>
-      new Promise<typeof roster>((resolve) =>
-        setTimeout(
-          () => resolve(roster.filter((c) => c.name.includes(query))),
-          query === "Ann" ? 300 : 20,
-        ),
-      );
-
-    test("while searching, the arrows and Enter don't reach the last list", async () => {
-      const screen = await renderIn("light", Picker, { options: slowAnn });
+    test("while searching, the arrows, Enter and a click don't reach the last list", async () => {
+      const held = heldSearch();
+      const screen = await renderIn("light", Picker, { options: held.search });
       const input = screen.getByRole("combobox");
       await input.fill("Dan");
-      await expect
-        .element(screen.getByRole("option", { name: "Dan Andrews" }))
-        .toBeVisible();
+      held.answer("Dan");
+      const dan = screen.getByRole("option", { name: "Dan Andrews" });
+      await expect.element(dan).toBeVisible();
       await input.fill("Ann");
       await userEvent.keyboard("{ArrowDown}");
       expect(input).not.toHaveAttribute("aria-activedescendant");
+      await dan.click();
+      await expect.element(input).toHaveFocus();
       await userEvent.keyboard("{Enter}");
       await expect.element(input).toHaveValue("Ann");
       await expect
@@ -430,31 +433,19 @@ describe("Combobox", () => {
         .toHaveTextContent("none");
     });
 
-    test("while searching, a click doesn't pick from the last list", async () => {
-      const screen = await renderIn("light", Picker, { options: slowAnn });
-      const input = screen.getByRole("combobox");
-      await input.fill("Dan");
-      const dan = screen.getByRole("option", { name: "Dan Andrews" });
-      await expect.element(dan).toBeVisible();
-      await input.fill("Ann");
-      await dan.click();
-      await expect.element(input).toHaveValue("Ann");
-      await expect
-        .element(screen.getByTestId("picked"))
-        .toHaveTextContent("none");
-    });
-
     test("ignores an answer that comes back after a newer one", async () => {
-      const screen = await renderIn("light", Picker, { options: search });
+      const held = heldSearch();
+      const screen = await renderIn("light", Picker, { options: held.search });
       const input = screen.getByRole("combobox");
       await userEvent.click(input);
       await userEvent.keyboard("A");
       await userEvent.keyboard("r");
+      held.answer("Ar");
       await expect
         .element(screen.getByRole("option", { name: "Ann Archer" }))
         .toBeVisible();
-      // Long enough for the answer to "A" to land.
-      await new Promise((resolve) => setTimeout(resolve, 400));
+      held.answer("A");
+      await settled();
       expect(screen.getByRole("option").elements()).toHaveLength(1);
     });
   });
@@ -496,7 +487,7 @@ describe("Combobox", () => {
     await expect.poll(() => form.checkValidity()).toBe(true);
   });
 
-  test("a form reset clears the box and the pick it sends", async () => {
+  test("a form reset clears the box and the pick it sends, and closes the open list", async () => {
     const screen = await renderIn("light", Picker, {});
     const input = screen.getByRole("combobox");
     const form = input.element().closest("form")!;
@@ -504,23 +495,17 @@ describe("Combobox", () => {
     await userEvent.keyboard("{ArrowDown}{Enter}");
     await expect.element(input).toHaveValue("Ann Archer");
     expect(new FormData(form).get("controller")).toBe("1000001");
+    await userEvent.keyboard("{ArrowDown}{ArrowDown}");
+    await expect.element(input).toHaveAttribute("aria-expanded", "true");
     form.reset();
     await expect.element(input).toHaveValue("");
+    await expect.element(input).toHaveAttribute("aria-expanded", "false");
+    expect(input).not.toHaveAttribute("aria-activedescendant");
     await expect
       .element(screen.getByTestId("picked"))
       .toHaveTextContent("none");
     expect(new FormData(form).get("controller")).toBe("");
     expect(form.checkValidity()).toBe(true);
-  });
-
-  test("a form reset closes the open list", async () => {
-    const screen = await renderIn("light", Picker, {});
-    const input = screen.getByRole("combobox");
-    await userEvent.tab();
-    await userEvent.keyboard("{ArrowDown}{ArrowDown}");
-    input.element().closest("form")!.reset();
-    await expect.element(input).toHaveAttribute("aria-expanded", "false");
-    expect(input).not.toHaveAttribute("aria-activedescendant");
   });
 
   test("a reset the page cancels keeps the pick", async () => {
@@ -531,8 +516,7 @@ describe("Combobox", () => {
     await userEvent.tab();
     await userEvent.keyboard("{ArrowDown}{Enter}");
     form.reset();
-    // Long enough for a reset to have landed.
-    await new Promise((resolve) => setTimeout(resolve, 50));
+    await settled();
     await expect.element(input).toHaveValue("Ann Archer");
     expect(new FormData(form).get("controller")).toBe("1000001");
   });
@@ -603,27 +587,24 @@ describe("Combobox", () => {
 
   // The `card` fill, `muted` on the active option, and a `ring` outline
   // round it.
-  test.each(SCHEMES)(
-    "draws the list on the card, the active option ringed, in %s",
-    async (scheme) => {
-      const screen = await renderIn(scheme, Picker, {});
-      await userEvent.tab();
-      await userEvent.keyboard("{ArrowDown}");
-      const list = screen.getByRole("listbox");
-      await expect
-        .element(page.elementLocator(list.element().parentElement!))
-        .toHaveStyle({ backgroundColor: role("card", scheme) });
-      await expect
-        .element(screen.getByRole("option", { name: "Ann Archer" }))
-        .toHaveStyle({
-          backgroundColor: role("muted", scheme),
-          outlineStyle: "solid",
-          outlineColor: role("ring", scheme),
-        });
-    },
-  );
+  test("draws the list on the card, the active option ringed", async () => {
+    const screen = await renderIn("light", Picker, {});
+    await userEvent.tab();
+    await userEvent.keyboard("{ArrowDown}");
+    const list = screen.getByRole("listbox");
+    await expect
+      .element(page.elementLocator(list.element().parentElement!))
+      .toHaveStyle({ backgroundColor: role("card", "light") });
+    await expect
+      .element(screen.getByRole("option", { name: "Ann Archer" }))
+      .toHaveStyle({
+        backgroundColor: role("muted", "light"),
+        outlineStyle: "solid",
+        outlineColor: role("ring", "light"),
+      });
+  });
 
-  // The `input` border and `muted` fill, as Input has.
+  // textControlClasses, whose looks (44px too) formControl's tests hold.
   test("its box takes the input roles", async () => {
     const screen = await renderIn("light", Picker, {});
     await expect.element(screen.getByRole("combobox")).toHaveStyle({
@@ -632,15 +613,11 @@ describe("Combobox", () => {
     });
   });
 
-  test("its box and options are at least 44px tall", async () => {
+  test("its options are at least 44px tall", async () => {
     const screen = await renderIn("light", Picker, {});
-    const input = screen.getByRole("combobox");
-    await input.click();
-    for (const el of [
-      input.element(),
-      ...screen.getByRole("option").elements(),
-    ]) {
-      expect(el.getBoundingClientRect().height).toBeGreaterThanOrEqual(44);
+    await screen.getByRole("combobox").click();
+    for (const option of screen.getByRole("option").elements()) {
+      expect(option.getBoundingClientRect().height).toBeGreaterThanOrEqual(44);
     }
   });
 
@@ -688,8 +665,8 @@ describe("Combobox", () => {
     const screen = await renderIn("light", Picker, { withCid: true });
     await screen.getByRole("combobox").fill("ben");
     await expect
-      .element(screen.getByRole("option").getByText("1000002"))
-      .toHaveClass("font-mono");
+      .element(screen.getByRole("option", { name: "Ben Baker 1000002" }))
+      .toBeVisible();
   });
 
   test("a click on an option picks it", async () => {

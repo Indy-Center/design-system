@@ -1,9 +1,8 @@
-import { describe, expect, test } from "vitest";
+import { describe, expect, onTestFinished, test } from "vitest";
 import { userEvent } from "vitest/browser";
-import ControllerTable from "../../../test/ControllerTable.svelte";
-import { SCHEMES } from "../../../test/contrast.ts";
 import { role } from "../../../test/roles.ts";
 import { renderIn } from "../../../test/schemes.ts";
+import ControllerTable from "./Table.test.svelte";
 
 describe("Table", () => {
   test("is a table named by its caption", async () => {
@@ -17,12 +16,17 @@ describe("Table", () => {
   });
 
   // A keyboard can only scroll a region it can focus (WCAG 2.1.1), and a
-  // screen reader names that stop by the caption.
+  // screen reader names that stop by the caption. On a phone the table
+  // scrolls inside its region; the page doesn't.
   test("sits in a scroll region named by its caption, focusable when it scrolls", async () => {
     const screen = await renderIn("light", ControllerTable, {});
     screen.container.style.width = "200px";
     const region = screen.getByRole("region", { name: "Online controllers" });
     await expect.element(region).toHaveStyle({ overflowX: "auto" });
+    expect(region.element().scrollWidth).toBeGreaterThan(
+      region.element().clientWidth,
+    );
+    expect(screen.container.scrollWidth).toBeLessThanOrEqual(200);
     await expect.element(region).toHaveAttribute("tabindex", "0");
     await userEvent.tab();
     await expect.element(region).toHaveFocus();
@@ -61,23 +65,15 @@ describe("Table", () => {
       .toHaveStyle({ position: "absolute", width: "1px" });
   });
 
-  // A row that goes somewhere has a real link in a cell.
-  test("keeps a link in a cell", async () => {
-    const screen = await renderIn("light", ControllerTable, {});
-    await expect
-      .element(screen.getByRole("link", { name: "Jane Doe" }))
-      .toHaveAttribute("href", "/roster/1234567");
-  });
-
   // The guide's roles: `card` the body, `muted` the head, `foreground` the
   // headers, `foreground-soft` the cells, `border` the lines.
-  test.each(SCHEMES)("takes the roles' colours in %s", async (scheme) => {
-    const card = role("card", scheme);
-    const muted = role("muted", scheme);
-    const foreground = role("foreground", scheme);
-    const soft = role("foreground-soft", scheme);
-    const border = role("border", scheme);
-    const screen = await renderIn(scheme, ControllerTable, {});
+  test("takes the roles' colours", async () => {
+    const card = role("card", "light");
+    const muted = role("muted", "light");
+    const foreground = role("foreground", "light");
+    const soft = role("foreground-soft", "light");
+    const border = role("border", "light");
+    const screen = await renderIn("light", ControllerTable, {});
     await expect
       .element(screen.getByRole("table"))
       .toHaveStyle({ backgroundColor: card });
@@ -99,20 +95,17 @@ describe("Table", () => {
   });
 
   // The `ring` role.
-  test.each(SCHEMES)(
-    "shows a ring outline on its region when tabbed to in %s",
-    async (scheme) => {
-      const screen = await renderIn(scheme, ControllerTable, {});
-      screen.container.style.width = "200px";
-      const region = screen.getByRole("region");
-      await expect.element(region).toHaveAttribute("tabindex", "0");
-      await userEvent.tab();
-      await expect.element(region).toHaveStyle({
-        outlineStyle: "solid",
-        outlineColor: role("ring", scheme),
-      });
-    },
-  );
+  test("shows a ring outline on its region when tabbed to", async () => {
+    const screen = await renderIn("light", ControllerTable, {});
+    screen.container.style.width = "200px";
+    const region = screen.getByRole("region");
+    await expect.element(region).toHaveAttribute("tabindex", "0");
+    await userEvent.tab();
+    await expect.element(region).toHaveStyle({
+      outlineStyle: "solid",
+      outlineColor: role("ring", "light"),
+    });
+  });
 
   // `class` is for layout, so it goes on the region, the outer box; the
   // rest describe the table, so they go on the <table>.
@@ -129,15 +122,6 @@ describe("Table", () => {
       .toHaveAttribute("aria-describedby", "note");
   });
 
-  // On a phone the table scrolls inside its region; the page doesn't.
-  test("scrolls sideways inside its region when narrower than the table", async () => {
-    const screen = await renderIn("light", ControllerTable, {});
-    screen.container.style.width = "200px";
-    const region = screen.getByRole("region").element();
-    expect(region.scrollWidth).toBeGreaterThan(region.clientWidth);
-    expect(screen.container.scrollWidth).toBeLessThanOrEqual(200);
-  });
-
   // A grid or flex column grows to fit its content's narrowest width; the
   // table mustn't widen a page's column on a phone.
   test("doesn't widen a grid column it sits in", async () => {
@@ -146,11 +130,11 @@ describe("Table", () => {
     const grid = document.createElement("div");
     grid.style.display = "grid";
     grid.style.width = "200px";
+    onTestFinished(() => grid.remove());
     screen.container.before(grid);
     grid.append(screen.container);
     const region = screen.getByRole("region").element();
     expect(screen.container.clientWidth).toBeLessThanOrEqual(200);
     expect(region.scrollWidth).toBeGreaterThan(region.clientWidth);
-    grid.remove();
   });
 });

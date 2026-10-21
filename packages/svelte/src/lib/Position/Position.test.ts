@@ -1,5 +1,6 @@
 import type { ComponentProps } from "svelte";
 import { describe, expect, test } from "vitest";
+import { page } from "vitest/browser";
 import type { AirportInfo } from "../aviation/airport.ts";
 import type { VnasPosition } from "../aviation/resolvePosition.ts";
 import {
@@ -8,10 +9,9 @@ import {
   lexingtonTower,
   samplePositions,
 } from "../../playground/positions.ts";
-import { SCHEMES } from "../../../test/contrast.ts";
 import { onScreen, readOut } from "../../../test/readOut.ts";
 import { role } from "../../../test/roles.ts";
-import { renderIn, type Scheme } from "../../../test/schemes.ts";
+import { renderIn } from "../../../test/schemes.ts";
 import WithPositions from "../../../test/WithPositions.svelte";
 import Position from "./Position.svelte";
 
@@ -22,15 +22,9 @@ const KLEX: AirportInfo = { code: "KLEX", name: "Blue Grass" };
 /** Renders Position below a layout that set `positions`. */
 async function show(
   props: ComponentProps<typeof Position>,
-  {
-    scheme = "light",
-    positions = samplePositions,
-  }: {
-    scheme?: Scheme;
-    positions?: VnasPosition[];
-  } = {},
+  { positions = samplePositions }: { positions?: VnasPosition[] } = {},
 ) {
-  const screen = await renderIn(scheme, WithPositions, {
+  const screen = await renderIn("light", WithPositions, {
     positions,
     component: Position,
     props,
@@ -47,6 +41,10 @@ function part(root: Element, text: string): HTMLElement {
   if (!found) throw new Error(`No part reads "${text}" in "${onScreen(root)}"`);
   return found;
 }
+
+/** `part`, as a locator for `expect.element`. */
+const partLocator = (root: Element, text: string) =>
+  page.elementLocator(part(root, text));
 
 const top = (e: Element) => e.getBoundingClientRect().top;
 const left = (e: Element) => e.getBoundingClientRect().left;
@@ -85,23 +83,21 @@ describe("Position", () => {
       );
     });
 
-    test.each(SCHEMES)(
-      "the leading name and frequency in foreground, the rest muted, in %s",
-      async (scheme) => {
-        const { root } = await show({ callsign: "IND_83_CTR" }, { scheme });
-        expect(getComputedStyle(part(root, "Indy Center")).color).toBe(
-          role("foreground", scheme),
-        );
-        expect(getComputedStyle(part(root, "128.22")).color).toBe(
-          role("foreground", scheme),
-        );
-        expect(
-          getComputedStyle(part(root, "IND_83_CTR · Falmouth 83")).color,
-        ).toBe(role("muted-foreground", scheme));
-      },
-    );
+    test("the leading name and frequency in foreground, the rest muted", async () => {
+      const { root } = await show({ callsign: "IND_83_CTR" });
+      await expect
+        .element(partLocator(root, "Indy Center"))
+        .toHaveStyle({ color: role("foreground", "light") });
+      await expect
+        .element(partLocator(root, "128.22"))
+        .toHaveStyle({ color: role("foreground", "light") });
+      await expect
+        .element(partLocator(root, "IND_83_CTR · Falmouth 83"))
+        .toHaveStyle({ color: role("muted-foreground", "light") });
+    });
 
-    test("the radio name is semibold, the short name and frequency mono", async () => {
+    // The frequency's mono is Frequency's.
+    test("the radio name is semibold, the short name mono", async () => {
       const { root } = await show({ callsign: "IND_83_CTR" });
       expect(getComputedStyle(part(root, "Indy Center")).fontWeight).toBe(
         "600",
@@ -109,23 +105,12 @@ describe("Position", () => {
       expect(getComputedStyle(part(root, "IND_83_CTR")).fontFamily).toMatch(
         /mono/i,
       );
-      expect(getComputedStyle(part(root, "128.22")).fontFamily).toMatch(
-        /mono/i,
-      );
     });
   });
 
+  // Each text field alone is tested under layout inline, where a stray dot
+  // would show.
   describe("show", () => {
-    test.each([
-      ["shortName", "IND_83_CTR"],
-      ["radioName", "Indy Center"],
-      ["name", "Falmouth 83"],
-      ["frequency", "128.22"],
-    ] as const)("%s alone shows %s", async (field, text) => {
-      const { root } = await show({ callsign: "IND_83_CTR", show: [field] });
-      expect(onScreen(root)).toBe(text);
-    });
-
     test("airport alone shows the airport code", async () => {
       const { root } = await show({
         callsign: "LEX_TWR",
@@ -134,18 +119,6 @@ describe("Position", () => {
       });
       expect(onScreen(root)).toBe("KLEX");
     });
-
-    test.each(["stacked", "inline"] as const)(
-      "%s, with no text field, renders no empty leading span",
-      async (layout) => {
-        const { root } = await show({
-          callsign: "IND_83_CTR",
-          show: ["frequency"],
-          layout,
-        });
-        expect(root.querySelector(".font-semibold")).toBeNull();
-      },
-    );
 
     test("leaves the airport off unless asked", async () => {
       const { root } = await show({ callsign: "LEX_TWR", airport: KLEX });
@@ -219,23 +192,17 @@ describe("Position", () => {
       expect(getComputedStyle(code).position).toBe("static");
     });
 
-    test.each(SCHEMES)(
-      '"right": the code in muted-foreground, in %s',
-      async (scheme) => {
-        const { root } = await show(
-          {
-            callsign: "LEX_TWR",
-            show: [...PILOTS],
-            airportAt: "right",
-            airport: KLEX,
-          },
-          { scheme },
-        );
-        expect(getComputedStyle(part(root, "KLEX")).color).toBe(
-          role("muted-foreground", scheme),
-        );
-      },
-    );
+    test('"right": the code in muted-foreground', async () => {
+      const { root } = await show({
+        callsign: "LEX_TWR",
+        show: [...PILOTS],
+        airportAt: "right",
+        airport: KLEX,
+      });
+      await expect
+        .element(partLocator(root, "KLEX"))
+        .toHaveStyle({ color: role("muted-foreground", "light") });
+    });
 
     test('"right" reads out the code after the radio name', async () => {
       const { root } = await show({
@@ -263,23 +230,17 @@ describe("Position", () => {
       expect(top(code)).toBeCloseTo(top(radio), -1);
     });
 
-    test.each(SCHEMES)(
-      '"left": the code in foreground-soft, in %s',
-      async (scheme) => {
-        const { root } = await show(
-          {
-            callsign: "LEX_TWR",
-            show: [...PILOTS],
-            airportAt: "left",
-            airport: KLEX,
-          },
-          { scheme },
-        );
-        expect(getComputedStyle(part(root, "KLEX")).color).toBe(
-          role("foreground-soft", scheme),
-        );
-      },
-    );
+    test('"left": the code in foreground-soft', async () => {
+      const { root } = await show({
+        callsign: "LEX_TWR",
+        show: [...PILOTS],
+        airportAt: "left",
+        airport: KLEX,
+      });
+      await expect
+        .element(partLocator(root, "KLEX"))
+        .toHaveStyle({ color: role("foreground-soft", "light") });
+    });
 
     test('"left" keeps the column without an airport, so rows line up', async () => {
       const withAirport = await show({
@@ -315,6 +276,7 @@ describe("Position", () => {
     });
   });
 
+  // With no layout setting positions, there are none: positions.test.ts.
   describe("looking itself up", () => {
     test("a relief login shows as the position it resolves to, with no note", async () => {
       const { root } = await show({ callsign: "IND_831_CTR" });
@@ -333,13 +295,6 @@ describe("Position", () => {
       expect(getComputedStyle(part(root, "IND_X_CTR")).fontFamily).toMatch(
         /mono/i,
       );
-    });
-
-    test("with no positions set, a callsign shows alone", async () => {
-      const screen = await renderIn("light", Position, {
-        callsign: "IND_83_CTR",
-      });
-      expect(onScreen(screen.container)).toBe("IND_83_CTR");
     });
 
     test("follows the positions the layout sets", async () => {

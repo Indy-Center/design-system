@@ -12,25 +12,12 @@ function byCallsign(callsign: string): VnasPosition {
 }
 
 describe("resolvePosition", () => {
-  test("matches a callsign exactly", () => {
-    expect(resolvePosition("IND_83_CTR", positions)).toEqual({
-      match: "exact",
-      position: byCallsign("IND_83_CTR"),
-    });
-  });
-
-  test.each([
-    // A trailing digit dropped from the middle part.
-    ["IND_831_CTR", "IND_83_CTR"],
-    ["IND_E1_APP", "IND_E_APP"],
-    ["CVG_11_RMP", "CVG_1_RMP"],
-    // An all-digit middle part dropped.
-    ["IND_1_GND", "IND_GND"],
-    ["LEX_12_TWR", "LEX_TWR"],
-  ])("resolves the relief login %s to %s", (login, callsign) => {
-    expect(resolvePosition(login, positions)).toEqual({
+  // One digit added is tried against every position below; this is a
+  // middle of more than one digit dropped.
+  test("resolves the relief login LEX_12_TWR to LEX_TWR", () => {
+    expect(resolvePosition("LEX_12_TWR", positions)).toEqual({
       match: "relief",
-      position: byCallsign(callsign),
+      position: byCallsign("LEX_TWR"),
     });
   });
 
@@ -63,15 +50,16 @@ describe("resolvePosition", () => {
 });
 
 describe("the relief rule against all of ZID's positions", () => {
-  test("every callsign resolves to its own position", () => {
+  test("every callsign matches its own position exactly", () => {
     for (const position of positions) {
-      expect(resolvePosition(position.callsign, positions)?.position).toBe(
+      expect(resolvePosition(position.callsign, positions)).toEqual({
+        match: "exact",
         position,
-      );
+      });
     }
   });
 
-  test("a relief login of each, with any digit, resolves to it", () => {
+  test("a relief login of each, with any digit, resolves to it as relief", () => {
     for (const position of positions) {
       const [prefix, middle, type] = position.callsign.split("_");
       for (const digit of "0123456789") {
@@ -81,7 +69,10 @@ describe("the relief rule against all of ZID's positions", () => {
               `${prefix}_${digit}_${middle}`
             : // A digit added to the middle, IND_83_CTR as IND_831_CTR.
               `${prefix}_${middle}${digit}_${type}`;
-        expect(resolvePosition(login, positions)?.position).toBe(position);
+        expect(resolvePosition(login, positions)).toEqual({
+          match: "relief",
+          position,
+        });
       }
     }
   });

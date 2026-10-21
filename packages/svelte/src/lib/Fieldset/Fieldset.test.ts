@@ -1,7 +1,5 @@
 import { createRawSnippet } from "svelte";
 import { describe, expect, test } from "vitest";
-import { page } from "vitest/browser";
-import { SCHEMES } from "../../../test/contrast.ts";
 import { role } from "../../../test/roles.ts";
 import { renderIn } from "../../../test/schemes.ts";
 import Fieldset from "./Fieldset.svelte";
@@ -23,60 +21,39 @@ describe("Fieldset", () => {
       .toContainElement(screen.getByRole("radio", { name: "Tower" }).element());
   });
 
-  test("describes the group with its hint and its error", async () => {
+  // The order of the ids is describedBy's, in formControl's tests.
+  test("describes the group with its hint and its error, after a caller's ids", async () => {
     const screen = await renderIn("light", Fieldset, {
       legend: "Position",
       hint: "The one you'll train on first.",
       error: "Choose a position.",
-      children: options,
-    });
-    await expect
-      .element(screen.getByRole("group", { name: "Position" }))
-      .toHaveAccessibleDescription(
-        "The one you'll train on first. Choose a position.",
-      );
-  });
-
-  test("keeps a caller's aria-describedby before its own hint", async () => {
-    const screen = await renderIn("light", Fieldset, {
-      legend: "Position",
-      hint: "The one you'll train on first.",
       "aria-describedby": "intro",
       children: options,
     });
-    const ids = screen
-      .getByRole("group")
-      .element()
-      .getAttribute("aria-describedby")!
-      .split(" ");
-    expect(ids[0]).toBe("intro");
-    expect(document.getElementById(ids[1])).toHaveTextContent(
-      "The one you'll train on first.",
-    );
+    const group = screen.getByRole("group", { name: "Position" });
+    await expect
+      .element(group)
+      .toHaveAccessibleDescription(
+        "The one you'll train on first. Choose a position.",
+      );
+    await expect
+      .element(group)
+      .toHaveAttribute("aria-describedby", expect.stringMatching(/^intro /));
   });
 
   test.each(["checkbox", "switch"] as const)(
-    "with an error, marks its %ses invalid",
-    async (options) => {
-      const screen = await renderIn("light", Options, {
-        options,
-        error: "Choose at least one.",
-      });
-      for (const name of ["Ground", "Tower"]) {
-        await expect
-          .element(screen.getByRole(options, { name }))
-          .toHaveAttribute("aria-invalid", "true");
-      }
-    },
-  );
-
-  test.each(["checkbox", "switch"] as const)(
-    "with no error, leaves its %ses valid",
+    "leaves its %ses valid with no error, and marks them invalid with one",
     async (options) => {
       const screen = await renderIn("light", Options, { options });
       await expect
         .element(screen.getByRole(options, { name: "Ground" }))
         .not.toHaveAttribute("aria-invalid");
+      await screen.rerender({ options, error: "Choose at least one." });
+      for (const name of ["Ground", "Tower"]) {
+        await expect
+          .element(screen.getByRole(options, { name }))
+          .toHaveAttribute("aria-invalid", "true");
+      }
     },
   );
 
@@ -97,35 +74,6 @@ describe("Fieldset", () => {
       .not.toBeRequired();
   });
 
-  test("has no description with neither hint nor error", async () => {
-    const screen = await renderIn("light", Fieldset, {
-      legend: "Position",
-      children: options,
-    });
-    await expect
-      .element(screen.getByRole("group"))
-      .not.toHaveAttribute("aria-describedby");
-  });
-
-  test("gives each fieldset its own ids", async () => {
-    await renderIn("light", Fieldset, {
-      legend: "First",
-      hint: "First hint.",
-      children: options,
-    });
-    await renderIn("light", Fieldset, {
-      legend: "Second",
-      hint: "Second hint.",
-      children: options,
-    });
-    await expect
-      .element(page.getByRole("group", { name: "First" }))
-      .toHaveAccessibleDescription("First hint.");
-    await expect
-      .element(page.getByRole("group", { name: "Second" }))
-      .toHaveAccessibleDescription("Second hint.");
-  });
-
   // A checkbox group can't carry `required` on its boxes, so the legend says it.
   test("says required in words in the legend, read in the group's name", async () => {
     const screen = await renderIn("light", Fieldset, {
@@ -139,28 +87,17 @@ describe("Fieldset", () => {
       .toBeInTheDocument();
   });
 
-  // The guide's roles: `foreground-soft` legend, `muted-foreground` hint,
-  // `destructive` error.
-  test.each(SCHEMES)(
-    "colours the legend, hint and error in %s",
-    async (scheme) => {
-      const screen = await renderIn(scheme, Fieldset, {
-        legend: "Position",
-        hint: "The one you'll train on first.",
-        error: "Choose a position.",
-        children: options,
-      });
-      await expect
-        .element(screen.container.querySelector("legend")!)
-        .toHaveStyle({ color: role("foreground-soft", scheme) });
-      await expect
-        .element(screen.getByText("The one you'll train on first."))
-        .toHaveStyle({ color: role("muted-foreground", scheme) });
-      await expect
-        .element(screen.getByText("Choose a position."))
-        .toHaveStyle({ color: role("destructive", scheme) });
-    },
-  );
+  // The guide's `foreground-soft` legend. The hint's and error's colours
+  // are Description's, which formControl's tests hold.
+  test("colours the legend", async () => {
+    const screen = await renderIn("light", Fieldset, {
+      legend: "Position",
+      children: options,
+    });
+    await expect
+      .element(screen.container.querySelector("legend")!)
+      .toHaveStyle({ color: role("foreground-soft", "light") });
+  });
 
   test("adds a caller's class and attributes to its own", async () => {
     const screen = await renderIn("light", Fieldset, {

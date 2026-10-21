@@ -91,7 +91,8 @@ Each component's doc page ships beside it, as
 - `npm run dev`: the playground, which shows each component in light, in
   dark and in a dark header on a light page.
 - `npm test`: builds the tokens and this package, then runs each
-  component's tests in headless Chromium and checks the packed files. Where
+  component's tests in headless Chromium, and the pure modules' tests
+  (`*.node.test.ts`) and the packed files' checks in Node. Where
   Playwright's own Chromium isn't installed, point `CHROMIUM_PATH` at
   another Chromium build.
 - `npm run check`, `npm run build`.

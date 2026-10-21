@@ -40,20 +40,7 @@ describe("setPositions and getPositions", () => {
     await expect.element(screen.getByText("IND_X_GND: unknown")).toBeVisible();
   });
 
-  test("lookups follow when the layout's positions change", async () => {
-    const screen = await render(Layout, {
-      positions: [],
-      callsigns: ["IND_83_CTR"],
-    });
-    await expect.element(screen.getByText("IND_83_CTR: unknown")).toBeVisible();
-
-    await screen.rerender({ positions: [indyCenter] });
-
-    await expect
-      .element(screen.getByText("IND_83_CTR: Indy Center"))
-      .toBeVisible();
-  });
-
+  // That a lookup follows when the positions change: Position.test.ts.
   test("with no layout setting them, there are no positions", async () => {
     const screen = await render(PositionName, { callsign: "IND_83_CTR" });
 

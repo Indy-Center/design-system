@@ -8,8 +8,9 @@ import {
   test,
 } from "vitest";
 import { commands } from "vitest/browser";
+import { savedTimeZone } from "../../../test/cookies.ts";
 import { forgetTimeZone } from "../../playground/forgetTimeZone.ts";
-import { COOKIE_NAME, readTimeZone, type TimeZoneChoice } from "./timeZone.ts";
+import { COOKIE_NAME, type TimeZoneChoice } from "./timeZone.ts";
 import Layout from "./TimeZoneLayout.test.svelte";
 
 // The device is in Indianapolis; 2300Z on 20 October 2026 is 7:00 PM EDT
@@ -29,17 +30,6 @@ afterEach(async () => {
 /** The text of the `Time` with `zone`. */
 function shown(target: Element, zone = "local") {
   return target.querySelector(`[data-zone="${zone}"]`)?.textContent;
-}
-
-/** The cookie the page would send with its next request. */
-function cookieValue() {
-  return readTimeZone({
-    get: (name) =>
-      document.cookie
-        .split("; ")
-        .find((pair) => pair.startsWith(`${name}=`))
-        ?.slice(name.length + 1),
-  });
 }
 
 const hydrated: Record<string, unknown>[] = [];
@@ -76,19 +66,13 @@ describe("times drawn from the saved choice", () => {
     expect(shown(target, "both")).toBe("2300Z");
   });
 
-  test("following the device, the server draws the zone last seen", async () => {
-    const { served } = await serveAndHydrate({
+  test("following the device, the server draws the zone last seen, and the browser where the device is now, and saves it", async () => {
+    const { served, target } = await serveAndHydrate({
       choice: { kind: "device", zone: "America/Chicago" },
     });
     expect(shown(served)).toBe("6:00 PM CDT");
-  });
-
-  test("following the device, the browser switches to where the device is now, and saves it", async () => {
-    const { target } = await serveAndHydrate({
-      choice: { kind: "device", zone: "America/Chicago" },
-    });
     await expect.poll(() => shown(target)).toBe("7:00 PM EDT");
-    expect(cookieValue()).toEqual({
+    expect(savedTimeZone()).toEqual({
       kind: "device",
       zone: expect.stringMatching(/Indianapolis$/),
     });

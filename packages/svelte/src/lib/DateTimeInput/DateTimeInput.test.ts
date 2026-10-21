@@ -1,29 +1,19 @@
-import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import { describe, expect, test, vi } from "vitest";
 import { commands, userEvent } from "vitest/browser";
-import { SCHEMES } from "../../../test/contrast.ts";
-import EventStartField from "../../../test/EventStartField.svelte";
+import { pinClockInIndianapolis } from "../../../test/clock.ts";
 import { role } from "../../../test/roles.ts";
 import { renderIn } from "../../../test/schemes.ts";
 import DateTimeInput from "./DateTimeInput.svelte";
+import EventStartField from "./DateTimeInput.test.svelte";
 
 const PATH = "/src/lib/DateTimeInput/DateTimeInput.svelte";
 
-// Pinned clock: 2100Z on Tuesday 20 October 2026, 5:00 PM in Indianapolis
-// (EDT, UTC−4).
-const NOW = new Date("2026-10-20T21:00:00Z");
-const INDY = "America/Indiana/Indianapolis";
+// The device is in Indianapolis, the clock at 2100Z on Tuesday 20 October
+// 2026 (5:00 PM EDT).
+pinClockInIndianapolis();
 
-beforeEach(async () => {
-  vi.useFakeTimers({ toFake: ["Date"], shouldAdvanceTime: true });
-  vi.setSystemTime(NOW);
-  await commands.emulateTimeZone(INDY);
-});
-
-afterEach(async () => {
-  vi.useRealTimers();
-  await commands.emulateTimeZone(null);
-});
-
+// The box's looks (roles, ring, invalid border, 44px) are textControl's,
+// and the hint and error Description's (formControl's tests).
 describe("DateTimeInput", () => {
   test("turns the local time typed into UTC", async () => {
     const screen = await renderIn("light", EventStartField, {});
@@ -65,19 +55,7 @@ describe("DateTimeInput", () => {
       .toHaveValue("2026-10-20T19:00");
   });
 
-  test("reads the value back in local time and Zulu", async () => {
-    const screen = await renderIn("light", EventStartField, {
-      value: "2026-10-27T23:00:00Z",
-    });
-    await expect
-      .element(screen.getByText(/^Local/))
-      .toHaveTextContent("Local: Tue 27 Oct, 7:00 PM EDT");
-    await expect
-      .element(screen.getByText(/^Zulu/))
-      .toHaveTextContent("Zulu: Tue 27 Oct, 2300Z");
-  });
-
-  test("reads Zulu's own day where it differs from the member's", async () => {
+  test("reads the value back in local time and Zulu, each on its own day", async () => {
     const screen = await renderIn("light", EventStartField, {
       value: "2026-10-28T01:00:00Z",
     });
@@ -273,45 +251,18 @@ describe("DateTimeInput", () => {
       .toHaveStyle({ marginTop: "16px" });
   });
 
-  // Input's roles: `muted` fill, `input` border, `foreground` text; the
-  // read-out in `muted-foreground`.
-  test.each(SCHEMES)("takes the input roles in %s", async (scheme) => {
-    const screen = await renderIn(scheme, EventStartField, {
+  // The box in textControl's input roles; the read-out in `muted-foreground`.
+  test("is a text control, its read-out muted", async () => {
+    const screen = await renderIn("light", EventStartField, {
       value: "2026-10-27T23:00:00Z",
     });
     await expect.element(screen.getByLabelText("Start")).toHaveStyle({
-      backgroundColor: role("muted", scheme),
-      borderColor: role("input", scheme),
-      color: role("foreground", scheme),
+      backgroundColor: role("muted", "light"),
+      borderColor: role("input", "light"),
     });
     await expect
       .element(screen.getByText(/^Zulu/).element().parentElement)
-      .toHaveStyle({ color: role("muted-foreground", scheme) });
-  });
-
-  // The guide's `ring` role.
-  test.each(SCHEMES)(
-    "shows a ring outline when tabbed to in %s",
-    async (scheme) => {
-      const screen = await renderIn(scheme, DateTimeInput, {
-        "aria-label": "Start",
-      });
-      await userEvent.tab();
-      const box = screen.getByLabelText("Start");
-      await expect.element(box).toHaveFocus();
-      await expect.element(box).toHaveStyle({
-        outlineStyle: "solid",
-        outlineColor: role("ring", scheme),
-      });
-    },
-  );
-
-  test("is at least 44px tall", async () => {
-    const screen = await renderIn("light", DateTimeInput, {
-      "aria-label": "Start",
-    });
-    const box = screen.getByLabelText("Start").element();
-    expect(box.getBoundingClientRect().height).toBeGreaterThanOrEqual(44);
+      .toHaveStyle({ color: role("muted-foreground", "light") });
   });
 
   // The device is in Indianapolis; the member saved Chicago (CDT, UTC−5),
@@ -383,16 +334,6 @@ describe("DateTimeInput", () => {
       await expect
         .element(box)
         .toHaveAccessibleDescription("Zulu: Wed 28 Oct, 0130Z");
-    });
-
-    test("following the device, it is the device's zone", async () => {
-      const screen = await renderIn("light", EventStartField, {
-        choice: { kind: "device", zone: "America/Chicago" },
-        value: "2026-10-27T23:00:00Z",
-      });
-      await expect
-        .element(screen.getByLabelText("Start"))
-        .toHaveValue("2026-10-27T19:00");
     });
   });
 

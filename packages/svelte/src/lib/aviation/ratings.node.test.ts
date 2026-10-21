@@ -7,39 +7,23 @@ import {
 } from "./ratings.ts";
 
 describe("RATINGS", () => {
-  test("is VATSIM's table, in its order", () => {
-    expect(RATINGS.map((r) => [r.id, r.short])).toEqual([
-      [-1, "INAC"],
-      [0, "SUS"],
-      [1, "OBS"],
-      [2, "S1"],
-      [3, "S2"],
-      [4, "S3"],
-      [5, "C1"],
-      [6, "C2"],
-      [7, "C3"],
-      [8, "I1"],
-      [9, "I2"],
-      [10, "I3"],
-      [11, "SUP"],
-      [12, "ADM"],
+  test("is VATSIM's table, in its order, named as VATSIM names them", () => {
+    expect(RATINGS.map((r) => [r.id, r.short, r.long])).toEqual([
+      [-1, "INAC", "Inactive"],
+      [0, "SUS", "Suspended"],
+      [1, "OBS", "Observer"],
+      [2, "S1", "Tower Trainee"],
+      [3, "S2", "Tower Controller"],
+      [4, "S3", "Senior Student"],
+      [5, "C1", "Enroute Controller"],
+      [6, "C2", "Controller 2 (not in use)"],
+      [7, "C3", "Senior Controller"],
+      [8, "I1", "Instructor"],
+      [9, "I2", "Instructor 2 (not in use)"],
+      [10, "I3", "Senior Instructor"],
+      [11, "SUP", "Supervisor"],
+      [12, "ADM", "Administrator"],
     ]);
-  });
-
-  test("names each rating as VATSIM does", () => {
-    const names = Object.fromEntries(RATINGS.map((r) => [r.short, r.long]));
-    expect(names).toMatchObject({
-      OBS: "Observer",
-      S1: "Tower Trainee",
-      S2: "Tower Controller",
-      S3: "Senior Student",
-      C1: "Enroute Controller",
-      C3: "Senior Controller",
-      I1: "Instructor",
-      I3: "Senior Instructor",
-      SUP: "Supervisor",
-      ADM: "Administrator",
-    });
   });
 });
 

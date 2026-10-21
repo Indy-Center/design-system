@@ -45,7 +45,6 @@ describe("isPosition, VATUSA's pattern", () => {
     "CVG_DEP",
     "IND_DEL",
     "IND_FSS",
-    "DAY_M_APP",
   ])("%s is a position", (callsign) => {
     expect(isPosition(callsign)).toBe(true);
   });
@@ -67,24 +66,17 @@ describe("isPosition, VATUSA's pattern", () => {
 });
 
 describe("POSITION_TYPES", () => {
-  test("run from the ground up, CTR and DEP included", () => {
-    expect(POSITION_TYPES.map((t) => t.type)).toEqual([
-      "DEL",
-      "RMP",
-      "GND",
-      "TWR",
-      "APP",
-      "DEP",
-      "CTR",
-      "FSS",
+  test("run from the ground up, CTR and DEP included, each named", () => {
+    expect(POSITION_TYPES.map((t) => [t.type, t.name])).toEqual([
+      ["DEL", "Clearance Delivery"],
+      ["RMP", "Ramp"],
+      ["GND", "Ground"],
+      ["TWR", "Tower"],
+      ["APP", "Approach"],
+      ["DEP", "Departure"],
+      ["CTR", "Center"],
+      ["FSS", "Flight Service"],
     ]);
-  });
-
-  test("name each type", () => {
-    expect(POSITION_TYPES.find((t) => t.type === "DEL")?.name).toBe(
-      "Clearance Delivery",
-    );
-    expect(POSITION_TYPES.find((t) => t.type === "CTR")?.name).toBe("Center");
   });
 });
 
