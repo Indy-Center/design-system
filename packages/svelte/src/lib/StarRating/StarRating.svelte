@@ -35,6 +35,9 @@
 
 <Fieldset {legend} {required} {disabled} {...rest}>
   <div class="flex flex-wrap items-center gap-x-3">
+    <!-- Only here to end the hover preview when the pointer leaves the
+         stars; the role keeps Svelte's a11y check quiet about a mouse
+         handler on a div. -->
     <div
       class="flex"
       role="presentation"

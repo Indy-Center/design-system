@@ -1,9 +1,12 @@
 import { describe, expect, test } from "vitest";
-import { userEvent } from "vitest/browser";
+import { type Locator, userEvent } from "vitest/browser";
 import { contrastOn, SCHEMES, SURFACES } from "../../../test/contrast.ts";
 import { role } from "../../../test/roles.ts";
 import { renderIn } from "../../../test/schemes.ts";
 import StarRating from "./StarRating.svelte";
+
+/** A radio's star: the label round it, the 44px target a member clicks. */
+const starOf = (radio: Locator) => radio.element().closest("label")!;
 
 describe("StarRating", () => {
   test("is a group named by its legend, with a radio for each of five stars", async () => {
@@ -37,7 +40,7 @@ describe("StarRating", () => {
     });
     const four = screen.getByRole("radio", { name: "4 stars" });
     // A member clicks the star, the label round the hidden radio.
-    await userEvent.click(four.element().closest("label")!);
+    await userEvent.click(starOf(four));
     await expect.element(four).toBeChecked();
     expect(value).toBe(4);
   });
@@ -59,10 +62,7 @@ describe("StarRating", () => {
       name: "rating",
       value: 2,
     });
-    const five = screen
-      .getByRole("radio", { name: "5 stars" })
-      .element()
-      .closest("label")!;
+    const five = starOf(screen.getByRole("radio", { name: "5 stars" }));
     await expect.element(screen.getByText("2 out of 5")).toBeVisible();
     await userEvent.hover(five);
     await expect.element(screen.getByText("5 out of 5")).toBeVisible();
@@ -113,7 +113,7 @@ describe("StarRating", () => {
       value: 3,
     });
     const radio = (name: string) => screen.getByRole("radio", { name });
-    await userEvent.hover(radio("5 stars").element().closest("label")!);
+    await userEvent.hover(starOf(radio("5 stars")));
     await expect.element(screen.getByText("5 out of 5")).toBeVisible();
     await userEvent.tab();
     await userEvent.keyboard("{ArrowLeft}");
@@ -133,7 +133,7 @@ describe("StarRating", () => {
         value: 3,
       });
       const star = (name: string) =>
-        screen.getByRole("radio", { name }).element().closest("label")!;
+        starOf(screen.getByRole("radio", { name }));
       await expect
         .element(star("3 stars"))
         .toHaveStyle({ color: role("warning", scheme) });
@@ -155,10 +155,7 @@ describe("StarRating", () => {
       name: "rating",
     });
     await userEvent.tab();
-    const label = screen
-      .getByRole("radio", { name: "1 star" })
-      .element()
-      .closest("label")!;
+    const label = starOf(screen.getByRole("radio", { name: "1 star" }));
     await expect.element(label).toHaveStyle({
       outlineStyle: "solid",
       outlineColor: role("ring", scheme),
