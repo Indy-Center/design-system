@@ -1,4 +1,4 @@
-import { describe, expect, test } from "vitest";
+import { describe, expect, onTestFinished, test } from "vitest";
 import { page, userEvent } from "vitest/browser";
 import type { RenderResult } from "vitest-browser-svelte";
 import { SCHEMES } from "../../../test/contrast.ts";
@@ -131,6 +131,68 @@ describe("Combobox", () => {
       expect(input).not.toHaveAttribute("aria-activedescendant");
     });
 
+    test("Escape on an empty box is left to the dialog it sits in", async () => {
+      const screen = await renderIn("light", Combobox, {
+        "aria-label": "Position",
+        options: ["IND_CTR", "IND_APP"],
+      });
+      const dialog = document.createElement("dialog");
+      onTestFinished(() => dialog.remove());
+      screen.container.replaceWith(dialog);
+      dialog.append(screen.container);
+      dialog.showModal();
+      const input = screen.getByRole("combobox");
+      await input.fill("IND_CTR");
+      // The first Escape closes the list, the second clears the box; both
+      // are the combobox's, so the dialog stays open.
+      await userEvent.keyboard("{Escape}{Escape}");
+      await expect.element(input).toHaveValue("");
+      expect(dialog.open).toBe(true);
+      await userEvent.keyboard("{Escape}");
+      await expect.poll(() => dialog.open).toBe(false);
+    });
+
+    test("Alt+Down opens the list with no option active", async () => {
+      const screen = await renderIn("light", Picker, {});
+      await userEvent.tab();
+      await userEvent.keyboard("{Alt>}{ArrowDown}{/Alt}");
+      const input = screen.getByRole("combobox");
+      await expect.element(input).toHaveAttribute("aria-expanded", "true");
+      expect(input).not.toHaveAttribute("aria-activedescendant");
+    });
+
+    test("Alt+Up closes the list, keeping the text and focus", async () => {
+      const screen = await renderIn("light", Picker, {});
+      const input = screen.getByRole("combobox");
+      await input.fill("an");
+      await userEvent.keyboard("{ArrowDown}{Alt>}{ArrowUp}{/Alt}");
+      await expect.element(input).toHaveAttribute("aria-expanded", "false");
+      await expect.element(input).toHaveValue("an");
+      await expect.element(input).toHaveFocus();
+      expect(input).not.toHaveAttribute("aria-activedescendant");
+      await expect
+        .element(screen.getByTestId("picked"))
+        .toHaveTextContent("none");
+    });
+
+    test("Alt+Up on a closed list is left to the page", async () => {
+      const screen = await renderIn("light", Picker, {});
+      const input = screen.getByRole("combobox");
+      let prevented: boolean | undefined;
+      const listen = (event: KeyboardEvent) => {
+        prevented = event.defaultPrevented;
+      };
+      window.addEventListener("keydown", listen);
+      try {
+        await userEvent.click(input);
+        await userEvent.keyboard("{Escape}{Alt>}{ArrowUp}{/Alt}");
+        expect(prevented).toBe(false);
+      } finally {
+        window.removeEventListener("keydown", listen);
+      }
+      await expect.element(input).toHaveAttribute("aria-expanded", "false");
+    });
+
     test("Escape on a closed list clears the box and the pick", async () => {
       const screen = await renderIn("light", Picker, {
         value: { cid: "1000001", name: "Ann Archer" },
@@ -162,10 +224,12 @@ describe("Combobox", () => {
   test("says when nothing matches", async () => {
     const screen = await renderIn("light", Picker, {});
     await screen.getByRole("combobox").fill("zz");
-    await expect.element(screen.getByText("No matches")).toBeVisible();
+    await expect
+      .element(screen.getByText("No matches").and(page.getByRole("paragraph")))
+      .toBeVisible();
     await expect
       .element(screen.getByRole("status"))
-      .toHaveTextContent("No results");
+      .toHaveTextContent("No matches");
   });
 
   describe("with a search function", () => {
@@ -203,6 +267,46 @@ describe("Combobox", () => {
         .not.toBeInTheDocument();
     });
 
+    /** Searches the roster; "Ann" is slow, so "Dan"'s list stays a while. */
+    const slowAnn = (query: string) =>
+      new Promise<typeof roster>((resolve) =>
+        setTimeout(
+          () => resolve(roster.filter((c) => c.name.includes(query))),
+          query === "Ann" ? 300 : 20,
+        ),
+      );
+
+    test("while searching, the arrows and Enter don't reach the last list", async () => {
+      const screen = await renderIn("light", Picker, { options: slowAnn });
+      const input = screen.getByRole("combobox");
+      await input.fill("Dan");
+      await expect
+        .element(screen.getByRole("option", { name: "Dan Andrews" }))
+        .toBeVisible();
+      await input.fill("Ann");
+      await userEvent.keyboard("{ArrowDown}");
+      expect(input).not.toHaveAttribute("aria-activedescendant");
+      await userEvent.keyboard("{Enter}");
+      await expect.element(input).toHaveValue("Ann");
+      await expect
+        .element(screen.getByTestId("picked"))
+        .toHaveTextContent("none");
+    });
+
+    test("while searching, a click doesn't pick from the last list", async () => {
+      const screen = await renderIn("light", Picker, { options: slowAnn });
+      const input = screen.getByRole("combobox");
+      await input.fill("Dan");
+      const dan = screen.getByRole("option", { name: "Dan Andrews" });
+      await expect.element(dan).toBeVisible();
+      await input.fill("Ann");
+      await dan.click();
+      await expect.element(input).toHaveValue("Ann");
+      await expect
+        .element(screen.getByTestId("picked"))
+        .toHaveTextContent("none");
+    });
+
     test("ignores an answer that comes back after a newer one", async () => {
       const screen = await renderIn("light", Picker, { options: search });
       const input = screen.getByRole("combobox");
@@ -236,6 +340,34 @@ describe("Combobox", () => {
       .element(input)
       .toHaveAccessibleDescription("Name or CID. Pick a controller.");
     await expect.element(input).toHaveAttribute("aria-invalid", "true");
+  });
+
+  test("required, its form is invalid until an option is picked", async () => {
+    const screen = await renderIn("light", Picker, { required: true });
+    const input = screen.getByRole("combobox");
+    const form = input.element().closest("form")!;
+    expect(form.checkValidity()).toBe(false);
+    // Text that matches an option is still not a pick.
+    await input.fill("Ann Archer");
+    await userEvent.keyboard("{Escape}");
+    await expect.poll(() => form.checkValidity()).toBe(false);
+    expect((input.element() as HTMLInputElement).validationMessage).not.toBe(
+      "",
+    );
+    await userEvent.keyboard("{ArrowDown}{Enter}");
+    await expect.element(input).toHaveValue("Ann Archer");
+    await expect.poll(() => form.checkValidity()).toBe(true);
+  });
+
+  test("not required, text with no pick fails the form; an empty box passes", async () => {
+    const screen = await renderIn("light", Picker, {});
+    const input = screen.getByRole("combobox");
+    const form = input.element().closest("form")!;
+    expect(form.checkValidity()).toBe(true);
+    await input.fill("Ann");
+    await expect.poll(() => form.checkValidity()).toBe(false);
+    await input.fill("");
+    await expect.poll(() => form.checkValidity()).toBe(true);
   });
 
   // The `card` fill, `muted` on the active option, and a `ring` outline
@@ -349,5 +481,34 @@ describe("Combobox", () => {
     await expect
       .element(screen.getByRole("status"))
       .toHaveTextContent("Cara Cole, selected");
+  });
+
+  test.each([
+    ["by keyboard", "{ArrowDown}{Enter}"],
+    ["by mouse", null],
+  ])("announces the same option picked again, %s", async (_, keys) => {
+    const screen = await renderIn("light", Picker, {});
+    const input = screen.getByRole("combobox");
+    const status = screen.getByRole("status").element();
+    const said: string[] = [];
+    new MutationObserver(() => said.push(status.textContent ?? "")).observe(
+      status,
+      { childList: true, characterData: true, subtree: true },
+    );
+    for (let time = 0; time < 2; time++) {
+      if (keys) {
+        await userEvent.click(input);
+        await userEvent.keyboard("{Escape}");
+        await userEvent.keyboard(keys);
+      } else {
+        await input.click();
+        await screen.getByRole("option", { name: "Ann Archer" }).click();
+      }
+      await expect.element(input).toHaveValue("Ann Archer");
+    }
+    // Each pick is new text in the region, so it is read out each time.
+    await expect
+      .poll(() => said.filter((text) => text === "Ann Archer, selected"))
+      .toHaveLength(2);
   });
 });
