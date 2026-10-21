@@ -117,6 +117,37 @@ describe("Toast", () => {
       .toHaveTextContent("Success: Roster saved.Caution: Session soon.");
   });
 
+  // Back to this page from the back-forward cache: its toasts are still
+  // up, so the next page mustn't show them again.
+  test("forgets what it kept when the page comes back from the back-forward cache", async () => {
+    const first = await renderIn("light", Toaster, {});
+    toast("success", "Roster saved.");
+    const item = first.getByRole("listitem");
+    await expect.element(item).toBeInTheDocument();
+    window.dispatchEvent(new PageTransitionEvent("pagehide"));
+    window.dispatchEvent(
+      new PageTransitionEvent("pageshow", { persisted: true }),
+    );
+    await expect.element(item).toBeInTheDocument();
+    first.unmount();
+
+    const next = await renderIn("light", Toaster, {});
+    await tick();
+    expect(next.container.querySelector("li")).toBeNull();
+  });
+
+  test("clears a read line from its live region after 7 seconds", async () => {
+    const screen = await renderIn("light", Toaster, {});
+    toast("success", "Roster saved.");
+    const status = screen.getByRole("status");
+    await expect.element(status).toHaveTextContent("Success: Roster saved.");
+    vi.advanceTimersByTime(6900);
+    await tick();
+    await expect.element(status).toHaveTextContent("Success: Roster saved.");
+    vi.advanceTimersByTime(100);
+    await expect.element(status).not.toHaveTextContent("Roster saved.");
+  });
+
   describe("raised from the server", () => {
     // SvelteKit's cookies, as the browser ends up holding them: the value
     // URI-encoded, as Kit writes it.
