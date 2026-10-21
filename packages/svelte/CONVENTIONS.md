@@ -37,6 +37,10 @@ src/routes/name/+page.svelte its playground page (lower-case folder)
 - Accept `class` and add it last: `class={[own, className]}`. It is for
   layout (margin, width), not colour. Variants are props (`variant="…"`),
   not classes the caller has to know.
+- When the component wraps its element in a box of its own (Table's
+  scroll region around its `<table>`), `class` goes on the outer box,
+  since it is for layout, and `...rest` on the element. Say so in the
+  doc page's Props table, and test both.
 
 ## Colour and type
 

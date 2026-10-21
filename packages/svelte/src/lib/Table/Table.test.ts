@@ -139,6 +139,21 @@ describe("Table", () => {
     },
   );
 
+  // `class` is for layout, so it goes on the region, the outer box; the
+  // rest describe the table, so they go on the <table>.
+  test("adds a caller's class to its region and attributes to its table", async () => {
+    const screen = await renderIn("light", ControllerTable, {
+      class: "mt-6",
+      "aria-describedby": "note",
+    });
+    await expect
+      .element(screen.getByRole("region"))
+      .toHaveStyle({ marginTop: "24px" });
+    await expect
+      .element(screen.getByRole("table"))
+      .toHaveAttribute("aria-describedby", "note");
+  });
+
   // On a phone the table scrolls inside its region; the page doesn't.
   test("scrolls sideways inside its region when narrower than the table", async () => {
     const screen = await renderIn("light", ControllerTable, {});
