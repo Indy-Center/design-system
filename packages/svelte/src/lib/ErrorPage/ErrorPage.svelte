@@ -22,6 +22,7 @@
     mdiHome,
     mdiRadar,
   } from "@mdi/js";
+  import { onMount } from "svelte";
   import type { HTMLAttributes } from "svelte/elements";
   import Button from "../Button/Button.svelte";
   import Heading, { labelClasses } from "../Heading/Heading.svelte";
@@ -71,6 +72,14 @@
         : `${message}.`
       : "An unexpected error occurred.",
   );
+
+  // "Go back" needs JavaScript and a page before this one in the tab, so
+  // it comes after load: never on the server, nor in a tab opened on the
+  // broken link.
+  let canGoBack = $state(false);
+  onMount(() => {
+    canGoBack = history.length > 1;
+  });
 </script>
 
 <div
@@ -113,9 +122,11 @@
 
   <div class="mt-8 flex flex-wrap justify-center gap-3">
     <Button href={home}><Icon path={mdiHome} />Return home</Button>
-    <Button variant="secondary" onclick={() => history.back()}
-      ><Icon path={mdiArrowLeft} />Go back</Button
-    >
+    {#if canGoBack}
+      <Button variant="secondary" onclick={() => history.back()}
+        ><Icon path={mdiArrowLeft} />Go back</Button
+      >
+    {/if}
   </div>
 
   {#if notFound && links.length > 0}

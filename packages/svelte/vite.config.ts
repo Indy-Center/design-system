@@ -15,6 +15,9 @@ export default defineConfig({
   // The tokens package is linked from beside this one; its font is served
   // from there.
   server: { fs: { allow: ["../tokens"] } },
+  // The tests' server render inlines dependencies; take a package's ES
+  // module (`@mdi/js`'s) over its CommonJS `main`, which can't run inlined.
+  ssr: { resolve: { mainFields: ["module", "main"] } },
   test: {
     // expect.element retries until the test times out, so keep this short.
     testTimeout: 10_000,

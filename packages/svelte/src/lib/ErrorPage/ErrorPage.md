@@ -55,6 +55,13 @@ found")`): it becomes the title.
 | `class`   | `string`          | Added to the box. It is `flex-1`, so in a column layout it fills the space and centres. |
 | others    | `<div>` attrs     | Passed to the box, such as `id`.                                                        |
 
+## Server and browser
+
+The server draws “Return home” alone. Once the page loads, “Go back”
+joins it if the tab has a page to go back to (`history.length > 1`); a
+tab opened on the broken link has none, and without JavaScript it never
+shows.
+
 ## Looks
 
 Lifted from the community site's error page, on the roles:
@@ -77,9 +84,9 @@ Lifted from the community site's error page, on the roles:
 ## Accessibility
 
 - The title is the page's one `h1`; nothing else is a heading.
-- “Return home” is a link and “Go back” a button (it runs
-  `history.back()`, so it needs JavaScript). Both are 44px tall and come
-  in that order from the keyboard.
+- “Return home” is a link and “Go back” a button that runs
+  `history.back()`, shown only when there is a page to go back to. Both
+  are 44px tall and come in that order from the keyboard.
 - The other pages are a `<nav>` named "Or try one of these", a list of
   links; their icons are hidden from screen readers.
 - The icon circle is `aria-hidden`. The status is read as text.

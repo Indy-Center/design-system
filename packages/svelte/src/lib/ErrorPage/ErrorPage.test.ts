@@ -1,6 +1,6 @@
 import { mdiCalendar } from "@mdi/js";
 import { afterEach, describe, expect, test, vi } from "vitest";
-import { userEvent } from "vitest/browser";
+import { commands, userEvent } from "vitest/browser";
 import {
   SCHEMES,
   expectReadable,
@@ -15,6 +15,12 @@ const notFound = { status: 404, message: "Not Found", path: "/evnts" };
 const serverError = { status: 500, message: "Internal Error" };
 
 afterEach(() => vi.restoreAllMocks());
+
+/** The tab's history as `entries` long, and `history.back()` a spy. */
+function withHistory(entries: number) {
+  vi.spyOn(history, "length", "get").mockReturnValue(entries);
+  return vi.spyOn(history, "back").mockImplementation(() => {});
+}
 
 describe("ErrorPage", () => {
   test("titles a missing page with the page's one h1", async () => {
@@ -91,14 +97,24 @@ describe("ErrorPage", () => {
   });
 
   test("goes back a page with the “Go back” button", async () => {
-    const back = vi.spyOn(history, "back").mockImplementation(() => {});
+    const back = withHistory(2);
     const screen = await renderIn("light", ErrorPage, serverError);
     await screen.getByRole("button", { name: "Go back" }).click();
     expect(back).toHaveBeenCalledOnce();
   });
 
+  // A tab opened on the broken link has nowhere to go back to.
+  test("has no “Go back” when the tab has no page before this one", async () => {
+    withHistory(1);
+    const screen = await renderIn("light", ErrorPage, serverError);
+    await expect
+      .element(screen.getByRole("link", { name: "Return home" }))
+      .toBeVisible();
+    expect(screen.getByRole("button").elements()).toHaveLength(0);
+  });
+
   test("reaches Return home, then Go back, from the keyboard", async () => {
-    const back = vi.spyOn(history, "back").mockImplementation(() => {});
+    const back = withHistory(2);
     const screen = await renderIn("light", ErrorPage, serverError);
     await userEvent.tab();
     await expect
@@ -228,4 +244,16 @@ describe("ErrorPage", () => {
     expect(box.id).toBe("error");
     expect(getComputedStyle(box).marginTop).toBe("24px");
   });
+
+  // The server can't know the tab's history, and the button needs
+  // JavaScript: it comes once the page has loaded. The time limit is long
+  // because the first server render compiles the component.
+  test("has no “Go back” on the server, only “Return home”", async () => {
+    const html = await commands.serverRender(
+      "/src/lib/ErrorPage/ErrorPage.svelte",
+      serverError,
+    );
+    expect(html).toContain("Return home");
+    expect(html).not.toContain("Go back");
+  }, 60_000);
 });
