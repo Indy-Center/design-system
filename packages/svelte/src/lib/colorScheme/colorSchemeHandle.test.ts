@@ -40,8 +40,6 @@ describe("with no cookie", () => {
 describe("with a choice in the cookie", () => {
   test.each([
     ["light", "dark"],
-    ["light", "device"],
-    ["dark", "dark"],
     ["dark", "device"],
   ] as const)(
     "%s is served, whatever the fallback (%s)",

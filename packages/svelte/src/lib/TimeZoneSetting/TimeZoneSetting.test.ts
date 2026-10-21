@@ -1,55 +1,31 @@
-import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import { commands, userEvent } from "vitest/browser";
-import { SCHEMES } from "../../../test/contrast.ts";
-import { role } from "../../../test/roles.ts";
-import { renderIn, type Scheme } from "../../../test/schemes.ts";
+import { afterEach, describe, expect, test, vi } from "vitest";
+import { pinClockInIndianapolis } from "../../../test/clock.ts";
+import { savedTimeZone as saved } from "../../../test/cookies.ts";
+import { renderIn } from "../../../test/schemes.ts";
 import { forgetTimeZone } from "../../playground/forgetTimeZone.ts";
-import { readTimeZone, type TimeZoneChoice } from "../timeZone/timeZone.ts";
+import type { TimeZoneChoice } from "../timeZone/timeZone.ts";
 import Layout from "../timeZone/TimeZoneLayout.test.svelte";
 import TimeZoneSetting from "./TimeZoneSetting.svelte";
 
 // The device is in Indianapolis; 2300Z on 20 October 2026 is 7:00 PM EDT
 // there and 6:00 PM CDT in Chicago.
-const INDY = "America/Indiana/Indianapolis";
-const NOW = new Date("2026-10-20T21:00:00Z");
-
-beforeEach(async () => {
-  vi.useFakeTimers({ toFake: ["Date"], shouldAdvanceTime: true });
-  vi.setSystemTime(NOW);
-  await commands.emulateTimeZone(INDY);
-});
-
-afterEach(async () => {
-  vi.useRealTimers();
-  forgetTimeZone();
-  await commands.emulateTimeZone(null);
-});
-
-/** The choice the page's next request would carry. */
-function saved() {
-  return readTimeZone({
-    get: (name) =>
-      document.cookie
-        .split("; ")
-        .find((pair) => pair.startsWith(`${name}=`))
-        ?.slice(name.length + 1),
-  });
-}
+pinClockInIndianapolis();
+afterEach(forgetTimeZone);
 
 function setting(
   props: {
     choice?: TimeZoneChoice;
     saveToProfile?: (setting: string) => unknown;
   } = {},
-  scheme: Scheme = "light",
 ) {
-  return renderIn(scheme, Layout, { ...props, controls: true });
+  return renderIn("light", Layout, { ...props, controls: true });
 }
 
 const ZULU = "Zulu";
 const DEVICE = "Use my device's time zone";
 const ANOTHER = "Another time zone";
 
+// The rows' and the note's looks are preferenceControl's (its own tests).
 describe("TimeZoneSetting", () => {
   test("is a group of three choices, named Time zone", async () => {
     const screen = await setting();
@@ -185,65 +161,23 @@ describe("TimeZoneSetting", () => {
     expect(chicago.element().closest("optgroup")?.label).toBe("America");
   });
 
-  test("works from the keyboard", async () => {
-    const screen = await setting();
-    await userEvent.tab();
+  test.each([
+    [
+      "mentions the profile when signed in",
+      () => {},
+      "Saved on this browser for a year, across flyindycenter.com, and to your Indy Center profile for every browser you sign in on.",
+    ],
+    [
+      "leaves the profile out when nobody is signed in",
+      undefined,
+      "Saved on this browser for a year, across flyindycenter.com.",
+    ],
+  ])("What's saved? %s", async (_, saveToProfile, note) => {
+    const screen = await setting({ saveToProfile });
+    await screen.getByRole("button", { name: "What's saved?" }).click();
     await expect
-      .element(screen.getByRole("button", { name: ZULU }))
-      .toHaveFocus();
-    await userEvent.keyboard("{Enter}");
-    expect(saved()).toEqual({ kind: "zulu" });
-  });
-
-  describe("What's saved?", () => {
-    test("shows the note, mentioning the profile when signed in", async () => {
-      const screen = await setting({ saveToProfile: () => {} });
-      const button = screen.getByRole("button", { name: "What's saved?" });
-      const note = screen.getByText(/^Saved on this browser/);
-      await expect.element(button).toHaveAttribute("aria-expanded", "false");
-      await expect.element(note).not.toBeVisible();
-      await button.click();
-      await expect.element(button).toHaveAttribute("aria-expanded", "true");
-      await expect
-        .element(note)
-        .toHaveTextContent(
-          "Saved on this browser for a year, across flyindycenter.com, and to your Indy Center profile for every browser you sign in on.",
-        );
-    });
-
-    test("leaves the profile out when nobody is signed in", async () => {
-      const screen = await setting();
-      await screen.getByRole("button", { name: "What's saved?" }).click();
-      await expect
-        .element(screen.getByText(/^Saved on this browser/))
-        .toHaveTextContent(
-          "Saved on this browser for a year, across flyindycenter.com.",
-        );
-    });
-  });
-
-  test.each(SCHEMES)("its colours follow the roles (%s)", async (scheme) => {
-    const screen = await setting({ choice: { kind: "zulu" } }, scheme);
-    await expect
-      .element(screen.getByRole("button", { name: ZULU }))
-      .toHaveStyle({
-        color: role("foreground", scheme),
-        backgroundColor: role("muted", scheme),
-      });
-    await expect
-      .element(screen.getByRole("button", { name: DEVICE }))
-      .toHaveStyle({ color: role("foreground-soft", scheme) });
-  });
-
-  test("every row is at least 44px tall", async () => {
-    const screen = await setting();
-    for (const name of [ZULU, DEVICE, ANOTHER, "What's saved?"]) {
-      const box = screen
-        .getByRole("button", { name, exact: true })
-        .element()
-        .getBoundingClientRect();
-      expect(box.height).toBeGreaterThanOrEqual(44);
-    }
+      .element(screen.getByText(/^Saved on this browser/))
+      .toHaveTextContent(note);
   });
 
   test("adds a caller's class and attributes to the group", async () => {

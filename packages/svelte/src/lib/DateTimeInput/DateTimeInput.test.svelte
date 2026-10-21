@@ -3,10 +3,10 @@
   // value shown, for DateTimeInput's tests. Given `choice`, it hands it to
   // setTimeZone first, as an app's root layout would a saved time zone.
   import type { ComponentProps } from "svelte";
-  import DateTimeInput from "../src/lib/DateTimeInput/DateTimeInput.svelte";
-  import Field from "../src/lib/Field/Field.svelte";
-  import type { TimeZoneChoice } from "../src/lib/timeZone/timeZone.ts";
-  import { setTimeZone } from "../src/lib/timeZone/timeZoneContext.svelte.ts";
+  import Field from "../Field/Field.svelte";
+  import type { TimeZoneChoice } from "../timeZone/timeZone.js";
+  import { setTimeZone } from "../timeZone/timeZoneContext.svelte.js";
+  import DateTimeInput from "./DateTimeInput.svelte";
 
   type Props = Omit<ComponentProps<typeof DateTimeInput>, "value"> & {
     value?: string;

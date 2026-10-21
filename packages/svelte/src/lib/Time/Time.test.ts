@@ -1,37 +1,16 @@
 import { hydrate, tick, unmount, type ComponentProps } from "svelte";
-import {
-  afterEach,
-  beforeAll,
-  beforeEach,
-  describe,
-  expect,
-  test,
-  vi,
-} from "vitest";
+import { afterEach, beforeAll, describe, expect, test, vi } from "vitest";
 import { commands } from "vitest/browser";
-import { SCHEMES } from "../../../test/contrast.ts";
-import { role } from "../../../test/roles.ts";
+import { NOW, pinClockInIndianapolis } from "../../../test/clock.ts";
 import { renderIn } from "../../../test/schemes.ts";
 import Time from "./Time.svelte";
 
-// Pinned clock: 2100Z on Tuesday 20 October 2026, 5:00 PM in Indianapolis
-// (EDT, UTC−4).
-const NOW = new Date("2026-10-20T21:00:00Z");
-const INDY = "America/Indiana/Indianapolis";
+// The device is in Indianapolis, the clock at 2100Z on Tuesday 20 October
+// 2026 (5:00 PM EDT).
+pinClockInIndianapolis();
 
-beforeEach(async () => {
-  // Only the date is faked, and it keeps moving: expect.element times its
-  // retries by it.
-  vi.useFakeTimers({ toFake: ["Date"], shouldAdvanceTime: true });
-  vi.setSystemTime(NOW);
-  await commands.emulateTimeZone(INDY);
-});
-
-afterEach(async () => {
-  vi.useRealTimers();
-  await commands.emulateTimeZone(null);
-});
-
+// The text for each prop is timeText's (format.node.test.ts); here, how Time
+// draws it, where it takes the member's zone and clock from, and the server.
 describe("Time", () => {
   test("is a <time> carrying the instant as its datetime", async () => {
     const screen = await renderIn("light", Time, {
@@ -86,189 +65,42 @@ describe("Time", () => {
     });
   });
 
-  // The guide's `muted-foreground` role, set on the container.
-  test.each(SCHEMES)(
-    "takes the text colour around it in %s",
-    async (scheme) => {
-      const screen = await renderIn(scheme, Time, {
-        value: "2026-10-20T23:00:00Z",
-      });
-      screen.container.classList.add("text-muted-foreground");
-      await expect
-        .element(screen.container.querySelector("time"))
-        .toHaveStyle({ color: role("muted-foreground", scheme) });
-    },
-  );
-
-  describe("zone", () => {
-    test("is the browser's local time by default", async () => {
-      expect(await shown({ value: "2026-10-20T23:00:00Z" })).toBe(
-        "7:00 PM EDT",
-      );
-    });
-
-    test('"both" puts Zulu after local', async () => {
-      expect(await shown({ value: "2026-10-20T23:00:00Z", zone: "both" })).toBe(
-        "7:00 PM EDT · 2300Z",
-      );
-    });
-
-    test('"zulu" stays in Zulu in the browser', async () => {
-      expect(await shown({ value: "2026-10-20T23:00:00Z", zone: "zulu" })).toBe(
-        "2300Z",
-      );
-    });
+  test("is the device's local time by default", async () => {
+    expect(await shown({ value: "2026-10-20T23:00:00Z" })).toBe("7:00 PM EDT");
   });
 
-  describe("with the date", () => {
-    test('says "Today" for today', async () => {
-      expect(
-        await shown({ value: "2026-10-20T23:00:00Z", show: "datetime" }),
-      ).toBe("Today, 7:00 PM EDT");
+  test("moves on a day at the member's midnight", async () => {
+    // 11:59 PM EDT on the 20th.
+    useFakeClock("2026-10-21T03:59:00Z");
+    const screen = await renderIn("light", Time, {
+      value: "2026-10-21T23:00:00Z",
+      show: "datetime",
     });
-
-    test("takes the day in the member's zone, not Zulu's", async () => {
-      // 0200Z on the 21st is still the 20th in Indianapolis.
-      expect(
-        await shown({ value: "2026-10-21T02:00:00Z", show: "datetime" }),
-      ).toBe("Today, 10:00 PM EDT");
-    });
-
-    test('says "Tomorrow" for tomorrow', async () => {
-      expect(
-        await shown({ value: "2026-10-21T23:00:00Z", show: "datetime" }),
-      ).toBe("Tomorrow, 7:00 PM EDT");
-    });
-
-    test("names the weekday within the coming week", async () => {
-      expect(
-        await shown({ value: "2026-10-22T23:00:00Z", show: "datetime" }),
-      ).toBe("Thursday, 7:00 PM EDT");
-      expect(
-        await shown({ value: "2026-10-26T23:00:00Z", show: "datetime" }),
-      ).toBe("Monday, 7:00 PM EDT");
-    });
-
-    test("puts the day before the month from a week out", async () => {
-      expect(
-        await shown({ value: "2026-10-27T23:00:00Z", show: "datetime" }),
-      ).toBe("Tue 27 Oct, 7:00 PM EDT");
-    });
-
-    test("puts the day before the month for a day gone by", async () => {
-      expect(
-        await shown({ value: "2026-10-19T23:00:00Z", show: "datetime" }),
-      ).toBe("Mon 19 Oct, 7:00 PM EDT");
-    });
-
-    test("adds the year when it isn't this year", async () => {
-      expect(
-        await shown({ value: "2027-03-04T23:00:00Z", show: "datetime" }),
-      ).toBe("Thu 4 Mar 2027, 6:00 PM EST");
-    });
-
-    test("moves on a day at the member's midnight", async () => {
-      // 11:59 PM EDT on the 20th.
-      useFakeClock("2026-10-21T03:59:00Z");
-      const screen = await renderIn("light", Time, {
-        value: "2026-10-21T23:00:00Z",
-        show: "datetime",
-      });
-      await tick();
-      expect(screen.container.textContent).toBe("Tomorrow, 7:00 PM EDT");
-      vi.advanceTimersByTime(60_000);
-      await tick();
-      expect(screen.container.textContent).toBe("Today, 7:00 PM EDT");
-    });
+    await tick();
+    expect(screen.container.textContent).toBe("Tomorrow, 7:00 PM EDT");
+    vi.advanceTimersByTime(60_000);
+    await tick();
+    expect(screen.container.textContent).toBe("Today, 7:00 PM EDT");
   });
 
-  describe("a range", () => {
-    const event = {
+  test("marks each end of a range with its own datetime", async () => {
+    const screen = await renderIn("light", Time, {
       value: "2026-10-20T23:00:00Z",
       end: "2026-10-21T02:00:00Z",
       show: "datetime",
       zone: "both",
-    } as const;
-
-    test("shares the day and the zone between its ends", async () => {
-      expect(await shown(event)).toBe(
-        "Today, 7:00 PM–10:00 PM EDT · 2300Z–0200Z",
-      );
     });
-
-    test("marks each end with its own datetime", async () => {
-      const screen = await renderIn("light", Time, event);
-      await tick();
-      const times = [...screen.container.querySelectorAll("time")];
-      expect(times.map((t) => [t.dateTime, t.textContent])).toEqual([
-        ["2026-10-20T23:00:00.000Z", "Today, 7:00 PM"],
-        ["2026-10-21T02:00:00.000Z", "10:00 PM EDT"],
-        ["2026-10-20T23:00:00.000Z", "2300Z"],
-        ["2026-10-21T02:00:00.000Z", "0200Z"],
-      ]);
-    });
-
-    test("names the end's day when it ends on another", async () => {
-      expect(await shown({ ...event, end: "2026-10-21T05:00:00Z" })).toBe(
-        "Today, 7:00 PM–Tomorrow, 1:00 AM EDT · 2300Z–0500Z",
-      );
-    });
-
-    test("names each end's zone when the clocks change between them", async () => {
-      // Daylight saving ends at 2:00 AM on Sunday 1 November.
-      expect(
-        await shown({
-          value: "2026-10-31T23:00:00Z",
-          end: "2026-11-01T07:00:00Z",
-        }),
-      ).toBe("7:00 PM EDT–2:00 AM EST");
-    });
-
-    test("in Zulu, takes its days from Zulu", async () => {
-      expect(await shown({ ...event, zone: "zulu" })).toBe(
-        "Today, 2300Z–Tomorrow, 0200Z",
-      );
-    });
-
-    test("puts the day before the month for a range gone by", async () => {
-      expect(
-        await shown({
-          ...event,
-          value: "2026-10-19T23:00:00Z",
-          end: "2026-10-20T01:00:00Z",
-          zone: "local",
-        }),
-      ).toBe("Mon 19 Oct, 7:00 PM–9:00 PM EDT");
-    });
+    await tick();
+    const times = [...screen.container.querySelectorAll("time")];
+    expect(times.map((t) => [t.dateTime, t.textContent])).toEqual([
+      ["2026-10-20T23:00:00.000Z", "Today, 7:00 PM"],
+      ["2026-10-21T02:00:00.000Z", "10:00 PM EDT"],
+      ["2026-10-20T23:00:00.000Z", "2300Z"],
+      ["2026-10-21T02:00:00.000Z", "0200Z"],
+    ]);
   });
 
   describe("relative", () => {
-    test('says "in" before a time to come, in short units', async () => {
-      expect(
-        await shown({ value: "2026-10-20T23:00:00Z", show: "relative" }),
-      ).toBe("in 2 h");
-    });
-
-    test("gives a time gone by as a bare length, for the caller to label", async () => {
-      expect(
-        await shown({ value: "2026-10-20T19:37:00Z", show: "relative" }),
-      ).toBe("1 h 23 m");
-    });
-
-    test("keeps the instant as its datetime", async () => {
-      const screen = await renderIn("light", Time, {
-        value: "2026-10-20T19:37:00Z",
-        show: "relative",
-      });
-      await expect
-        .element(screen.container.querySelector("time"))
-        .toHaveAttribute("datetime", "2026-10-20T19:37:00.000Z");
-    });
-
-    test("gives the minute it happens as 0 m", async () => {
-      expect(await shown({ value: NOW, show: "relative" })).toBe("0 m");
-    });
-
     test("counts on as the minutes pass", async () => {
       useFakeClock(NOW);
       const screen = await renderIn("light", Time, {
@@ -294,29 +126,12 @@ describe("Time", () => {
     });
   });
 
+  // The server can't know the member's zone, so it draws Zulu, whatever
+  // zone the server itself runs in. A served time switching to a saved
+  // zone, or the device's, is timeZone.test.ts's.
   describe("on the server", () => {
     // The first server render compiles the component: give it time once.
     beforeAll(() => commands.serverRender(PATH, { value: 0 }), 60_000);
-
-    // The server can't know the member's zone, so it draws Zulu, whatever
-    // zone the server itself runs in.
-    test("draws the time in Zulu", async () => {
-      const html = await commands.serverRender(PATH, {
-        value: "2026-10-20T23:00:00Z",
-      });
-      expect(text(html)).toBe("2300Z");
-      expect(html).toContain('datetime="2026-10-20T23:00:00.000Z"');
-    });
-
-    // Zulu's "Today" can be another day for the member, so the server
-    // writes the date out until the browser knows the zone.
-    test("writes the date out, not Today or Tomorrow", async () => {
-      const html = await commands.serverRender(PATH, {
-        value: new Date(vi.getRealSystemTime()).toISOString(),
-        show: "datetime",
-      });
-      expect(text(html)).toMatch(/^\w{3} \d{1,2} \w{3}, \d{4}Z$/);
-    });
 
     test("writes a range's dates in Zulu, then the member's day", async () => {
       // An earlier year, so the served text keeps it whenever this runs.
@@ -336,21 +151,7 @@ describe("Time", () => {
         .toBe("Tue 4 Mar 2025, 6:00 PM–9:00 PM EST · 2300Z–0200Z");
     });
 
-    test('keeps "Today" in Zulu when Zulu is asked for', async () => {
-      const html = await commands.serverRender(PATH, {
-        value: new Date(vi.getRealSystemTime()).toISOString(),
-        show: "datetime",
-        zone: "zulu",
-      });
-      expect(text(html)).toMatch(/^Today, \d{4}Z$/);
-    });
-
-    test("switches to the browser's zone once hydrated", async () => {
-      const time = await serveAndHydrate({ value: "2026-10-20T23:00:00Z" });
-      await expect.poll(() => time.textContent).toBe("7:00 PM EDT");
-    });
-
-    test("follows whichever zone the browser is in", async () => {
+    test("follows whichever zone the browser is in once hydrated", async () => {
       await commands.emulateTimeZone("Europe/London");
       const time = await serveAndHydrate({ value: "2026-10-20T23:00:00Z" });
       await expect.poll(() => time.textContent).toBe("12:00 AM GMT+1");
@@ -416,11 +217,4 @@ async function serveAndHydrate(props: Record<string, unknown>) {
   const time = target.querySelector("time");
   if (!time) throw new Error("No <time> was served");
   return time;
-}
-
-/** The text a server-rendered fragment shows. */
-function text(html: string): string {
-  const template = document.createElement("template");
-  template.innerHTML = html;
-  return template.content.textContent ?? "";
 }

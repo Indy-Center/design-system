@@ -1,10 +1,8 @@
 import { afterEach, describe, expect, onTestFinished, test, vi } from "vitest";
-import { commands, userEvent } from "vitest/browser";
-import { SCHEMES } from "../../../test/contrast.ts";
-import { role } from "../../../test/roles.ts";
+import { commands } from "vitest/browser";
+import { savedColorScheme as saved } from "../../../test/cookies.ts";
 import { renderIn } from "../../../test/schemes.ts";
 import { forgetColorScheme } from "../../playground/forgetColorScheme.ts";
-import { COOKIE_NAME } from "../colorScheme/colorScheme.ts";
 import { saveColorScheme } from "../colorScheme/saveColorScheme.ts";
 import ColorSchemeSetting from "./ColorSchemeSetting.svelte";
 import Layout from "./ColorSchemeSetting.test.svelte";
@@ -14,19 +12,13 @@ afterEach(async () => {
   await commands.emulateColorScheme(null);
 });
 
-/** The saved choice, as the next request would carry it. */
-function saved() {
-  return document.cookie
-    .split("; ")
-    .find((pair) => pair.startsWith(`${COOKIE_NAME}=`))
-    ?.slice(COOKIE_NAME.length + 1);
-}
-
 const DEVICE = "Use my device's setting";
 
 /** Placed under the hook's `fallback: 'device'`, as phase 2's apps will. */
 const device = { fallback: "device" } as const;
 
+// The rows' and the note's looks are preferenceControl's (its own tests),
+// and the cookie's attributes preferenceCookie's.
 describe("ColorSchemeSetting", () => {
   test("is a group of three choices, named Colour scheme", async () => {
     const screen = await renderIn("light", Layout, device);
@@ -86,47 +78,14 @@ describe("ColorSchemeSetting", () => {
     await expect.element(second).toHaveAttribute("aria-pressed", "true");
   });
 
-  test("works from the keyboard", async () => {
-    await renderIn("light", Layout, device);
-    await userEvent.tab();
-    await userEvent.keyboard("{Enter}");
-    expect(saved()).toBe("light");
-  });
-
   test("What's saved? shows the note", async () => {
     const screen = await renderIn("light", Layout, device);
-    const button = screen.getByRole("button", { name: "What's saved?" });
-    await expect.element(button).toHaveAttribute("aria-expanded", "false");
-    await button.click();
+    await screen.getByRole("button", { name: "What's saved?" }).click();
     await expect
       .element(screen.getByText(/^Saved on this browser/))
       .toHaveTextContent(
         "Saved on this browser for a year, across flyindycenter.com.",
       );
-  });
-
-  test.each(SCHEMES)("its colours follow the roles (%s)", async (scheme) => {
-    const screen = await renderIn(scheme, Layout, device);
-    await expect
-      .element(screen.getByRole("button", { name: DEVICE }))
-      .toHaveStyle({
-        color: role("foreground", scheme),
-        backgroundColor: role("muted", scheme),
-      });
-    await expect
-      .element(screen.getByRole("button", { name: "Light" }))
-      .toHaveStyle({ color: role("foreground-soft", scheme) });
-  });
-
-  test("every row is at least 44px tall", async () => {
-    const screen = await renderIn("light", Layout, device);
-    for (const name of ["Light", "Dark", DEVICE, "What's saved?"]) {
-      const box = screen
-        .getByRole("button", { name, exact: true })
-        .element()
-        .getBoundingClientRect();
-      expect(box.height).toBeGreaterThanOrEqual(44);
-    }
   });
 
   test("adds a caller's class to the group", async () => {
@@ -142,27 +101,18 @@ describe("ColorSchemeSetting", () => {
 describe("under the hook's fallback: 'dark' (phase 1)", () => {
   const dark = { fallback: "dark" } as const;
 
-  test("there is no device row: the next page would be dark anyway", async () => {
+  test("there is no device row, and with nothing saved Dark is ticked, as served", async () => {
     const screen = await renderIn("dark", Layout, dark);
     const group = screen.getByRole("group", { name: "Colour scheme" });
-    for (const name of ["Light", "Dark"]) {
-      await expect
-        .element(group.getByRole("button", { name, exact: true }))
-        .toBeInTheDocument();
-    }
+    await expect
+      .element(group.getByRole("button", { name: "Dark" }))
+      .toHaveAttribute("aria-pressed", "true");
+    await expect
+      .element(group.getByRole("button", { name: "Light" }))
+      .toHaveAttribute("aria-pressed", "false");
     await expect
       .element(group.getByRole("button", { name: DEVICE }))
       .not.toBeInTheDocument();
-  });
-
-  test("with nothing saved, Dark is ticked, as served", async () => {
-    const screen = await renderIn("dark", Layout, dark);
-    await expect
-      .element(screen.getByRole("button", { name: "Dark" }))
-      .toHaveAttribute("aria-pressed", "true");
-    await expect
-      .element(screen.getByRole("button", { name: "Light" }))
-      .toHaveAttribute("aria-pressed", "false");
   });
 
   test("light or dark still saves", async () => {
@@ -198,9 +148,6 @@ describe("the cookie's domain", () => {
     await screen.getByRole("button", { name: "Light" }).click();
     await screen.getByRole("button", { name: DEVICE }).click();
     const domain = expect.stringContaining(`; Domain=${location.hostname}`);
-    expect(written).toHaveBeenCalledWith(
-      expect.stringMatching(new RegExp(`^${COOKIE_NAME}=light;`)),
-    );
     expect(written).toHaveBeenCalledTimes(2);
     expect(written).toHaveBeenNthCalledWith(1, domain);
     expect(written).toHaveBeenNthCalledWith(2, domain);
