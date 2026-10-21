@@ -1,11 +1,8 @@
 <script lang="ts">
+  import { mdiChevronLeft, mdiChevronRight } from "@mdi/js";
   import { tick } from "svelte";
   import type { HTMLAttributes } from "svelte/elements";
   import Icon from "../Icon/Icon.svelte";
-
-  // MDI's chevron-left and chevron-right.
-  const left = "M15.41,16.58L10.83,12L15.41,7.41L14,6L8,12L14,18L15.41,16.58Z";
-  const right = "M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z";
 
   type Props = Omit<HTMLAttributes<HTMLElement>, "onchange"> & {
     /** How many pages there are. Nothing renders for one or none. */
@@ -29,39 +26,66 @@
 
   let nav = $state<HTMLElement>();
 
-  type Item =
-    | { page: number; narrow: boolean }
-    | { gap: number; wide: boolean; narrow: boolean };
+  // Widths in rem: a page button is 44px, a "…" 24px, and previous and next
+  // take two buttons. The wide row is never wider than 25rem, where it
+  // takes over; the narrow one fits 294px, a card in the dark header on a
+  // 390px phone.
+  const button = 2.75;
+  const gap = 1.5;
+  const wideRoom = 25 - 2 * button;
+  const narrowRoom = 18.375 - 2 * button;
 
-  // Which pages to show: all of them when there are no more than `room`;
-  // otherwise the first, the last, and those within `reach` of the current
-  // one. A gap of one page shows that page instead.
-  function pagesToShow(reach: number, room: number) {
-    if (pageCount <= room) return () => true;
-    const keep = (n: number) =>
-      n === 1 || n === pageCount || Math.abs(n - page) <= reach;
-    return (n: number) => keep(n) || (keep(n - 1) && keep(n + 1));
+  function width(pages: number[]) {
+    const gaps = pages.filter((n, i) => i > 0 && n - pages[i - 1] > 1).length;
+    return pages.length * button + gaps * gap;
   }
 
-  // The wide row keeps the current page's neighbours; the narrow one, under
-  // 23rem, drops them. Every narrow page is also a wide one, so one list
-  // serves both, each item marked with the widths it shows at.
+  // The pages a row shows: all of them if they fit in `room`; otherwise the
+  // first, the last, and those within `reach` of the current one. A gap of
+  // one page shows that page instead, while the row still fits.
+  function pagesShown(reach: number, room: number): number[] {
+    const all = Array.from({ length: pageCount }, (_, i) => i + 1);
+    if (width(all) <= room) return all;
+    let pages = all.filter(
+      (n) => n === 1 || n === pageCount || Math.abs(n - page) <= reach,
+    );
+    for (let i = 1; i < pages.length; i++) {
+      if (pages[i] - pages[i - 1] !== 2) continue;
+      const filled = [...pages.slice(0, i), pages[i] - 1, ...pages.slice(i)];
+      if (width(filled) <= room) pages = filled;
+    }
+    return pages;
+  }
+
+  // Which rows an item shows in. Both rows render, and a container query
+  // hides the items the other row lacks.
+  type Shows = "both" | "wide" | "narrow";
+  type Item =
+    { page: number; shows: Shows } | { gapBefore: number; shows: Shows };
+
+  const showIn: Record<Shows, string | false> = {
+    both: false,
+    wide: "@max-[25rem]:hidden",
+    narrow: "@min-[25rem]:hidden",
+  };
+
+  // The wide row keeps the current page's neighbours; the narrow one drops
+  // them. Every narrow page is also a wide one, so walk the wide row.
   const items = $derived.by(() => {
-    // Room, at 44px a button: six pages in 23rem, four in a phone's card.
-    const wide = pagesToShow(1, 6);
-    const narrow = pagesToShow(0, 4);
+    const wide = pagesShown(1, wideRoom);
+    const narrow = new Set(pagesShown(0, narrowRoom));
     const out: Item[] = [];
     let lastWide = 0;
     let lastNarrow = 0;
-    for (let n = 1; n <= pageCount; n++) {
-      if (!wide(n)) continue;
-      const inNarrow = narrow(n);
-      const gapWide = n - lastWide > 1;
-      const gapNarrow = inNarrow && n - lastNarrow > 1;
-      if (gapWide || gapNarrow) {
-        out.push({ gap: n, wide: gapWide, narrow: gapNarrow });
+    for (const n of wide) {
+      const inNarrow = narrow.has(n);
+      const gapInWide = n - lastWide > 1;
+      const gapInNarrow = inNarrow && n - lastNarrow > 1;
+      if (gapInWide || gapInNarrow) {
+        const shows = !gapInNarrow ? "wide" : !gapInWide ? "narrow" : "both";
+        out.push({ gapBefore: n, shows });
       }
-      out.push({ page: n, narrow: inNarrow });
+      out.push({ page: n, shows: inNarrow ? "both" : "wide" });
       lastWide = n;
       if (inNarrow) lastNarrow = n;
     }
@@ -73,9 +97,9 @@
     onchange?.(to);
     // Previous or next turns disabled at an end, which drops focus; put it
     // on the page reached instead.
-    const button = event.currentTarget as HTMLButtonElement;
+    const clicked = event.currentTarget as HTMLButtonElement;
     await tick();
-    if (button.disabled) {
+    if (clicked.disabled) {
       nav?.querySelector<HTMLElement>("[aria-current='page']")?.focus();
     }
   }
@@ -84,16 +108,24 @@
     "inline-flex min-h-11 min-w-11 items-center justify-center rounded-md px-2 text-sm",
     "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
   ];
-  // A page that isn't the current one.
-  const pageButton =
-    "text-foreground-soft hover:bg-muted hover:text-foreground";
-  // Previous and next: dimmed, without the hover, at an end.
-  const stepButton = [
-    control,
-    "text-foreground-soft enabled:hover:bg-muted enabled:hover:text-foreground",
-    "disabled:cursor-not-allowed disabled:opacity-40",
-  ];
 </script>
+
+<!-- Previous or next: dimmed, without the hover, at an end. -->
+{#snippet step(name: string, to: number, atEnd: boolean, icon: string)}
+  <button
+    type="button"
+    aria-label={name}
+    disabled={atEnd}
+    onclick={(e) => go(to, e)}
+    class={[
+      control,
+      "text-foreground-soft enabled:hover:bg-muted enabled:hover:text-foreground",
+      "disabled:cursor-not-allowed disabled:opacity-40",
+    ]}
+  >
+    <Icon path={icon} size={20} />
+  </button>
+{/snippet}
 
 {#if pageCount > 1}
   <nav
@@ -102,25 +134,14 @@
     {...rest}
     class={["@container flex flex-wrap items-center", className]}
   >
-    <button
-      type="button"
-      aria-label="Previous page"
-      disabled={page <= 1}
-      onclick={(e) => go(page - 1, e)}
-      class={stepButton}
-    >
-      <Icon path={left} size={20} />
-    </button>
-    {#each items as item ("gap" in item ? `gap-${item.gap}` : item.page)}
-      {#if "gap" in item}
+    {@render step("Previous page", page - 1, page <= 1, mdiChevronLeft)}
+    {#each items as item ("gapBefore" in item ? `gap-${item.gapBefore}` : item.page)}
+      {#if "gapBefore" in item}
         <span
           data-gap
           aria-hidden="true"
-          class={[
-            "w-6 text-center text-muted-foreground",
-            !item.narrow && "@max-[23rem]:hidden",
-            !item.wide && "@min-[23rem]:hidden",
-          ]}>…</span
+          class={["w-6 text-center text-muted-foreground", showIn[item.shows]]}
+          >…</span
         >
       {:else}
         {@const n = item.page}
@@ -133,20 +154,12 @@
             control,
             n === page
               ? "bg-primary font-semibold text-primary-foreground"
-              : pageButton,
-            !item.narrow && "@max-[23rem]:hidden",
+              : "text-foreground-soft hover:bg-muted hover:text-foreground",
+            showIn[item.shows],
           ]}>{n}</button
         >
       {/if}
     {/each}
-    <button
-      type="button"
-      aria-label="Next page"
-      disabled={page >= pageCount}
-      onclick={(e) => go(page + 1, e)}
-      class={stepButton}
-    >
-      <Icon path={right} size={20} />
-    </button>
+    {@render step("Next page", page + 1, page >= pageCount, mdiChevronRight)}
   </nav>
 {/if}

@@ -98,10 +98,10 @@ describe("Pagination", () => {
     expect(shown(nav)).toEqual(["Previous page", ...pages, "Next page"]);
   });
 
-  // Gaps only when needed: four pages fit a narrow card, six a wide one.
+  // Gaps only when needed: four pages fit a narrow card, seven a wide one.
   test.each([
     ["294px", 4],
-    ["400px", 6],
+    ["400px", 7],
   ] as const)("at %s shows all of %i pages", async (width, pageCount) => {
     const screen = await renderIn("light", Pagination, {
       pageCount,
@@ -140,14 +140,42 @@ describe("Pagination", () => {
     expect(gap.getAttribute("aria-hidden")).toBe("true");
   });
 
+  // A gap of one page shows that page only while the row still fits.
+  test("on page 3 of 5 in a narrow card, fills one gap, not both", async () => {
+    const screen = await renderIn("light", Pagination, {
+      pageCount: 5,
+      page: 3,
+      style: "width: 294px",
+    });
+    const nav = screen.getByRole("navigation").element() as HTMLElement;
+    expect(shown(nav)).toEqual([
+      "Previous page",
+      "Page 1",
+      "Page 2",
+      "Page 3",
+      "…",
+      "Page 5",
+      "Next page",
+    ]);
+  });
+
   // 358px: a 390px phone less its gutters; 294px: a card in the dark header
-  // on that phone; 400px: just wide enough to keep the neighbours.
-  test.each(["400px", "358px", "294px"])(
-    "fits one row at %s on any page",
-    async (width) => {
+  // on that phone; 400px: just wide enough to keep the neighbours. The
+  // pages are the widest rows: the most buttons, or gaps of one page.
+  const widths = ["400px", "370px", "358px", "294px"];
+  const pages = [
+    [120, 60],
+    [20, 4],
+    [8, 4],
+    [7, 4],
+    [5, 3],
+  ];
+  test.each(widths.flatMap((w) => pages.map(([c, p]) => [w, p, c] as const)))(
+    "fits one row at %s on page %i of %i",
+    async (width, page, pageCount) => {
       const screen = await renderIn("light", Pagination, {
-        pageCount: 120,
-        page: 60,
+        pageCount,
+        page,
         style: `width: ${width}`,
       });
       // One row of 44px buttons, not wrapped onto a second.

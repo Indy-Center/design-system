@@ -57,10 +57,13 @@ description: Buttons to move between the pages of a long list, the current page 
 - The other pages, previous and next are in `foreground-soft`, on a `muted`
   fill when hovered.
 - Previous and next are dimmed at the ends.
-- Up to six pages it shows them all. With more it shows the first and last,
-  the pages beside the current one, and "…" for the rest. Where it has less than 23rem (368px), such as
-  in a card on a phone, it drops the pages beside the current one too, so
-  the row still fits on one line.
+- Up to seven pages it shows them all. With more it shows the first and
+  last, the pages beside the current one, and "…" for the rest; a "…" that
+  would stand for one page shows that page instead.
+- Where it has less than 25rem (400px), such as on a phone, it shows all
+  the pages only up to four, and otherwise drops the pages beside the
+  current one, so the row fits on one line down to 294px, a card on a
+  phone.
 - It takes its width from its container, not its buttons; in a flex row
   beside other things, give it room with `class="flex-1"`.
 - A `ring` outline when reached by keyboard.
