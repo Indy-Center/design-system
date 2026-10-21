@@ -60,4 +60,14 @@ describe("StarDisplay", () => {
     await expect.element(image).toHaveStyle({ marginTop: "16px" });
     await expect.element(image).toHaveAttribute("id", "teacher-average");
   });
+
+  test("takes a caller's aria-label over the rounded words", async () => {
+    const screen = await renderIn("light", StarDisplay, {
+      value: 4.3,
+      "aria-label": "4.3 out of 5",
+    });
+    await expect
+      .element(screen.getByRole("img", { name: "4.3 out of 5" }))
+      .toBeVisible();
+  });
 });

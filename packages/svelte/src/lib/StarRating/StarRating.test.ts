@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { userEvent } from "vitest/browser";
-import { SCHEMES } from "../../../test/contrast.ts";
+import { contrastOn, SCHEMES, SURFACES } from "../../../test/contrast.ts";
 import { role } from "../../../test/roles.ts";
 import { renderIn } from "../../../test/schemes.ts";
 import StarRating from "./StarRating.svelte";
@@ -107,7 +107,8 @@ describe("StarRating", () => {
   });
 
   // The guide's roles: chosen stars in `warning`, the rest in
-  // `muted-foreground`.
+  // `muted-foreground`. Both are 3:1 or more on the page and on a card
+  // (WCAG 1.4.11, non-text contrast).
   test.each(SCHEMES)(
     "colours the chosen stars and the rest in %s",
     async (scheme) => {
@@ -124,6 +125,11 @@ describe("StarRating", () => {
       await expect
         .element(star("4 stars"))
         .toHaveStyle({ color: role("muted-foreground", scheme) });
+      for (const name of ["3 stars", "4 stars"]) {
+        for (const surface of Object.values(SURFACES[scheme])) {
+          expect(contrastOn(star(name), surface)).toBeGreaterThanOrEqual(3);
+        }
+      }
     },
   );
 

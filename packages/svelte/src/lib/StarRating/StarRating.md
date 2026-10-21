@@ -57,11 +57,11 @@ description: A rating out of five stars, to choose (StarRating) or to show (Star
 
 ### StarDisplay
 
-| Prop    | Type                | Notes                                                 |
-| ------- | ------------------- | ----------------------------------------------------- |
-| `value` | `number`            | Required. 0 to 5; drawn and read to the nearest half. |
-| `class` | `string`            | Added to the `<span>`. Layout only.                   |
-| others  | `<span>` attributes | Passed to the `<span>`.                               |
+| Prop    | Type                | Notes                                                                                                                |
+| ------- | ------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `value` | `number`            | Required. 0 to 5; drawn and read to the nearest half.                                                                |
+| `class` | `string`            | Added to the `<span>`. Layout only.                                                                                  |
+| others  | `<span>` attributes | Passed to the `<span>`. An `aria-label` replaces the words: pass the exact average ("4.3 out of 5") when it matters. |
 
 ## Looks
 
@@ -82,7 +82,8 @@ description: A rating out of five stars, to choose (StarRating) or to show (Star
   hidden; the star round each is its label, so clicking it chooses.
 - The browser gives it the radio group's keyboard: Tab enters at the
   chosen star (the first, when none is) and leaves after the group; the
-  arrow keys move and choose; Space chooses the focused star.
+  arrow keys move and choose, wrapping from 5 to 1; Space chooses the
+  focused star.
 - The words beside the stars are hidden from screen readers, since the
   checked radio already says how many.
 - `StarDisplay` renders a `<span role="img">` named by the value in words
