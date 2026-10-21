@@ -4,6 +4,7 @@
 /** Every header control and menu row: 44px at least, small medium text. */
 const target = "min-h-11 min-w-11 rounded-lg px-3 text-sm font-medium";
 
+/** The ring outline on whatever is reached by keyboard: every recipe here has it. */
 const focusRing =
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring";
 
@@ -37,4 +38,5 @@ export const headerButton = [
   target,
   "inline-flex items-center justify-center gap-2",
   "text-foreground-soft hover:bg-foreground/10 hover:text-foreground",
+  focusRing,
 ];

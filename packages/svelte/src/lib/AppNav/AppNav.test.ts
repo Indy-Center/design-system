@@ -401,6 +401,19 @@ describe("AppNav and AppNavMenu", () => {
       });
     });
 
+    test("shows a ring outline on a group button tabbed to", async () => {
+      const screen = await renderIn(scheme, AppNav, {
+        items: [{ label: "About", children: [{ label: "Staff", href: "#s" }] }],
+      });
+      await userEvent.tab();
+      const about = group(screen, "About");
+      await expect.element(about).toHaveFocus();
+      await expect.element(about).toHaveStyle({
+        outlineStyle: "solid",
+        outlineColor: role("ring", "dark"),
+      });
+    });
+
     test("draws the phone menu's rows in the link colour, the current page and its group on the soft fill", async () => {
       const screen = await renderIn(scheme, AppNavMenu, {
         items: hubNav,

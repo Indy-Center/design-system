@@ -18,7 +18,7 @@
     label?: string;
     /** Which edge of the button the panel lines up with. */
     align?: "start" | "end";
-    /** The button's classes. */
+    /** The button's classes, focus ring included: `barItem` or `headerButton`. */
     buttonClass?: ClassValue;
     /** The panel's classes, for its width and placement. */
     panelClass?: ClassValue;
@@ -62,11 +62,7 @@
     aria-expanded={open}
     aria-controls={id}
     aria-label={label}
-    class={[
-      "cursor-pointer",
-      "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
-      buttonClass,
-    ]}
+    class={["cursor-pointer", buttonClass]}
     onclick={() => (open = !open)}>{@render trigger(open)}</button
   >
   <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions: the
