@@ -52,6 +52,10 @@ export { default as Textarea } from "./Textarea/Textarea.svelte";
 export { default as Th, type ThScope } from "./Table/Th.svelte";
 export { default as Time } from "./Time/Time.svelte";
 export { default as Toaster } from "./Toast/Toaster.svelte";
+export {
+  default as Tooltip,
+  type TooltipTrigger,
+} from "./Tooltip/Tooltip.svelte";
 
 // The severity scale, for Alert and Toast; and the functions that raise a
 // toast, in the browser and from the server.
