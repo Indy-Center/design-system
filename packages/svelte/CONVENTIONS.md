@@ -48,6 +48,12 @@ src/routes/name/+page.svelte its playground page (lower-case folder)
   no hex. Roles change with the scheme; stock colours don't.
 - Don't write `dark:` for colours: the roles already switch inside any
   `data-theme="dark"` element. `dark:` is for the rare non-colour change.
+- The exception: a hue the roles don't have. The theme keeps Tailwind's
+  stock colours, so use them there: `Badge` takes the guide's
+  status-badge steps, with `dark:` for the dark pair, and `Chip` takes
+  solid fills that suit both schemes. Test them against the steps
+  (`styleOfClasses` in `test/contrast.ts`) and for 4.5:1
+  (`expectReadable`). Anything new reaches for a role first.
 - Components that are dark in both schemes (Header, Footer) put
   `data-theme="dark"` on their own root, and everything inside follows.
 - Never set `data-theme` on `<html>`: the colour-scheme hook does. To save
@@ -91,9 +97,10 @@ the tokens loaded, so computed colours are the real ones.
   brand guide's hex as `rgb(…)` literals. Copy the expected values from the
   guide's Roles table, not from the tokens.
 - Keyboard: `userEvent.tab()`, Enter, Escape, as the component needs.
-- Snippets for `children` in tests: `createRawSnippet`. It needs one root
-  element, so for children that are loose HTML (Prose's `{@html}` body),
-  write a small wrapper component in `test/` instead, as
+- Snippets for `children` and `icon`: `text("…")` and `icon` from
+  `test/snippets.ts`, or your own with `createRawSnippet`. That needs one
+  root element, so for children that are loose HTML (Prose's `{@html}`
+  body), write a small wrapper component in `test/` instead, as
   `test/ProseLesson.svelte` does.
 
 Run one file while working:

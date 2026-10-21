@@ -1,6 +1,16 @@
 // One line per component, in alphabetical order.
+export {
+  default as Badge,
+  BADGE_VARIANTS,
+  type BadgeVariant,
+} from "./Badge/Badge.svelte";
 export { default as Button } from "./Button/Button.svelte";
 export { default as Checkbox } from "./Checkbox/Checkbox.svelte";
+export {
+  default as Chip,
+  CHIP_VARIANTS,
+  type ChipVariant,
+} from "./Chip/Chip.svelte";
 export { default as Combobox } from "./Combobox/Combobox.svelte";
 export { default as Field, type FieldControl } from "./Field/Field.svelte";
 export { default as Fieldset } from "./Fieldset/Fieldset.svelte";
