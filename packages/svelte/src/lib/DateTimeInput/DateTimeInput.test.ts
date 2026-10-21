@@ -46,6 +46,16 @@ describe("DateTimeInput", () => {
       .toHaveValue("2027-03-14T03:30");
   });
 
+  // 1:30 AM on 1 November 2026 happens twice in Indianapolis: in EDT, then
+  // in EST.
+  test("takes a time the clocks pass twice as the first", async () => {
+    const screen = await renderIn("light", EventStartField, {});
+    await screen.getByLabelText("Start").fill("2026-11-01T01:30");
+    await expect
+      .element(screen.getByTestId("bound"))
+      .toHaveTextContent("2026-11-01T05:30:00.000Z");
+  });
+
   test("shows a UTC value in the member's local time", async () => {
     const screen = await renderIn("light", EventStartField, {
       value: "2026-10-20T23:00:00Z",

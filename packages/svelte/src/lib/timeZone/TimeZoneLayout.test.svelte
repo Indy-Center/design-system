@@ -12,8 +12,8 @@
     choice?: TimeZoneChoice;
     /** Passed on as setTimeZone's option, for a signed-in member. */
     saveToProfile?: (setting: TimeZoneProfileSetting) => unknown;
-    /** Show the setting above the times. */
-    controls?: boolean;
+    /** Show the setting above the times; a number shows that many. */
+    controls?: boolean | number;
     /** Show the line above the times. */
     line?: boolean;
     /** The instant each `Time` shows, and their `zone` props. */
@@ -34,9 +34,9 @@
   setTimeZone(() => choice, { saveToProfile });
 </script>
 
-{#if controls}
+{#each { length: Number(controls) }, i (i)}
   <TimeZoneSetting />
-{/if}
+{/each}
 {#if line}
   <TimeZoneLine />
 {/if}

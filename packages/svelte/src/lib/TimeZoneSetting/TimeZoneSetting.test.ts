@@ -139,6 +139,32 @@ describe("TimeZoneSetting", () => {
       .toEqual([["America/Chicago"]]);
   });
 
+  test("a picker opened in one control closes when another saves a choice", async () => {
+    const screen = await renderIn("light", Layout, { controls: 2 });
+    const [anotherHere] = screen.getByRole("button", { name: ANOTHER }).all();
+    const [, zuluThere] = screen
+      .getByRole("button", { name: ZULU, exact: true })
+      .all();
+    await anotherHere.click();
+    await expect.element(anotherHere).toHaveAttribute("aria-pressed", "true");
+
+    await zuluThere.click();
+    await expect.element(anotherHere).toHaveAttribute("aria-pressed", "false");
+    const [zuluHere] = screen
+      .getByRole("button", { name: ZULU, exact: true })
+      .all();
+    await expect.element(zuluHere).toHaveAttribute("aria-pressed", "true");
+    expect(
+      screen
+        .getByRole("combobox", {
+          name: "Pick a time zone",
+          includeHidden: true,
+        })
+        .all()
+        .map((picker) => picker.element().checkVisibility()),
+    ).toEqual([false, false]);
+  });
+
   test("a saved zone is ticked, its picker open on it", async () => {
     const screen = await setting({
       choice: { kind: "zone", zone: "Europe/London" },
