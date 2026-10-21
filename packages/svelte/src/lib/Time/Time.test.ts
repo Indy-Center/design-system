@@ -290,6 +290,43 @@ describe("Time", () => {
       expect(html).toContain('datetime="2026-10-20T23:00:00.000Z"');
     });
 
+    // Zulu's "Today" can be another day for the member, so the server
+    // writes the date out until the browser knows the zone.
+    test("writes the date out, not Today or Tomorrow", async () => {
+      const html = await commands.serverRender(PATH, {
+        value: new Date(vi.getRealSystemTime()).toISOString(),
+        show: "datetime",
+      });
+      expect(text(html)).toMatch(/^\w{3} \d{1,2} \w{3}, \d{4}Z$/);
+    });
+
+    test("writes a range's dates in Zulu, then the member's day", async () => {
+      // An earlier year, so the served text keeps it whenever this runs.
+      const props = {
+        value: "2025-03-04T23:00:00Z",
+        end: "2025-03-05T02:00:00Z",
+        show: "datetime",
+        zone: "both",
+      };
+      const target = await serve(props);
+      expect(target.textContent).toBe(
+        "Tue 4 Mar 2025, 2300Z–Wed 5 Mar 2025, 0200Z",
+      );
+      hydrateServed(target, props);
+      await expect
+        .poll(() => target.textContent)
+        .toBe("Tue 4 Mar 2025, 6:00 PM–9:00 PM EST · 2300Z–0200Z");
+    });
+
+    test('keeps "Today" in Zulu when Zulu is asked for', async () => {
+      const html = await commands.serverRender(PATH, {
+        value: new Date(vi.getRealSystemTime()).toISOString(),
+        show: "datetime",
+        zone: "zulu",
+      });
+      expect(text(html)).toMatch(/^Today, \d{4}Z$/);
+    });
+
     test("switches to the browser's zone once hydrated", async () => {
       const time = await serveAndHydrate({ value: "2026-10-20T23:00:00Z" });
       await expect.poll(() => time.textContent).toBe("7:00 PM EDT");

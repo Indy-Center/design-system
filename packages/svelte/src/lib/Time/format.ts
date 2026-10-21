@@ -28,9 +28,15 @@ export function timeText(options: {
     return [{ text: relative(start, options.now()), at: start }];
   }
 
-  const local = zone === "zulu" ? undefined : memberZone;
-  const clock = local ? localClock(local) : zuluClock;
-  const withZulu = local !== undefined && zone === "both";
+  // Until the member's zone is known, local is drawn in Zulu with its date
+  // written out: Zulu's "Today" can be another day for the member.
+  const clock =
+    zone === "zulu"
+      ? zuluClock
+      : memberZone
+        ? localClock(memberZone)
+        : zuluDates;
+  const withZulu = zone === "both" && memberZone !== undefined;
   const now = show === "datetime" ? options.now() : undefined;
   const dayOf = (at: Date) => (now ? clock.day(at, now) : undefined);
   const withDay = (at: Date, time: string) =>
@@ -99,6 +105,12 @@ const zuluClock: Clock = {
   day: (at, now) => dayLabel(at, now, "UTC"),
 };
 
+/** Zulu standing in for an unknown local zone: dates, never "Today". */
+const zuluDates: Clock = {
+  ...zuluClock,
+  day: (at, now) => dateLabel(at, now, "UTC"),
+};
+
 /** A member's zone: the 12-hour clock and the zone's abbreviation. */
 function localClock(timeZone: string): Clock {
   return {
@@ -123,32 +135,44 @@ function localClock(timeZone: string): Clock {
  * year ("Thu 4 Mar 2027").
  */
 function dayLabel(at: Date, now: Date, timeZone: string): string {
-  const date = calendarDate(at, timeZone);
-  const today = calendarDate(now, timeZone);
-  const days = (date.midnightUtc - today.midnightUtc) / 86_400_000;
+  const days =
+    (dayNumber(at, timeZone) - dayNumber(now, timeZone)) / 86_400_000;
   if (days === 0) return "Today";
   if (days === 1) return "Tomorrow";
   if (days > 1 && days < 7) {
     return partsOf(at, timeZone, { weekday: "long" }).weekday ?? "";
   }
-  const { weekday, day, month } = partsOf(at, timeZone, {
+  return dateLabel(at, now, timeZone);
+}
+
+/**
+ * The date `at` falls on in `timeZone`, written out: the day before the
+ * month ("Tue 27 Oct"), with the year when it isn't `now`'s ("Thu 4 Mar
+ * 2027").
+ */
+function dateLabel(at: Date, now: Date, timeZone: string): string {
+  const { weekday, day, month, year } = partsOf(at, timeZone, {
     weekday: "short",
     day: "numeric",
     month: "short",
+    year: "numeric",
   });
-  const year = date.year === today.year ? "" : ` ${date.year}`;
-  return `${weekday} ${day} ${month}${year}`;
+  const thisYear = partsOf(now, timeZone, { year: "numeric" }).year;
+  return `${weekday} ${day} ${month}${year === thisYear ? "" : ` ${year}`}`;
 }
 
-/** The calendar date `at` falls on in `timeZone`, and that date's midnight in UTC. */
-function calendarDate(at: Date, timeZone: string) {
+/**
+ * The calendar date `at` falls on in `timeZone`, as that date's midnight
+ * in UTC, so two dates' difference is a whole number of days.
+ */
+function dayNumber(at: Date, timeZone: string): number {
   const parts = partsOf(at, timeZone, {
     year: "numeric",
     month: "numeric",
     day: "numeric",
   });
   const [year, month, day] = [parts.year, parts.month, parts.day].map(Number);
-  return { year, midnightUtc: Date.UTC(year, month - 1, day) };
+  return Date.UTC(year, month - 1, day);
 }
 
 /** `at` in `timeZone`, as Intl's named parts in US English. */

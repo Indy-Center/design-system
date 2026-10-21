@@ -81,9 +81,13 @@ Times, with the clock pinned at 5:00 PM EDT on Tuesday 20 October 2026:
 ## Server and browser
 
 The server can't know the member's zone, so it draws Zulu, whatever zone
-the server runs in: `zone="both"` is `2300Z` alone until then. Once the
-page loads, the browser redraws in its own zone. A Worker in UTC never
-shows a wrong "local" time; a member sees Zulu for a moment before local.
+the server runs in: `zone="both"` is `2300Z` alone until then. With
+`show="datetime"` it writes the date out (`Tue 20 Oct, 2300Z`) rather
+than "Today" or "Tomorrow", which in Zulu can be another day for the
+member. Once the page loads, the browser redraws in its own zone. A
+Worker in UTC never shows a wrong "local" time or day; a member sees Zulu
+for a moment before local. `zone="zulu"` keeps "Today" and "Tomorrow" on
+the server, as Zulu's day is the one asked for.
 A saved time zone, which will let the server draw local from the start,
 is still to come.
 
