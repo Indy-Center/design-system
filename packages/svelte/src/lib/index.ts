@@ -79,7 +79,13 @@ export {
 } from "./aviation/callsign.js";
 export { formatDuration, type DurationStyle } from "./aviation/duration.js";
 export { formatFrequency, spokenFrequency } from "./aviation/frequency.js";
-export { findRating, RATINGS, type Rating } from "./aviation/ratings.js";
+export {
+  findPilotRating,
+  findRating,
+  PILOT_RATINGS,
+  RATINGS,
+  type Rating,
+} from "./aviation/ratings.js";
 export {
   resolvePosition,
   type PositionMatch,

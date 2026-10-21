@@ -1,4 +1,4 @@
-/** A VATSIM controller rating. */
+/** A VATSIM rating, a controller's or a pilot's. */
 export type Rating = {
   /** VATSIM's number, which also orders them: `5`. */
   id: number;
@@ -57,5 +57,33 @@ export function findRating(value: number | string): Rating | undefined {
     [r.short, r.long, VNAS_NAMES[r.short]].some(
       (name) => name?.toLowerCase() === wanted,
     ),
+  );
+}
+
+/**
+ * VATSIM's pilot ratings, as its data feed ships them, in order. Each `id`
+ * is a bit mask holding the ones below it, so they also sort by `id`.
+ */
+export const PILOT_RATINGS: readonly Rating[] = [
+  { id: 0, short: "NEW", long: "Basic Member" },
+  { id: 1, short: "PPL", long: "Private Pilot License" },
+  { id: 3, short: "IR", long: "Instrument Rating" },
+  { id: 7, short: "CMEL", long: "Commercial Multi-Engine License" },
+  { id: 15, short: "ATPL", long: "Airline Transport Pilot License" },
+  { id: 31, short: "FI", long: "Flight Instructor" },
+  { id: 63, short: "FE", long: "Flight Examiner" },
+];
+
+/**
+ * The pilot rating for VATSIM's number (`3`), the short code (`"IR"`) or
+ * VATSIM's name (`"Instrument Rating"`), in any case. Undefined when it is
+ * none.
+ */
+export function findPilotRating(value: number | string): Rating | undefined {
+  if (typeof value === "number")
+    return PILOT_RATINGS.find((r) => r.id === value);
+  const wanted = value.toLowerCase();
+  return PILOT_RATINGS.find((r) =>
+    [r.short, r.long].some((name) => name.toLowerCase() === wanted),
   );
 }
