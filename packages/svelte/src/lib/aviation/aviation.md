@@ -7,8 +7,8 @@ description: Plain functions for frequencies, callsigns, positions, ratings and 
 
 - [ ] Use these instead of your own copies: `(hz / 1000000).toFixed(3)`, a
       position pattern, a suffix list for sorting, a rating table.
-- [ ] Pass frequencies in hertz, as vNAS gives them. VATSIM's feed already
-      gives `"128.225"`; show that as it is.
+- [ ] Pass frequencies in hertz, as vNAS gives them. VATSIM's feed gives
+      megahertz (`"128.225"`); `Frequency` takes that as it is.
 - [ ] Pass callsigns upper case, as the network writes them. Upper-case
       what a member types before `isPosition`.
 - [ ] When the person is online, pass `resolvePosition` the vNAS position
@@ -31,7 +31,7 @@ import {
   type VnasPosition,
 } from "@indy-center/svelte";
 
-formatFrequency(128225000); // "128.225"
+formatFrequency(128225000); // "128.22"
 spokenFrequency(128225000); // "one two eight point two two"
 
 // positions: VnasPosition[], from the app's server load.
@@ -44,15 +44,22 @@ formatDuration(83, "short"); // "1 h 23 m"
 
 ## Frequencies
 
-| Function              | Returns                                 |
-| --------------------- | --------------------------------------- |
-| `formatFrequency(hz)` | Megahertz, three decimals: `"128.225"`. |
-| `spokenFrequency(hz)` | The words, per FAA JO 7110.65 2-4-17.   |
+| Function                             | Returns                                                       |
+| ------------------------------------ | ------------------------------------------------------------- |
+| `formatFrequency(hz, { decimals? })` | Megahertz, two decimals (`"128.22"`), or three (`"128.225"`). |
+| `spokenFrequency(hz, { decimals? })` | The words, per FAA JO 7110.65 2-4-17.                         |
 
-`spokenFrequency` says each digit, "point" for the decimal, and drops the
-digits after the second decimal: 128.225 is "one two eight point two two",
-121.500 is "one two one point five", 118.050 is "one one eight point zero
-five". Nine is "niner" (2-4-16). The words are lower case.
+`formatFrequency` cuts, never rounds: 128.225 is `"128.22"`. `decimals: 3`
+shows the third, which only exists for an 8.33 kHz channel; anything finer
+than a whole kHz is cut too, so 128.2299 is `"128.22"`, or `"128.229"`
+with three.
+
+`spokenFrequency` says what `formatFrequency` shows, with the same
+`decimals`: each digit, "point" for the decimal, and no trailing zeros.
+128.225 is "one two eight point two two", or "one two eight point two two
+five" with three; 121.500 is "one two one point five", 118.050 is "one one
+eight point zero five". Nine is "niner" (2-4-16). The words are lower
+case.
 
 ## Callsigns and position types
 
@@ -96,6 +103,13 @@ slim shape the positions lookup supplies:
 | `frequency` | `number`  | Hertz.                                           |
 | `facility`  | `string`  | The facility's name: "Indianapolis ARTCC".       |
 | `starred`   | `boolean` | Starred in Data Admin.                           |
+
+## Airports
+
+`AirportInfo` is the type for an airport, `{ code, name? }`: the ICAO code
+(`"KLEX"`) and, where the app has it, the name (`"Blue Grass"`).
+`Position` takes one as `airport`. vNAS positions carry no airport, so the
+app supplies it.
 
 ## Ratings
 

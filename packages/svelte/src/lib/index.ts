@@ -39,6 +39,7 @@ export {
   type FooterColumn,
   type FooterLink,
 } from "./Footer/Footer.svelte";
+export { default as Frequency } from "./Frequency/Frequency.svelte";
 export { default as Heading } from "./Heading/Heading.svelte";
 export { default as Icon } from "./Icon/Icon.svelte";
 export { default as Input } from "./Input/Input.svelte";
@@ -48,6 +49,10 @@ export { default as PageHeader } from "./PageHeader/PageHeader.svelte";
 export { default as PageHero } from "./PageHero/PageHero.svelte";
 export { default as Pagination } from "./Pagination/Pagination.svelte";
 export { default as Panel } from "./Panel/Panel.svelte";
+export {
+  default as Position,
+  type PositionField,
+} from "./Position/Position.svelte";
 export { default as ProgressBar } from "./ProgressBar/ProgressBar.svelte";
 export { default as Prose } from "./Prose/Prose.svelte";
 export { default as Radio } from "./Radio/Radio.svelte";
@@ -97,6 +102,7 @@ export {
 } from "./colorScheme/saveColorScheme.js";
 
 // Aviation helpers: plain functions, for components and apps alike.
+export type { AirportInfo } from "./aviation/airport.js";
 export {
   comparePositionTypes,
   isPosition,
@@ -106,7 +112,11 @@ export {
   type PositionType,
 } from "./aviation/callsign.js";
 export { formatDuration, type DurationStyle } from "./aviation/duration.js";
-export { formatFrequency, spokenFrequency } from "./aviation/frequency.js";
+export {
+  formatFrequency,
+  spokenFrequency,
+  type FrequencyOptions,
+} from "./aviation/frequency.js";
 export {
   findPilotRating,
   findRating,

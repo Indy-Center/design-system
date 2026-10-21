@@ -69,11 +69,13 @@ describe("the packed package", () => {
   test("exports the aviation helpers from the package root, with types", async () => {
     const index = await readFile(new URL("dist/index.d.ts", root), "utf8");
     for (const name of [
+      "AirportInfo",
       "comparePositionTypes",
       "findPilotRating",
       "findRating",
       "formatDuration",
       "formatFrequency",
+      "FrequencyOptions",
       "isPosition",
       "parseCallsign",
       "PILOT_RATINGS",
