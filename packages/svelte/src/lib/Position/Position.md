@@ -61,7 +61,7 @@ description: A controller position from its callsign alone, labelled by radio na
 | `airport`     | `string`                       | The airport's code, `"KLEX"`.                                                                                                            |
 | `airportName` | `string`                       | The airport's name, shown after the code with `airportAt="under"`.                                                                       |
 | `radioName`   | `string`                       | Wins over vNAS's radio name.                                                                                                             |
-| `frequency`   | `number \| string`             | Wins over vNAS's frequency: hertz, or megahertz as written.                                                                              |
+| `frequency`   | `number \| string`             | Wins over vNAS's frequency: hertz, or megahertz as written. Ignored if it isn't a number.                                                |
 | `decimals`    | `2 \| 3`                       | The frequency's decimals; see `Frequency`.                                                                                               |
 | `class`       | `string`                       | Layout only, on its root.                                                                                                                |
 | others        | global attributes              | `id`, `aria-*` and the rest, on its root `<span>`.                                                                                       |

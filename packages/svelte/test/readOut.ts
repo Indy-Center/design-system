@@ -1,16 +1,16 @@
 // What an element says to a sighted member and to a screen reader, for
 // components that show one thing and read out another (Frequency).
 
-/** The text a screen reader reads: everything not `aria-hidden`, spaces collapsed. */
-export function readOut(host: Element): string {
+/** `host`'s text without the elements `selector` matches, spaces collapsed. */
+function textWithout(host: Element, selector: string): string {
   const copy = host.cloneNode(true) as Element;
-  copy.querySelectorAll("[aria-hidden='true']").forEach((e) => e.remove());
+  copy.querySelectorAll(selector).forEach((e) => e.remove());
   return (copy.textContent ?? "").replace(/\s+/g, " ").trim();
 }
 
-/** The text on screen: everything but `.sr-only`, spaces collapsed. */
-export function onScreen(host: Element): string {
-  const copy = host.cloneNode(true) as Element;
-  copy.querySelectorAll(".sr-only").forEach((e) => e.remove());
-  return (copy.textContent ?? "").replace(/\s+/g, " ").trim();
-}
+/** The text a screen reader reads: everything not `aria-hidden`. */
+export const readOut = (host: Element) =>
+  textWithout(host, "[aria-hidden='true']");
+
+/** The text on screen: everything but `.sr-only`. */
+export const onScreen = (host: Element) => textWithout(host, ".sr-only");

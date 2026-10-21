@@ -358,6 +358,21 @@ describe("Position", () => {
       });
       expect(onScreen(root)).toBe("Cleveland Center 132.17 CLE_CTR");
     });
+
+    test("a frequency that isn't one is ignored", async () => {
+      const known = await show({
+        callsign: "LEX_TWR",
+        show: ["radioName", "frequency"],
+        frequency: "soon",
+      });
+      expect(onScreen(known.root)).toBe("Lexington Tower 119.10");
+      const unknown = await show({
+        callsign: "CLE_CTR",
+        show: ["radioName", "frequency"],
+        frequency: "soon",
+      });
+      expect(onScreen(unknown.root)).toBe("CLE_CTR");
+    });
   });
 
   test("decimals={3} shows the frequency's third decimal", async () => {

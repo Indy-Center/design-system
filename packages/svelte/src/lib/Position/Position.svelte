@@ -8,6 +8,7 @@
   import type { HTMLAttributes } from "svelte/elements";
   import { resolvePosition } from "../aviation/resolvePosition.js";
   import Frequency from "../Frequency/Frequency.svelte";
+  import { toHertz } from "../Frequency/hertz.js";
   import { getPositions } from "../positions/positionsContext.js";
 
   type Props = Omit<HTMLAttributes<HTMLSpanElement>, "children"> & {
@@ -54,11 +55,18 @@
   );
   const has = (field: PositionField) => show.includes(field);
 
+  // A frequency prop that isn't one is ignored.
+  const givenHz = $derived(
+    frequency === undefined ? undefined : toHertz(frequency),
+  );
+  const radioText = $derived(radioName ?? found?.radioName);
+
   // Known when the positions have it, or the props say enough to show.
   const known = $derived(
-    found !== undefined || radioName !== undefined || frequency !== undefined,
+    found !== undefined || radioName !== undefined || givenHz !== undefined,
   );
 
+  /** A text part of the label, in mono for a callsign. */
   type Part = { text: string; mono?: boolean };
 
   const shortName = $derived<Part | undefined>(
@@ -68,15 +76,13 @@
       : undefined,
   );
   const radio = $derived<Part | undefined>(
-    has("radioName") && (radioName ?? found?.radioName)
-      ? { text: (radioName ?? found?.radioName)! }
-      : undefined,
+    has("radioName") && radioText ? { text: radioText } : undefined,
   );
   const sector = $derived<Part | undefined>(
     has("name") && found?.name ? { text: found.name } : undefined,
   );
   const hz = $derived(
-    has("frequency") ? (frequency ?? found?.frequency) : undefined,
+    has("frequency") ? (givenHz ?? found?.frequency) : undefined,
   );
   const code = $derived(has("airport") ? airport : undefined);
 
@@ -85,7 +91,8 @@
   const others = $derived(
     [shortName, sector].filter((p): p is Part => p !== undefined && p !== lead),
   );
-  // With nothing else to lead, the airport leads, wherever it was asked for.
+  // With nothing else to lead, the airport leads, wherever it was asked for;
+  // otherwise it goes where airportAt says.
   const airportLeads = $derived(lead === undefined && code !== undefined);
   const where = $derived(airportLeads ? undefined : airportAt);
 </script>

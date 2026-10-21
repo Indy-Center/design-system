@@ -1,7 +1,7 @@
 import { describe, expect, test } from "vitest";
 import { indyCenter, indyGround } from "../../playground/positions.ts";
 import { SCHEMES } from "../../../test/contrast.ts";
-import { onScreen, readOut as spoken } from "../../../test/readOut.ts";
+import { onScreen, readOut } from "../../../test/readOut.ts";
 import { renderIn } from "../../../test/schemes.ts";
 import WithPositions from "../../../test/WithPositions.svelte";
 import Frequency from "./Frequency.svelte";
@@ -43,7 +43,7 @@ describe("Frequency", () => {
   test("is read out as spoken, and the digits only seen", async () => {
     const screen = await renderIn("light", Frequency, { value: 128225000 });
     const host = screen.container.firstElementChild!;
-    expect(spoken(host)).toBe("one two eight point two two");
+    expect(readOut(host)).toBe("one two eight point two two");
     expect(onScreen(host)).toBe("128.22");
     await expect
       .element(screen.getByText("one two eight point two two"))
@@ -55,7 +55,7 @@ describe("Frequency", () => {
       value: 128225000,
       decimals: 3,
     });
-    expect(spoken(screen.container.firstElementChild!)).toBe(
+    expect(readOut(screen.container.firstElementChild!)).toBe(
       "one two eight point two two",
     );
   });
