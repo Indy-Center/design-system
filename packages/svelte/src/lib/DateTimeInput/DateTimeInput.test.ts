@@ -91,18 +91,23 @@ describe("DateTimeInput", () => {
       .toHaveAccessibleDescription("In your time zone, America/Punta_Arenas.");
   });
 
-  test("is described by its read-out, then the field's hint and error", async () => {
+  test("is described by its read-out, then the field's hint and error, and marked invalid", async () => {
     const screen = await renderIn("light", EventStartField, {
       value: "2026-10-27T23:00:00Z",
       hint: "When the event opens.",
       error: "Starts before the event is posted.",
     });
+    const box = screen.getByLabelText("Start");
     await expect
-      .element(screen.getByLabelText("Start"))
+      .element(box)
       .toHaveAccessibleDescription(
         "Local: Tue 27 Oct, 7:00 PM EDT Zulu: Tue 27 Oct, 2300Z " +
           "When the event opens. Starts before the event is posted.",
       );
+    await expect.element(box).toHaveAttribute("aria-invalid", "true");
+    await expect
+      .element(box)
+      .toHaveStyle({ borderColor: role("destructive", "light") });
   });
 
   test("clears its value when the box is cleared", async () => {
@@ -296,6 +301,18 @@ describe("DateTimeInput", () => {
       await expect
         .element(screen.getByText(/^Local/))
         .toHaveTextContent("Local: Tue 27 Oct, 6:00 PM CDT");
+    });
+
+    // Chicago is CDT (UTC−5) in October and CST (UTC−6) after 1 November.
+    test("takes min and max in the saved zone", async () => {
+      const screen = await renderIn("light", EventStartField, {
+        choice: chicago,
+        min: "2026-10-20T21:00:00Z",
+        max: "2026-11-20T21:00:00Z",
+      });
+      const box = screen.getByLabelText("Start");
+      await expect.element(box).toHaveAttribute("min", "2026-10-20T16:00");
+      await expect.element(box).toHaveAttribute("max", "2026-11-20T15:00");
     });
 
     test("names the saved zone while empty", async () => {
