@@ -65,6 +65,22 @@ describe("Frequency", () => {
     expect(onScreen(host)).toBe("128.225");
   });
 
+  test.each([
+    [121510000, "121.510", "one two one point five one zero"],
+    [121500000, "121.500", "one two one point five"],
+  ])(
+    "with decimals={3}, %i Hz is read out by the 8.33 kHz rule: %s as %s",
+    async (hz, text, words) => {
+      const screen = await renderIn("light", Frequency, {
+        value: hz,
+        decimals: 3,
+      });
+      const host = screen.container.firstElementChild!;
+      expect(readOut(host)).toBe(words);
+      expect(onScreen(host)).toBe(text);
+    },
+  );
+
   test("is in mono with tabular figures", async () => {
     const screen = await renderIn("light", Frequency, { value: 128225000 });
     const host = screen.container.querySelector("span")!;

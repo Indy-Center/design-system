@@ -63,4 +63,8 @@ shows nothing.
   screen reader says "one two eight point two two" rather than "one
   hundred twenty-eight point two two". It says what is shown: with
   `decimals={3}`, "one two eight point two two five".
+- With `decimals={3}` it follows ICAO's 8.33 kHz rule (Annex 10 Vol II):
+  all six digits, unless the fifth and sixth are both zero, then the
+  first four. `121.510` is "one two one point five one zero"; `121.500`
+  is "one two one point five".
 - Copying the text selects the digits, not the spoken form.

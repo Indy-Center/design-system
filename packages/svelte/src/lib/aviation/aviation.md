@@ -61,6 +61,12 @@ five" with three; 121.500 is "one two one point five", 118.050 is "one one
 eight point zero five". Nine is "niner" (2-4-16). The words are lower
 case.
 
+With `decimals: 3`, an 8.33 kHz channel, it follows ICAO's rule instead
+(Annex 10 Vol II): all six digits, unless the fifth and sixth are both
+zero, then the first four. 121.510 is "one two one point five one zero",
+118.050 "one one eight point zero five zero", and 121.500 still "one two
+one point five".
+
 ## Callsigns and position types
 
 | Function or value            | Returns                                                                                            |

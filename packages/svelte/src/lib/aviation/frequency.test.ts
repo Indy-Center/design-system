@@ -58,10 +58,28 @@ describe("spokenFrequency, per FAA JO 7110.65 2-4-17", () => {
   test.each([
     [128_225_000, "one two eight point two two five"],
     [132_175_000, "one three two point one seven five"],
-    [118_050_000, "one one eight point zero five"],
-    [121_500_000, "one two one point five"],
     [128_229_900, "one two eight point two two niner"],
   ])("with decimals 3, %d Hz is said %s", (hz, words) => {
+    expect(spokenFrequency(hz, { decimals: 3 })).toBe(words);
+  });
+});
+
+describe("spokenFrequency with decimals 3, per ICAO Annex 10 Vol II", () => {
+  // All six digits, unless the fifth and sixth are both zero: then four.
+  test.each([
+    [121_510_000, "one two one point five one zero"],
+    [118_050_000, "one one eight point zero five zero"],
+    [118_005_000, "one one eight point zero zero five"],
+    [128_225_000, "one two eight point two two five"],
+  ])("%d Hz is said in six digits: %s", (hz, words) => {
+    expect(spokenFrequency(hz, { decimals: 3 })).toBe(words);
+  });
+
+  test.each([
+    [121_500_000, "one two one point five"],
+    [118_100_000, "one one eight point one"],
+    [369_000_000, "three six niner point zero"],
+  ])("%d Hz, fifth and sixth zero, is said in four: %s", (hz, words) => {
     expect(spokenFrequency(hz, { decimals: 3 })).toBe(words);
   });
 });
