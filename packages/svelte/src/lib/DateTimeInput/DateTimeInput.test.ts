@@ -193,6 +193,16 @@ describe("DateTimeInput", () => {
     form.remove();
   });
 
+  test("still calls a caller's oninput", async () => {
+    const oninput = vi.fn();
+    const screen = await renderIn("light", DateTimeInput, {
+      "aria-label": "Start",
+      oninput,
+    });
+    await screen.getByLabelText("Start").fill("2026-10-27T19:00");
+    expect(oninput).toHaveBeenCalled();
+  });
+
   test("takes min and max as instants, like its value", async () => {
     const screen = await renderIn("light", DateTimeInput, {
       "aria-label": "Start",

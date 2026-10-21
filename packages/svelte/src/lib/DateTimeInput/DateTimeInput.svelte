@@ -26,6 +26,7 @@
     max,
     id,
     "aria-describedby": callerDescribedBy,
+    oninput,
     class: className,
     ...rest
   }: Props = $props();
@@ -69,7 +70,10 @@
     value={local}
     min={inZone(min) || undefined}
     max={inZone(max) || undefined}
-    oninput={(event) => (value = fromLocal(event.currentTarget.value))}
+    oninput={(event) => {
+      value = fromLocal(event.currentTarget.value);
+      oninput?.(event);
+    }}
     aria-describedby={describedBy}
     class={textControlClasses}
   />
