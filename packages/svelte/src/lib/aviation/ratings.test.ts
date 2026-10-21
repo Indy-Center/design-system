@@ -1,5 +1,10 @@
 import { describe, expect, test } from "vitest";
-import { findRating, RATINGS } from "./ratings.ts";
+import {
+  findPilotRating,
+  findRating,
+  PILOT_RATINGS,
+  RATINGS,
+} from "./ratings.ts";
 
 describe("RATINGS", () => {
   test("is VATSIM's table, in its order", () => {
@@ -62,5 +67,36 @@ describe("findRating", () => {
 
   test.each([13, 5.5, "C4", "", "Student"])("%j is no rating", (value) => {
     expect(findRating(value)).toBeUndefined();
+  });
+});
+
+describe("PILOT_RATINGS", () => {
+  test("is VATSIM's pilot table, in its order", () => {
+    expect(PILOT_RATINGS.map((r) => [r.id, r.short, r.long])).toEqual([
+      [0, "NEW", "Basic Member"],
+      [1, "PPL", "Private Pilot License"],
+      [3, "IR", "Instrument Rating"],
+      [7, "CMEL", "Commercial Multi-Engine License"],
+      [15, "ATPL", "Airline Transport Pilot License"],
+      [31, "FI", "Flight Instructor"],
+      [63, "FE", "Flight Examiner"],
+    ]);
+  });
+});
+
+describe("findPilotRating", () => {
+  test.each([3, "IR", "ir", "Instrument Rating"])(
+    "finds IR from %j",
+    (value) => {
+      expect(findPilotRating(value)).toMatchObject({
+        id: 3,
+        short: "IR",
+        long: "Instrument Rating",
+      });
+    },
+  );
+
+  test.each([2, "C1", "P2", ""])("%j is no pilot rating", (value) => {
+    expect(findPilotRating(value)).toBeUndefined();
   });
 });

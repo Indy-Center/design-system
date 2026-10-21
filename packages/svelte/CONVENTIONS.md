@@ -35,9 +35,16 @@ src/routes/name/+page.svelte its playground page (lower-case folder)
   no folder, doc page or playground page of its own: the component's doc
   page gives it a Props table, and the component's tests and playground
   cover it.
+- Two exported components that draw the same thing for different jobs
+  (`StarRating` to choose, `StarDisplay` to show) share one folder, doc
+  page and playground page, named for the first. Their shared look goes
+  in a module in that folder (`stars.ts`), and the doc page gives each a
+  Props table.
 - Parts that several components share, and that aren't exported, get a
   folder of their own with no doc page: `formControl` (the controls'
-  classes), `CloseButton` (Alert's and Toast's close button),
+  classes), `buttonClasses` (Button's variants, which DropdownMenu's arrow
+  shares), `CloseButton` (Alert's and Toast's close button), `IconTile`
+  (the tinted icon tile of ErrorPage, EmptyState and StatCard),
   `headerMenu` (the header's disclosure button and panel, and its link
   classes, for AppsMenu, AppNav and UserMenu).
 - Something an app raises with a function, rather than places, is named
@@ -45,6 +52,11 @@ src/routes/name/+page.svelte its playground page (lower-case folder)
   function and its state), `Toaster.svelte` (the one component that shows
   them), `Toast.md` and `Toast.test.ts`, and the playground is
   `routes/toast`.
+- A component that is both placed and raised with a function keeps the
+  function in the component's folder: `ConfirmDialog/` holds
+  `ConfirmDialog.svelte`, `confirmAction.ts` and the private
+  `ConfirmPrompt.svelte` it mounts, with one doc page and playground for
+  both.
 
 ## Props
 
@@ -88,10 +100,14 @@ src/routes/name/+page.svelte its playground page (lower-case folder)
   applies the choice at once. Read the scheme in use from
   `document.documentElement.dataset.theme` after mount. See
   `src/lib/colorScheme/colorScheme.md`.
-- `font-heading` for headings, `font-mono` for CIDs and ratings; Tailwind's
-  default sizes.
+- `font-heading` for headings, `font-mono` for CIDs, controller ratings
+  (`S3`, `C1`; not star ratings) and HTTP status codes (ErrorPage's
+  `404`); Tailwind's default sizes.
 - Focus: `focus-visible:outline-2 focus-visible:outline-offset-2
-focus-visible:outline-ring`.
+focus-visible:outline-ring`. Where a parent's `overflow-hidden` (or a
+  scrolling list) would clip that ring, inset it instead with
+  `focus-visible:-outline-offset-2`: a menu's rows (`DropdownMenuItem`)
+  and `Tabs`.
 
 ## Behaviour
 
@@ -99,12 +115,15 @@ focus-visible:outline-ring`.
   something, `<details>`, `<dialog>` with `showModal()`, `popover` with CSS
   anchor positioning. No headless library (decision 0003).
 - Menus are disclosures: a `<button aria-expanded>` and the list it shows,
-  no menu roles. They close on Escape and on a click outside.
+  no menu roles. They close on Escape and on a click or tap outside.
 - For that closing, put the `dismiss` action from `../dismiss/dismiss.js`
   on the panel: `use:dismiss={{ open, trigger, onclose }}`, with the
   trigger from `bind:this` on a `$state`. While open, it closes on Escape
-  (focus goes back to the trigger) and on a press outside the panel and
-  trigger. It is for menus, `Tooltip` and `Combobox`; it isn't exported.
+  (focus goes back to the trigger) and on a tap outside the panel and
+  trigger; a press that moves (a scroll or a drag) leaves it open. With
+  panels open inside each other, one Escape closes only the innermost
+  where focus is (a tooltip in an open menu, then the menu). It is for
+  menus, `Tooltip` and `Combobox`; it isn't exported.
   Its tests, `src/lib/dismiss/dismiss.test.ts`, show it in use.
 - Every control and menu row is at least 44px tall and wide (`min-h-11
 min-w-11`). A link inside a sentence is exempt.
@@ -160,6 +179,16 @@ A short example importing from "@indy-center/svelte".
 ## Props
 
 | Prop | Type | Notes |
+
+## What it shows (optional)
+
+What the member sees in each state, when the props alone don't say it:
+an empty value, a value that crosses midnight, a value it can't read.
+
+## Server and browser (optional)
+
+What the server draws and what changes once the page loads, when they
+differ: anything that needs the member's zone or device.
 
 ## Looks
 
