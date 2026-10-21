@@ -22,8 +22,10 @@ description: A text box that searches a list as you type, to pick one option fro
       (a CID in `font-mono`). Keep it to one or two lines, and no links or
       buttons inside.
 - [ ] Give `name` to send the pick's key with a form; the text in the box
-      is not sent. With `required` (on it or its `Field`), the form won't
-      send until an option is picked: typed text alone doesn't count.
+      is not sent. Text with no pick stops the form sending ("Pick an
+      option from the list."), so typed text is never dropped silently; an
+      empty box sends nothing. With `required` (on it or its `Field`), an
+      empty box stops it too.
 - [ ] Don't colour it or its list. `class` is for layout only, on the
       wrapper round the box and its list.
 
@@ -106,7 +108,7 @@ option.
 | Down Arrow                   | Opens the list on the first option, or moves to the next, wrapping round.                                                |
 | Up Arrow                     | Opens the list on the last option, or moves to the previous, wrapping round.                                             |
 | Alt+Down Arrow               | Opens the list, none active.                                                                                             |
-| Alt+Up Arrow                 | Closes the list, keeping the text; focus stays in the box.                                                               |
+| Alt+Up Arrow                 | Closes the list, keeping the text; focus stays in the box. With the list closed, it's left to the page.                  |
 | Enter                        | Picks the active option and closes the list. With the list open, never sends the form.                                   |
 | Escape                       | Closes the list; with it closed, clears the box and the pick. An empty box lets it through, so a dialog round it closes. |
 | Home, End, Left, Right Arrow | Move the caret in the box, and leave the list.                                                                           |

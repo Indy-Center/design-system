@@ -173,6 +173,24 @@ describe("Combobox", () => {
         .toHaveTextContent("none");
     });
 
+    test("Alt+Up on a closed list is left to the page", async () => {
+      const screen = await renderIn("light", Picker, {});
+      const input = screen.getByRole("combobox");
+      let prevented: boolean | undefined;
+      const listen = (event: KeyboardEvent) => {
+        prevented = event.defaultPrevented;
+      };
+      window.addEventListener("keydown", listen);
+      try {
+        await userEvent.click(input);
+        await userEvent.keyboard("{Escape}{Alt>}{ArrowUp}{/Alt}");
+        expect(prevented).toBe(false);
+      } finally {
+        window.removeEventListener("keydown", listen);
+      }
+      await expect.element(input).toHaveAttribute("aria-expanded", "false");
+    });
+
     test("Escape on a closed list clears the box and the pick", async () => {
       const screen = await renderIn("light", Picker, {
         value: { cid: "1000001", name: "Ann Archer" },
@@ -336,6 +354,17 @@ describe("Combobox", () => {
     );
     await userEvent.keyboard("{ArrowDown}{Enter}");
     await expect.element(input).toHaveValue("Ann Archer");
+    await expect.poll(() => form.checkValidity()).toBe(true);
+  });
+
+  test("not required, text with no pick fails the form; an empty box passes", async () => {
+    const screen = await renderIn("light", Picker, {});
+    const input = screen.getByRole("combobox");
+    const form = input.element().closest("form")!;
+    expect(form.checkValidity()).toBe(true);
+    await input.fill("Ann");
+    await expect.poll(() => form.checkValidity()).toBe(false);
+    await input.fill("");
     await expect.poll(() => form.checkValidity()).toBe(true);
   });
 

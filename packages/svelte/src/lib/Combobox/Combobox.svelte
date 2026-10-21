@@ -146,9 +146,10 @@
   });
 
   // The form sends the hidden input, so the box's own `required` only
-  // checks for text. Text with no pick fails the form's check too.
+  // checks for text. Text with no pick fails the form's check, required or
+  // not, so typed text is never dropped silently; an empty box passes.
   $effect(() => {
-    const unpicked = rest.required && value == null && query !== "";
+    const unpicked = value == null && query !== "";
     input?.setCustomValidity(unpicked ? "Pick an option from the list." : "");
   });
 
@@ -258,8 +259,10 @@
         else move(1);
         break;
       case "ArrowUp":
+        // Alt+Up hides the list; focus stays in the box. With the list
+        // already closed, it's left to the page, as Escape is.
+        if (event.altKey && !open) break;
         event.preventDefault();
-        // Alt+Up hides the list; focus stays in the box.
         if (event.altKey) close();
         else move(-1);
         break;
