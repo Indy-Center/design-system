@@ -1,6 +1,6 @@
 import { hydrate, tick, unmount } from "svelte";
 import { afterEach, beforeAll, describe, expect, test } from "vitest";
-import { commands } from "vitest/browser";
+import { commands, userEvent } from "vitest/browser";
 import { pinClockInIndianapolis } from "../../../test/clock.ts";
 import { savedTimeZone as saved } from "../../../test/cookies.ts";
 import { role } from "../../../test/roles.ts";
@@ -89,6 +89,20 @@ describe("TimeZoneLine", () => {
     await expect
       .element(offer.element().closest("p"))
       .toHaveStyle({ color: role("muted-foreground", "light") });
+  });
+
+  test("its button is 44px tall, with a ring when tabbed to", async () => {
+    const screen = await line();
+    const zulu = screen.getByRole("button", { name: "Show times in Zulu" });
+    await expect.element(zulu).toBeVisible();
+    const { height } = zulu.element().getBoundingClientRect();
+    expect(height).toBeGreaterThanOrEqual(44);
+    await userEvent.tab();
+    await expect.element(zulu).toHaveFocus();
+    await expect.element(zulu).toHaveStyle({
+      outlineStyle: "solid",
+      outlineColor: role("ring", "light"),
+    });
   });
 
   test("adds a caller's class and attributes to the line", async () => {

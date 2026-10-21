@@ -161,6 +161,18 @@ describe("TimeZoneSetting", () => {
     expect(chicago.element().closest("optgroup")?.label).toBe("America");
   });
 
+  test("a saved zone the list leaves out still shows as picked", async () => {
+    // UTC is a zone a cookie can hold, but not in the browser's list.
+    const screen = await setting({ choice: { kind: "zone", zone: "UTC" } });
+    const picker = screen.getByRole("combobox", { name: "Pick a time zone" });
+    await expect.element(picker).toHaveValue("UTC");
+    expect(
+      [...picker.element().querySelectorAll("option")].filter(
+        (o) => o.value === "UTC",
+      ),
+    ).toHaveLength(1);
+  });
+
   test.each([
     [
       "mentions the profile when signed in",
