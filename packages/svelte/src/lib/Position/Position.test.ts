@@ -160,6 +160,20 @@ describe("Position", () => {
       expect(top(part(root, "128.22"))).toBeCloseTo(line, -1);
     });
 
+    test.each([
+      ["shortName", "IND_83_CTR"],
+      ["radioName", "Indy Center"],
+      ["name", "Falmouth 83"],
+      ["frequency", "128.22"],
+    ] as const)("%s alone shows %s, no dot", async (field, text) => {
+      const { root } = await show({
+        callsign: "IND_83_CTR",
+        show: [field],
+        layout: "inline",
+      });
+      expect(onScreen(root)).toBe(text);
+    });
+
     test("reads out the same, without the dots", async () => {
       const { root } = await show({
         callsign: "IND_83_CTR",

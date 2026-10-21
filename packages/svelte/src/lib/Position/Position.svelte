@@ -126,9 +126,9 @@
         class="text-muted-foreground">{@render dot()}{@render text(p)}</span
       >{/each}{#if code && where === "under"}<span class="text-muted-foreground"
         >{@render dot()}{@render under()}</span
-      >{/if}{#if hz !== undefined}<span class="text-muted-foreground"
-        >{@render dot()}</span
-      ><Frequency value={hz} {decimals} class="text-foreground" />{/if}
+      >{/if}{#if hz !== undefined}{#if lead || airportLeads}<span
+          class="text-muted-foreground">{@render dot()}</span
+        >{/if}<Frequency value={hz} {decimals} class="text-foreground" />{/if}
   </span>
 {:else}
   <span {...rest} class={["flex items-baseline gap-3", className]}>
