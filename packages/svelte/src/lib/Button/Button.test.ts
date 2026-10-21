@@ -1,7 +1,6 @@
 import { createRawSnippet } from "svelte";
 import { describe, expect, test, vi } from "vitest";
 import { userEvent } from "vitest/browser";
-import { render } from "vitest-browser-svelte";
 import { renderIn } from "../../../test/schemes.ts";
 import Button from "./Button.svelte";
 
@@ -23,7 +22,7 @@ describe("Button", () => {
     const link = screen.getByRole("link", { name: "New event" });
     await expect.element(link).toHaveAttribute("href", "/events/new");
     await expect.element(link).not.toHaveAttribute("type");
-    expect(screen.container.querySelector("button")).toBeNull();
+    await expect.element(screen.getByRole("button")).not.toBeInTheDocument();
   });
 
   // From the guide's Roles table. primary: `primary` #0369A1 under
@@ -57,8 +56,10 @@ describe("Button", () => {
   test.each([
     ["primary", "light", "rgb(7, 89, 133)"],
     ["primary", "dark", "rgb(7, 89, 133)"],
+    ["primary", "dark-header", "rgb(7, 89, 133)"],
     ["secondary", "light", "rgb(226, 232, 240)"],
     ["secondary", "dark", "rgb(51, 65, 85)"],
+    ["secondary", "dark-header", "rgb(51, 65, 85)"],
   ] as const)("%s on hover in %s", async (variant, scheme, fill) => {
     const screen = await renderIn(scheme, Button, {
       variant,
@@ -69,16 +70,46 @@ describe("Button", () => {
     await expect.element(button).toHaveStyle({ backgroundColor: fill });
   });
 
-  test("secondary has an edge in the input colour", async () => {
-    const screen = await renderIn("light", Button, {
-      variant: "secondary",
-      children: text("Cancel"),
+  // danger's hover is no guide colour: `destructive` (#B91C1C light,
+  // #F87171 dark) at 90%, as the browser mixes it.
+  const at90 = (hex: string) => {
+    const probe = document.createElement("div");
+    probe.style.backgroundColor = `color-mix(in oklab, ${hex} 90%, transparent)`;
+    document.body.append(probe);
+    const colour = getComputedStyle(probe).backgroundColor;
+    probe.remove();
+    return colour;
+  };
+  test.each([
+    ["light", "#B91C1C"],
+    ["dark", "#F87171"],
+    ["dark-header", "#F87171"],
+  ] as const)("danger on hover in %s", async (scheme, hex) => {
+    const screen = await renderIn(scheme, Button, {
+      variant: "danger",
+      children: text("Delete"),
     });
-    await expect.element(screen.getByRole("button")).toHaveStyle({
-      borderStyle: "solid",
-      borderColor: "rgb(100, 116, 139)",
-    });
+    const button = screen.getByRole("button");
+    await userEvent.hover(button);
+    await expect
+      .poll(() => getComputedStyle(button.element()).backgroundColor)
+      .toBe(at90(hex));
   });
+
+  // The guide's `input`: #64748B in both schemes.
+  test.each(["light", "dark", "dark-header"] as const)(
+    "secondary has an edge in the input colour in %s",
+    async (scheme) => {
+      const screen = await renderIn(scheme, Button, {
+        variant: "secondary",
+        children: text("Cancel"),
+      });
+      await expect.element(screen.getByRole("button")).toHaveStyle({
+        borderStyle: "solid",
+        borderColor: "rgb(100, 116, 139)",
+      });
+    },
+  );
 
   // Tailwind's text-sm, text-base and text-lg; md matches Input's text.
   test.each([
@@ -161,9 +192,8 @@ describe("Button", () => {
         children: text("Save"),
       });
       const button = screen.getByRole("button");
-      const svg = button.element().querySelector("svg");
-      await expect.element(svg).toBeVisible();
-      expect(svg?.closest('[aria-hidden="true"]')).not.toBeNull();
+      const spinner = button.getByRole("status", { includeHidden: true });
+      await expect.element(spinner).toBeVisible();
       expect(button.getByRole("status").elements()).toEqual([]);
     });
 
@@ -174,7 +204,7 @@ describe("Button", () => {
       await expect
         .element(screen.getByRole("button"))
         .not.toHaveAttribute("aria-busy");
-      expect(screen.container.querySelector('[role="status"]')).toBeNull();
+      expect(screen.getByRole("status").elements()).toEqual([]);
     });
 
     test("keeps its name, text and focus", async () => {
@@ -205,13 +235,17 @@ describe("Button", () => {
 
     test("doesn't submit its form", async () => {
       const form = document.createElement("form");
+      form.id = "busy-form";
       const onsubmit = vi.fn((e: Event) => e.preventDefault());
       form.addEventListener("submit", onsubmit);
       document.body.append(form);
       try {
-        const screen = await render(Button, {
-          target: form,
-          props: { busy: true, type: "submit", children: text("Save") },
+        // Joined to the form by its `form` attribute.
+        const screen = await renderIn("light", Button, {
+          busy: true,
+          type: "submit",
+          form: "busy-form",
+          children: text("Save"),
         });
         await screen.getByRole("button").click();
         expect(onsubmit).not.toHaveBeenCalled();
@@ -239,6 +273,26 @@ describe("Button", () => {
         expect(followed).not.toHaveBeenCalled();
       } finally {
         document.removeEventListener("click", watch);
+      }
+    });
+
+    test("as a link, doesn't open in a new tab from a middle-click", async () => {
+      const opened = vi.fn();
+      const watch = (e: Event) => {
+        if (!e.defaultPrevented) opened();
+        e.preventDefault(); // keep the test from opening a tab
+      };
+      document.addEventListener("auxclick", watch);
+      try {
+        const screen = await renderIn("light", Button, {
+          href: "/events/new",
+          busy: true,
+          children: text("New event"),
+        });
+        await screen.getByRole("link").click({ button: "middle" });
+        expect(opened).not.toHaveBeenCalled();
+      } finally {
+        document.removeEventListener("auxclick", watch);
       }
     });
 
@@ -278,26 +332,51 @@ describe("Button", () => {
         .not.toHaveAttribute("aria-pressed");
     });
 
-    // Not by colour alone (WCAG 1.4.1): a mark that is filled when on and
-    // hollow when off, as the community site's ActionToggle has.
+    // Not by colour alone (WCAG 1.4.1): a mark before the text, filled
+    // when on and hollow when off, as the community site's ActionToggle
+    // has. It's the button's ::before, in its text colour: secondary's
+    // `foreground` (#0F172A light, #FFFFFF dark).
+    const mark = (element: Element) => getComputedStyle(element, "::before");
     test.each([
-      [true, "rgb(15, 23, 42)"],
-      [false, transparent],
-    ])("pressed={%s} shows its state by shape", async (pressed, fill) => {
+      [true, "light", "rgb(15, 23, 42)"],
+      [false, "light", "rgb(15, 23, 42)"],
+      [true, "dark", "rgb(255, 255, 255)"],
+      [false, "dark", "rgb(255, 255, 255)"],
+      [true, "dark-header", "rgb(255, 255, 255)"],
+      [false, "dark-header", "rgb(255, 255, 255)"],
+    ] as const)(
+      "pressed={%s} shows its state by shape in %s",
+      async (pressed, scheme, ink) => {
+        const screen = await renderIn(scheme, Button, {
+          variant: "secondary",
+          pressed,
+          children: text("Show offline"),
+        });
+        const style = mark(screen.getByRole("button").element());
+        expect(style.width).toBe("12px");
+        expect(style.borderStyle).toBe("solid");
+        expect(style.borderColor).toBe(ink);
+        expect(style.backgroundColor).toBe(pressed ? ink : transparent);
+      },
+    );
+
+    test("has no mark when pressed is left out", async () => {
       const screen = await renderIn("light", Button, {
-        variant: "secondary",
-        pressed,
-        children: text("Show offline"),
+        children: text("Save"),
       });
-      const mark = screen.container.querySelector<HTMLElement>(
-        "[data-pressed-mark]",
-      );
-      await expect.element(mark).toHaveAttribute("aria-hidden", "true");
-      await expect.element(mark).toHaveStyle({
-        borderStyle: "solid",
-        borderColor: "rgb(15, 23, 42)",
-        backgroundColor: fill,
+      expect(mark(screen.getByRole("button").element()).content).toBe("none");
+    });
+
+    test("as a link, is never a toggle", async () => {
+      // The types forbid this; an untyped caller still gets a plain link.
+      const screen = await renderIn("light", Button, {
+        href: "/events/new",
+        pressed: true as unknown as undefined,
+        children: text("New event"),
       });
+      const link = screen.getByRole("link");
+      await expect.element(link).not.toHaveAttribute("aria-pressed");
+      expect(mark(link.element()).content).toBe("none");
     });
 
     test("toggles from the keyboard when the app flips pressed", async () => {
