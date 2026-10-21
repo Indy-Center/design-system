@@ -11,7 +11,9 @@
       | {
           /** The opening line under a page title: larger, in the body colour. */
           lead: true;
+          /** Not with `lead`: a lead line is never muted. */
           tone?: never;
+          /** Not with `lead`: a lead line is never small. */
           size?: never;
         }
       | {
@@ -34,18 +36,16 @@
     ...rest
   }: Props = $props();
 
+  const looks = {
+    lead: "text-lg text-foreground-soft",
+    small: "text-sm text-muted-foreground",
+    muted: "text-base text-muted-foreground",
+  };
+
   // One look at a time: small is muted already, so it wins over muted.
-  let look = $derived(
-    lead
-      ? "text-lg text-foreground-soft"
-      : size === "small"
-        ? "text-sm text-muted-foreground"
-        : tone === "muted"
-          ? "text-base text-muted-foreground"
-          : undefined,
-  );
+  let look = $derived(lead ? "lead" : (size ?? tone));
 </script>
 
-<svelte:element this={as} {...rest} class={[look, className]}
+<svelte:element this={as} {...rest} class={[look && looks[look], className]}
   >{@render children()}</svelte:element
 >
