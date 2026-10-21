@@ -1,5 +1,7 @@
 import { describe, expect, test } from "vitest";
 import { userEvent } from "vitest/browser";
+import { SCHEMES } from "../../../test/contrast.ts";
+import { role } from "../../../test/roles.ts";
 import { renderIn } from "../../../test/schemes.ts";
 import Tabs from "./Tabs.svelte";
 
@@ -52,36 +54,26 @@ describe("Tabs", () => {
   });
 
   // Not by colour alone (WCAG 1.4.1): the current tab also has a bar under
-  // it and bolder text. The bar is the guide's `link` role (#0369A1 light,
-  // #38BDF8 dark); its text `foreground` (#0F172A light, #FFFFFF dark); the
-  // others `muted-foreground` (#475569 light, #9CA3AF dark).
-  test.each([
-    ["light", "rgb(3, 105, 161)", "rgb(15, 23, 42)", "rgb(71, 85, 105)"],
-    ["dark", "rgb(56, 189, 248)", "rgb(255, 255, 255)", "rgb(156, 163, 175)"],
-    [
-      "dark-header",
-      "rgb(56, 189, 248)",
-      "rgb(255, 255, 255)",
-      "rgb(156, 163, 175)",
-    ],
-  ] as const)(
+  // it and bolder text. The bar is the `link` role, its text `foreground`;
+  // the others `muted-foreground`, with a transparent bar.
+  test.each(SCHEMES)(
     "shows the current tab with a bar and bold text in %s",
-    async (scheme, bar, current, other) => {
+    async (scheme) => {
       const screen = await renderIn(scheme, Tabs, props());
       await expect
         .element(screen.getByRole("link", { name: "Users" }))
         .toHaveStyle({
           borderBottomStyle: "solid",
           borderBottomWidth: "2px",
-          borderBottomColor: bar,
-          color: current,
+          borderBottomColor: role("link", scheme),
+          color: role("foreground", scheme),
           fontWeight: "600",
         });
       await expect
         .element(screen.getByRole("link", { name: "Feedback" }))
         .toHaveStyle({
           borderBottomColor: "rgba(0, 0, 0, 0)",
-          color: other,
+          color: role("muted-foreground", scheme),
           fontWeight: "400",
         });
     },
@@ -116,21 +108,18 @@ describe("Tabs", () => {
     expect(box.width).toBeGreaterThanOrEqual(44);
   });
 
-  // The guide's `ring` role: #0284C7 light, #0EA5E9 dark.
-  test.each([
-    ["light", "rgb(2, 132, 199)"],
-    ["dark", "rgb(14, 165, 233)"],
-    ["dark-header", "rgb(14, 165, 233)"],
-  ] as const)(
+  // The `ring` role.
+  test.each(SCHEMES)(
     "shows a ring outline when tabbed to in %s",
-    async (scheme, colour) => {
+    async (scheme) => {
       const screen = await renderIn(scheme, Tabs, props());
       await userEvent.tab();
       const first = screen.getByRole("link", { name: "Overview" });
       await expect.element(first).toHaveFocus();
-      await expect
-        .element(first)
-        .toHaveStyle({ outlineStyle: "solid", outlineColor: colour });
+      await expect.element(first).toHaveStyle({
+        outlineStyle: "solid",
+        outlineColor: role("ring", scheme),
+      });
     },
   );
 

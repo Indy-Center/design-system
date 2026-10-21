@@ -112,9 +112,14 @@ Test what a user sees, through the component's props, in a real browser:
 the tokens loaded, so computed colours are the real ones.
 
 - Its role and accessible name (`getByRole`).
-- Its colours in `light`, `dark` and `dark-header`, compared with the
-  brand guide's hex as `rgb(…)` literals. Copy the expected values from the
-  guide's Roles table, not from the tokens.
+- Its colours in `light`, `dark` and `dark-header`, from `role()` in
+  `test/roles.ts`: `test.each(SCHEMES)` (from `test/contrast.ts`), then
+  `toHaveStyle({ color: role("link", scheme) })`.
+  It reads the tokens' `tokens.json`, so a palette change needs no test
+  edits; the tokens package holds those values to the guide. Don't type a
+  role's `rgb(…)`. Name the role the component's class uses, not one that
+  happens to share its value. A colour that isn't a role (`transparent`,
+  one the test sets itself, a stock step) stays a literal with a comment.
 - Keyboard: `userEvent.tab()`, Enter, Escape, as the component needs.
 - Snippets for `children` and `icon`: `text("…")` and `icon` from
   `test/snippets.ts`, or your own with `createRawSnippet`. That needs one

@@ -1,5 +1,7 @@
 import { describe, expect, test } from "vitest";
 import { page } from "vitest/browser";
+import { SCHEMES } from "../../../test/contrast.ts";
+import { role } from "../../../test/roles.ts";
 import { renderIn } from "../../../test/schemes.ts";
 import ProgressBar from "./ProgressBar.svelte";
 
@@ -84,48 +86,31 @@ describe("ProgressBar", () => {
       .toHaveAttribute("aria-hidden", "true");
   });
 
-  // From the brand guide's Roles table: the track is `muted`, the fill
-  // `info` (`primary` is too faint on the dark track), the track's edge
-  // `input` in both schemes, the label `foreground-soft` and the value
-  // `muted-foreground`.
-  const light = {
-    track: "rgb(226, 232, 240)",
-    fill: "rgb(3, 105, 161)",
-    label: "rgb(51, 65, 85)",
-    value: "rgb(71, 85, 105)",
-  };
-  const dark = {
-    track: "rgb(51, 65, 85)",
-    fill: "rgb(56, 189, 248)",
-    label: "rgb(209, 213, 219)",
-    value: "rgb(156, 163, 175)",
-  };
-  test.each([
-    ["light", light],
-    ["dark", dark],
-    ["dark-header", dark],
-  ] as const)(
+  // The track is `muted`, the fill `info` (`primary` is too faint on the
+  // dark track), the track's edge `input`, the label `foreground-soft` and
+  // the value `muted-foreground`.
+  test.each(SCHEMES)(
     "takes its colours from the roles in %s",
-    async (scheme, expected) => {
+    async (scheme) => {
       const screen = await renderIn(scheme, ProgressBar, {
         label: "Course progress",
         value: 40,
       });
       const bar = screen.getByRole("progressbar").element();
       // The fill covers the first 40%; the track shows past it.
-      expect(await colourAt(bar, 0.2)).toBe(expected.fill);
-      expect(await colourAt(bar, 0.7)).toBe(expected.track);
+      expect(await colourAt(bar, 0.2)).toBe(role("info", scheme));
+      expect(await colourAt(bar, 0.7)).toBe(role("muted", scheme));
       await expect.element(bar).toHaveStyle({
         borderWidth: "1px",
         borderStyle: "solid",
-        borderColor: "rgb(100, 116, 139)",
+        borderColor: role("input", scheme),
       });
       await expect
         .element(screen.getByText("Course progress"))
-        .toHaveStyle({ color: expected.label });
+        .toHaveStyle({ color: role("foreground-soft", scheme) });
       await expect
         .element(screen.getByText("40%"))
-        .toHaveStyle({ color: expected.value });
+        .toHaveStyle({ color: role("muted-foreground", scheme) });
     },
   );
 

@@ -1,5 +1,7 @@
 import { describe, expect, test } from "vitest";
 import { userEvent } from "vitest/browser";
+import { SCHEMES } from "../../../test/contrast.ts";
+import { role } from "../../../test/roles.ts";
 import { renderIn } from "../../../test/schemes.ts";
 import Breadcrumbs from "./Breadcrumbs.svelte";
 
@@ -68,23 +70,24 @@ describe("Breadcrumbs", () => {
       .toBeInTheDocument();
   });
 
-  // The guide's `link` role (#0369A1 light, #38BDF8 dark), underlined, for
-  // the pages above; `foreground-soft` (#334155 light, #D1D5DB dark), not
-  // underlined, for the page being shown.
-  test.each([
-    ["light", "rgb(3, 105, 161)", "rgb(51, 65, 85)"],
-    ["dark", "rgb(56, 189, 248)", "rgb(209, 213, 219)"],
-    ["dark-header", "rgb(56, 189, 248)", "rgb(209, 213, 219)"],
-  ] as const)(
+  // The guide's `link` role, underlined, for the pages above;
+  // `foreground-soft`, not underlined, for the page being shown.
+  test.each(SCHEMES)(
     "shows the pages above as links, the current as text, in %s",
-    async (scheme, link, current) => {
+    async (scheme) => {
       const screen = await renderIn(scheme, Breadcrumbs, props());
       await expect
         .element(screen.getByRole("link", { name: "SOPs" }))
-        .toHaveStyle({ color: link, textDecorationLine: "underline" });
+        .toHaveStyle({
+          color: role("link", scheme),
+          textDecorationLine: "underline",
+        });
       await expect
         .element(screen.getByRole("link", { name: "ZID Center SOP" }))
-        .toHaveStyle({ color: current, textDecorationLine: "none" });
+        .toHaveStyle({
+          color: role("foreground-soft", scheme),
+          textDecorationLine: "none",
+        });
     },
   );
 
@@ -102,21 +105,18 @@ describe("Breadcrumbs", () => {
     }
   });
 
-  // The guide's `ring` role: #0284C7 light, #0EA5E9 dark.
-  test.each([
-    ["light", "rgb(2, 132, 199)"],
-    ["dark", "rgb(14, 165, 233)"],
-    ["dark-header", "rgb(14, 165, 233)"],
-  ] as const)(
+  // The guide's `ring` role.
+  test.each(SCHEMES)(
     "shows a ring outline when tabbed to in %s",
-    async (scheme, colour) => {
+    async (scheme) => {
       const screen = await renderIn(scheme, Breadcrumbs, props());
       await userEvent.tab();
       const first = screen.getByRole("link", { name: "Library" });
       await expect.element(first).toHaveFocus();
-      await expect
-        .element(first)
-        .toHaveStyle({ outlineStyle: "solid", outlineColor: colour });
+      await expect.element(first).toHaveStyle({
+        outlineStyle: "solid",
+        outlineColor: role("ring", scheme),
+      });
     },
   );
 });

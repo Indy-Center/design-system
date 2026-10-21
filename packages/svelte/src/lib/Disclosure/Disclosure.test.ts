@@ -1,6 +1,8 @@
 import { createRawSnippet } from "svelte";
 import { describe, expect, test } from "vitest";
 import { userEvent } from "vitest/browser";
+import { SCHEMES } from "../../../test/contrast.ts";
+import { role } from "../../../test/roles.ts";
 import { renderIn } from "../../../test/schemes.ts";
 import Disclosure from "./Disclosure.svelte";
 
@@ -56,38 +58,32 @@ describe("Disclosure", () => {
     expect(box.height).toBeGreaterThanOrEqual(44);
   });
 
-  // The guide's `foreground` (#0F172A light, #FFFFFF dark) for the summary,
-  // `foreground-soft` (#334155 light, #D1D5DB dark) for what it shows.
-  test.each([
-    ["light", "rgb(15, 23, 42)", "rgb(51, 65, 85)"],
-    ["dark", "rgb(255, 255, 255)", "rgb(209, 213, 219)"],
-    ["dark-header", "rgb(255, 255, 255)", "rgb(209, 213, 219)"],
-  ] as const)("takes the text roles in %s", async (scheme, heading, body) => {
+  // `foreground` for the summary, `foreground-soft` for what it shows.
+  test.each(SCHEMES)("takes the text roles in %s", async (scheme) => {
     const screen = await renderIn(scheme, Disclosure, {
       ...props(),
       open: true,
     });
     await expect
       .element(screen.container.querySelector("summary")!)
-      .toHaveStyle({ color: heading });
+      .toHaveStyle({ color: role("foreground", scheme) });
     await expect
       .element(screen.getByText("Each position needs its own rating."))
-      .toHaveStyle({ color: body });
+      .toHaveStyle({ color: role("foreground-soft", scheme) });
   });
 
-  // The guide's `ring` role: #0284C7 light, #0EA5E9 dark.
-  test.each([
-    ["light", "rgb(2, 132, 199)"],
-    ["dark", "rgb(14, 165, 233)"],
-    ["dark-header", "rgb(14, 165, 233)"],
-  ] as const)(
+  // The `ring` role.
+  test.each(SCHEMES)(
     "shows a ring outline when tabbed to in %s",
-    async (scheme, colour) => {
+    async (scheme) => {
       const screen = await renderIn(scheme, Disclosure, props());
       await userEvent.tab();
       await expect
         .element(screen.container.querySelector("summary")!)
-        .toHaveStyle({ outlineStyle: "solid", outlineColor: colour });
+        .toHaveStyle({
+          outlineStyle: "solid",
+          outlineColor: role("ring", scheme),
+        });
     },
   );
 

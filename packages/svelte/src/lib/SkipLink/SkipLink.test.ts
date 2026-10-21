@@ -1,5 +1,7 @@
 import { afterEach, describe, expect, test } from "vitest";
 import { page, userEvent } from "vitest/browser";
+import { SCHEMES } from "../../../test/contrast.ts";
+import { role } from "../../../test/roles.ts";
 import { renderIn } from "../../../test/schemes.ts";
 import SkipLink from "./SkipLink.svelte";
 
@@ -71,28 +73,18 @@ describe("SkipLink", () => {
     await expect.element(target).toHaveFocus();
   });
 
-  // The guide's `card` role: #FFFFFF light, #1E293B dark; `link`: #0369A1
-  // light, #38BDF8 dark; `ring`: #0284C7 light, #0EA5E9 dark.
-  test.each([
-    ["light", "rgb(255, 255, 255)", "rgb(3, 105, 161)", "rgb(2, 132, 199)"],
-    ["dark", "rgb(30, 41, 59)", "rgb(56, 189, 248)", "rgb(14, 165, 233)"],
-    [
-      "dark-header",
-      "rgb(30, 41, 59)",
-      "rgb(56, 189, 248)",
-      "rgb(14, 165, 233)",
-    ],
-  ] as const)(
+  // The `card` role behind `link` text, with the `ring` outline.
+  test.each(SCHEMES)(
     "shows as a link on a card, with a ring, in %s",
-    async (scheme, card, link, ring) => {
+    async (scheme) => {
       const screen = await renderIn(scheme, SkipLink, {});
       await userEvent.tab();
       await expect.element(screen.getByRole("link")).toHaveStyle({
-        backgroundColor: card,
-        color: link,
+        backgroundColor: role("card", scheme),
+        color: role("link", scheme),
         textDecorationLine: "underline",
         outlineStyle: "solid",
-        outlineColor: ring,
+        outlineColor: role("ring", scheme),
       });
     },
   );
