@@ -24,6 +24,14 @@ src/routes/name/+page.svelte its playground page (lower-case folder)
   Playground pages import from `../../lib/index.ts`.
 - A component's own small parts (a helper, an icon) go in its folder. Only
   what `index.ts` exports is public.
+- Parts that several components share, and that aren't exported, get a
+  folder of their own with no doc page: `formControl` (the controls'
+  classes), `CloseButton` (Alert's and Toast's close button).
+- Something an app raises with a function, rather than places, is named
+  for what the member sees: `Toast/` holds `toast.svelte.ts` (the
+  function and its state), `Toaster.svelte` (the one component that shows
+  them), `Toast.md` and `Toast.test.ts`, and the playground is
+  `routes/toast`.
 
 ## Props
 
@@ -37,6 +45,8 @@ src/routes/name/+page.svelte its playground page (lower-case folder)
 - Accept `class` and add it last: `class={[own, className]}`. It is for
   layout (margin, width), not colour. Variants are props (`variant="…"`),
   not classes the caller has to know.
+- The exception: a component the page has once and places itself, such as
+  `Toaster`, takes no props. Its doc page says so under `## Props`.
 
 ## Colour and type
 

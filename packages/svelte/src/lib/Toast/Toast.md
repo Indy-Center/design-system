@@ -43,10 +43,10 @@ in a `use:enhance` callback or an event handler. A form action or `load`
 that redirects can't raise one yet: return a result instead, and toast it
 in the `use:enhance` callback before going on.
 
-`<Toaster />` takes no props and isn't styled by the app: there is one,
-for the whole page.
+## Props
 
-## Props and arguments
+`<Toaster />` takes no props, and the app doesn't style it: there is one,
+for the whole page.
 
 `toast(level, message)`:
 

@@ -1,7 +1,8 @@
 <script lang="ts">
   import { onMount, tick } from "svelte";
-  import Icon from "../Icon/Icon.svelte";
-  import { closeIcon, SEVERITIES } from "../severity/severity.js";
+  import CloseButton from "../CloseButton/CloseButton.svelte";
+  import SeverityIcon from "../severity/SeverityIcon.svelte";
+  import { SEVERITIES } from "../severity/severity.js";
   import { toasts } from "./toast.svelte.js";
 
   // Readers announce a live region's text when it changes, not always when
@@ -57,12 +58,12 @@
 
 <div class="sr-only" role="status" aria-live="polite">
   {#if mounted}
-    {#each toasts.polite as line, i (i)}<p>{line}</p>{/each}
+    {#each toasts.lines.status as line, i (i)}<p>{line}</p>{/each}
   {/if}
 </div>
 <div class="sr-only" role="alert" aria-live="assertive">
   {#if mounted}
-    {#each toasts.assertive as line, i (i)}<p>{line}</p>{/each}
+    {#each toasts.lines.alert as line, i (i)}<p>{line}</p>{/each}
   {/if}
 </div>
 
@@ -83,20 +84,15 @@
             severity.rule,
           ]}
         >
-          <!-- 20px, the line's height, so each level's shape is clear. -->
-          <Icon path={severity.icon} size={20} class={severity.text} />
+          <SeverityIcon level={t.level} />
           <p class="min-w-0 flex-1 text-foreground-soft">
             <span class="font-semibold text-foreground">{severity.label}:</span>
             {t.message}
           </p>
-          <button
-            type="button"
+          <CloseButton
             aria-label="Dismiss {t.message}"
-            class="-my-2 -mr-3 inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-md text-muted-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
             onclick={() => close(t.id)}
-          >
-            <Icon path={closeIcon} />
-          </button>
+          />
         </li>
       {/each}
     </ol>

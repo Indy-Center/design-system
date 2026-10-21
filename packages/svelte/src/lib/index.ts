@@ -14,7 +14,7 @@ export { default as Toaster } from "./Toast/Toaster.svelte";
 export {
   SEVERITIES,
   type Severity,
-  type SeverityLevel,
+  type SeverityDetails,
 } from "./severity/severity.js";
 export { toast } from "./Toast/toast.svelte.js";
 

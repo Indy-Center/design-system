@@ -8,7 +8,7 @@ const STORAGE_KEY = "centerline-toasts";
 // How long a line stays in a live region, in milliseconds: long enough to
 // be read, then cleared so the region doesn't grow.
 const READ_LINE_FOR = 7000;
-const rank = (level: Severity) => Object.keys(SEVERITIES).indexOf(level);
+const rank = (level: Severity) => SEVERITIES[level].rank;
 
 export type ShownToast = {
   id: number;
@@ -25,9 +25,11 @@ export type ShownToast = {
 class Toasts {
   shown = $state<ShownToast[]>([]);
   queued: ShownToast[] = [];
-  /** What the live regions read, polite and assertive. */
-  polite = $state<string[]>([]);
-  assertive = $state<string[]>([]);
+  /** What the live regions read: `status` politely, `alert` at once. */
+  lines = $state<Record<"status" | "alert", string[]>>({
+    status: [],
+    alert: [],
+  });
   #nextId = 1;
 
   raise(level: Severity, message: string) {
@@ -106,8 +108,7 @@ class Toasts {
   clear() {
     this.shown = [];
     this.queued = [];
-    this.polite = [];
-    this.assertive = [];
+    this.lines = { status: [], alert: [] };
   }
 
   // Shows the toast at the front of the queue in each free place, with a
@@ -122,11 +123,11 @@ class Toasts {
   // Each message is a line added to its region, so several in a row are all
   // read; lines go a while later, which isn't announced.
   #announce({ level, message }: ShownToast) {
-    const line = `${SEVERITIES[level].label}: ${message}`;
-    const region = level === "danger" ? "assertive" : "polite";
-    this[region].push(line);
+    const { label, live } = SEVERITIES[level];
+    const line = `${label}: ${message}`;
+    this.lines[live].push(line);
     setTimeout(() => {
-      const lines = this[region];
+      const lines = this.lines[live];
       const at = lines.indexOf(line);
       if (at >= 0) lines.splice(at, 1);
     }, READ_LINE_FOR);

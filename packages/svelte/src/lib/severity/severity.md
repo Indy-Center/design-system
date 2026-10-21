@@ -32,5 +32,7 @@ one's place.
 | `caution` | Could cause a problem           | `warning`     | Caution      | alert-outline         |
 | `danger`  | Will cause a problem, or failed | `destructive` | Danger       | alert-octagon-outline |
 
-Each entry also holds the classes Alert and Toast use: `text`, `tint`
-(Alert's wash and border) and `rule` (Toast's left edge).
+Each entry also holds its `rank` (0 to 3, least to most important), how
+readers announce it (`live`: `alert` for `danger`, `status` for the
+rest), and the classes Alert and Toast use: `text`, `tint` (Alert's wash
+and border) and `rule` (Toast's left edge).
