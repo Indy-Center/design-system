@@ -104,6 +104,12 @@ describe("Airport", () => {
       await expect.element(tooltip(screen)).toBeVisible();
     });
 
+    // A list of airports would otherwise have a tab stop per row.
+    test("is no tab stop unless focusable", async () => {
+      const screen = await renderIn("light", Airport, tip);
+      expect(screen.container.querySelector("[tabindex]")).toBeNull();
+    });
+
     // class is for layout, so it goes on the outermost box.
     test("adds a caller's class to the box round the code, and attributes to the abbr", async () => {
       const screen = await renderIn("light", Airport, {

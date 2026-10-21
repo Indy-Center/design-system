@@ -3,9 +3,27 @@ import { styleOfClasses, translucent } from "../../../test/contrast.ts";
 import { role } from "../../../test/roles.ts";
 import { renderIn } from "../../../test/schemes.ts";
 import { expectLeadingHiddenIcon, icon, text } from "../../../test/snippets.ts";
-import Chip from "./Chip.svelte";
+import Chip, { CHIP_VARIANTS } from "./Chip.svelte";
 
 const chipOf = (code: Element) => code.parentElement!;
+
+// The community site's hues, made solid and, for amber, rose and emerald,
+// one step darker, so white passes on every surface.
+const solids = [
+  ["initials", "bg-indigo-600"],
+  ["senior", "bg-amber-700"],
+  ["training", "bg-rose-700"],
+  ["team", "bg-slate-600"],
+  ["certification", "bg-emerald-700"],
+] as const;
+
+// Credential's kinds that aren't certifications: a tint of the role, so
+// they follow the scheme. The text is `foreground`: `info` and `warning`
+// text fall short of 4.5:1 on their own tint in light.
+const tints = [
+  ["endorsement", "info"],
+  ["solo", "warning"],
+] as const;
 
 // Every variant is pinned to its fill and text below. Chip has no `dark:`
 // code: the solid fills are the same in every scheme and the tints follow
@@ -29,15 +47,13 @@ describe("Chip", () => {
     });
   });
 
-  // The community site's hues, made solid and, for amber, rose and emerald,
-  // one step darker, so white passes on every surface.
-  test.each([
-    ["initials", "bg-indigo-600"],
-    ["senior", "bg-amber-700"],
-    ["training", "bg-rose-700"],
-    ["team", "bg-slate-600"],
-    ["certification", "bg-emerald-700"],
-  ] as const)("the %s variant is white on %s", async (variant, fill) => {
+  test("pins every variant", () => {
+    expect(
+      ["muted", ...[...solids, ...tints].map(([variant]) => variant)].sort(),
+    ).toEqual([...CHIP_VARIANTS].sort());
+  });
+
+  test.each(solids)("the %s variant is white on %s", async (variant, fill) => {
     const screen = await renderIn("light", Chip, {
       variant,
       children: text("HY"),
@@ -49,13 +65,7 @@ describe("Chip", () => {
     });
   });
 
-  // Credential's kinds that aren't certifications: a tint of the role, so
-  // they follow the scheme. The text is `foreground`: `info` and `warning`
-  // text fall short of 4.5:1 on their own tint in light.
-  test.each([
-    ["endorsement", "info"],
-    ["solo", "warning"],
-  ] as const)(
+  test.each(tints)(
     "the %s variant is foreground on a %s tint",
     async (variant, tint) => {
       const screen = await renderIn("light", Chip, {
