@@ -47,8 +47,9 @@ src/routes/name/+page.svelte its playground page (lower-case folder)
   classes), `buttonClasses` (Button's variants, which DropdownMenu's arrow
   shares), `CloseButton` (Alert's and Toast's close button), `IconTile`
   (the tinted icon tile of ErrorPage, EmptyState and StatCard),
-  `headerMenu` (the header's disclosure button and panel, and its link
-  classes, for AppsMenu, AppNav, AppNavMenu and UserMenu).
+  `headerMenu` (the header's disclosure button and panel, its link
+  classes, and the trailing-slash rule for the current page, for
+  AppsMenu, AppNav, AppNavMenu and UserMenu).
 - Something an app raises with a function, rather than places, is named
   for what the member sees: `Toast/` holds `toast.svelte.ts` (the
   function and its state), `Toaster.svelte` (the one component that shows
