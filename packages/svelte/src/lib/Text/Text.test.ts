@@ -1,10 +1,7 @@
-import { createRawSnippet } from "svelte";
 import { describe, expect, test } from "vitest";
 import { renderIn } from "../../../test/schemes.ts";
+import { text } from "../../../test/snippets.ts";
 import Text from "./Text.svelte";
-
-const text = (s: string) =>
-  createRawSnippet(() => ({ render: () => `<span>${s}</span>` }));
 
 const sentence = "Sign up by Friday.";
 
