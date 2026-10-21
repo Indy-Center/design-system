@@ -44,14 +44,14 @@ Local: Tue 27 Oct, 7:00 PM EDT    Zulu: Tue 27 Oct, 2300Z
 
 ## Props
 
-| Prop    | Type                 | Notes                                                                                                                       |
-| ------- | -------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| `value` | `string`             | Bindable: `bind:value`. The instant as an ISO string in UTC (`2026-10-27T23:00:00.000Z`); undefined while the box is empty. |
-| `name`  | `string`             | Sends the value, in UTC, with a form, from a hidden input. The box itself sends nothing.                                    |
-| `min`   | `string`             | The earliest instant allowed, as an ISO string in UTC; the box gets it in local time.                                       |
-| `max`   | `string`             | The latest instant allowed, as an ISO string in UTC.                                                                        |
-| `class` | `string`             | Added to the wrapper round the box and its read-out. Layout only.                                                           |
-| others  | `<input>` attributes | Passed to the box: `id`, `required`, `disabled`, `aria-*` and the rest. Your `aria-describedby` follows the read-out's id.  |
+| Prop    | Type                 | Notes                                                                                                                            |
+| ------- | -------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `value` | `string`             | Bindable: `bind:value`. The instant as an ISO string in UTC (`2026-10-27T23:00:00.000Z`); undefined while the box is empty.      |
+| `name`  | `string`             | Sends the value, in UTC, with a form, from a hidden input, which also takes `form` and `disabled`. The box itself sends nothing. |
+| `min`   | `string`             | The earliest instant allowed, as an ISO string in UTC; the box gets it in local time.                                            |
+| `max`   | `string`             | The latest instant allowed, as an ISO string in UTC.                                                                             |
+| `class` | `string`             | Added to the wrapper round the box and its read-out. Layout only.                                                                |
+| others  | `<input>` attributes | Passed to the box: `id`, `required`, `disabled`, `aria-*` and the rest. Your `aria-describedby` follows the read-out's id.       |
 
 ## What it shows
 
@@ -66,7 +66,9 @@ PM` in US English).
   `Zulu: Wed 28 Oct, 0100Z`). Within the coming week, the days are
   "Today", "Tomorrow" or the weekday, as `Time` writes them.
 - A time the clocks skip (2:30 AM as summer time starts) is moved on by
-  the browser; the box and read-out show where it landed (3:30 AM).
+  the browser; the box and read-out show where it landed (3:30 AM). A
+  time the clocks pass twice (1:30 AM as summer time ends) is the first
+  of the two, in summer time; the read-out's Zulu shows which.
 - It works to the minute: seconds aren't kept.
 
 ## Server and browser
@@ -74,7 +76,8 @@ PM` in US English).
 The server can't know the member's zone, so it draws the box and the
 read-out empty rather than show Zulu as local time. The hidden input
 carries the value from the start. Once the page loads, the box fills in
-the member's local time.
+the member's local time. Without JavaScript the box stays empty and an
+edit isn't sent: the form sends the value it was drawn with.
 
 ## Looks
 
