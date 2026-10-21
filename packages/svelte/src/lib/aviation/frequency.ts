@@ -42,13 +42,20 @@ function say(digits: string): string {
  * each digit, "point" for the decimal, and the decimals `formatFrequency`
  * shows: `128225000` is "one two eight point two two", or "… two two five"
  * with `decimals: 3`; `121500000` is "one two one point five".
+ *
+ * Three decimals name an 8.33 kHz channel, said by ICAO's rule (Annex 10
+ * Vol II): all six digits, unless the fifth and sixth are both zero, then
+ * the first four. `121510000` is "one two one point five one zero".
  */
 export function spokenFrequency(
   hz: number,
   options: FrequencyOptions = {},
 ): string {
   const [whole, decimals] = formatFrequency(hz, options).split(".");
-  // Trailing zeros go ("121.5"), but one digit always stays ("369.0").
-  const kept = decimals.replace(/(?<=.)0+$/, "");
+  const kept =
+    options.decimals === 3
+      ? decimals.replace(/00$/, "")
+      : // Trailing zeros go ("121.5"), but one digit always stays ("369.0").
+        decimals.replace(/(?<=.)0+$/, "");
   return `${say(whole)} point ${say(kept)}`;
 }
