@@ -1,13 +1,10 @@
 <script lang="ts" generics="T">
+  import { mdiChevronDown } from "@mdi/js";
   import type { Snippet } from "svelte";
   import type { HTMLInputAttributes } from "svelte/elements";
   import { dismiss } from "../dismiss/dismiss.js";
   import { textControlClasses } from "../formControl/formControl.js";
   import Icon from "../Icon/Icon.svelte";
-
-  // MDI's chevron-down, from @mdi/js.
-  const mdiChevronDown =
-    "M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z";
 
   type Props = Omit<
     HTMLInputAttributes,
