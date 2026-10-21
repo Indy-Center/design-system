@@ -28,16 +28,16 @@
   });
 </script>
 
-<!-- The focus lands on the abbr inside, but the ring goes round the chip. -->
-<Chip
-  {...rest}
-  variant="muted"
-  class={[
-    "relative has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-ring",
-    className,
-  ]}
->
-  {#if found}
+{#if found}
+  <!-- The focus lands on the abbr inside, but the ring goes round the chip. -->
+  <Chip
+    {...rest}
+    variant="muted"
+    class={[
+      "relative has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-ring",
+      className,
+    ]}
+  >
     <!-- Focusable, so a keyboard user can read the long name too: it shows
          beneath the chip on focus, and a mouse gets the title. -->
     <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
@@ -51,7 +51,7 @@
         {" "}{found.long}</span
       ></abbr
     >
-  {:else}
-    {rating}
-  {/if}
-</Chip>
+  </Chip>
+{:else}
+  <Chip {...rest} variant="muted" class={className}>{rating}</Chip>
+{/if}
