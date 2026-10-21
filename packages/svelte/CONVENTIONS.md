@@ -217,3 +217,7 @@ line by line.
 From the repo root: `npm run format:check`, `npm run check`,
 `npm run build`, `npm test`, `npm run pack:dry-run`. Then look at the
 playground page at phone width (390px) and wider.
+
+On a machine shared with other agents, run the full suite under a lock,
+so only one runs at a time: `flock /tmp/design-system-test.lock npm test`.
+Two at once share the cores and time each other out.
