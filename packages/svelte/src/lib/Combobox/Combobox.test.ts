@@ -436,6 +436,16 @@ describe("Combobox", () => {
     expect(form.checkValidity()).toBe(true);
   });
 
+  test("a form reset closes the open list", async () => {
+    const screen = await renderIn("light", Picker, {});
+    const input = screen.getByRole("combobox");
+    await userEvent.tab();
+    await userEvent.keyboard("{ArrowDown}{ArrowDown}");
+    input.element().closest("form")!.reset();
+    await expect.element(input).toHaveAttribute("aria-expanded", "false");
+    expect(input).not.toHaveAttribute("aria-activedescendant");
+  });
+
   test("a reset the page cancels keeps the pick", async () => {
     const screen = await renderIn("light", Picker, {});
     const input = screen.getByRole("combobox");

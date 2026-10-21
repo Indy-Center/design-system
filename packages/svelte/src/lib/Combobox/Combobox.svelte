@@ -145,8 +145,8 @@
   const keyOf = (option: T | null) => (option == null ? null : getKey(option));
 
   // The key of the pick the box's text was last written from. When `value`
-  // changes from outside (the page clears it), the box follows it. Keys, not the
-  // options, are compared: a bound value comes back as a proxy.
+  // changes from outside (the page clears it), the box follows it. Keys,
+  // not the options, are compared: a bound value comes back as a proxy.
   let shownKey: string | null = null;
   $effect.pre(() => {
     const key = keyOf(value);
@@ -164,7 +164,8 @@
   });
 
   // A form reset empties the box but leaves the hidden input's value, so
-  // the pick goes too. The reset lands after its event, unless cancelled.
+  // the pick goes too, and an open list closes. The reset lands after its
+  // event, unless the event is cancelled.
   $effect(() => {
     const form = input?.form;
     if (!form) return;
@@ -174,6 +175,7 @@
         pick(null);
         query = "";
         pickedMessage = "";
+        close();
       });
     };
     form.addEventListener("reset", onreset);
