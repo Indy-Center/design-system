@@ -43,6 +43,11 @@ src/routes/name/+page.svelte its playground page (lower-case folder)
   function and its state), `Toaster.svelte` (the one component that shows
   them), `Toast.md` and `Toast.test.ts`, and the playground is
   `routes/toast`.
+- A component that is both placed and raised with a function keeps the
+  function in the component's folder: `ConfirmDialog/` holds
+  `ConfirmDialog.svelte`, `confirmAction.ts` and the private
+  `ConfirmPrompt.svelte` it mounts, with one doc page and playground for
+  both.
 
 ## Props
 

@@ -24,15 +24,22 @@ export type ConfirmActionOptions = {
 export function confirmAction(options: ConfirmActionOptions): Promise<boolean> {
   if (!BROWSER) return Promise.resolve(false);
   return new Promise((resolve) => {
+    // The page behind is inert, so the browser's Back button is the way
+    // out: it cancels, rather than leaving the dialog up unanswered.
+    const onBack = () => answer(false);
     const prompt = mount(ConfirmPrompt, {
       target: document.body,
       props: {
         ...options,
-        onanswer: (confirmed: boolean) => {
-          void unmount(prompt);
-          resolve(confirmed);
-        },
+        onanswer: (confirmed: boolean) => answer(confirmed),
       },
     });
+    window.addEventListener("popstate", onBack);
+
+    function answer(confirmed: boolean) {
+      window.removeEventListener("popstate", onBack);
+      void unmount(prompt);
+      resolve(confirmed);
+    }
   });
 }

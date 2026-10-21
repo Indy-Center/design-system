@@ -172,4 +172,14 @@ describe("confirmAction", () => {
     await expect(asking.answer()).resolves.toBe(false);
     expect(document.querySelector("dialog")).toBeNull();
   });
+
+  test("resolves false and removes its dialog when the member goes back", async () => {
+    const asking = askFrom(() =>
+      confirmAction({ title: "Delete event?", message }),
+    );
+    await expect.element(dialog()).toBeVisible();
+    window.dispatchEvent(new PopStateEvent("popstate"));
+    await expect(asking.answer()).resolves.toBe(false);
+    expect(document.querySelector("dialog")).toBeNull();
+  });
 });

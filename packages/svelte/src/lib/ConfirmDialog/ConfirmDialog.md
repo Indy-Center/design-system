@@ -115,8 +115,11 @@ Placed in the page, for a message with markup:
 breaks are kept, so `\n\n` starts a paragraph), and the same
 `confirmLabel`, `cancelLabel` and `danger`, and returns
 `Promise<boolean>`: true if confirmed, false otherwise. It adds a dialog
-to the page for the question and removes it after. On the server it
-resolves false at once.
+to the page for the question and removes it after. The browser's Back
+button cancels it. On the server it resolves false at once.
+
+Placed yourself, bind `open` (`bind:open`): it turns false when the
+member answers. A plain `open={true}` won't open it again after that.
 
 ## Looks
 
@@ -131,4 +134,5 @@ the foot, the confirm button last.
 - Focus starts on the confirm button, or on Cancel when `danger` is set,
   so a stray Enter doesn't delete anything. It returns to whatever had it
   when the dialog opened.
-- Escape, the close button and a click outside all cancel.
+- Escape, the close button and a click outside all cancel, as does
+  the browser's Back button for `confirmAction()`.
