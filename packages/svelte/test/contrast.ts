@@ -100,3 +100,18 @@ export function expectReadable(element: Element, scheme: Scheme) {
   expect(contrastOn(element, background)).toBeGreaterThanOrEqual(4.5);
   expect(contrastOn(element, card)).toBeGreaterThanOrEqual(4.5);
 }
+
+/**
+ * WCAG 2.2 AA for a state shown by a border: `element`'s border is 3:1 or
+ * more on the page and on a card in `scheme`.
+ */
+export function expectBorderVisible(element: Element, scheme: Scheme) {
+  const border = getComputedStyle(element).borderTopColor;
+  for (const surface of Object.values(SURFACES[scheme])) {
+    const [lighter, darker] = [
+      luminance(paint(surface, border)),
+      luminance(paint(surface)),
+    ].sort((a, b) => b - a);
+    expect((lighter + 0.05) / (darker + 0.05)).toBeGreaterThanOrEqual(3);
+  }
+}

@@ -105,6 +105,13 @@ the number (`5`, VATSIM and VATUSA), the short code (`"C1"`), vNAS's name
 (`"Controller1"`) or VATSIM's (`"Enroute Controller"`), in any case. It
 returns undefined for anything else.
 
+`PILOT_RATINGS` is VATSIM's pilot table, in the same shape, from `0` NEW
+to `63` FE; each `id` is a bit mask of the ratings below it (IR is `3`).
+`findPilotRating(value)` takes the number, the short code (`"IR"`) or
+VATSIM's name (`"Instrument Rating"`), in any case.
+
+To show a rating, use the `Rating` component, which looks it up itself.
+
 ## Durations
 
 `formatDuration(minutes, style)` rounds to the minute and gives the length

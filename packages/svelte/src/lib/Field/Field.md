@@ -11,6 +11,9 @@ description: A form control's label, hint and error, wired to the control so scr
       Don't write `<label>`, `id`, `for` or `aria-describedby` yourself.
 - [ ] Write the label as a short noun ("Callsign"), with no colon or `*`.
       Set `required` and Field writes "(required)" in words.
+- [ ] Keep the label visible. Set `hideLabel` only where what is around
+      the control makes its purpose plain, such as a filter bar's search;
+      screen readers still read it.
 - [ ] Put help in `hint`: the format, or what the value is for. Not in the
       placeholder.
 - [ ] Put a validation message in `error`, saying how to fix it ("Enter a
@@ -49,16 +52,17 @@ replace the other, so put the text in `hint`.
 
 ## Props
 
-| Prop       | Type                      | Notes                                                                     |
-| ---------- | ------------------------- | ------------------------------------------------------------------------- |
-| `label`    | `string`                  | Required. The label's text.                                               |
-| `hint`     | `string`                  | Shown under the control, and read as its description.                     |
-| `error`    | `string`                  | Shown under the hint, read after it, and marks the control invalid.       |
-| `required` | `boolean`                 | Writes "(required)" by the label and sets `required` on the control.      |
-| `id`       | `string`                  | The control's id. One is made when left out; set it to link to the field. |
-| `children` | `Snippet<[FieldControl]>` | The control. Spread its argument onto it.                                 |
-| `class`    | `string`                  | Added to the wrapping `<div>` after Field's own classes. Layout only.     |
-| others     | `<div>` attributes        | Passed to the wrapping `<div>`.                                           |
+| Prop        | Type                      | Notes                                                                     |
+| ----------- | ------------------------- | ------------------------------------------------------------------------- |
+| `label`     | `string`                  | Required. The label's text.                                               |
+| `hideLabel` | `boolean`                 | Hides the label from sight, not from screen readers. `false` by default.  |
+| `hint`      | `string`                  | Shown under the control, and read as its description.                     |
+| `error`     | `string`                  | Shown under the hint, read after it, and marks the control invalid.       |
+| `required`  | `boolean`                 | Writes "(required)" by the label and sets `required` on the control.      |
+| `id`        | `string`                  | The control's id. One is made when left out; set it to link to the field. |
+| `children`  | `Snippet<[FieldControl]>` | The control. Spread its argument onto it.                                 |
+| `class`     | `string`                  | Added to the wrapping `<div>` after Field's own classes. Layout only.     |
+| others      | `<div>` attributes        | Passed to the wrapping `<div>`.                                           |
 
 `FieldControl`, exported from the package, is what `children` receives:
 `id`, `aria-describedby` (the hint's and error's ids, when there are any),

@@ -19,9 +19,11 @@ description: A button for an action on the page, or a link that looks like one, 
       happening ("Saving"). Pass `busy` from the start (`busy={saving}`,
       false at first), not only once the work begins, so screen readers
       hear it start.
-- [ ] For an on/off toggle, pass `pressed` and flip it in `onclick`. Keep
-      the text the same in both states: the mark and `aria-pressed` show
-      which it is.
+- [ ] For an on/off toggle of an action ("Notify me"), pass `pressed` and
+      flip it in `onclick`, where you can also save it or undo it if the
+      save fails. Keep the text the same in both states: the mark and
+      `aria-pressed` show which it is. To filter a list, use `FilterChip`,
+      which flips itself.
 - [ ] Don't colour or size it with classes: use `variant` and `size`.
       `class` is for layout only, such as a margin or `w-full`.
 
@@ -32,7 +34,7 @@ description: A button for an action on the page, or a link that looks like one, 
   import { Button } from "@indy-center/svelte";
 
   let saving = $state(false);
-  let showOffline = $state(false);
+  let notify = $state(false);
 
   function deleteEvent() {
     // Ask first, then delete.
@@ -43,12 +45,8 @@ description: A button for an action on the page, or a link that looks like one, 
 <Button variant="secondary" href="/events/new">New event</Button>
 <Button variant="danger" onclick={deleteEvent}>Delete event</Button>
 
-<Button
-  variant="secondary"
-  pressed={showOffline}
-  onclick={() => (showOffline = !showOffline)}
->
-  Show offline
+<Button variant="secondary" pressed={notify} onclick={() => (notify = !notify)}>
+  Notify me
 </Button>
 ```
 
