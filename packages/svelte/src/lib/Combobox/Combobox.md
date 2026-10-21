@@ -7,7 +7,7 @@ description: A text box that searches a list as you type, to pick one option fro
 
 - [ ] Use it to pick one from many by typing: a controller, a position, a
       member. For a short fixed list (a rating, a facility), use `Select`;
-      to filter a page's results, use the search box in `Input`.
+      to filter a page's results, use `SearchInput`.
 - [ ] Put it in a `Field`, which gives it its label, hint and error. Used
       alone, give it an `aria-label`.
 - [ ] Give `getText` (the words shown and matched) and `getKey` (unique;
