@@ -19,7 +19,9 @@ src/routes/name/+page.svelte its playground page (lower-case folder)
   a dark header on a light page. A full-width band (`Footer`, `PageHero`)
   is squashed by its narrow columns, so its page shows it full width on a
   light page and on a dark one instead; its tests still cover all three
-  schemes.
+  schemes. A header part (`AppsMenu`, `AppNav`), dark in both schemes and
+  with no background of its own, skips `<Schemes>` too: its page shows it
+  in a dark header band on a light page and on a dark one.
 - `index.ts` is the one shared file: one line each, alphabetical. When
   merging, keep both sides' lines.
 - Inside `src/lib`, import with relative paths (`../Link/Link.svelte`).
