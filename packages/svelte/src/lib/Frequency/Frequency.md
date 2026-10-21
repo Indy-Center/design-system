@@ -38,13 +38,13 @@ description: A radio frequency in mono with two decimals, read out to screen rea
 
 ## Props
 
-| Prop       | Type               | Notes                                                                                                          |
-| ---------- | ------------------ | -------------------------------------------------------------------------------------------------------------- |
-| `value`    | `number \| string` | Hertz (`128225000`), or megahertz as written (`"128.225"`). Wins over `callsign`.                              |
-| `callsign` | `string`           | Looks the frequency up from the page's positions, relief logins included (`IND_831_CTR` gives `IND_83_CTR`'s). |
-| `decimals` | `2 \| 3`           | `2` by default: `121.90`, and `128.225` as `128.22`, the third cut, not rounded. `3` shows the third.          |
-| `class`    | `string`           | Layout only.                                                                                                   |
-| others     | global attributes  | `id`, `aria-*` and the rest, on its `<span>`.                                                                  |
+| Prop       | Type               | Notes                                                                                                           |
+| ---------- | ------------------ | --------------------------------------------------------------------------------------------------------------- |
+| `value`    | `number \| string` | A number is hertz (`128225000`); a string is always megahertz (`"128.225"`), never hertz. Wins over `callsign`. |
+| `callsign` | `string`           | Looks the frequency up from the page's positions, relief logins included (`IND_831_CTR` gives `IND_83_CTR`'s).  |
+| `decimals` | `2 \| 3`           | `2` by default: `121.90`, and `128.225` as `128.22`, the third cut, not rounded. `3` shows the third.           |
+| `class`    | `string`           | Layout only.                                                                                                    |
+| others     | global attributes  | `id`, `aria-*` and the rest, on its `<span>`.                                                                   |
 
 With neither, an unknown callsign or a `value` that isn't a frequency, it
 shows nothing.
