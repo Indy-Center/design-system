@@ -54,9 +54,9 @@ describe("spokenFrequency, per FAA JO 7110.65 2-4-17", () => {
     expect(spokenFrequency(118_050_000)).toBe("one one eight point zero five");
   });
 
-  // Said as shown: with three decimals, the third is said too.
+  // Said as shown: with three decimals, the third is said too (128.225 is
+  // with ICAO's below).
   test.each([
-    [128_225_000, "one two eight point two two five"],
     [132_175_000, "one three two point one seven five"],
     [128_229_900, "one two eight point two two niner"],
   ])("with decimals 3, %d Hz is said %s", (hz, words) => {
