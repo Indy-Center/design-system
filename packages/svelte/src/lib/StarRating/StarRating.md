@@ -10,8 +10,12 @@ description: A rating out of five stars, to choose (StarRating) or to show (Star
       use `Radio`s in a `Fieldset`.
 - [ ] Use `StarDisplay` to show a rating or an average that can't be
       changed. For a number that isn't out of five, write the number.
+- [ ] `StarDisplay` shows only stars. Where members need the exact figure
+      or a word for it ("4.3 avg", "Excellent"), write it beside them.
 - [ ] Write the legend as the question ("How was your session?"). Don't
       add a label for each star: they are named "1 star" to "5 stars".
+      An app that stores words ("Poor" to "Excellent") maps the number to
+      them on save.
 - [ ] Give each `StarRating` its own `name`, and `bind:value`. Its value
       is a number from 1 to 5, or `undefined` while no star is chosen.
 - [ ] For a rating the form must have, set `required`.
@@ -57,11 +61,11 @@ description: A rating out of five stars, to choose (StarRating) or to show (Star
 
 ### StarDisplay
 
-| Prop    | Type                | Notes                                                                                                                |
-| ------- | ------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| `value` | `number`            | Required. 0 to 5; drawn and read to the nearest half.                                                                |
-| `class` | `string`            | Added to the `<span>`. Layout only.                                                                                  |
-| others  | `<span>` attributes | Passed to the `<span>`. An `aria-label` replaces the words: pass the exact average ("4.3 out of 5") when it matters. |
+| Prop    | Type                | Notes                                                                                                                  |
+| ------- | ------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `value` | `number`            | Required. 0 to 5, held to that range; drawn to the nearest half star and read to one decimal. `NaN` reads "Not rated". |
+| `class` | `string`            | Added to the `<span>`. Layout only.                                                                                    |
+| others  | `<span>` attributes | Passed to the `<span>`. An `aria-label` replaces the words ("Excellent, 5 out of 5").                                  |
 
 ## Looks
 
@@ -86,5 +90,8 @@ description: A rating out of five stars, to choose (StarRating) or to show (Star
   focused star.
 - The words beside the stars are hidden from screen readers, since the
   checked radio already says how many.
-- `StarDisplay` renders a `<span role="img">` named by the value in words
-  ("4.5 out of 5"); its stars are hidden from screen readers.
+- `StarDisplay` renders a `<span role="img">` named by the value in words,
+  to one decimal ("4.3 out of 5", drawn as four and a half stars), or "Not
+  rated"; its stars are hidden from screen readers.
+- The radios carry no `aria-invalid`, as `Radio`'s don't; the error is in
+  the group's description.
