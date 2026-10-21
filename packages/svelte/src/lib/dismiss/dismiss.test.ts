@@ -168,6 +168,43 @@ describe("dismiss", () => {
     await expect.element(trigger(screen)).toHaveFocus();
   });
 
+  // A tooltip hovered elsewhere opens last, but focus is in the menu: the
+  // Escape is the menu's.
+  test("Escape closes the panel holding focus before one opened later", async () => {
+    const screen = await openWithFocusInside(
+      await renderIn("light", Disclosure, { beside: true }),
+    );
+    const help = screen.getByRole("button", { name: "Help" });
+    // A script's click, as a hover would: no press, and focus stays put.
+    (help.element() as HTMLButtonElement).click();
+    await expect.element(help).toHaveAttribute("aria-expanded", "true");
+
+    await userEvent.keyboard("{Escape}");
+
+    await expect
+      .element(trigger(screen))
+      .toHaveAttribute("aria-expanded", "false");
+    await expect.element(help).toHaveAttribute("aria-expanded", "true");
+  });
+
+  // A tooltip hovered on one row of a menu while focus is on another.
+  test("Escape closes a panel inside the one holding focus first", async () => {
+    const screen = await openWithFocusInside(
+      await renderIn("light", Disclosure, { nested: true }),
+    );
+    const more = screen.getByRole("button", { name: "More" });
+    // A script's click, as a hover would: focus stays on "Inside".
+    (more.element() as HTMLButtonElement).click();
+    await expect.element(more).toHaveAttribute("aria-expanded", "true");
+
+    await userEvent.keyboard("{Escape}");
+
+    await expect.element(more).toHaveAttribute("aria-expanded", "false");
+    await expect
+      .element(trigger(screen))
+      .toHaveAttribute("aria-expanded", "true");
+  });
+
   test("a click outside both nested panels closes both", async () => {
     const screen = await renderIn("light", Disclosure, { nested: true });
     const more = screen.getByRole("button", { name: "More" });
@@ -202,15 +239,25 @@ describe("dismiss", () => {
   });
 });
 
-/** Sends a pointer event of `type` at a point on the page, on `target`. */
-function point(target: Element, type: string, x: number, y: number) {
+/**
+ * Sends a pointer event of `type` at a point on the page, on `target`.
+ * userEvent can't drag a finger or have the browser cancel a touch.
+ */
+function point(
+  target: Element,
+  type: string,
+  x: number,
+  y: number,
+  { second = false } = {},
+) {
   target.dispatchEvent(
     new PointerEvent(type, {
       bubbles: true,
       composed: true,
-      pointerId: 7,
+      // A second finger is a different pointer, and not the primary one.
+      pointerId: second ? 8 : 7,
       pointerType: "touch",
-      isPrimary: true,
+      isPrimary: !second,
       clientX: x,
       clientY: y,
     }),
@@ -275,5 +322,18 @@ describe("dismiss, a press outside that isn't a tap", () => {
     await expect
       .element(trigger(screen))
       .toHaveAttribute("aria-expanded", "true");
+  });
+
+  test("a second finger landing doesn't spoil the first finger's tap", async () => {
+    const { screen, elsewhere, x, y } = await openScreen();
+    const inside = screen.getByRole("button", { name: "Inside" }).element();
+
+    point(elsewhere, "pointerdown", x, y);
+    point(inside, "pointerdown", x, y, { second: true });
+    point(elsewhere, "pointerup", x, y);
+
+    await expect
+      .element(trigger(screen))
+      .toHaveAttribute("aria-expanded", "false");
   });
 });
