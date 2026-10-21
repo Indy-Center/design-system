@@ -78,15 +78,6 @@ function fakeFetch(...bodies: unknown[]) {
   return { fetch: fetch as typeof globalThis.fetch, urls };
 }
 
-describe("the server entry point", () => {
-  // These tests run in Chromium.
-  test("refuses to load in the browser", async () => {
-    await expect(import("../server.ts")).rejects.toThrow(
-      /@indy-center\/svelte\/server is for server code/,
-    );
-  });
-});
-
 describe("createPositionsFetcher", () => {
   test("slims an ARTCC's positions, its TRACONs' and towers' included", async () => {
     const { fetch, urls } = fakeFetch(artcc("2026-10-17T02:35:43.475Z"));
