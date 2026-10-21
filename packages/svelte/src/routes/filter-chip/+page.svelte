@@ -13,10 +13,11 @@
 <Schemes>
   <div class="space-y-4">
     <div role="group" aria-label="Statuses" class="flex flex-wrap gap-2">
-      <FilterChip pressed count={12}>Waiting</FilterChip>
-      <FilterChip pressed count={4}>Enrolled</FilterChip>
-      <FilterChip count={2}>Withdrawn</FilterChip>
-      <FilterChip disabled>Disabled</FilterChip>
+      <FilterChip count={12}>Waiting</FilterChip>
+      <FilterChip count={4}>Enrolled</FilterChip>
+      <FilterChip pressed={false} count={2}>Withdrawn</FilterChip>
+      <FilterChip disabled>Disabled on</FilterChip>
+      <FilterChip pressed={false} disabled>Disabled off</FilterChip>
     </div>
     <SearchAndFilterBar />
   </div>

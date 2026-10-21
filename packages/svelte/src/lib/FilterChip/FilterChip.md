@@ -11,7 +11,9 @@ description: A filter that is on or off, shown as a chip that says which it is.
       `Switch` or `Checkbox`. For a code that only labels something, use
       `Chip`.
 - [ ] Bind `pressed` to the state that filters the list:
-      `bind:pressed={onlineOnly}`. It flips itself when pressed.
+      `bind:pressed={onlineOnly}`. It is on by default, and flips itself
+      when pressed: unlike `Button`'s `pressed`, there is no `onclick` to
+      write. Start a filter off with `pressed={false}` or its state.
 - [ ] Write the text as what the filter shows ("Waiting", "Online only"),
       so on reads as shown and off, struck through, as hidden.
 - [ ] Give `count` when it helps: how many rows the filter covers, before
@@ -26,6 +28,7 @@ description: A filter that is on or off, shown as a chip that says which it is.
 <script>
   import { FilterChip } from "@indy-center/svelte";
 
+  // Most filters start on; withdrawn trainees start hidden.
   let waiting = $state(true);
   let enrolled = $state(true);
   let withdrawn = $state(false);
@@ -43,19 +46,21 @@ chips and a `Select` for the sort.
 
 ## Props
 
-| Prop       | Type                  | Notes                                                                              |
-| ---------- | --------------------- | ---------------------------------------------------------------------------------- |
-| `pressed`  | `boolean`             | Whether the filter is on. Bindable; flips itself when pressed. `false` by default. |
-| `count`    | `number`              | Shown after the text, in brackets, and read as part of the name: "Waiting (12)".   |
-| `children` | `Snippet`             | The filter's text.                                                                 |
-| `onclick`  | `function`            | Runs after the chip has flipped.                                                   |
-| `class`    | `string`              | Added after FilterChip's own classes. Layout only.                                 |
-| others     | `<button>` attributes | Passed to the `<button>`: `disabled`, `aria-controls` and the rest.                |
+| Prop       | Type                  | Notes                                                                             |
+| ---------- | --------------------- | --------------------------------------------------------------------------------- |
+| `pressed`  | `boolean`             | Whether the filter is on. Bindable; flips itself when pressed. `true` by default. |
+| `count`    | `number`              | Shown after the text, in brackets, and read as part of the name: "Waiting (12)".  |
+| `children` | `Snippet`             | The filter's text.                                                                |
+| `onclick`  | `function`            | Runs after the chip has flipped.                                                  |
+| `class`    | `string`              | Added after FilterChip's own classes. Layout only.                                |
+| others     | `<button>` attributes | Passed to the `<button>`: `disabled`, `aria-controls` and the rest.               |
 
 ## Looks
 
-- On: a `primary` border on a 10% `primary` tint, with `foreground`
-  text, as a checked `ChoiceCard`.
+- On: a `ring` border on a 20% `primary` tint, with `foreground` text.
+  The border is `ring`, not `primary` as on a checked `ChoiceCard`,
+  because `primary` is under 3:1 on the dark page, and a chip is too
+  small to show its state by its fill alone.
 - Off: an `input` border, no fill, `muted-foreground` text, struck
   through, so off isn't shown by colour alone. On hover, a `muted` fill
   with `foreground-soft` text, which stays 4.5:1.

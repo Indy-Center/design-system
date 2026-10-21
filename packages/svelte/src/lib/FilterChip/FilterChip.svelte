@@ -3,7 +3,7 @@
   import type { HTMLButtonAttributes } from "svelte/elements";
 
   type Props = Omit<HTMLButtonAttributes, "type" | "aria-pressed"> & {
-    /** Whether the filter is on, bindable. It flips itself when pressed. */
+    /** Whether the filter is on, bindable; on by default. It flips itself when pressed. */
     pressed?: boolean;
     /** How many rows the filter covers, shown after the text. */
     count?: number;
@@ -12,7 +12,8 @@
   };
 
   let {
-    pressed = $bindable(false),
+    // On, as training's chip was: most filters start showing their rows.
+    pressed = $bindable(true),
     count,
     children,
     onclick,
@@ -36,7 +37,9 @@
     "border-input text-muted-foreground line-through",
     // Hovered while off, the text lifts to stay 4.5:1 on the muted fill.
     "enabled:not-aria-pressed:hover:bg-muted enabled:not-aria-pressed:hover:text-foreground-soft",
-    "aria-pressed:border-primary aria-pressed:bg-primary/10 aria-pressed:text-foreground aria-pressed:no-underline",
+    // On: a `ring` border, which is 3:1 on the page in both schemes where
+    // `primary` is faint in dark, on a 20% `primary` tint.
+    "aria-pressed:border-ring aria-pressed:bg-primary/20 aria-pressed:text-foreground aria-pressed:no-underline",
     "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
     "disabled:cursor-not-allowed disabled:opacity-60",
     className,

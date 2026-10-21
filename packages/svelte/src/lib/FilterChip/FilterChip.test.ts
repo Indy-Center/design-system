@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
 import { userEvent } from "vitest/browser";
 import {
+  expectBorderVisible,
   expectReadable,
   SCHEMES,
   translucent,
@@ -11,13 +12,13 @@ import { text } from "../../../test/snippets.ts";
 import FilterChip from "./FilterChip.svelte";
 
 describe("FilterChip", () => {
-  test("is a toggle button named by its text, off by default", async () => {
+  test("is a toggle button named by its text, on by default", async () => {
     const screen = await renderIn("light", FilterChip, {
       children: text("Online"),
     });
     const chip = screen.getByRole("button", { name: "Online" });
     await expect.element(chip).toHaveAttribute("type", "button");
-    await expect.element(chip).toHaveAttribute("aria-pressed", "false");
+    await expect.element(chip).toHaveAttribute("aria-pressed", "true");
   });
 
   test("flips its pressed state when clicked", async () => {
@@ -26,19 +27,19 @@ describe("FilterChip", () => {
     });
     const chip = screen.getByRole("button", { name: "Online" });
     await chip.click();
-    await expect.element(chip).toHaveAttribute("aria-pressed", "true");
-    await chip.click();
     await expect.element(chip).toHaveAttribute("aria-pressed", "false");
+    await chip.click();
+    await expect.element(chip).toHaveAttribute("aria-pressed", "true");
   });
 
-  test("starts pressed when told to", async () => {
+  test("starts off when told to", async () => {
     const screen = await renderIn("light", FilterChip, {
-      pressed: true,
-      children: text("Waiting"),
+      pressed: false,
+      children: text("Withdrawn"),
     });
     await expect
-      .element(screen.getByRole("button", { name: "Waiting" }))
-      .toHaveAttribute("aria-pressed", "true");
+      .element(screen.getByRole("button", { name: "Withdrawn" }))
+      .toHaveAttribute("aria-pressed", "false");
   });
 
   test("says its count after its text, in its name", async () => {
@@ -69,9 +70,9 @@ describe("FilterChip", () => {
     const chip = screen.getByRole("button", { name: "Online" });
     await expect.element(chip).toHaveFocus();
     await userEvent.keyboard(" ");
-    await expect.element(chip).toHaveAttribute("aria-pressed", "true");
-    await userEvent.keyboard("{Enter}");
     await expect.element(chip).toHaveAttribute("aria-pressed", "false");
+    await userEvent.keyboard("{Enter}");
+    await expect.element(chip).toHaveAttribute("aria-pressed", "true");
   });
 
   test("runs a caller's onclick as well as flipping", async () => {
@@ -82,12 +83,13 @@ describe("FilterChip", () => {
     });
     const chip = screen.getByRole("button");
     await chip.click();
-    await expect.element(chip).toHaveAttribute("aria-pressed", "true");
+    await expect.element(chip).toHaveAttribute("aria-pressed", "false");
     expect(clicks).toBe(1);
   });
 
   test("is dimmed when disabled, and takes no fill on hover", async () => {
     const screen = await renderIn("light", FilterChip, {
+      pressed: false,
       disabled: true,
       children: text("Online"),
     });
@@ -107,6 +109,7 @@ describe("FilterChip", () => {
     "stays readable when hovered off in %s",
     async (scheme) => {
       const screen = await renderIn(scheme, FilterChip, {
+        pressed: false,
         children: text("Online"),
       });
       const chip = screen.getByRole("button");
@@ -119,27 +122,28 @@ describe("FilterChip", () => {
     },
   );
 
-  // On: the guide's `primary` border on a 10% `primary` tint, as a checked
-  // ChoiceCard, with `foreground` text.
+  // On: the guide's `ring` border, 3:1 on the page and a card, on a 20%
+  // `primary` tint, with `foreground` text.
   test.each(SCHEMES)("is tinted primary when on in %s", async (scheme) => {
     const screen = await renderIn(scheme, FilterChip, {
-      pressed: true,
       children: text("Online"),
     });
     const chip = screen.getByRole("button");
     await expect.element(chip).toHaveStyle({
-      borderColor: role("primary", scheme),
-      backgroundColor: translucent(role("primary", scheme), 10),
+      borderColor: role("ring", scheme),
+      backgroundColor: translucent(role("primary", scheme), 20),
       color: role("foreground", scheme),
     });
     expect(getComputedStyle(chip.element()).textDecorationLine).toBe("none");
     expectReadable(chip.element(), scheme);
+    expectBorderVisible(chip.element(), scheme);
   });
 
   // Off: an `input` border, no fill, `muted-foreground` text, struck
   // through, so off isn't told by colour alone.
   test.each(SCHEMES)("is struck through when off in %s", async (scheme) => {
     const screen = await renderIn(scheme, FilterChip, {
+      pressed: false,
       children: text("Online"),
     });
     const chip = screen.getByRole("button");
@@ -181,6 +185,7 @@ describe("FilterChip", () => {
 
   test("adds a caller's class and attributes to its own", async () => {
     const screen = await renderIn("light", FilterChip, {
+      pressed: false,
       class: "ml-auto",
       "aria-controls": "roster",
       children: text("Online"),
