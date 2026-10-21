@@ -86,13 +86,32 @@ describe("ConfirmDialog", () => {
       .toBeVisible();
   });
 
-  test("starts on the confirm button, which is primary", async () => {
-    await renderIn("light", ConfirmDialog, props());
-    const confirm = dialog().getByRole("button", { name: "Delete event" });
-    await expect.element(confirm).toHaveFocus();
+  test.each(SCHEMES)(
+    "starts on the confirm button, which is primary, in %s",
+    async (scheme) => {
+      await renderIn(scheme, ConfirmDialog, props());
+      const confirm = dialog().getByRole("button", { name: "Delete event" });
+      await expect.element(confirm).toHaveFocus();
+      await expect
+        .element(confirm)
+        .toHaveStyle({ backgroundColor: role("primary", scheme) });
+      await expect
+        .element(dialog().getByText(message))
+        .toHaveStyle({ color: role("foreground-soft", scheme) });
+    },
+  );
+
+  test("placed closed and opened later, focus starts on its button", async () => {
+    const screen = await renderIn(
+      "light",
+      ConfirmDialog,
+      props({ open: false, danger: true }),
+    );
+    await expect.element(dialog()).not.toBeInTheDocument();
+    await screen.rerender({ open: true });
     await expect
-      .element(confirm)
-      .toHaveStyle({ backgroundColor: role("primary", "light") });
+      .element(dialog().getByRole("button", { name: "Cancel" }))
+      .toHaveFocus();
   });
 
   test.each(SCHEMES)(
@@ -126,6 +145,19 @@ describe("confirmAction", () => {
     await expect(asking.answer()).resolves.toBe(true);
     expect(document.querySelector("dialog")).toBeNull();
     expect(document.activeElement).toBe(asking.button);
+  });
+
+  test("keeps the message's line breaks", async () => {
+    askFrom(() =>
+      confirmAction({
+        title: "Delete event?",
+        message: "FNO Chicago will be removed.\n\nThis can't be undone.",
+      }),
+    );
+    await expect
+      .element(dialog().getByRole("paragraph"))
+      .toHaveStyle({ whiteSpace: "pre-line" });
+    await userEvent.keyboard("{Escape}");
   });
 
   test("resolves false when cancelled", async () => {

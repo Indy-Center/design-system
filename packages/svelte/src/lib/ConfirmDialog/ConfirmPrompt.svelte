@@ -24,5 +24,6 @@
   onconfirm={() => onanswer(true)}
   oncancel={() => onanswer(false)}
 >
-  <p>{message}</p>
+  <!-- Keeps a blank line between paragraphs, as confirm() did. -->
+  <p class="whitespace-pre-line">{message}</p>
 </ConfirmDialog>

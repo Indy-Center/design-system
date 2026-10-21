@@ -47,6 +47,34 @@ With the function, in an event handler or a `use:enhance` callback:
 </form>
 ```
 
+A handler that has to say no straight away, such as `onsubmit` on a
+form without `use:enhance`, can't wait for the answer: stop the
+submit, ask, and send it again if confirmed.
+
+```svelte
+<script>
+  import { confirmAction } from "@indy-center/svelte";
+
+  let confirmed = false;
+
+  async function onsubmit(event) {
+    if (confirmed) return; // The second time: let it go.
+    event.preventDefault();
+    const form = event.currentTarget;
+    const { submitter } = event;
+    confirmed = await confirmAction({
+      title: "Withdraw request?",
+      message: "Your request for ZID_CTR on Friday will be withdrawn.",
+      confirmLabel: "Withdraw request",
+    });
+    if (confirmed) form.requestSubmit(submitter);
+    confirmed = false;
+  }
+</script>
+
+<form method="POST" action="?/withdraw" {onsubmit}>…</form>
+```
+
 Placed in the page, for a message with markup:
 
 ```svelte
@@ -83,7 +111,8 @@ Placed in the page, for a message with markup:
 | `class`        | `string`     | Added to the `<dialog>`, as for Modal. Layout only.                  |
 | others         | Modal's      | Passed to the Modal, then the `<dialog>`.                            |
 
-`confirmAction(options)` takes `title`, `message` (text), and the same
+`confirmAction(options)` takes `title`, `message` (text; its line
+breaks are kept, so `\n\n` starts a paragraph), and the same
 `confirmLabel`, `cancelLabel` and `danger`, and returns
 `Promise<boolean>`: true if confirmed, false otherwise. It adds a dialog
 to the page for the question and removes it after. On the server it

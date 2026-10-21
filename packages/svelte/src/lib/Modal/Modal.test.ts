@@ -154,6 +154,14 @@ describe("Modal", () => {
       await expect
         .element(dialog().getByRole("heading"))
         .toHaveStyle({ color: role("foreground", scheme) });
+      await expect
+        .element(dialog().getByText("Position"))
+        .toHaveStyle({ color: role("foreground-soft", scheme) });
+      // Not a role: black at 60% dims the page in either scheme (Tailwind
+      // mixes the opacity in oklab).
+      expect(
+        getComputedStyle(dialog().element(), "::backdrop").backgroundColor,
+      ).toBe("oklab(0 0 0 / 0.6)");
     },
   );
 });

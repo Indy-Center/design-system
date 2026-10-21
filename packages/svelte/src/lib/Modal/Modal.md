@@ -70,7 +70,8 @@ description: A dialog over the page, on the native dialog element, named by its 
   title when it opens.
 - Opening moves focus to the first control in it, the close button,
   unless a control has `autofocus`. Closing returns focus to whatever had
-  it when it opened.
-- Escape closes it, as does a click on the dimmed page around it (a
-  press that starts inside, such as selecting text, doesn't).
+  it when it opened, as does taking it off the page while open (though
+  `onclose` doesn't run then).
+- Escape closes it, as does a click on the dimmed page around it. A
+  press that starts or ends inside, such as selecting text, doesn't.
 - The close button is 44px square and named "Close".
