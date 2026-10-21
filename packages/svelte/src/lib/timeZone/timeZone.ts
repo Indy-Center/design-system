@@ -93,8 +93,9 @@ function parseProfileSetting(
 
 export type ReadTimeZoneOptions = {
   /**
-   * The signed-in member's setting from their identity profile, if any. A
-   * setting there wins over this browser's cookie.
+   * The signed-in member's setting from their identity profile, if any.
+   * This browser's cookie wins over it; it fills in only where no cookie
+   * is set (a new browser).
    */
   profile?: TimeZoneProfileSetting | null;
 };
@@ -109,10 +110,8 @@ export function readTimeZone(
   cookies: { get(name: string): string | undefined },
   { profile }: ReadTimeZoneOptions = {},
 ): TimeZoneChoice | undefined {
-  const fromCookie = parseTimeZoneCookie(cookies.get(COOKIE_NAME));
-  const fromProfile = parseProfileSetting(profile ?? undefined);
-  if (fromProfile?.kind === "device" && fromCookie?.kind === "device") {
-    return fromCookie;
-  }
-  return fromProfile ?? fromCookie;
+  return (
+    parseTimeZoneCookie(cookies.get(COOKIE_NAME)) ??
+    parseProfileSetting(profile ?? undefined)
+  );
 }

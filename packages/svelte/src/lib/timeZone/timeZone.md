@@ -73,9 +73,12 @@ ticket `time-zone/01`), such as a `fetch` to a form action.
   runtimes list different ones), or `UTC`, of 64 characters at most.
   Anything else counts as nothing saved.
 - **The profile**: a signed-in member's setting (an IANA name, `device`
-  or `zulu`) wins over the cookie. `device` on the profile takes the zone
-  from this browser's cookie when it has one; otherwise the server draws
-  Zulu and the browser writes the device's zone.
+  or `zulu`) fills in only where this browser has no cookie (a new
+  browser); a cookie wins over it. So a choice made here holds even if
+  the page reloads before the profile save finishes. `device` from the
+  profile has no zone yet: the server draws Zulu and the browser writes
+  the device's zone. (The colour scheme's rule is the opposite for now,
+  to be revisited when identity stores it.)
 - **A choice applies at once**: every `Time`, `TimeZoneSetting` and
   `TimeZoneLine` on the page redraws.
 - **Without `setTimeZone`**, nothing is saved as far as the server knows:
@@ -91,11 +94,11 @@ flyindycenter.com."
 
 ## Options
 
-| Option                          | Type                           | Notes                                                                                     |
-| ------------------------------- | ------------------------------ | ----------------------------------------------------------------------------------------- |
-| `profile` (`readTimeZone`)      | `string \| null`               | The member's profile setting: an IANA name, `"device"` or `"zulu"`. Wins over the cookie. |
-| `saveToProfile` (`setTimeZone`) | `(setting: string) => unknown` | Called with the profile setting on every choice. Its failure is logged, not shown.        |
-| `domain` (`setTimeZone`)        | `string`                       | The domain the cookie is shared across; `flyindycenter.com` by default.                   |
+| Option                          | Type                           | Notes                                                                                           |
+| ------------------------------- | ------------------------------ | ----------------------------------------------------------------------------------------------- |
+| `profile` (`readTimeZone`)      | `string \| null`               | The member's profile setting: an IANA name, `"device"` or `"zulu"`. Used when no cookie is set. |
+| `saveToProfile` (`setTimeZone`) | `(setting: string) => unknown` | Called with the profile setting on every choice. Its failure is logged, not shown.              |
+| `domain` (`setTimeZone`)        | `string`                       | The domain the cookie is shared across; `flyindycenter.com` by default.                         |
 
 `readTimeZone` returns a `TimeZoneChoice`, or `undefined` when nothing is
 saved: `{ kind: "zulu" }`, `{ kind: "device", zone? }` or

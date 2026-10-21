@@ -56,28 +56,45 @@ describe("reading the time-zone cookie on the server", () => {
 });
 
 describe("with the member's profile setting", () => {
-  test("a zone on the profile wins over the cookie", () => {
+  test("this browser's cookie wins over the profile", () => {
+    // A choice made here, then a reload before the profile save finished.
     expect(
       readTimeZone(cookies("zulu"), { profile: "America/New_York" }),
-    ).toEqual({ kind: "zone", zone: "America/New_York" });
-  });
-
-  test("zulu on the profile wins over the cookie", () => {
+    ).toEqual({ kind: "zulu" });
     expect(
       readTimeZone(cookies("America/Chicago"), { profile: "zulu" }),
-    ).toEqual({ kind: "zulu" });
+    ).toEqual({ kind: "zone", zone: "America/Chicago" });
   });
 
-  test("device on the profile takes the zone this browser last saw", () => {
+  test("a zone picked here wins over device on the profile", () => {
+    expect(
+      readTimeZone(cookies("America/Denver"), { profile: "device" }),
+    ).toEqual({ kind: "zone", zone: "America/Denver" });
+  });
+
+  test("device in both takes the zone this browser last saw", () => {
     expect(
       readTimeZone(cookies("device:America/Denver"), { profile: "device" }),
     ).toEqual({ kind: "device", zone: "America/Denver" });
   });
 
-  test("device on the profile, with no zone seen on this browser yet", () => {
-    expect(
-      readTimeZone(cookies("America/Denver"), { profile: "device" }),
-    ).toEqual({ kind: "device" });
+  test("with no cookie (a new browser), the profile fills in", () => {
+    expect(readTimeZone(cookies(), { profile: "America/New_York" })).toEqual({
+      kind: "zone",
+      zone: "America/New_York",
+    });
+    expect(readTimeZone(cookies(), { profile: "zulu" })).toEqual({
+      kind: "zulu",
+    });
+    expect(readTimeZone(cookies(), { profile: "device" })).toEqual({
+      kind: "device",
+    });
+  });
+
+  test("a cookie that isn't valid counts as none: the profile fills in", () => {
+    expect(readTimeZone(cookies("Nowhere"), { profile: "zulu" })).toEqual({
+      kind: "zulu",
+    });
   });
 
   test("no setting, or one that isn't valid, leaves the cookie's", () => {
