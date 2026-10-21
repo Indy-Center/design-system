@@ -46,6 +46,7 @@ export { default as Panel } from "./Panel/Panel.svelte";
 export { default as ProgressBar } from "./ProgressBar/ProgressBar.svelte";
 export { default as Prose } from "./Prose/Prose.svelte";
 export { default as Radio } from "./Radio/Radio.svelte";
+export { default as Rating } from "./Rating/Rating.svelte";
 export { default as SearchInput } from "./SearchInput/SearchInput.svelte";
 export { default as Select } from "./Select/Select.svelte";
 export { default as SkipLink } from "./SkipLink/SkipLink.svelte";
@@ -101,7 +102,13 @@ export {
 } from "./aviation/callsign.js";
 export { formatDuration, type DurationStyle } from "./aviation/duration.js";
 export { formatFrequency, spokenFrequency } from "./aviation/frequency.js";
-export { findRating, RATINGS, type Rating } from "./aviation/ratings.js";
+export {
+  findPilotRating,
+  findRating,
+  PILOT_RATINGS,
+  RATINGS,
+  type RatingDetails,
+} from "./aviation/ratings.js";
 export {
   resolvePosition,
   type PositionMatch,

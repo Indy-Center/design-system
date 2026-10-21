@@ -70,11 +70,13 @@ describe("the packed package", () => {
     const index = await readFile(new URL("dist/index.d.ts", root), "utf8");
     for (const name of [
       "comparePositionTypes",
+      "findPilotRating",
       "findRating",
       "formatDuration",
       "formatFrequency",
       "isPosition",
       "parseCallsign",
+      "PILOT_RATINGS",
       "POSITION_TYPES",
       "RATINGS",
       "resolvePosition",
