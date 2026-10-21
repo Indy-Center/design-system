@@ -92,6 +92,23 @@ describe("DropdownMenu", () => {
     await expect.element(arrow(screen)).toHaveFocus();
   });
 
+  test("disabled, it looks it and doesn't open", async () => {
+    const screen = await renderIn("light", Menu, { disabled: true });
+
+    await expect.element(arrow(screen)).toBeDisabled();
+    await expect.element(arrow(screen)).toHaveStyle({ opacity: "0.6" });
+    await arrow(screen).click({ force: true });
+    await expect
+      .element(arrow(screen))
+      .toHaveAttribute("aria-expanded", "false");
+  });
+
+  test("puts class on the arrow", async () => {
+    const screen = await renderIn("light", Menu, { class: "ml-8" });
+
+    await expect.element(arrow(screen)).toHaveClass("ml-8");
+  });
+
   test("Tab past the last row closes it", async () => {
     const screen = await renderIn("light", Menu, {});
     await userEvent.tab();

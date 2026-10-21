@@ -7,7 +7,13 @@
 
   type Props = Omit<
     HTMLButtonAttributes,
-    "children" | "type" | "popovertarget" | "popovertargetaction"
+    // The arrow's own handlers, which open and close the menu.
+    | "children"
+    | "type"
+    | "popovertarget"
+    | "popovertargetaction"
+    | "onclick"
+    | "onfocusout"
   > & {
     /** What the arrow opens, for screen readers: "More actions for Jo Rivera". */
     label: string;
@@ -89,6 +95,7 @@
   class={[
     "inline-flex min-h-11 min-w-11 cursor-pointer items-center justify-center gap-1 text-base font-medium transition-colors",
     "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
+    "disabled:cursor-not-allowed disabled:opacity-60",
     variants[variant],
     attached
       ? [

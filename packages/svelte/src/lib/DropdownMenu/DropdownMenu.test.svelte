@@ -14,6 +14,10 @@
     variant?: "primary" | "secondary";
     /** Moves the menu in from the window's left edge, so it has room. */
     inset?: boolean;
+    /** The arrow's disabled. */
+    disabled?: boolean;
+    /** DropdownMenu's class, for the arrow. */
+    class?: string;
   };
 
   let {
@@ -21,6 +25,8 @@
     attached = false,
     variant = "secondary",
     inset = false,
+    disabled,
+    class: className,
   }: Props = $props();
   let withdrawn = $state(false);
 </script>
@@ -35,6 +41,8 @@
       {text}
       {attached}
       {variant}
+      {disabled}
+      class={className}
     >
       <DropdownMenuItem href="#profile">View profile</DropdownMenuItem>
       <DropdownMenuItem onclick={() => (withdrawn = true)}>

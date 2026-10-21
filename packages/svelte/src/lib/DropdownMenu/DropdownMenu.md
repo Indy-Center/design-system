@@ -51,15 +51,15 @@ description: A button with an arrow that opens a short list of actions or links;
 
 ### DropdownMenu
 
-| Prop       | Type                         | Notes                                                                                                   |
-| ---------- | ---------------------------- | ------------------------------------------------------------------------------------------------------- |
-| `label`    | `string`                     | Required. The arrow's name for screen readers: what it opens.                                           |
-| `text`     | `string`                     | Words shown beside the arrow. An arrow alone when left out.                                             |
-| `attached` | `boolean`                    | The arrow half of a split button, flush against the `Button` before it.                                 |
-| `variant`  | `"primary"` \| `"secondary"` | Matches the `Button` it's attached to. `secondary` by default.                                          |
-| `children` | `Snippet`                    | Required. The rows: `DropdownMenuItem`s.                                                                |
-| `class`    | `string`                     | Added to the arrow. Layout only.                                                                        |
-| others     | `<button>` attributes        | Passed to the arrow: `id`, `disabled`, `aria-*` and the rest. Its `onclick` and `onfocusout` are taken. |
+| Prop       | Type                         | Notes                                                                                                               |
+| ---------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `label`    | `string`                     | Required. The arrow's name for screen readers: what it opens.                                                       |
+| `text`     | `string`                     | Words shown beside the arrow. An arrow alone when left out.                                                         |
+| `attached` | `boolean`                    | The arrow half of a split button, flush against the `Button` before it.                                             |
+| `variant`  | `"primary"` \| `"secondary"` | Matches the `Button` it's attached to. `secondary` by default.                                                      |
+| `children` | `Snippet`                    | Required. The rows: `DropdownMenuItem`s.                                                                            |
+| `class`    | `string`                     | Added to the arrow. Layout only.                                                                                    |
+| others     | `<button>` attributes        | Passed to the arrow: `id`, `disabled`, `aria-*` and the rest, but not `onclick` or `onfocusout`, which are its own. |
 
 ### DropdownMenuItem
 
@@ -76,7 +76,8 @@ description: A button with an arrow that opens a short list of actions or links;
   `foreground` text, `muted` on hover; `primary` is filled `primary` with
   `primary-foreground` text. A chevron turns over while the menu is open.
   Attached, a `primary` arrow has a `primary-hover` line on its left, and
-  a `secondary` one shares its button's border.
+  a `secondary` one shares its button's border. Disabled, it fades, as
+  `Button` does.
 - The menu is on `card` with a `border` line and a shadow, 14rem wide,
   under the arrow with its right edge on the arrow's. Near the window's
   edge it opens the other way, so it stays in sight.
@@ -90,7 +91,8 @@ description: A button with an arrow that opens a short list of actions or links;
   the rest of the page; there are no arrow keys to learn.
 - The menu is a `popover`, drawn above the page, so a table or a card
   can't clip it. It follows the arrow in the page's order, so Tab goes
-  from the arrow into the rows.
+  from the arrow into the rows. It is placed with CSS anchor positioning;
+  a browser without it shows the menu in a corner of the window.
 
 | Key                         | What it does                                                 |
 | --------------------------- | ------------------------------------------------------------ |
