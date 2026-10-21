@@ -1,5 +1,11 @@
 // One line per component, in alphabetical order.
 export { default as Alert } from "./Alert/Alert.svelte";
+export {
+  default as AppNav,
+  type NavGroup,
+  type NavItem,
+  type NavLink,
+} from "./AppNav/AppNav.svelte";
 export { default as AppsMenu, type App } from "./AppsMenu/AppsMenu.svelte";
 export {
   default as Badge,

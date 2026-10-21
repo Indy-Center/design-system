@@ -1,8 +1,24 @@
 // Sample apps and navigation for the AppsMenu and AppNav playground pages
 // and tests: the community site's and training's menus as the chrome
 // prototype had them.
-import { mdiBookOpenVariant, mdiHome, mdiMap, mdiSchool } from "@mdi/js";
+import {
+  mdiAccountGroup,
+  mdiAccountPlus,
+  mdiAirplane,
+  mdiBadgeAccountHorizontal,
+  mdiBookOpenVariant,
+  mdiCalendar,
+  mdiEmailOutline,
+  mdiHandshake,
+  mdiHeadset,
+  mdiHome,
+  mdiInformationOutline,
+  mdiMap,
+  mdiMessage,
+  mdiSchool,
+} from "@mdi/js";
 import type { App } from "../lib/AppsMenu/AppsMenu.svelte";
+import type { NavItem } from "../lib/AppNav/AppNav.svelte";
 
 export const apps: App[] = [
   {
@@ -28,5 +44,33 @@ export const apps: App[] = [
     name: "Charts",
     description: "Airport charts for your session",
     icon: mdiMap,
+  },
+];
+
+/** The community site's navigation. */
+export const hubNav: NavItem[] = [
+  { label: "Home", href: "/", icon: mdiHome },
+  { label: "Events", href: "/events", icon: mdiCalendar },
+  {
+    label: "Controlling",
+    icon: mdiHeadset,
+    children: [
+      { label: "Roster", href: "/roster", icon: mdiAccountGroup },
+      { label: "Join Indy Center", href: "/visit", icon: mdiAccountPlus },
+    ],
+  },
+  {
+    label: "Flying",
+    icon: mdiAirplane,
+    children: [{ label: "Feedback", href: "/feedback", icon: mdiMessage }],
+  },
+  {
+    label: "About",
+    icon: mdiInformationOutline,
+    children: [
+      { label: "Staff", href: "/staff", icon: mdiBadgeAccountHorizontal },
+      { label: "Partners", href: "/partners", icon: mdiHandshake },
+      { label: "Contact Us", href: "/contact", icon: mdiEmailOutline },
+    ],
   },
 ];
