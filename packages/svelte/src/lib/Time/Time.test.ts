@@ -69,6 +69,23 @@ describe("Time", () => {
     expect(await shown({ value: "2026-10-20T23:00:00Z" })).toBe("7:00 PM EDT");
   });
 
+  test("takes milliseconds since the epoch, and a Date", async () => {
+    const at = Date.UTC(2026, 9, 20, 23);
+    expect(await shown({ value: at })).toBe("7:00 PM EDT");
+    expect(await shown({ value: new Date(at) })).toBe("7:00 PM EDT");
+  });
+
+  test("follows a new value", async () => {
+    const screen = await renderIn("light", Time, {
+      value: "2026-10-20T23:00:00Z",
+    });
+    await tick();
+    await screen.rerender({ value: "2026-10-21T00:30:00Z" });
+    const time = screen.container.querySelector("time");
+    expect(time?.textContent).toBe("8:30 PM EDT");
+    expect(time?.dateTime).toBe("2026-10-21T00:30:00.000Z");
+  });
+
   test("moves on a day at the member's midnight", async () => {
     // 11:59 PM EDT on the 20th.
     useFakeClock("2026-10-21T03:59:00Z");
