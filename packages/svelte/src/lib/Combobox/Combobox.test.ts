@@ -204,10 +204,12 @@ describe("Combobox", () => {
   test("says when nothing matches", async () => {
     const screen = await renderIn("light", Picker, {});
     await screen.getByRole("combobox").fill("zz");
-    await expect.element(screen.getByText("No matches")).toBeVisible();
+    await expect
+      .element(screen.getByText("No matches").and(page.getByRole("paragraph")))
+      .toBeVisible();
     await expect
       .element(screen.getByRole("status"))
-      .toHaveTextContent("No results");
+      .toHaveTextContent("No matches");
   });
 
   describe("with a search function", () => {

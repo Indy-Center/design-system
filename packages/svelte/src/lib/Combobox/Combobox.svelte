@@ -97,14 +97,26 @@
     };
   });
 
+  // The line under the options when there are none to show yet, or none
+  // at all; both the list and the status region say it.
+  const note = $derived(
+    searching
+      ? "Searching…"
+      : failed
+        ? "Couldn't search"
+        : results.length === 0
+          ? "No matches"
+          : "",
+  );
+
   // What the status region says to screen readers: how many match while
-  // the list is open, then what was picked.
+  // the list is open, then what was picked. "Searching…" isn't said, so
+  // fast answers don't make it chatter.
   const announcement = $derived.by(() => {
     if (!open) return pickedMessage;
     if (searching) return "";
-    if (failed) return "Couldn't search";
+    if (note) return note;
     const count = results.length;
-    if (count === 0) return "No results";
     return count === 1 ? "1 result" : `${count} results`;
   });
 
@@ -305,12 +317,8 @@
         </li>
       {/each}
     </ul>
-    {#if searching}
-      <p class="px-3 py-2 text-muted-foreground">Searching…</p>
-    {:else if failed}
-      <p class="px-3 py-2 text-muted-foreground">Couldn't search</p>
-    {:else if results.length === 0}
-      <p class="px-3 py-2 text-muted-foreground">No matches</p>
+    {#if note}
+      <p class="px-3 py-2 text-muted-foreground">{note}</p>
     {/if}
   </div>
   <div role="status" class="sr-only">{announcement}</div>

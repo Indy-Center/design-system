@@ -118,7 +118,7 @@ option.
   don't move into the list it found for the old text, so Enter can't pick
   an option that no longer matches.
 - A status region says how many options match while the list is open
-  ("3 results", "No results", "Couldn't search"), then "Ann Archer,
+  ("3 results", "No matches", "Couldn't search"), then "Ann Archer,
   selected" on a pick.
 - Its name comes from `Field`'s label, or your `aria-label`.
 - It has been tested by its keyboard table in a browser; a person checks it
