@@ -39,6 +39,19 @@ export function styleOfClasses(classes: string, element: Element) {
   return { color, backgroundColor, borderColor };
 }
 
+/**
+ * `hex` at `percent` opacity, as the browser computes Tailwind's opacity
+ * modifier (`bg-primary/15`: a mix in oklab with transparent).
+ */
+export function translucent(hex: string, percent: number) {
+  const probe = document.createElement("div");
+  probe.style.color = `color-mix(in oklab, ${hex} ${percent}%, transparent)`;
+  document.body.append(probe);
+  const { color } = getComputedStyle(probe);
+  probe.remove();
+  return color;
+}
+
 /** `colours` painted in order onto a pixel; its sRGB bytes. */
 function paint(...colours: string[]): [number, number, number] {
   const context = document.createElement("canvas").getContext("2d")!;
