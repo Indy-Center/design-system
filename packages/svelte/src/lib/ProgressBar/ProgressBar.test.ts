@@ -87,23 +87,25 @@ describe("ProgressBar", () => {
   // From the brand guide's Roles table: the track is `muted`, the fill
   // `info` (`primary` is too faint on the dark track), the label
   // `foreground-soft` and the value `muted-foreground`.
-  const colours = {
-    light: {
-      track: "rgb(226, 232, 240)",
-      fill: "rgb(3, 105, 161)",
-      label: "rgb(51, 65, 85)",
-      value: "rgb(71, 85, 105)",
-    },
-    dark: {
-      track: "rgb(51, 65, 85)",
-      fill: "rgb(56, 189, 248)",
-      label: "rgb(209, 213, 219)",
-      value: "rgb(156, 163, 175)",
-    },
+  const light = {
+    track: "rgb(226, 232, 240)",
+    fill: "rgb(3, 105, 161)",
+    label: "rgb(51, 65, 85)",
+    value: "rgb(71, 85, 105)",
   };
-  for (const scheme of ["light", "dark", "dark-header"] as const) {
-    const expected = colours[scheme === "light" ? "light" : "dark"];
-    test(`takes its colours from the roles in ${scheme}`, async () => {
+  const dark = {
+    track: "rgb(51, 65, 85)",
+    fill: "rgb(56, 189, 248)",
+    label: "rgb(209, 213, 219)",
+    value: "rgb(156, 163, 175)",
+  };
+  test.each([
+    ["light", light],
+    ["dark", dark],
+    ["dark-header", dark],
+  ] as const)(
+    "takes its colours from the roles in %s",
+    async (scheme, expected) => {
       const screen = await renderIn(scheme, ProgressBar, {
         label: "Course progress",
         value: 40,
@@ -118,8 +120,8 @@ describe("ProgressBar", () => {
       await expect
         .element(screen.getByText("40%"))
         .toHaveStyle({ color: expected.value });
-    });
-  }
+    },
+  );
 
   test("is a rounded bar 8px tall, as wide as its place", async () => {
     const screen = await renderIn("light", ProgressBar, {

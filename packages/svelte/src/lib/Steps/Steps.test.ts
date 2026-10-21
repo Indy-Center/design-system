@@ -58,26 +58,29 @@ describe("Steps", () => {
   });
 
   // From the brand guide's Roles table: done is `success`, current `info`,
-  // to come `muted-foreground`; done and current labels are `foreground`.
-  const colours = {
-    light: {
-      done: "rgb(21, 128, 61)",
-      current: "rgb(3, 105, 161)",
-      upcoming: "rgb(71, 85, 105)",
-      label: "rgb(15, 23, 42)",
-      line: "rgb(226, 232, 240)",
-    },
-    dark: {
-      done: "rgb(74, 222, 128)",
-      current: "rgb(56, 189, 248)",
-      upcoming: "rgb(156, 163, 175)",
-      label: "rgb(255, 255, 255)",
-      line: "rgb(51, 65, 85)",
-    },
+  // to come `muted-foreground`, as are details; done and current labels are
+  // `foreground`.
+  const light = {
+    done: "rgb(21, 128, 61)",
+    current: "rgb(3, 105, 161)",
+    muted: "rgb(71, 85, 105)",
+    label: "rgb(15, 23, 42)",
+    line: "rgb(226, 232, 240)",
   };
-  for (const scheme of ["light", "dark", "dark-header"] as const) {
-    const expected = colours[scheme === "light" ? "light" : "dark"];
-    test(`takes its colours from the roles in ${scheme}`, async () => {
+  const dark = {
+    done: "rgb(74, 222, 128)",
+    current: "rgb(56, 189, 248)",
+    muted: "rgb(156, 163, 175)",
+    label: "rgb(255, 255, 255)",
+    line: "rgb(51, 65, 85)",
+  };
+  test.each([
+    ["light", light],
+    ["dark", dark],
+    ["dark-header", dark],
+  ] as const)(
+    "takes its colours from the roles in %s",
+    async (scheme, expected) => {
       const screen = await renderIn(scheme, Steps, { steps });
       const icons = screen
         .getByRole("listitem")
@@ -86,28 +89,28 @@ describe("Steps", () => {
       expect(icons.map((icon) => getComputedStyle(icon).fill)).toEqual([
         expected.done,
         expected.current,
-        expected.upcoming,
+        expected.muted,
       ]);
       await expect
         .element(screen.getByText(/^Joined the waitlist/))
         .toHaveStyle({ color: expected.label });
       await expect
-        .element(screen.getByText("Training"))
+        .element(screen.getByText(/^Training/))
         .toHaveStyle({ color: expected.label });
       await expect
         .element(screen.getByText("Rating exam"))
-        .toHaveStyle({ color: expected.upcoming });
+        .toHaveStyle({ color: expected.muted });
       await expect
         .element(screen.getByText("Teacher: Jo Bloggs"))
-        .toHaveStyle({ color: expected.upcoming });
+        .toHaveStyle({ color: expected.muted });
       const line = screen.container.querySelector<HTMLElement>(
         "li > span[aria-hidden]",
       );
       await expect
         .element(line)
         .toHaveStyle({ backgroundColor: expected.line });
-    });
-  }
+    },
+  );
 
   test("joins each step to the next with a line, not the last", async () => {
     const screen = await renderIn("light", Steps, { steps });
