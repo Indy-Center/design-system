@@ -2,6 +2,7 @@
   import { onMount } from "svelte";
   import type { HTMLAttributes } from "svelte/elements";
   import { timeText, type TimeShown, type TimeZoneShown } from "./format.js";
+  import { now } from "./now.svelte.js";
 
   type When = Date | string | number;
   // The root is a <time>, or a <span> around a range's <time>s, so only the
@@ -28,12 +29,8 @@
   // The server can't know the member's zone, so it draws Zulu; the browser
   // switches to its own zone once mounted.
   let memberZone = $state<string>();
-  let now = $state(new Date());
   onMount(() => {
     memberZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    if (show !== "relative") return;
-    const timer = setInterval(() => (now = new Date()), 60_000);
-    return () => clearInterval(timer);
   });
 
   const pieces = $derived(
@@ -43,7 +40,7 @@
       show,
       zone,
       memberZone,
-      now: () => now,
+      now,
     }),
   );
 </script>

@@ -130,6 +130,20 @@ describe("Time", () => {
         await shown({ value: "2027-03-04T23:00:00Z", show: "datetime" }),
       ).toBe("Thu 4 Mar 2027, 6:00 PM EST");
     });
+
+    test("moves on a day at the member's midnight", async () => {
+      // 11:59 PM EDT on the 20th.
+      useFakeClock("2026-10-21T03:59:00Z");
+      const screen = await renderIn("light", Time, {
+        value: "2026-10-21T23:00:00Z",
+        show: "datetime",
+      });
+      await tick();
+      expect(screen.container.textContent).toBe("Tomorrow, 7:00 PM EDT");
+      vi.advanceTimersByTime(60_000);
+      await tick();
+      expect(screen.container.textContent).toBe("Today, 7:00 PM EDT");
+    });
   });
 
   describe("a range", () => {
@@ -163,6 +177,7 @@ describe("Time", () => {
         "Today, 7:00 PM–Tomorrow, 1:00 AM EDT · 2300Z–0500Z",
       );
     });
+
   });
 
   describe("relative", () => {
@@ -189,13 +204,24 @@ describe("Time", () => {
     });
 
     test("counts on as the minutes pass", async () => {
-      vi.useFakeTimers({ toFake: ["Date", "setInterval", "clearInterval"] });
-      vi.setSystemTime(NOW);
+      useFakeClock(NOW);
       const screen = await renderIn("light", Time, {
         value: "2026-10-20T19:37:00Z",
         show: "relative",
       });
       await tick();
+      vi.advanceTimersByTime(60_000);
+      await tick();
+      expect(screen.container.textContent).toBe("1 h 24 m");
+    });
+
+    test("counts on when it becomes relative after mounting", async () => {
+      useFakeClock(NOW);
+      const screen = await renderIn("light", Time, {
+        value: "2026-10-20T19:37:00Z",
+      });
+      await tick();
+      await screen.rerender({ show: "relative" });
       vi.advanceTimersByTime(60_000);
       await tick();
       expect(screen.container.textContent).toBe("1 h 24 m");
@@ -243,6 +269,12 @@ describe("Time", () => {
     });
   });
 });
+
+/** Fakes the clock and its timers at `at`, moving only when a test says. */
+function useFakeClock(at: Date | string) {
+  vi.useFakeTimers({ toFake: ["Date", "setTimeout", "clearTimeout"] });
+  vi.setSystemTime(at);
+}
 
 /** The text `Time` shows in the browser, once it has switched to local. */
 async function shown(props: ComponentProps<typeof Time>): Promise<string> {

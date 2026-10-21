@@ -70,7 +70,9 @@ Times, with the clock pinned at 5:00 PM EDT on Tuesday 20 October 2026:
   the zone's abbreviation; a zone without one shows its offset (`GMT+1`).
 - The day is the member's day, not Zulu's: 0200Z on the 21st is "Today"
   at 10:00 PM EDT on the 20th.
-- A relative time counts on each minute. It uses the short units of
+- A relative time counts on each minute, and a day moves on at the
+  member's midnight ("Tomorrow" becomes "Today"). Every `Time` on a page
+  shares one timer. A relative time uses the short units of
   `formatDuration`.
 
 ## Server and browser
