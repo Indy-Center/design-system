@@ -6,12 +6,15 @@
   import { textControlClasses } from "../formControl/formControl.js";
   import Icon from "../Icon/Icon.svelte";
 
+  /** Searches for the typed text: the options that match it. */
+  type Search = (query: string) => T[] | Promise<T[]>;
+
   type Props = Omit<
     HTMLInputAttributes,
     "type" | "value" | "role" | "name" | "children"
   > & {
     /** The options: a list, or a function that searches for the typed text. */
-    options: T[] | ((query: string) => T[] | Promise<T[]>);
+    options: T[] | Search;
     /** The option picked, or null; bindable. */
     value?: T | null;
     /** Sends the picked option's key with a form under this name. */
@@ -67,19 +70,22 @@
   const entry = (step: 1 | -1, count: number) =>
     count === 0 ? -1 : step === 1 ? 0 : count - 1;
 
-  // The list shown answers older text than the box's, while a search for
-  // the new text is under way. Its options no longer match, so the arrows
-  // don't move into it, and Enter, with no active option, can't pick one.
-  const stale = $derived(!Array.isArray(options) && foundFor !== query);
+  // The search function that found `found`.
+  let foundBy = $state<Search | null>(null);
+
+  // The list shown answers older text than the box's, or came from an
+  // older search function, while a new search is under way. Its options
+  // may no longer match, so the arrows don't move into it, and Enter, with
+  // no active option, can't pick one.
+  const stale = $derived(
+    !Array.isArray(options) && (foundFor !== query || foundBy !== options),
+  );
 
   const results = $derived.by(() => {
     if (!Array.isArray(options)) return found;
     const q = query.trim().toLowerCase();
     return options.filter((o) => getText(o).toLowerCase().includes(q));
   });
-
-  // The search function that found `found`.
-  let foundBy: ((query: string) => T[] | Promise<T[]>) | null = null;
 
   // Asks a search function for each new text while the list is open.
   // Reopened on text the list already answers, it doesn't ask again (a

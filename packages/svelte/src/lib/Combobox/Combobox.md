@@ -17,7 +17,9 @@ description: A text box that searches a list as you type, to pick one option fro
       function to search your own way (several fields, a server). The
       function runs on each change to the text while the list is open, and
       only its latest answer shows; slow it down yourself if it calls a
-      server.
+      server. Reopened on text it has already answered, the list shows
+      that answer without asking again; to search fresh, pass a new
+      function.
 - [ ] Draw each option with the `option` snippet for more than its text
       (a CID in `font-mono`). Keep it to one or two lines, and no links or
       buttons inside.

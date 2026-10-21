@@ -5,6 +5,7 @@ import { SCHEMES } from "../../../test/contrast.ts";
 import { role } from "../../../test/roles.ts";
 import { renderIn } from "../../../test/schemes.ts";
 import Combobox from "./Combobox.svelte";
+import InlineSearch from "./Combobox.inline.test.svelte";
 import Picker from "./Combobox.test.svelte";
 
 type Screen = RenderResult<typeof Picker>;
@@ -355,6 +356,52 @@ describe("Combobox", () => {
       await expect
         .element(screen.getByRole("option", { name: "Dana Dunn" }))
         .toBeVisible();
+    });
+
+    test("while a new search function looks, its old list can't be picked from", async () => {
+      const screen = await renderIn("light", Picker, { options: search });
+      const input = screen.getByRole("combobox");
+      await input.fill("Dan");
+      const dan = screen.getByRole("option", { name: "Dan Andrews" });
+      await expect.element(dan).toBeVisible();
+      const otherRoster = [{ cid: "1000009", name: "Dana Dunn" }];
+      await screen.rerender({
+        options: () =>
+          new Promise((resolve) => setTimeout(() => resolve(otherRoster), 300)),
+      });
+      await userEvent.keyboard("{ArrowDown}");
+      expect(input).not.toHaveAttribute("aria-activedescendant");
+      await dan.click();
+      await expect
+        .element(screen.getByTestId("picked"))
+        .toHaveTextContent("none");
+      await expect
+        .element(screen.getByRole("option", { name: "Dana Dunn" }))
+        .toBeVisible();
+    });
+
+    test("a search function written inline searches once per text", async () => {
+      const searches: string[] = [];
+      const screen = await renderIn("light", InlineSearch, {
+        onsearch: (query) => searches.push(query),
+      });
+      const input = screen.getByRole("combobox");
+      await input.fill("Dan");
+      await expect
+        .element(screen.getByRole("option", { name: "Dan Andrews" }))
+        .toBeVisible();
+      // The page changes something else; the list stays the same answer.
+      await userEvent.keyboard("{Escape}");
+      await screen.getByRole("button", { name: "Count 0" }).click();
+      await expect
+        .element(screen.getByRole("button", { name: "Count 1" }))
+        .toBeVisible();
+      await input.click();
+      await userEvent.keyboard("{ArrowDown}");
+      await expect
+        .poll(() => input.element().getAttribute("aria-activedescendant"))
+        .not.toBeNull();
+      expect(searches.filter((query) => query === "Dan")).toHaveLength(1);
     });
 
     /** Searches the roster; "Ann" is slow, so "Dan"'s list stays a while. */
