@@ -1,6 +1,8 @@
 import { createRawSnippet } from "svelte";
 import { describe, expect, test, vi } from "vitest";
 import { userEvent } from "vitest/browser";
+import { SCHEMES } from "../../../test/contrast.ts";
+import { role } from "../../../test/roles.ts";
 import { renderIn } from "../../../test/schemes.ts";
 import Button from "./Button.svelte";
 
@@ -25,41 +27,39 @@ describe("Button", () => {
     await expect.element(screen.getByRole("button")).not.toBeInTheDocument();
   });
 
-  // From the guide's Roles table. primary: `primary` #0369A1 under
-  // `primary-foreground` #FFFFFF, in both schemes. secondary: no fill,
-  // `input` #64748B edge, `foreground` text (#0F172A light, #FFFFFF dark).
-  // danger: `destructive` (#B91C1C light, #F87171 dark) under `card`
-  // (#FFFFFF light, #1E293B dark).
+  // primary: `primary` under `primary-foreground`. secondary: no fill
+  // (transparent), `input` edge, `foreground` text. danger: `destructive`
+  // under `card`.
   const transparent = "rgba(0, 0, 0, 0)";
-  test.each([
-    ["primary", "light", "rgb(3, 105, 161)", "rgb(255, 255, 255)"],
-    ["primary", "dark", "rgb(3, 105, 161)", "rgb(255, 255, 255)"],
-    ["primary", "dark-header", "rgb(3, 105, 161)", "rgb(255, 255, 255)"],
-    ["secondary", "light", transparent, "rgb(15, 23, 42)"],
-    ["secondary", "dark", transparent, "rgb(255, 255, 255)"],
-    ["secondary", "dark-header", transparent, "rgb(255, 255, 255)"],
-    ["danger", "light", "rgb(185, 28, 28)", "rgb(255, 255, 255)"],
-    ["danger", "dark", "rgb(248, 113, 113)", "rgb(30, 41, 59)"],
-    ["danger", "dark-header", "rgb(248, 113, 113)", "rgb(30, 41, 59)"],
-  ] as const)("%s in %s", async (variant, scheme, fill, ink) => {
+  const looks = {
+    primary: { fill: "primary", ink: "primary-foreground" },
+    secondary: { fill: null, ink: "foreground" },
+    danger: { fill: "destructive", ink: "card" },
+  } as const;
+  test.each(
+    (["primary", "secondary", "danger"] as const).flatMap((variant) =>
+      SCHEMES.map((scheme) => [variant, scheme] as const),
+    ),
+  )("%s in %s", async (variant, scheme) => {
+    const { fill, ink } = looks[variant];
     const screen = await renderIn(scheme, Button, {
       variant,
       children: text("Save"),
     });
-    await expect
-      .element(screen.getByRole("button"))
-      .toHaveStyle({ backgroundColor: fill, color: ink });
+    await expect.element(screen.getByRole("button")).toHaveStyle({
+      backgroundColor: fill ? role(fill, scheme) : transparent,
+      color: role(ink, scheme),
+    });
   });
 
-  // The guide's `primary-hover` #075985 (both schemes), and `muted`
-  // (#E2E8F0 light, #334155 dark).
+  // `primary-hover`, and `muted`.
   test.each([
-    ["primary", "light", "rgb(7, 89, 133)"],
-    ["primary", "dark", "rgb(7, 89, 133)"],
-    ["primary", "dark-header", "rgb(7, 89, 133)"],
-    ["secondary", "light", "rgb(226, 232, 240)"],
-    ["secondary", "dark", "rgb(51, 65, 85)"],
-    ["secondary", "dark-header", "rgb(51, 65, 85)"],
+    ["primary", "light", "primary-hover"],
+    ["primary", "dark", "primary-hover"],
+    ["primary", "dark-header", "primary-hover"],
+    ["secondary", "light", "muted"],
+    ["secondary", "dark", "muted"],
+    ["secondary", "dark-header", "muted"],
   ] as const)("%s on hover in %s", async (variant, scheme, fill) => {
     const screen = await renderIn(scheme, Button, {
       variant,
@@ -67,24 +67,22 @@ describe("Button", () => {
     });
     const button = screen.getByRole("button");
     await userEvent.hover(button);
-    await expect.element(button).toHaveStyle({ backgroundColor: fill });
+    await expect
+      .element(button)
+      .toHaveStyle({ backgroundColor: role(fill, scheme) });
   });
 
-  // danger's hover is no guide colour: `destructive` (#B91C1C light,
-  // #F87171 dark) at 90%, as the browser mixes it.
-  const at90 = (hex: string) => {
+  // danger's hover is no role of its own: `destructive` at 90%, as the
+  // browser mixes it.
+  const at90 = (colour: string) => {
     const probe = document.createElement("div");
-    probe.style.backgroundColor = `color-mix(in oklab, ${hex} 90%, transparent)`;
+    probe.style.backgroundColor = `color-mix(in oklab, ${colour} 90%, transparent)`;
     document.body.append(probe);
-    const colour = getComputedStyle(probe).backgroundColor;
+    const mixed = getComputedStyle(probe).backgroundColor;
     probe.remove();
-    return colour;
+    return mixed;
   };
-  test.each([
-    ["light", "#B91C1C"],
-    ["dark", "#F87171"],
-    ["dark-header", "#F87171"],
-  ] as const)("danger on hover in %s", async (scheme, hex) => {
+  test.each(SCHEMES)("danger on hover in %s", async (scheme) => {
     const screen = await renderIn(scheme, Button, {
       variant: "danger",
       children: text("Delete"),
@@ -93,11 +91,11 @@ describe("Button", () => {
     await userEvent.hover(button);
     await expect
       .poll(() => getComputedStyle(button.element()).backgroundColor)
-      .toBe(at90(hex));
+      .toBe(at90(role("destructive", scheme)));
   });
 
-  // The guide's `input`: #64748B in both schemes.
-  test.each(["light", "dark", "dark-header"] as const)(
+  // The `input` role.
+  test.each(SCHEMES)(
     "secondary has an edge in the input colour in %s",
     async (scheme) => {
       const screen = await renderIn(scheme, Button, {
@@ -106,7 +104,7 @@ describe("Button", () => {
       });
       await expect.element(screen.getByRole("button")).toHaveStyle({
         borderStyle: "solid",
-        borderColor: "rgb(100, 116, 139)",
+        borderColor: role("input", scheme),
       });
     },
   );
@@ -335,18 +333,17 @@ describe("Button", () => {
     // Not by colour alone (WCAG 1.4.1): a mark before the text, filled
     // when on and hollow when off, as the community site's ActionToggle
     // has. It's the button's ::before, in its text colour: secondary's
-    // `foreground` (#0F172A light, #FFFFFF dark).
+    // `foreground`.
     const mark = (element: Element) => getComputedStyle(element, "::before");
-    test.each([
-      [true, "light", "rgb(15, 23, 42)"],
-      [false, "light", "rgb(15, 23, 42)"],
-      [true, "dark", "rgb(255, 255, 255)"],
-      [false, "dark", "rgb(255, 255, 255)"],
-      [true, "dark-header", "rgb(255, 255, 255)"],
-      [false, "dark-header", "rgb(255, 255, 255)"],
-    ] as const)(
+    test.each(
+      SCHEMES.flatMap((scheme) => [
+        [true, scheme] as const,
+        [false, scheme] as const,
+      ]),
+    )(
       "pressed={%s} shows its state by shape in %s",
-      async (pressed, scheme, ink) => {
+      async (pressed, scheme) => {
+        const ink = role("foreground", scheme);
         const screen = await renderIn(scheme, Button, {
           variant: "secondary",
           pressed,
@@ -410,14 +407,10 @@ describe("Button", () => {
     expect(onclick).toHaveBeenCalledTimes(2);
   });
 
-  // The guide's `ring` role: #0284C7 light, #0EA5E9 dark.
-  test.each([
-    ["light", "rgb(2, 132, 199)"],
-    ["dark", "rgb(14, 165, 233)"],
-    ["dark-header", "rgb(14, 165, 233)"],
-  ] as const)(
+  // The `ring` role.
+  test.each(SCHEMES)(
     "shows a ring outline when tabbed to in %s",
-    async (scheme, colour) => {
+    async (scheme) => {
       const screen = await renderIn(scheme, Button, {
         children: text("Save"),
       });
@@ -426,7 +419,7 @@ describe("Button", () => {
       await expect.element(button).toHaveFocus();
       await expect.element(button).toHaveStyle({
         outlineStyle: "solid",
-        outlineColor: colour,
+        outlineColor: role("ring", scheme),
       });
     },
   );
@@ -439,7 +432,7 @@ describe("Button", () => {
     await userEvent.tab();
     await expect.element(screen.getByRole("link")).toHaveStyle({
       outlineStyle: "solid",
-      outlineColor: "rgb(2, 132, 199)",
+      outlineColor: role("ring", "light"),
     });
   });
 
@@ -468,7 +461,7 @@ describe("Button", () => {
     await expect.element(button).toHaveAttribute("id", "save");
     await expect.element(button).toHaveStyle({
       marginLeft: "16px",
-      backgroundColor: "rgb(3, 105, 161)",
+      backgroundColor: role("primary", "light"),
     });
   });
 
@@ -476,6 +469,6 @@ describe("Button", () => {
     const screen = await renderIn("light", Button, { children: text("Save") });
     await expect
       .element(screen.getByRole("button"))
-      .toHaveStyle({ backgroundColor: "rgb(3, 105, 161)" });
+      .toHaveStyle({ backgroundColor: role("primary", "light") });
   });
 });

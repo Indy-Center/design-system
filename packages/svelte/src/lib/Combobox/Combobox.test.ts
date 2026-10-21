@@ -1,6 +1,8 @@
 import { describe, expect, test } from "vitest";
 import { page, userEvent } from "vitest/browser";
 import type { RenderResult } from "vitest-browser-svelte";
+import { SCHEMES } from "../../../test/contrast.ts";
+import { role } from "../../../test/roles.ts";
 import { renderIn } from "../../../test/schemes.ts";
 import Combobox from "./Combobox.svelte";
 import Picker from "./Combobox.test.svelte";
@@ -236,39 +238,34 @@ describe("Combobox", () => {
     await expect.element(input).toHaveAttribute("aria-invalid", "true");
   });
 
-  // The guide's roles: `card` fill (#FFFFFF light, #1E293B dark), `muted`
-  // on the active option (#E2E8F0 light, #334155 dark), and a `ring`
-  // outline round it (#0284C7 light, #0EA5E9 dark).
-  test.each([
-    ["light", "rgb(255, 255, 255)", "rgb(226, 232, 240)", "rgb(2, 132, 199)"],
-    ["dark", "rgb(30, 41, 59)", "rgb(51, 65, 85)", "rgb(14, 165, 233)"],
-    ["dark-header", "rgb(30, 41, 59)", "rgb(51, 65, 85)", "rgb(14, 165, 233)"],
-  ] as const)(
+  // The `card` fill, `muted` on the active option, and a `ring` outline
+  // round it.
+  test.each(SCHEMES)(
     "draws the list on the card, the active option ringed, in %s",
-    async (scheme, card, active, ring) => {
+    async (scheme) => {
       const screen = await renderIn(scheme, Picker, {});
       await userEvent.tab();
       await userEvent.keyboard("{ArrowDown}");
       const list = screen.getByRole("listbox");
       await expect
         .element(page.elementLocator(list.element().parentElement!))
-        .toHaveStyle({ backgroundColor: card });
+        .toHaveStyle({ backgroundColor: role("card", scheme) });
       await expect
         .element(screen.getByRole("option", { name: "Ann Archer" }))
         .toHaveStyle({
-          backgroundColor: active,
+          backgroundColor: role("muted", scheme),
           outlineStyle: "solid",
-          outlineColor: ring,
+          outlineColor: role("ring", scheme),
         });
     },
   );
 
-  // The guide's `input` border (#64748B) and `muted` fill, as Input has.
+  // The `input` border and `muted` fill, as Input has.
   test("its box takes the input roles", async () => {
     const screen = await renderIn("light", Picker, {});
     await expect.element(screen.getByRole("combobox")).toHaveStyle({
-      backgroundColor: "rgb(226, 232, 240)",
-      borderColor: "rgb(100, 116, 139)",
+      backgroundColor: role("muted", "light"),
+      borderColor: role("input", "light"),
     });
   });
 
