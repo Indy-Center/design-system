@@ -33,6 +33,11 @@
   const madeId = $props.id();
   const inputId = $derived(id ?? madeId);
   const readOutId = $derived(`${inputId}-read-out`);
+  // The read-out first, as it sits above Field's hint and error (formControl's
+  // `describedBy` puts the caller's ids first).
+  const describedBy = $derived(
+    [readOutId, callerDescribedBy].filter(Boolean).join(" "),
+  );
 
   // The box holds the member's local time, which only the browser knows;
   // the server leaves it and the read-out empty.
@@ -49,7 +54,13 @@
 
 <div class={["flex flex-col gap-1.5", className]}>
   {#if name}
-    <input type="hidden" {name} value={value ?? ""} disabled={rest.disabled} />
+    <input
+      type="hidden"
+      {name}
+      value={value ?? ""}
+      form={rest.form}
+      disabled={rest.disabled}
+    />
   {/if}
   <input
     {...rest}
@@ -59,7 +70,7 @@
     min={inZone(min) || undefined}
     max={inZone(max) || undefined}
     oninput={(event) => (value = fromLocal(event.currentTarget.value))}
-    aria-describedby={[readOutId, callerDescribedBy].filter(Boolean).join(" ")}
+    aria-describedby={describedBy}
     class={textControlClasses}
   />
   <p

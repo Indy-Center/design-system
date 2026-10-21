@@ -33,6 +33,19 @@ describe("DateTimeInput", () => {
       .toHaveTextContent("2026-10-20T23:00:00.000Z");
   });
 
+  // 2:30 AM on 14 March 2027 doesn't happen in Indianapolis: the clocks
+  // go from 2:00 EST to 3:00 EDT.
+  test("moves a time the clocks skip on to where it lands", async () => {
+    const screen = await renderIn("light", EventStartField, {});
+    await screen.getByLabelText("Start").fill("2027-03-14T02:30");
+    await expect
+      .element(screen.getByTestId("bound"))
+      .toHaveTextContent("2027-03-14T07:30:00.000Z");
+    await expect
+      .element(screen.getByLabelText("Start"))
+      .toHaveValue("2027-03-14T03:30");
+  });
+
   test("shows a UTC value in the member's local time", async () => {
     const screen = await renderIn("light", EventStartField, {
       value: "2026-10-20T23:00:00Z",
@@ -150,6 +163,20 @@ describe("DateTimeInput", () => {
       screen.container.querySelectorAll<HTMLInputElement>('[name="start"]');
     expect(sent).toHaveLength(1);
     await expect.element(sent[0]).toHaveValue("2026-10-27T23:00:00.000Z");
+  });
+
+  test("sends the value with the form it names", async () => {
+    const form = document.createElement("form");
+    form.id = "event";
+    document.body.append(form);
+    await renderIn("light", DateTimeInput, {
+      "aria-label": "Start",
+      name: "start",
+      form: "event",
+      value: "2026-10-27T23:00:00Z",
+    });
+    expect(new FormData(form).get("start")).toBe("2026-10-27T23:00:00Z");
+    form.remove();
   });
 
   test("sends nothing while disabled", async () => {
