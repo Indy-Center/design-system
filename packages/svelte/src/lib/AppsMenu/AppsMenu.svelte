@@ -25,7 +25,7 @@
   import { withoutTrailingSlash } from "../headerMenu/withoutTrailingSlash.js";
 
   type Props = HTMLAttributes<HTMLDivElement> & {
-    /** Every Indy Center app, in the order they show: `INDY_CENTER_APPS`. */
+    /** The apps, in the order they show: `INDY_CENTER_APPS`, or an app's own list. */
     apps: readonly App[];
     /**
      * The `href` of the app this page is in, marked in the list. A
