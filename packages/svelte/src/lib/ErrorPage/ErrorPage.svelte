@@ -8,6 +8,11 @@
     /** An MDI path for an icon before the name, such as `mdiCalendar`. */
     icon?: string;
   };
+
+  // SvelteKit's own 404 message, which the title says better.
+  const SVELTEKIT_NOT_FOUND = "Not Found";
+  // A message that already ends a sentence.
+  const ENDS_SENTENCE = /[.!?]$/;
 </script>
 
 <script lang="ts">
@@ -48,10 +53,11 @@
   const linksId = $props.id();
 
   let notFound = $derived(status === 404);
-  // What a load said was missing, such as "Partner not found". SvelteKit's
-  // own 404 says "Not Found", which the title says better.
+  // What a load said was missing, such as "Partner not found".
   let missing = $derived(
-    notFound && message && message !== "Not Found" ? message : undefined,
+    notFound && message && message !== SVELTEKIT_NOT_FOUND
+      ? message
+      : undefined,
   );
   let title = $derived(
     notFound ? (missing ?? "Radar contact lost") : "Something went wrong",
@@ -60,7 +66,7 @@
   // no full stop.
   let reason = $derived(
     message
-      ? /[.!?]$/.test(message)
+      ? ENDS_SENTENCE.test(message)
         ? message
         : `${message}.`
       : "An unexpected error occurred.",
