@@ -24,6 +24,11 @@ src/routes/name/+page.svelte its playground page (lower-case folder)
   Playground pages import from `../../lib/index.ts`.
 - A component's own small parts (a helper, an icon) go in its folder. Only
   what `index.ts` exports is public.
+- A part that callers use but only inside the component (Table's `Th`)
+  goes in the component's folder too, exported from `index.ts`. It has
+  no folder, doc page or playground page of its own: the component's doc
+  page gives it a Props table, and the component's tests and playground
+  cover it.
 
 ## Props
 
