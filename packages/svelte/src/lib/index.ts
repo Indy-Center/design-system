@@ -21,6 +21,7 @@ export {
   CHIP_VARIANTS,
   type ChipVariant,
 } from "./Chip/Chip.svelte";
+export { default as ColorSchemeSetting } from "./ColorSchemeSetting/ColorSchemeSetting.svelte";
 export { default as Combobox } from "./Combobox/Combobox.svelte";
 export { default as ConfirmDialog } from "./ConfirmDialog/ConfirmDialog.svelte";
 export { default as CopyButton } from "./CopyButton/CopyButton.svelte";
@@ -75,6 +76,8 @@ export { default as Text } from "./Text/Text.svelte";
 export { default as Textarea } from "./Textarea/Textarea.svelte";
 export { default as Th, type ThScope } from "./Table/Th.svelte";
 export { default as Time } from "./Time/Time.svelte";
+export { default as TimeZoneLine } from "./TimeZoneLine/TimeZoneLine.svelte";
+export { default as TimeZoneSetting } from "./TimeZoneSetting/TimeZoneSetting.svelte";
 export { default as Toaster } from "./Toast/Toaster.svelte";
 export {
   default as Tooltip,
@@ -108,6 +111,22 @@ export {
   saveColorScheme,
   type SaveColorSchemeOptions,
 } from "./colorScheme/saveColorScheme.js";
+export { clearColorScheme } from "./colorScheme/clearColorScheme.js";
+export {
+  setColorScheme,
+  type SetColorSchemeOptions,
+} from "./colorScheme/colorSchemeContext.js";
+
+// The time zone: the root layout hands the server's choice to every Time.
+// Reading the cookie is server code, in ./server.ts.
+export type {
+  TimeZoneChoice,
+  TimeZoneProfileSetting,
+} from "./timeZone/timeZone.js";
+export {
+  setTimeZone,
+  type SetTimeZoneOptions,
+} from "./timeZone/timeZoneContext.svelte.js";
 
 // Aviation helpers: plain functions, for components and apps alike.
 export type { AirportInfo } from "./aviation/airport.js";

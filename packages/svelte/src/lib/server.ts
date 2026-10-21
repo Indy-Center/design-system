@@ -21,3 +21,7 @@ export const fetchPositions = createPositionsFetcher({
   // Looked up on each call, so a test can stub the global fetch.
   fetch: (input, init) => globalThis.fetch(input, init),
 });
+
+// The member's time zone from the request's cookie and their profile, for
+// the root layout's load to hand to `setTimeZone`.
+export { readTimeZone, type ReadTimeZoneOptions } from "./timeZone/timeZone.js";

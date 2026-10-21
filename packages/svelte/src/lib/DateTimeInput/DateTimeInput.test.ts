@@ -46,6 +46,16 @@ describe("DateTimeInput", () => {
       .toHaveValue("2027-03-14T03:30");
   });
 
+  // 1:30 AM on 1 November 2026 happens twice in Indianapolis: in EDT, then
+  // in EST.
+  test("takes a time the clocks pass twice as the first", async () => {
+    const screen = await renderIn("light", EventStartField, {});
+    await screen.getByLabelText("Start").fill("2026-11-01T01:30");
+    await expect
+      .element(screen.getByTestId("bound"))
+      .toHaveTextContent("2026-11-01T05:30:00.000Z");
+  });
+
   test("shows a UTC value in the member's local time", async () => {
     const screen = await renderIn("light", EventStartField, {
       value: "2026-10-20T23:00:00Z",
@@ -302,6 +312,72 @@ describe("DateTimeInput", () => {
     });
     const box = screen.getByLabelText("Start").element();
     expect(box.getBoundingClientRect().height).toBeGreaterThanOrEqual(44);
+  });
+
+  // The device is in Indianapolis; the member saved Chicago (CDT, UTC−5),
+  // so the box, its read-out and Time agree on Chicago.
+  describe("with a saved time zone other than the device's", () => {
+    const chicago = { kind: "zone", zone: "America/Chicago" } as const;
+
+    test("shows a UTC value in the saved zone", async () => {
+      const screen = await renderIn("light", EventStartField, {
+        choice: chicago,
+        value: "2026-10-27T23:00:00Z",
+      });
+      await expect
+        .element(screen.getByLabelText("Start"))
+        .toHaveValue("2026-10-27T18:00");
+      await expect
+        .element(screen.getByText(/^Local/))
+        .toHaveTextContent("Local: Tue 27 Oct, 6:00 PM CDT");
+    });
+
+    test("turns the time typed in the saved zone into UTC", async () => {
+      const screen = await renderIn("light", EventStartField, {
+        choice: chicago,
+      });
+      await screen.getByLabelText("Start").fill("2026-10-27T18:00");
+      await expect
+        .element(screen.getByTestId("bound"))
+        .toHaveTextContent("2026-10-27T23:00:00.000Z");
+      await expect
+        .element(screen.getByText(/^Local/))
+        .toHaveTextContent("Local: Tue 27 Oct, 6:00 PM CDT");
+    });
+
+    test("names the saved zone while empty", async () => {
+      const screen = await renderIn("light", EventStartField, {
+        choice: chicago,
+      });
+      await expect
+        .element(screen.getByLabelText("Start"))
+        .toHaveAccessibleDescription(
+          "In your time zone, Central Daylight Time.",
+        );
+    });
+
+    test("in Zulu, the box is in Zulu too", async () => {
+      const screen = await renderIn("light", EventStartField, {
+        choice: { kind: "zulu" },
+        value: "2026-10-27T23:00:00Z",
+      });
+      const box = screen.getByLabelText("Start");
+      await expect.element(box).toHaveValue("2026-10-27T23:00");
+      await box.fill("2026-10-28T01:30");
+      await expect
+        .element(screen.getByTestId("bound"))
+        .toHaveTextContent("2026-10-28T01:30:00.000Z");
+    });
+
+    test("following the device, it is the device's zone", async () => {
+      const screen = await renderIn("light", EventStartField, {
+        choice: { kind: "device", zone: "America/Chicago" },
+        value: "2026-10-27T23:00:00Z",
+      });
+      await expect
+        .element(screen.getByLabelText("Start"))
+        .toHaveValue("2026-10-27T19:00");
+    });
   });
 
   describe("on the server", () => {

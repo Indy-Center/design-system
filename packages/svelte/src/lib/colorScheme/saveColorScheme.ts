@@ -1,36 +1,23 @@
+import {
+  writePreferenceCookie,
+  type PreferenceCookieOptions,
+} from "../preferenceCookie/preferenceCookie.js";
 import { COOKIE_NAME, type ColorScheme } from "./colorScheme.js";
+import { colorSchemeChoice } from "./colorSchemeChoice.svelte.js";
 
-export type SaveColorSchemeOptions = {
-  /**
-   * The domain the cookie is shared across. On a page outside it (such as
-   * localhost) the cookie is kept for the page's own host instead.
-   */
-  domain?: string;
-};
-
-/** The Indy Center domain, which every app's cookie is shared across. */
-const INDY_CENTER_DOMAIN = "flyindycenter.com";
-
-const ONE_YEAR = 365 * 24 * 60 * 60;
+export type SaveColorSchemeOptions = PreferenceCookieOptions;
 
 /**
  * Saves the member's explicit choice to the shared cookie and applies it to
- * the page at once. In the browser only; for the user menu's colour-scheme
- * item. Never call it with the device's setting.
+ * the page at once. In the browser only; for the colour-scheme control.
+ * Never call it with the device's setting: `clearColorScheme` goes back
+ * to that.
  */
 export function saveColorScheme(
   scheme: ColorScheme,
-  { domain = INDY_CENTER_DOMAIN }: SaveColorSchemeOptions = {},
+  options: SaveColorSchemeOptions = {},
 ): void {
-  const host = location.hostname;
-  const onDomain = host === domain || host.endsWith(`.${domain}`);
-  document.cookie = [
-    `${COOKIE_NAME}=${scheme}`,
-    "Path=/",
-    `Max-Age=${ONE_YEAR}`,
-    "SameSite=Lax",
-    ...(onDomain ? [`Domain=${domain}`] : []),
-    ...(location.protocol === "https:" ? ["Secure"] : []),
-  ].join("; ");
+  writePreferenceCookie(COOKIE_NAME, scheme, options);
   document.documentElement.dataset.theme = scheme;
+  colorSchemeChoice.current = scheme;
 }

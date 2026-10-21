@@ -49,7 +49,9 @@ src/routes/name/+page.svelte its playground page (lower-case folder)
   (the tinted icon tile of ErrorPage, EmptyState and StatCard),
   `headerMenu` (the header's disclosure button and panel, its link
   classes, and the trailing-slash rule for the current page, for
-  AppsMenu, AppNav, AppNavMenu and UserMenu).
+  AppsMenu, AppNav, AppNavMenu and UserMenu), `preferenceControl` (the
+  settings' rows and "What's saved?" note), `preferenceCookie` (the
+  preference cookies' attributes).
 - Something an app raises with a function, rather than places, is named
   for what the member sees: `Toast/` holds `toast.svelte.ts` (the
   function and its state), `Toaster.svelte` (the one component that shows
@@ -95,12 +97,15 @@ src/routes/name/+page.svelte its playground page (lower-case folder)
   (`expectReadable`). Anything new reaches for a role first.
 - Components that are dark in both schemes (Header, Footer) put
   `data-theme="dark"` on their own root, and everything inside follows.
-- Never set `data-theme` on `<html>`: the colour-scheme hook does. To save
-  a member's choice (UserMenu's colour-scheme item), call
-  `saveColorScheme("light" | "dark")` from
-  `../colorScheme/saveColorScheme.js` (a `.ts` file, imported as `.js` so
-  the built package resolves it); it writes the shared cookie and
-  applies the choice at once. Read the scheme in use from
+- Never set `data-theme` on `<html>`: the colour-scheme hook does. To let
+  a member choose (UserMenu's colour-scheme item), place
+  `ColorSchemeSetting` from `../ColorSchemeSetting/ColorSchemeSetting.svelte`;
+  it calls `saveColorScheme` and `clearColorScheme` from
+  `../colorScheme/` (`.ts` files, imported as `.js` so the built package
+  resolves them), which write or delete the shared cookie and apply the
+  choice at once. It takes the hook's fallback and the cookie's domain
+  from the app's `setColorScheme`, never props. The time zone's choice
+  is `TimeZoneSetting`, the same way (from `setTimeZone`). Read the scheme in use from
   `document.documentElement.dataset.theme` after mount. See
   `src/lib/colorScheme/colorScheme.md`.
 - `font-heading` for headings, `font-mono` for CIDs, controller ratings
