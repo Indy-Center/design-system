@@ -1,4 +1,4 @@
-import { describe, expect, test } from "vitest";
+import { describe, expect, onTestFinished, test } from "vitest";
 import { page, userEvent } from "vitest/browser";
 import type { RenderResult } from "vitest-browser-svelte";
 import { renderIn } from "../../../test/schemes.ts";
@@ -127,6 +127,27 @@ describe("Combobox", () => {
       await expect.element(input).toHaveValue("an");
       await expect.element(input).toHaveFocus();
       expect(input).not.toHaveAttribute("aria-activedescendant");
+    });
+
+    test("Escape on an empty box is left to the dialog it sits in", async () => {
+      const screen = await renderIn("light", Combobox, {
+        "aria-label": "Position",
+        options: ["IND_CTR", "IND_APP"],
+      });
+      const dialog = document.createElement("dialog");
+      onTestFinished(() => dialog.remove());
+      screen.container.replaceWith(dialog);
+      dialog.append(screen.container);
+      dialog.showModal();
+      const input = screen.getByRole("combobox");
+      await input.fill("IND_CTR");
+      // The first Escape closes the list, the second clears the box; both
+      // are the combobox's, so the dialog stays open.
+      await userEvent.keyboard("{Escape}{Escape}");
+      await expect.element(input).toHaveValue("");
+      expect(dialog.open).toBe(true);
+      await userEvent.keyboard("{Escape}");
+      await expect.poll(() => dialog.open).toBe(false);
     });
 
     test("Alt+Down opens the list with no option active", async () => {

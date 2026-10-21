@@ -205,7 +205,8 @@
         break;
       case "Escape":
         // An open list is closed by `dismiss`; a closed one clears the box.
-        if (open) break;
+        // With nothing to clear, the Escape is left for a dialog round it.
+        if (open || (query === "" && value == null)) break;
         event.preventDefault();
         pick(null);
         query = "";
