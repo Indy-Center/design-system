@@ -16,6 +16,7 @@ export {
   type ChipVariant,
 } from "./Chip/Chip.svelte";
 export { default as Combobox } from "./Combobox/Combobox.svelte";
+export { default as DescriptionList } from "./DescriptionList/DescriptionList.svelte";
 export { default as Disclosure } from "./Disclosure/Disclosure.svelte";
 export { default as Field, type FieldControl } from "./Field/Field.svelte";
 export { default as Fieldset } from "./Fieldset/Fieldset.svelte";
@@ -29,9 +30,11 @@ export { default as Radio } from "./Radio/Radio.svelte";
 export { default as Select } from "./Select/Select.svelte";
 export { default as SkipLink } from "./SkipLink/SkipLink.svelte";
 export { default as Spinner } from "./Spinner/Spinner.svelte";
+export { default as Table } from "./Table/Table.svelte";
 export { default as Tabs, type Tab } from "./Tabs/Tabs.svelte";
 export { default as Text } from "./Text/Text.svelte";
 export { default as Textarea } from "./Textarea/Textarea.svelte";
+export { default as Th, type ThScope } from "./Table/Th.svelte";
 export { default as Time } from "./Time/Time.svelte";
 
 // The colour scheme, in the browser. Its server hook is in ./hooks.ts.

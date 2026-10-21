@@ -27,6 +27,11 @@ src/routes/name/+page.svelte its playground page (lower-case folder)
   `forgetColorScheme.ts` do.
 - A component's own small parts (a helper, an icon) go in its folder. Only
   what `index.ts` exports is public.
+- A part that callers use but only inside the component (Table's `Th`)
+  goes in the component's folder too, exported from `index.ts`. It has
+  no folder, doc page or playground page of its own: the component's doc
+  page gives it a Props table, and the component's tests and playground
+  cover it.
 
 ## Props
 
@@ -40,6 +45,10 @@ src/routes/name/+page.svelte its playground page (lower-case folder)
 - Accept `class` and add it last: `class={[own, className]}`. It is for
   layout (margin, width), not colour. Variants are props (`variant="…"`),
   not classes the caller has to know.
+- When the component wraps its element in a box of its own (Table's
+  scroll region around its `<table>`), `class` goes on the outer box,
+  since it is for layout, and `...rest` on the element. Say so in the
+  doc page's Props table, and test both.
 
 ## Colour and type
 
@@ -100,8 +109,10 @@ the tokens loaded, so computed colours are the real ones.
 - Snippets for `children` and `icon`: `text("…")` and `icon` from
   `test/snippets.ts`, or your own with `createRawSnippet`. That needs one
   root element, so for children that are loose HTML (Prose's `{@html}`
-  body), write a small wrapper component in `test/` instead, as
-  `test/ProseLesson.svelte` does.
+  body), several siblings or other components (a table's `Th` and
+  `Link`, a list's rows), write a small wrapper component in `test/`
+  instead, as `test/ProseLesson.svelte` and `test/ControllerTable.svelte`
+  do.
 
 Run one file while working:
 `npx vitest run --project components src/lib/Name`.
