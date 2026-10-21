@@ -1,5 +1,6 @@
 // An app's navigation, and which of its pages is current: shared by
 // AppNav (the header bar) and AppNavMenu (the phone menu).
+import type { HTMLAttributes } from "svelte/elements";
 import { withoutTrailingSlash } from "../headerMenu/withoutTrailingSlash.js";
 
 /** A page in the app's navigation. */
@@ -24,6 +25,22 @@ export type NavGroup = {
 
 /** A top-level item: a page, or a group of pages. */
 export type NavItem = NavLink | NavGroup;
+
+/**
+ * AppNav's and AppNavMenu's props. `aria-label` is left out: `label` names
+ * the `<nav>`.
+ */
+export type NavProps = Omit<HTMLAttributes<HTMLElement>, "aria-label"> & {
+  /** The app's pages and groups, in order. */
+  items: NavItem[];
+  /**
+   * The page's path, such as `page.url.pathname`. The link it is, or is
+   * under, is marked as the current page.
+   */
+  current?: string;
+  /** Names the navigation for screen readers. "Main" by default. */
+  label?: string;
+};
 
 export const isGroup = (item: NavItem): item is NavGroup => "children" in item;
 

@@ -1,6 +1,5 @@
 <script lang="ts">
   import { mdiChevronDown } from "@mdi/js";
-  import type { HTMLAttributes } from "svelte/elements";
   import Icon from "../Icon/Icon.svelte";
   import { currentClass, menuRow } from "../headerMenu/headerMenu.js";
   import AppNavLink from "./AppNavLink.svelte";
@@ -8,20 +7,10 @@
     findCurrentHref,
     holdsCurrent,
     isGroup,
-    type NavItem,
+    type NavProps,
   } from "./nav.js";
 
-  type Props = HTMLAttributes<HTMLElement> & {
-    /** The app's pages and groups, in order. */
-    items: NavItem[];
-    /**
-     * The page's path, such as `page.url.pathname`. The link it is, or is
-     * under, is marked as the current page.
-     */
-    current?: string;
-    /** Names the navigation for screen readers. "Main" by default. */
-    label?: string;
-  };
+  type Props = NavProps;
 
   let {
     items,
@@ -43,9 +32,9 @@
 </script>
 
 <!-- The phone menu: one row each, groups opening in place. Dark in both
-     schemes, as the header it sits in: data-theme after the caller's
-     attributes so none can override it. -->
-<nav aria-label={label} {...rest} data-theme="dark" class={className}>
+     schemes, as the header it sits in: aria-label and data-theme after the
+     caller's attributes so none can override them. -->
+<nav {...rest} aria-label={label} data-theme="dark" class={className}>
   <ul class="space-y-1">
     {#each items as item, i}
       <li>

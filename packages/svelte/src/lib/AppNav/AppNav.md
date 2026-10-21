@@ -58,7 +58,7 @@ description: An app's own navigation in the header, top-level links and one leve
 | `current` | `string`           | The page's path. Marks the closest link it is, or is under. None if left out.                         |
 | `label`   | `string`           | Names the `<nav>` for screen readers. `"Main"` by default.                                            |
 | `class`   | `string`           | Added to the `<nav>`. Layout only.                                                                    |
-| others    | `<nav>` attributes | Passed to the `<nav>`: `id` and the rest.                                                             |
+| others    | `<nav>` attributes | Passed to the `<nav>`: `id` and the rest, but not `aria-label`; `label` names it.                     |
 
 ### AppNavMenu
 

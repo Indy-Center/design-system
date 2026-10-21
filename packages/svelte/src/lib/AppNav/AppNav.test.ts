@@ -151,6 +151,19 @@ describe("AppNav and AppNavMenu", () => {
         .toBeInTheDocument();
     });
 
+    // label is the nav's one name: an aria-label can't override it.
+    test("names its navigation by label alone, not a passed aria-label", async () => {
+      const screen = await renderIn("light", Nav, {
+        items: hubNav,
+        label: "Training",
+        // @ts-expect-error: aria-label isn't one of its props.
+        "aria-label": "Other",
+      });
+      await expect
+        .element(screen.getByRole("navigation", { name: "Training" }))
+        .toBeInTheDocument();
+    });
+
     test("gives every link, group and row a 44px target", async () => {
       const screen = await renderIn("light", Nav, {
         items: [
