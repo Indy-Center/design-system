@@ -1,6 +1,8 @@
 import { createRawSnippet } from "svelte";
 import { describe, expect, test } from "vitest";
 import { page, userEvent } from "vitest/browser";
+import { SCHEMES } from "../../../test/contrast.ts";
+import { role } from "../../../test/roles.ts";
 import { renderIn } from "../../../test/schemes.ts";
 import Field, { type FieldControl } from "./Field.svelte";
 
@@ -142,39 +144,27 @@ describe("Field", () => {
       .toHaveFocus();
   });
 
-  // The guide's roles: `muted-foreground` hint (#475569 light, #9CA3AF
-  // dark), `destructive` error (#B91C1C light, #F87171 dark).
-  test.each([
-    ["light", "rgb(71, 85, 105)", "rgb(185, 28, 28)"],
-    ["dark", "rgb(156, 163, 175)", "rgb(248, 113, 113)"],
-    ["dark-header", "rgb(156, 163, 175)", "rgb(248, 113, 113)"],
-  ] as const)(
-    "colours the hint and the error in %s",
-    async (scheme, hint, error) => {
-      const screen = await renderIn(scheme, Field, {
-        label: "Callsign",
-        hint: "As you log on to VATSIM.",
-        error: "Enter a callsign.",
-        children: control(),
-      });
-      await expect
-        .element(screen.getByText("As you log on to VATSIM."))
-        .toHaveStyle({ color: hint });
-      await expect
-        .element(screen.getByText("Enter a callsign."))
-        .toHaveStyle({ color: error });
-    },
-  );
+  // The guide's roles: `muted-foreground` hint, `destructive` error.
+  test.each(SCHEMES)("colours the hint and the error in %s", async (scheme) => {
+    const screen = await renderIn(scheme, Field, {
+      label: "Callsign",
+      hint: "As you log on to VATSIM.",
+      error: "Enter a callsign.",
+      children: control(),
+    });
+    await expect
+      .element(screen.getByText("As you log on to VATSIM."))
+      .toHaveStyle({ color: role("muted-foreground", scheme) });
+    await expect
+      .element(screen.getByText("Enter a callsign."))
+      .toHaveStyle({ color: role("destructive", scheme) });
+  });
 
-  // The guide's roles: `foreground-soft` label (#334155 light, #D1D5DB
-  // dark), `muted-foreground` "(required)" (#475569 light, #9CA3AF dark).
-  test.each([
-    ["light", "rgb(51, 65, 85)", "rgb(71, 85, 105)"],
-    ["dark", "rgb(209, 213, 219)", "rgb(156, 163, 175)"],
-    ["dark-header", "rgb(209, 213, 219)", "rgb(156, 163, 175)"],
-  ] as const)(
+  // The guide's roles: `foreground-soft` label, `muted-foreground`
+  // "(required)".
+  test.each(SCHEMES)(
     "colours the label and (required) in %s",
-    async (scheme, label, required) => {
+    async (scheme) => {
       const screen = await renderIn(scheme, Field, {
         label: "Callsign",
         required: true,
@@ -182,10 +172,10 @@ describe("Field", () => {
       });
       await expect
         .element(screen.container.querySelector("label")!)
-        .toHaveStyle({ color: label });
+        .toHaveStyle({ color: role("foreground-soft", scheme) });
       await expect
         .element(screen.getByText("(required)"))
-        .toHaveStyle({ color: required });
+        .toHaveStyle({ color: role("muted-foreground", scheme) });
     },
   );
 
