@@ -10,6 +10,7 @@ export {
   type Crumb,
 } from "./Breadcrumbs/Breadcrumbs.svelte";
 export { default as Button } from "./Button/Button.svelte";
+export { default as Card } from "./Card/Card.svelte";
 export { default as Checkbox } from "./Checkbox/Checkbox.svelte";
 export { default as ChoiceCard } from "./ChoiceCard/ChoiceCard.svelte";
 export {
