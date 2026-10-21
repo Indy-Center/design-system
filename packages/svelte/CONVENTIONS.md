@@ -43,7 +43,8 @@ src/routes/name/+page.svelte its playground page (lower-case folder)
 - Parts that several components share, and that aren't exported, get a
   folder of their own with no doc page: `formControl` (the controls'
   classes), `buttonClasses` (Button's variants, which DropdownMenu's arrow
-  shares), `CloseButton` (Alert's and Toast's close button).
+  shares), `CloseButton` (Alert's and Toast's close button), `IconTile`
+  (the tinted icon tile of ErrorPage, EmptyState and StatCard).
 - Something an app raises with a function, rather than places, is named
   for what the member sees: `Toast/` holds `toast.svelte.ts` (the
   function and its state), `Toaster.svelte` (the one component that shows
@@ -97,9 +98,9 @@ src/routes/name/+page.svelte its playground page (lower-case folder)
   applies the choice at once. Read the scheme in use from
   `document.documentElement.dataset.theme` after mount. See
   `src/lib/colorScheme/colorScheme.md`.
-- `font-heading` for headings, `font-mono` for CIDs and controller ratings
-  (`S3`, `C1`; not star ratings); Tailwind's
-  default sizes.
+- `font-heading` for headings, `font-mono` for CIDs, controller ratings
+  (`S3`, `C1`; not star ratings) and HTTP status codes (ErrorPage's
+  `404`); Tailwind's default sizes.
 - Focus: `focus-visible:outline-2 focus-visible:outline-offset-2
 focus-visible:outline-ring`. Where a parent's `overflow-hidden` (or a
   scrolling list) would clip that ring, inset it instead with

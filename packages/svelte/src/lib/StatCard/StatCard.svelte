@@ -2,6 +2,7 @@
   import type { Snippet } from "svelte";
   import type { HTMLAttributes } from "svelte/elements";
   import Card from "../Card/Card.svelte";
+  import IconTile from "../IconTile/IconTile.svelte";
 
   type Props = HTMLAttributes<HTMLDListElement> & {
     /** What is counted, such as "Total users": the list's term. */
@@ -40,11 +41,8 @@
     {/if}
   </dl>
   {#if icon}
-    <div
-      aria-hidden="true"
-      class="flex shrink-0 rounded-lg bg-primary/15 p-3 text-2xl text-link"
-    >
+    <IconTile tone="primary" shape="square" class="p-3 text-2xl">
       {@render icon()}
-    </div>
+    </IconTile>
   {/if}
 </Card>

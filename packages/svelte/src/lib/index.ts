@@ -26,6 +26,11 @@ export { default as DescriptionList } from "./DescriptionList/DescriptionList.sv
 export { default as Disclosure } from "./Disclosure/Disclosure.svelte";
 export { default as DropdownMenu } from "./DropdownMenu/DropdownMenu.svelte";
 export { default as DropdownMenuItem } from "./DropdownMenu/DropdownMenuItem.svelte";
+export { default as EmptyState } from "./EmptyState/EmptyState.svelte";
+export {
+  default as ErrorPage,
+  type ErrorPageLink,
+} from "./ErrorPage/ErrorPage.svelte";
 export { default as Field, type FieldControl } from "./Field/Field.svelte";
 export { default as Fieldset } from "./Fieldset/Fieldset.svelte";
 export { default as FilterChip } from "./FilterChip/FilterChip.svelte";
