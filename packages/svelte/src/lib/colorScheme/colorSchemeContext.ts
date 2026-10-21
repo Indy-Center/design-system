@@ -19,8 +19,9 @@ export function setColorScheme(options: SetColorSchemeOptions): void {
 }
 
 /**
- * The setup the root layout gave `setColorScheme`. Without one, phase 1's:
- * `fallback: 'dark'`, on flyindycenter.com.
+ * The setup the root layout gave `setColorScheme`. Without one, phase 1's
+ * `fallback: 'dark'`, and no `domain`, so the cookie functions use their
+ * default, flyindycenter.com.
  */
 export function getColorScheme(): SetColorSchemeOptions {
   return (

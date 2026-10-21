@@ -50,6 +50,20 @@ import { colorSchemeHandle } from "@indy-center/svelte/hooks";
 export const handle = colorSchemeHandle({ fallback: "dark" });
 ```
 
+The root layout hands the same fallback to the colour-scheme control:
+
+```svelte
+<!-- src/routes/+layout.svelte -->
+<script>
+  import { setColorScheme } from "@indy-center/svelte";
+
+  let { children } = $props();
+  setColorScheme({ fallback: "dark" });
+</script>
+
+{@render children()}
+```
+
 See [`src/lib/colorScheme/colorScheme.md`](src/lib/colorScheme/colorScheme.md)
 for the `app.html` script tag and saving a choice.
 

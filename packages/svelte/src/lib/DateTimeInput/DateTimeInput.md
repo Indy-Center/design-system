@@ -73,9 +73,9 @@ Local: Tue 27 Oct, 7:00 PM EDT    Zulu: Tue 27 Oct, 2300Z
   "Today", "Tomorrow" or the weekday, as `Time` writes them.
 - A time the clocks skip (2:30 AM as summer time starts) is moved on by
   the gap, as browsers do; the box and read-out show where it landed
-  (3:30 AM). A
-  time the clocks pass twice (1:30 AM as summer time ends) is the first
-  of the two, in summer time; the read-out's Zulu shows which.
+  (3:30 AM). A time the clocks pass twice (1:30 AM as summer time ends)
+  is the first of the two, in summer time; the read-out's Zulu shows
+  which.
 - It works to the minute: seconds aren't kept.
 
 ## Server and browser
@@ -83,8 +83,9 @@ Local: Tue 27 Oct, 7:00 PM EDT    Zulu: Tue 27 Oct, 2300Z
 The server draws the box and the read-out empty, as it can't know the
 device's zone, rather than show Zulu as local time. The hidden input
 carries the value from the start. Once the page loads, the box fills in
-the member's zone, the same one every `Time` on the page uses. Without JavaScript the box stays empty and an
-edit isn't sent: the form sends the value it was drawn with.
+the member's zone, the same one every `Time` on the page uses. Without
+JavaScript the box stays empty and an edit isn't sent: the form sends
+the value it was drawn with.
 
 ## Looks
 

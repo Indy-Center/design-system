@@ -90,7 +90,10 @@ In a component, when the member picks light or dark:
   `ColorSchemeSetting` offers it only under `'device'`.
 - **`setColorScheme({ fallback, domain })`** hands the hook's setup to
   `ColorSchemeSetting` through context. Without it, the control takes
-  phase 1's `fallback: 'dark'` on `flyindycenter.com`.
+  phase 1's `fallback: 'dark'` on `flyindycenter.com`. Nothing checks
+  that it matches the hook's: an app that moves the hook to `'device'`
+  moves `setColorScheme` with it, or the control keeps hiding "Use my
+  device's setting".
 - The member's identity account isn't read or written yet (phase 2).
 
 ## Options

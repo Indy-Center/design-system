@@ -103,8 +103,9 @@ src/routes/name/+page.svelte its playground page (lower-case folder)
   it calls `saveColorScheme` and `clearColorScheme` from
   `../colorScheme/` (`.ts` files, imported as `.js` so the built package
   resolves them), which write or delete the shared cookie and apply the
-  choice at once. The time zone's choice is `TimeZoneSetting`, the same
-  way. Read the scheme in use from
+  choice at once. It takes the hook's fallback and the cookie's domain
+  from the app's `setColorScheme`, never props. The time zone's choice
+  is `TimeZoneSetting`, the same way (from `setTimeZone`). Read the scheme in use from
   `document.documentElement.dataset.theme` after mount. See
   `src/lib/colorScheme/colorScheme.md`.
 - `font-heading` for headings, `font-mono` for CIDs, controller ratings
