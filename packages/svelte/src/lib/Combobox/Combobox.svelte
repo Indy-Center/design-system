@@ -152,7 +152,10 @@
     input?.setCustomValidity(unpicked ? "Pick an option from the list." : "");
   });
 
-  /** Sets the pick, leaving the box's text as it is. */
+  /**
+   * Sets the pick and nothing else: the box's text, the list and the
+   * status region stay as they are. Typing calls it to undo a pick.
+   */
   function pick(next: T | null) {
     shownKey = keyOf(next);
     value = next;
@@ -192,6 +195,10 @@
     active = -1;
   }
 
+  /**
+   * The member picks an option from the list: sets the pick, writes its
+   * text in the box, says it in the status region and closes the list.
+   */
   function choose(option: T) {
     pick(option);
     query = getText(option);
@@ -203,6 +210,17 @@
     const row = (event.target as Element).closest("[role=option]");
     const index = row ? [...event.currentTarget.children].indexOf(row) : -1;
     if (index >= 0) choose(results[index]);
+  }
+
+  /** A handler that runs the caller's own handler, then the combobox's. */
+  function chain<E extends Event>(
+    caller: ((event: E) => unknown) | null | undefined,
+    own: (event: E) => void,
+  ) {
+    return (event: E) => {
+      caller?.(event);
+      own(event);
+    };
   }
 
   function onkeydown(event: KeyboardEvent) {
@@ -263,22 +281,10 @@
     aria-activedescendant={active >= 0 ? optionId(active) : undefined}
     bind:this={input}
     bind:value={query}
-    oninput={(event) => {
-      callerInput?.(event);
-      oninput();
-    }}
-    onclick={(event) => {
-      callerClick?.(event);
-      show();
-    }}
-    onblur={(event) => {
-      callerBlur?.(event);
-      close();
-    }}
-    onkeydown={(event) => {
-      callerKeydown?.(event);
-      onkeydown(event);
-    }}
+    oninput={chain(callerInput, oninput)}
+    onclick={chain(callerClick, show)}
+    onblur={chain(callerBlur, close)}
+    onkeydown={chain(callerKeydown, onkeydown)}
     class={[textControlClasses, "pr-10"]}
   />
   <Icon
