@@ -1,5 +1,8 @@
-/** A VATSIM rating, a controller's or a pilot's. */
-export type Rating = {
+/**
+ * A VATSIM rating, a controller's or a pilot's. (`Rating` is the component
+ * that shows one.)
+ */
+export type RatingDetails = {
   /** VATSIM's number, which also orders them: `5`. */
   id: number;
   /** The short code: `"C1"`. */
@@ -12,7 +15,7 @@ export type Rating = {
  * VATSIM's controller ratings, as its data feed ships them, in order. Sort
  * by `id` to rank members.
  */
-export const RATINGS: readonly Rating[] = [
+export const RATINGS: readonly RatingDetails[] = [
   { id: -1, short: "INAC", long: "Inactive" },
   { id: 0, short: "SUS", long: "Suspended" },
   { id: 1, short: "OBS", long: "Observer" },
@@ -50,7 +53,7 @@ const VNAS_NAMES: Record<string, string> = {
  * number (`5`), the short code (`"C1"`), vNAS's name (`"Controller1"`) or
  * VATSIM's (`"Enroute Controller"`), in any case. Undefined when it is none.
  */
-export function findRating(value: number | string): Rating | undefined {
+export function findRating(value: number | string): RatingDetails | undefined {
   if (typeof value === "number") return RATINGS.find((r) => r.id === value);
   const wanted = value.toLowerCase();
   return RATINGS.find((r) =>
@@ -64,7 +67,7 @@ export function findRating(value: number | string): Rating | undefined {
  * VATSIM's pilot ratings, as its data feed ships them, in order. Each `id`
  * is a bit mask holding the ones below it, so they also sort by `id`.
  */
-export const PILOT_RATINGS: readonly Rating[] = [
+export const PILOT_RATINGS: readonly RatingDetails[] = [
   { id: 0, short: "NEW", long: "Basic Member" },
   { id: 1, short: "PPL", long: "Private Pilot License" },
   { id: 3, short: "IR", long: "Instrument Rating" },
@@ -79,7 +82,9 @@ export const PILOT_RATINGS: readonly Rating[] = [
  * VATSIM's name (`"Instrument Rating"`), in any case. Undefined when it is
  * none.
  */
-export function findPilotRating(value: number | string): Rating | undefined {
+export function findPilotRating(
+  value: number | string,
+): RatingDetails | undefined {
   if (typeof value === "number")
     return PILOT_RATINGS.find((r) => r.id === value);
   const wanted = value.toLowerCase();

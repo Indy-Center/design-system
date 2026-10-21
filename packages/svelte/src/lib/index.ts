@@ -84,7 +84,7 @@ export {
   findRating,
   PILOT_RATINGS,
   RATINGS,
-  type Rating,
+  type RatingDetails,
 } from "./aviation/ratings.js";
 export {
   resolvePosition,
