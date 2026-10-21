@@ -7,6 +7,7 @@
   import { DEV } from "esm-env";
   import type { HTMLAttributes } from "svelte/elements";
   import Chip from "../Chip/Chip.svelte";
+  import { isValid } from "../Time/format.js";
   import Tooltip from "../Tooltip/Tooltip.svelte";
 
   type Props = HTMLAttributes<HTMLSpanElement> & {
@@ -41,7 +42,7 @@
   const expiry = $derived.by(() => {
     if (until === undefined) return undefined;
     const at = new Date(until);
-    if (Number.isNaN(at.getTime())) return undefined;
+    if (!isValid(at)) return undefined;
     return {
       datetime: at.toISOString().slice(0, 10),
       text: `${at.getUTCDate()} ${month.format(at)}`,
@@ -55,7 +56,7 @@
 </script>
 
 <!-- The chip's gap spaces it on screen; the space is for copied text. -->
-{#snippet expires()}{#if expiry}<span class="font-sans font-normal"
+{#snippet expiryText()}{#if expiry}<span class="font-sans font-normal"
       >{" "}<span aria-hidden="true">·</span> until
       <time datetime={expiry.datetime}>{expiry.text}</time></span
     >{/if}{/snippet}
@@ -83,12 +84,12 @@
           tabindex={focusable ? 0 : undefined}
           class="no-underline outline-none"
           >{code}<span class="sr-only">{" "}{name}</span></abbr
-        >{@render expires()}
+        >{@render expiryText()}
       </Chip>
     {/snippet}
   </Tooltip>
 {:else}
   <Chip {...rest} variant={kind} class={className}
-    >{code}{@render expires()}</Chip
+    >{code}{@render expiryText()}</Chip
   >
 {/if}
