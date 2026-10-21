@@ -40,6 +40,8 @@ export { default as Radio } from "./Radio/Radio.svelte";
 export { default as Select } from "./Select/Select.svelte";
 export { default as SkipLink } from "./SkipLink/SkipLink.svelte";
 export { default as Spinner } from "./Spinner/Spinner.svelte";
+export { default as StarDisplay } from "./StarRating/StarDisplay.svelte";
+export { default as StarRating } from "./StarRating/StarRating.svelte";
 export { default as StatCard } from "./StatCard/StatCard.svelte";
 export { default as Steps, type Step } from "./Steps/Steps.svelte";
 export { default as Switch } from "./Switch/Switch.svelte";
