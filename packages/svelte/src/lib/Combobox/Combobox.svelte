@@ -212,11 +212,15 @@
         break;
       case "ArrowDown":
         event.preventDefault();
-        move(1);
+        // Alt+Down shows the list without moving into it.
+        if (event.altKey) show();
+        else move(1);
         break;
       case "ArrowUp":
         event.preventDefault();
-        move(-1);
+        // Alt+Up hides the list; focus stays in the box.
+        if (event.altKey) close();
+        else move(-1);
         break;
     }
   }

@@ -105,6 +105,8 @@ option.
 | Typing                       | Opens the list of matches, none active.                                                |
 | Down Arrow                   | Opens the list on the first option, or moves to the next, wrapping round.              |
 | Up Arrow                     | Opens the list on the last option, or moves to the previous, wrapping round.           |
+| Alt+Down Arrow               | Opens the list, none active.                                                           |
+| Alt+Up Arrow                 | Closes the list, keeping the text; focus stays in the box.                             |
 | Enter                        | Picks the active option and closes the list. With the list open, never sends the form. |
 | Escape                       | Closes the list; with it closed, clears the box and the pick.                          |
 | Home, End, Left, Right Arrow | Move the caret in the box, and leave the list.                                         |

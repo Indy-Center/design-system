@@ -129,6 +129,29 @@ describe("Combobox", () => {
       expect(input).not.toHaveAttribute("aria-activedescendant");
     });
 
+    test("Alt+Down opens the list with no option active", async () => {
+      const screen = await renderIn("light", Picker, {});
+      await userEvent.tab();
+      await userEvent.keyboard("{Alt>}{ArrowDown}{/Alt}");
+      const input = screen.getByRole("combobox");
+      await expect.element(input).toHaveAttribute("aria-expanded", "true");
+      expect(input).not.toHaveAttribute("aria-activedescendant");
+    });
+
+    test("Alt+Up closes the list, keeping the text and focus", async () => {
+      const screen = await renderIn("light", Picker, {});
+      const input = screen.getByRole("combobox");
+      await input.fill("an");
+      await userEvent.keyboard("{ArrowDown}{Alt>}{ArrowUp}{/Alt}");
+      await expect.element(input).toHaveAttribute("aria-expanded", "false");
+      await expect.element(input).toHaveValue("an");
+      await expect.element(input).toHaveFocus();
+      expect(input).not.toHaveAttribute("aria-activedescendant");
+      await expect
+        .element(screen.getByTestId("picked"))
+        .toHaveTextContent("none");
+    });
+
     test("Escape on a closed list clears the box and the pick", async () => {
       const screen = await renderIn("light", Picker, {
         value: { cid: "1000001", name: "Ann Archer" },
