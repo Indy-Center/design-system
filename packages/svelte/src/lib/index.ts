@@ -32,6 +32,7 @@ export { default as Heading } from "./Heading/Heading.svelte";
 export { default as Icon } from "./Icon/Icon.svelte";
 export { default as Input } from "./Input/Input.svelte";
 export { default as Link } from "./Link/Link.svelte";
+export { default as Modal } from "./Modal/Modal.svelte";
 export { default as PageHero } from "./PageHero/PageHero.svelte";
 export { default as Pagination } from "./Pagination/Pagination.svelte";
 export { default as ProgressBar } from "./ProgressBar/ProgressBar.svelte";
