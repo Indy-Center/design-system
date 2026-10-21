@@ -16,12 +16,25 @@ describe("Table", () => {
 
   // A keyboard can only scroll a region it can focus (WCAG 2.1.1), and a
   // screen reader names that stop by the caption.
-  test("sits in a focusable scroll region named by its caption", async () => {
+  test("sits in a scroll region named by its caption, focusable when it scrolls", async () => {
     const screen = await renderIn("light", ControllerTable, {});
+    screen.container.style.width = "200px";
     const region = screen.getByRole("region", { name: "Online controllers" });
     await expect.element(region).toHaveStyle({ overflowX: "auto" });
+    await expect.element(region).toHaveAttribute("tabindex", "0");
     await userEvent.tab();
     await expect.element(region).toHaveFocus();
+  });
+
+  // Nothing to scroll, so no extra stop: Tab goes straight to the link.
+  test("isn't a Tab stop when the table fits", async () => {
+    const screen = await renderIn("light", ControllerTable, {});
+    screen.container.style.width = "800px";
+    await expect
+      .element(screen.getByRole("region"))
+      .not.toHaveAttribute("tabindex");
+    await userEvent.tab();
+    await expect.element(screen.getByRole("link")).toHaveFocus();
   });
 
   test("gives each header cell its scope", async () => {
@@ -115,8 +128,11 @@ describe("Table", () => {
     "shows a ring outline on its region when tabbed to in %s",
     async (scheme, colour) => {
       const screen = await renderIn(scheme, ControllerTable, {});
+      screen.container.style.width = "200px";
+      const region = screen.getByRole("region");
+      await expect.element(region).toHaveAttribute("tabindex", "0");
       await userEvent.tab();
-      await expect.element(screen.getByRole("region")).toHaveStyle({
+      await expect.element(region).toHaveStyle({
         outlineStyle: "solid",
         outlineColor: colour,
       });

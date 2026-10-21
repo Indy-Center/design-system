@@ -21,18 +21,34 @@
   }: Props = $props();
 
   const id = $props.id();
+
+  let region: HTMLDivElement;
+  let table: HTMLTableElement;
+  // Focusable until mounted, so a table that scrolls stays reachable
+  // without script; after that, only while the table is wider than the region.
+  let scrolls = $state(true);
+
+  $effect(() => {
+    const observer = new ResizeObserver(() => {
+      scrolls = region.scrollWidth > region.clientWidth;
+    });
+    observer.observe(region);
+    observer.observe(table);
+    return () => observer.disconnect();
+  });
 </script>
 
-<!-- The region takes focus on purpose: a keyboard can only scroll what it
-     can focus (WCAG 2.1.1). -->
+<!-- The region takes focus when the table scrolls: a keyboard can only
+     scroll what it can focus (WCAG 2.1.1). -->
 <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
 <div
+  bind:this={region}
   role="region"
   aria-labelledby="{id}-caption"
-  tabindex="0"
+  tabindex={scrolls ? 0 : undefined}
   class={[tableRegionClasses, className]}
 >
-  <table {...rest} class={tableClasses}>
+  <table bind:this={table} {...rest} class={tableClasses}>
     <caption id="{id}-caption" class={{ "sr-only": hideCaption }}
       >{@render caption()}</caption
     >

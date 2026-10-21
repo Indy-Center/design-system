@@ -86,7 +86,7 @@ description: A data table with a caption, header cells that say what they head, 
 - Cells are small `foreground-soft` text; a row header in the body is
   medium weight `foreground`.
 - A `border` line runs between rows.
-- The region gets the `ring` outline when focused.
+- The region gets the `ring` outline when focused (only while it scrolls).
 
 The table's classes are written on the `<table>` and reach its plain
 cells. They aren't exported yet; the rich-text feature will share them
@@ -94,10 +94,11 @@ with tables from the CMS.
 
 ## Accessibility
 
-- Renders a `<div role="region" tabindex="0">` labelled by the
-  `<caption>`, around a `<table>`. On a narrow screen the table scrolls
-  sideways inside the region, not the page; the region is one Tab stop,
-  so a keyboard can focus it and scroll with the arrow keys (WCAG 2.1.1).
+- Renders a `<div role="region">` labelled by the `<caption>`, around a
+  `<table>`. On a narrow screen the table scrolls sideways inside the
+  region, not the page. While it scrolls, the region is one Tab stop
+  (`tabindex="0"`), so a keyboard can focus it and scroll with the arrow
+  keys (WCAG 2.1.1). When the table fits, the region isn't a Tab stop.
 - The caption is the table's accessible name, and the region's.
 - `Th` sets `scope`, so a screen reader announces each cell with its
   column and row headers.
