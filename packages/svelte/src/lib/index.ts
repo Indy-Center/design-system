@@ -1,4 +1,5 @@
 // One line per component, in alphabetical order.
+export { default as Alert } from "./Alert/Alert.svelte";
 export {
   default as Badge,
   BADGE_VARIANTS,
@@ -38,6 +39,17 @@ export { default as Text } from "./Text/Text.svelte";
 export { default as Textarea } from "./Textarea/Textarea.svelte";
 export { default as Th, type ThScope } from "./Table/Th.svelte";
 export { default as Time } from "./Time/Time.svelte";
+export { default as Toaster } from "./Toast/Toaster.svelte";
+
+// The severity scale, for Alert and Toast; and the functions that raise a
+// toast, in the browser and from the server.
+export {
+  SEVERITIES,
+  type Severity,
+  type SeverityDetails,
+} from "./severity/severity.js";
+export { toast } from "./Toast/toast.svelte.js";
+export { toastFromServer, type ToastCookies } from "./Toast/toastFromServer.js";
 
 // The colour scheme, in the browser. Its server hook is in ./hooks.ts.
 export type { ColorScheme } from "./colorScheme/colorScheme.js";

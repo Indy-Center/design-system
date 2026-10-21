@@ -85,6 +85,27 @@ describe("the packed package", () => {
     }
   });
 
+  test("exports Alert, Toast and the severity scale, with types and docs", async () => {
+    const index = await readFile(new URL("dist/index.d.ts", root), "utf8");
+    for (const name of [
+      "Alert",
+      "Toaster",
+      "toast",
+      "toastFromServer",
+      "SEVERITIES",
+      "Severity",
+    ])
+      expect(index).toMatch(new RegExp(`\\b${name}\\b`));
+    expect(files).toEqual(
+      expect.arrayContaining([
+        "dist/Alert/Alert.md",
+        "dist/Toast/Toast.md",
+        "dist/Toast/toast.svelte.js",
+        "dist/severity/severity.md",
+      ]),
+    );
+  });
+
   test("the built aviation helpers run, their imports resolved", async () => {
     const { resolvePosition } = await import(
       new URL("dist/aviation/resolvePosition.js", root).href

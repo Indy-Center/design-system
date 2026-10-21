@@ -32,6 +32,14 @@ src/routes/name/+page.svelte its playground page (lower-case folder)
   no folder, doc page or playground page of its own: the component's doc
   page gives it a Props table, and the component's tests and playground
   cover it.
+- Parts that several components share, and that aren't exported, get a
+  folder of their own with no doc page: `formControl` (the controls'
+  classes), `CloseButton` (Alert's and Toast's close button).
+- Something an app raises with a function, rather than places, is named
+  for what the member sees: `Toast/` holds `toast.svelte.ts` (the
+  function and its state), `Toaster.svelte` (the one component that shows
+  them), `Toast.md` and `Toast.test.ts`, and the playground is
+  `routes/toast`.
 
 ## Props
 
@@ -49,6 +57,8 @@ src/routes/name/+page.svelte its playground page (lower-case folder)
   scroll region around its `<table>`), `class` goes on the outer box,
   since it is for layout, and `...rest` on the element. Say so in the
   doc page's Props table, and test both.
+- The exception: a component the page has once and places itself, such as
+  `Toaster`, takes no props. Its doc page says so under `## Props`.
 
 ## Colour and type
 
