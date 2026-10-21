@@ -113,7 +113,8 @@ the tokens loaded, so computed colours are the real ones.
 
 - Its role and accessible name (`getByRole`).
 - Its colours in `light`, `dark` and `dark-header`, from `role()` in
-  `test/roles.ts`: `test.each(SCHEMES)` (from `test/contrast.ts`), then `toHaveStyle({ color: role("link", scheme) })`.
+  `test/roles.ts`: `test.each(SCHEMES)` (from `test/contrast.ts`), then
+  `toHaveStyle({ color: role("link", scheme) })`.
   It reads the tokens' `tokens.json`, so a palette change needs no test
   edits; the tokens package holds those values to the guide. Don't type a
   role's `rgb(…)`. Name the role the component's class uses, not one that

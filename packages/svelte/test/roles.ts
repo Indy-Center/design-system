@@ -1,14 +1,5 @@
 // The role colours a component test expects, read from the tokens' built
-// `tokens.json`, so a palette change there needs no test edits. The tokens
-// package holds those values to the brand guide (its tables test); a
-// component test only checks that a part shows the right role.
-//
-//   import { role } from "../../../test/roles.ts";
-//   await expect.element(link).toHaveStyle({ color: role("link", scheme) });
-//
-// Two roles with the same value (`muted` and `border`) can't be told apart
-// by colour. Colours that aren't a role (`transparent`, a colour the test
-// sets itself, a Tailwind stock step) stay as literals, with a comment.
+// `tokens.json`. How to use it: CONVENTIONS.md, Tests.
 import tokens from "@indy-center/tokens/tokens.json" with { type: "json" };
 import type { Scheme } from "./schemes.ts";
 
@@ -21,6 +12,9 @@ export type Role = keyof typeof tokens.light.color;
  * (two places, or three when two don't give back the same byte).
  */
 export function computedColour(hex: string): string {
+  if (!/^#([0-9a-f]{6}|[0-9a-f]{8})$/i.test(hex)) {
+    throw new Error(`Expected #RRGGBB or #RRGGBBAA, got ${hex}`);
+  }
   const bytes = hex
     .slice(1)
     .match(/../g)!

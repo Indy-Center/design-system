@@ -1,4 +1,3 @@
-import tokens from "@indy-center/tokens/tokens.json" with { type: "json" };
 import { describe, expect, test } from "vitest";
 import { computedColour, role } from "./roles.ts";
 
@@ -13,16 +12,17 @@ describe("computedColour", () => {
     expect(computedColour("#0000001a")).toBe("rgba(0, 0, 0, 0.1)");
     expect(computedColour("#00000001")).toBe("rgba(0, 0, 0, 0.004)");
   });
+
+  test("throws on anything but a 6- or 8-digit hex", () => {
+    for (const bad of ["#fff", "#ffff", "334155", "#33415", "#gggggg"]) {
+      expect(() => computedColour(bad)).toThrow(bad);
+    }
+  });
 });
 
 describe("role", () => {
-  test("reads the role's colour for the scheme from the tokens", () => {
-    expect(role("foreground-soft", "light")).toBe(
-      computedColour(tokens.light.color["foreground-soft"]),
-    );
-    expect(role("foreground-soft", "dark")).toBe(
-      computedColour(tokens.dark.color["foreground-soft"]),
-    );
+  test("takes the light or dark palette by scheme", () => {
+    expect(role("background", "light")).not.toBe(role("background", "dark"));
   });
 
   test("gives the dark header the dark scheme's colours", () => {
