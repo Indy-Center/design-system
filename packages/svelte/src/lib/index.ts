@@ -24,6 +24,8 @@ export { default as CopyButton } from "./CopyButton/CopyButton.svelte";
 export { default as DateTimeInput } from "./DateTimeInput/DateTimeInput.svelte";
 export { default as DescriptionList } from "./DescriptionList/DescriptionList.svelte";
 export { default as Disclosure } from "./Disclosure/Disclosure.svelte";
+export { default as DropdownMenu } from "./DropdownMenu/DropdownMenu.svelte";
+export { default as DropdownMenuItem } from "./DropdownMenu/DropdownMenuItem.svelte";
 export { default as Field, type FieldControl } from "./Field/Field.svelte";
 export { default as Fieldset } from "./Fieldset/Fieldset.svelte";
 export { default as FilterChip } from "./FilterChip/FilterChip.svelte";
@@ -60,6 +62,10 @@ export { default as Textarea } from "./Textarea/Textarea.svelte";
 export { default as Th, type ThScope } from "./Table/Th.svelte";
 export { default as Time } from "./Time/Time.svelte";
 export { default as Toaster } from "./Toast/Toaster.svelte";
+export {
+  default as Tooltip,
+  type TooltipTrigger,
+} from "./Tooltip/Tooltip.svelte";
 
 // The severity scale, for Alert and Toast; and the functions that raise a
 // toast, in the browser and from the server.
