@@ -65,6 +65,7 @@ Times, with the clock pinned at 5:00 PM EDT on Tuesday 20 October 2026:
 | `end` on the next day                   | `Today, 7:00 PM–Tomorrow, 1:00 AM EDT`      |
 | `show="relative"`, to come              | `in 2 h`                                    |
 | `show="relative"`, gone by              | `1 h 23 m`                                  |
+| `show="relative"`, this minute          | `0 m`                                       |
 
 - Zulu is always four digits and a `Z`. Local is the 12-hour clock with
   the zone's abbreviation; a zone without one shows its offset (`GMT+1`).
@@ -74,6 +75,8 @@ Times, with the clock pinned at 5:00 PM EDT on Tuesday 20 October 2026:
   member's midnight ("Tomorrow" becomes "Today"). Every `Time` on a page
   shares one timer. A relative time uses the short units of
   `formatDuration`.
+- Across a change of clocks, each end of a range names its own zone:
+  `7:00 PM EDT–2:00 AM EST`. A Zulu range takes its days from Zulu.
 
 ## Server and browser
 

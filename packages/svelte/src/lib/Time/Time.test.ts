@@ -64,6 +64,24 @@ describe("Time", () => {
     expect(range?.querySelectorAll("time")).toHaveLength(2);
   });
 
+  // The guide's `muted-foreground` role: #475569 light, #9CA3AF dark.
+  test.each([
+    ["light", "rgb(71, 85, 105)"],
+    ["dark", "rgb(156, 163, 175)"],
+    ["dark-header", "rgb(156, 163, 175)"],
+  ] as const)(
+    "takes the text colour around it in %s",
+    async (scheme, colour) => {
+      const screen = await renderIn(scheme, Time, {
+        value: "2026-10-20T23:00:00Z",
+      });
+      screen.container.classList.add("text-muted-foreground");
+      await expect
+        .element(screen.container.querySelector("time"))
+        .toHaveStyle({ color: colour });
+    },
+  );
+
   describe("zone", () => {
     test("is the browser's local time by default", async () => {
       expect(await shown({ value: "2026-10-20T23:00:00Z" })).toBe(
@@ -178,6 +196,32 @@ describe("Time", () => {
       );
     });
 
+    test("names each end's zone when the clocks change between them", async () => {
+      // Daylight saving ends at 2:00 AM on Sunday 1 November.
+      expect(
+        await shown({
+          value: "2026-10-31T23:00:00Z",
+          end: "2026-11-01T07:00:00Z",
+        }),
+      ).toBe("7:00 PM EDT–2:00 AM EST");
+    });
+
+    test("in Zulu, takes its days from Zulu", async () => {
+      expect(await shown({ ...event, zone: "zulu" })).toBe(
+        "Today, 2300Z–Tomorrow, 0200Z",
+      );
+    });
+
+    test("puts the day before the month for a range gone by", async () => {
+      expect(
+        await shown({
+          ...event,
+          value: "2026-10-19T23:00:00Z",
+          end: "2026-10-20T01:00:00Z",
+          zone: "local",
+        }),
+      ).toBe("Mon 19 Oct, 7:00 PM–9:00 PM EDT");
+    });
   });
 
   describe("relative", () => {
@@ -201,6 +245,10 @@ describe("Time", () => {
       await expect
         .element(screen.container.querySelector("time"))
         .toHaveAttribute("datetime", "2026-10-20T19:37:00.000Z");
+    });
+
+    test("gives the minute it happens as 0 m", async () => {
+      expect(await shown({ value: NOW, show: "relative" })).toBe("0 m");
     });
 
     test("counts on as the minutes pass", async () => {
