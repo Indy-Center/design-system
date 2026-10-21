@@ -3,6 +3,11 @@
   import type { HTMLInputAttributes } from "svelte/elements";
   import { dismiss } from "../dismiss/dismiss.js";
   import { formControlClasses } from "../formControl/formControl.js";
+  import Icon from "../Icon/Icon.svelte";
+
+  // MDI's chevron-down, from @mdi/js.
+  const mdiChevronDown =
+    "M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z";
 
   type Props = Omit<
     HTMLInputAttributes,
@@ -247,20 +252,13 @@
     }}
     class={[formControlClasses, "pr-10"]}
   />
-  <svg
-    aria-hidden="true"
-    viewBox="0 0 20 20"
-    fill="currentColor"
+  <Icon
+    path={mdiChevronDown}
     class={[
-      "pointer-events-none absolute top-3.5 right-3 size-4 text-muted-foreground",
+      "pointer-events-none absolute top-3 right-3 size-5 text-muted-foreground",
       open && "rotate-180",
     ]}
-  >
-    <path
-      fill-rule="evenodd"
-      d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z"
-    />
-  </svg>
+  />
   <div
     hidden={!open}
     use:dismiss={{ open, trigger: input, onclose: close }}
