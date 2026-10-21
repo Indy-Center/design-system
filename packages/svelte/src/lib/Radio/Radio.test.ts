@@ -119,6 +119,39 @@ describe("Radio", () => {
     },
   );
 
+  // Only a sibling in its own group clears its copy: a radio of another
+  // name, or of the same name in another form, is another group.
+  test.each([
+    ["another name", "other", true],
+    ["the same name in another form", "position", false],
+  ])(
+    "unbound, stays checked when a radio of %s is chosen",
+    async (_, name, sameForm) => {
+      const screen = await renderIn("light", Radio, {
+        label: "Ground",
+        name: "position",
+        value: "gnd",
+        group: "gnd",
+      });
+      const other = document.createElement("input");
+      other.type = "radio";
+      other.name = name;
+      other.setAttribute("aria-label", "Other");
+      const holder = sameForm ? other : document.createElement("form");
+      if (!sameForm) holder.append(other);
+      document.body.append(holder);
+      try {
+        other.click();
+        await new Promise((resolve) => setTimeout(resolve));
+        await expect
+          .element(screen.getByRole("radio", { name: "Ground" }))
+          .toBeChecked();
+      } finally {
+        holder.remove();
+      }
+    },
+  );
+
   test("takes number values, and sets the group to the number", async () => {
     let group: number | undefined = 1;
     const screen = await renderIn("light", Radio<number>, {
