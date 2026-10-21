@@ -36,6 +36,7 @@ export { default as Link } from "./Link/Link.svelte";
 export { default as PageHero } from "./PageHero/PageHero.svelte";
 export { default as Pagination } from "./Pagination/Pagination.svelte";
 export { default as ProgressBar } from "./ProgressBar/ProgressBar.svelte";
+export { default as Panel } from "./Panel/Panel.svelte";
 export { default as Prose } from "./Prose/Prose.svelte";
 export { default as Radio } from "./Radio/Radio.svelte";
 export { default as Select } from "./Select/Select.svelte";
