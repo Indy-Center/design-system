@@ -1,6 +1,6 @@
 // Browser commands: run in Node, called from tests through
 // `commands` in "vitest/browser".
-import type { CDPSession } from "playwright";
+import type { CDPSession, Page } from "playwright";
 import type { BrowserCommand, BrowserCommandContext } from "vitest/node";
 
 type DeviceScheme = "light" | "dark" | "no-preference" | null;
@@ -32,6 +32,9 @@ export const emulateReducedMotion: BrowserCommand<
   });
 };
 
+// One DevTools session per page, kept for the next override.
+const sessions = new WeakMap<Page, CDPSession>();
+
 /** Sets the time zone the page's clock reads, an IANA name; null resets it. */
 export const emulateTimeZone: BrowserCommand<[string | null]> = async (
   context,
@@ -49,8 +52,6 @@ export const emulateTimeZone: BrowserCommand<[string | null]> = async (
     await cdp.send("Emulation.setTimezoneOverride", { timezoneId: timeZone });
   }
 };
-
-const sessions = new WeakMap<object, CDPSession>();
 
 /**
  * Renders a component on the server, as SvelteKit would for a page, and
