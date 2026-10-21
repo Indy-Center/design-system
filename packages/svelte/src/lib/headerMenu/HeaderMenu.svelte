@@ -1,6 +1,6 @@
 <!-- A header disclosure: a button that shows and hides a panel under it.
      Shared by AppsMenu, AppNav's groups and UserMenu; not exported. Closes
-     on Escape and a press outside (the dismiss action), when focus Tabs out
+     on Escape and a tap outside (the dismiss action), when focus Tabs out
      of it, and when a link in the panel is followed, so the menu doesn't
      stay open over the next page.
      No menu roles: the panel is a list of links. -->

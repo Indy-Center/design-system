@@ -64,9 +64,9 @@ Library and Charts, each with a description and an icon.
 - A disclosure, not a menu: a `<button aria-expanded>` named "Apps", and
   the list of links it shows. Tab moves into the list and through it;
   Enter follows a link.
-- Escape closes the list and puts focus back on the button. A press
-  outside it, Tabbing out of it, or following one of its links closes it
-  too.
+- Escape closes the list and puts focus back on the button. A tap outside
+  it (not a scroll, so a phone can scroll the page under it), Tabbing out
+  of it, or following one of its links closes it too.
 - The current app's link has `aria-current="true"`: it is the app, not
   the page.
 - The button and every row are at least 44px tall and wide.
