@@ -27,6 +27,8 @@
   }: Props = $props();
 
   // The star the pointer is over: the stars up to it light as a preview.
+  // A choice clears it, so a star chosen by keyboard shows while the
+  // pointer rests on another.
   let hovered = $state<number>();
   const shown = $derived((disabled ? undefined : hovered) ?? value ?? 0);
 </script>
@@ -56,6 +58,7 @@
             {name}
             value={star}
             bind:group={value}
+            onchange={() => (hovered = undefined)}
             {required}
             class="sr-only"
           />

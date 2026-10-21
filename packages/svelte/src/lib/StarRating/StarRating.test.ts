@@ -106,6 +106,21 @@ describe("StarRating", () => {
     expect(value).toBe(2);
   });
 
+  test("shows a star chosen by keyboard, though the pointer rests on another", async () => {
+    const screen = await renderIn("light", StarRating, {
+      legend: "Rating",
+      name: "rating",
+      value: 3,
+    });
+    const radio = (name: string) => screen.getByRole("radio", { name });
+    await userEvent.hover(radio("5 stars").element().closest("label")!);
+    await expect.element(screen.getByText("5 out of 5")).toBeVisible();
+    await userEvent.tab();
+    await userEvent.keyboard("{ArrowLeft}");
+    await expect.element(radio("2 stars")).toBeChecked();
+    await expect.element(screen.getByText("2 out of 5")).toBeVisible();
+  });
+
   // The guide's roles: chosen stars in `warning`, the rest in
   // `muted-foreground`. Both are 3:1 or more on the page and on a card
   // (WCAG 1.4.11, non-text contrast).
