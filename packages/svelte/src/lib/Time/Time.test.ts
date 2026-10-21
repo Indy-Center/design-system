@@ -64,6 +64,26 @@ describe("Time", () => {
     expect(range?.querySelectorAll("time")).toHaveLength(2);
   });
 
+  describe("given something that isn't a date", () => {
+    test("shows nothing, and warns", async () => {
+      const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+      const screen = await renderIn("light", Time, { value: "soon" });
+      await tick();
+      expect(screen.container.innerHTML.replace(/<!---->/g, "")).toBe("");
+      expect(warn).toHaveBeenCalledWith("Time: value is not a date:", "soon");
+      warn.mockRestore();
+    });
+
+    test("leaves off a range's end", async () => {
+      const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+      expect(await shown({ value: "2026-10-20T23:00:00Z", end: "later" })).toBe(
+        "7:00 PM EDT",
+      );
+      expect(warn).toHaveBeenCalledWith("Time: end is not a date:", "later");
+      warn.mockRestore();
+    });
+  });
+
   // The guide's `muted-foreground` role: #475569 light, #9CA3AF dark.
   test.each([
     ["light", "rgb(71, 85, 105)"],

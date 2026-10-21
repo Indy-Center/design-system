@@ -40,8 +40,8 @@ description: A time, date, range or relative time as a <time datetime>, in the m
 
 | Prop    | Type                                 | Notes                                                                                                                          |
 | ------- | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------ |
-| `value` | `Date \| string \| number`           | Required. The instant: a `Date`, an ISO string or milliseconds since the epoch.                                                |
-| `end`   | `Date \| string \| number`           | A range's end.                                                                                                                 |
+| `value` | `Date \| string \| number`           | Required. The instant: a `Date`, an ISO string or milliseconds since the epoch. If it isn't a date, `Time` shows nothing.      |
+| `end`   | `Date \| string \| number`           | A range's end. If it isn't a date, only the start shows.                                                                       |
 | `zone`  | `"local" \| "zulu" \| "both"`        | `"local"` by default. `"both"` is local, then Zulu: `7:00 PM EDT · 2300Z`.                                                     |
 | `show`  | `"time" \| "datetime" \| "relative"` | `"time"` by default. `"datetime"` puts the day first; `"relative"` gives "in 2 h" or "1 h 23 m", and ignores `end` and `zone`. |
 | `class` | `string`                             | Layout only.                                                                                                                   |

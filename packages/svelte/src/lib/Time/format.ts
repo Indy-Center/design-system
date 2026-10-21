@@ -13,7 +13,8 @@ export type Piece = { text: string; at?: Date };
  * `Time`'s text, in pieces: `Today, 7:00 PM–10:00 PM EDT · 2300Z–0200Z`.
  * `memberZone` is the member's IANA zone, or undefined where it isn't known
  * (on the server), which draws Zulu. `now` is called only when the text
- * depends on it, so a caller tracking it follows only those that do.
+ * depends on it, so a caller tracking it follows only those that do. An
+ * invalid `start` gives no pieces, and an invalid `end` is left off.
  */
 export function timeText(options: {
   start: Date;
@@ -23,7 +24,9 @@ export function timeText(options: {
   memberZone?: string;
   now: () => Date;
 }): Piece[] {
-  const { start, end, show, zone, memberZone } = options;
+  const { start, show, zone, memberZone } = options;
+  if (!isValid(start)) return [];
+  const end = options.end && isValid(options.end) ? options.end : undefined;
   if (show === "relative") {
     return [{ text: relative(start, options.now()), at: start }];
   }
@@ -110,6 +113,11 @@ const zuluDates: Clock = {
   ...zuluClock,
   day: (at, now) => dateLabel(at, now, "UTC"),
 };
+
+/** Whether `at` is a real instant, not an Invalid Date. */
+export function isValid(at: Date): boolean {
+  return !Number.isNaN(at.getTime());
+}
 
 /** A member's zone: the 12-hour clock and the zone's abbreviation. */
 function localClock(timeZone: string): Clock {

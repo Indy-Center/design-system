@@ -1,7 +1,13 @@
 <script lang="ts">
+  import { DEV } from "esm-env";
   import { onMount } from "svelte";
   import type { HTMLAttributes } from "svelte/elements";
-  import { timeText, type TimeShown, type TimeZoneShown } from "./format.js";
+  import {
+    isValid,
+    timeText,
+    type TimeShown,
+    type TimeZoneShown,
+  } from "./format.js";
   import { now } from "./now.svelte.js";
 
   type When = Date | string | number;
@@ -33,10 +39,21 @@
     memberZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
   });
 
+  const start = $derived(new Date(value));
+  const finish = $derived(end === undefined ? undefined : new Date(end));
+
+  // A bad instant shows nothing rather than breaking the page.
+  $effect(() => {
+    if (!DEV) return;
+    if (!isValid(start)) console.warn("Time: value is not a date:", value);
+    if (finish && !isValid(finish))
+      console.warn("Time: end is not a date:", end);
+  });
+
   const pieces = $derived(
     timeText({
-      start: new Date(value),
-      end: end === undefined ? undefined : new Date(end),
+      start,
+      end: finish,
       show,
       zone,
       memberZone,
@@ -49,7 +66,7 @@
   <time {...rest} datetime={pieces[0].at?.toISOString()} class={className}
     >{pieces[0].text}</time
   >
-{:else}
+{:else if pieces.length > 1}
   <span {...rest} class={className}>
     {#each pieces as piece, i (i)}
       {#if piece.at}<time datetime={piece.at.toISOString()}>{piece.text}</time
