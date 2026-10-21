@@ -1,9 +1,15 @@
 <script lang="ts" generics="T extends string | number">
+  import type { Snippet } from "svelte";
   import type { HTMLInputAttributes } from "svelte/elements";
   import { getFieldset } from "../Fieldset/fieldsetContext.js";
+  import ChoiceText from "../formControl/ChoiceText.svelte";
   import {
     choiceInputClasses,
+    choiceInputWithChildrenClasses,
+    choiceLabelId,
     choiceRowClasses,
+    choiceRowWithChildrenClasses,
+    describedBy,
   } from "../formControl/formControl.js";
 
   type Props = Omit<
@@ -18,6 +24,8 @@
     value: T;
     /** The chosen radio's value, bindable: `bind:group` on every radio in the group. */
     group?: T;
+    /** More about the option, under the label, read as its description. */
+    children?: Snippet;
   };
 
   let {
@@ -27,10 +35,13 @@
     group = $bindable(),
     required,
     onchange,
+    children,
+    "aria-describedby": callersDescribedBy,
     class: className,
     ...rest
   }: Props = $props();
 
+  const id = $props.id();
   const fieldset = getFieldset();
 
   let input: HTMLInputElement;
@@ -60,7 +71,13 @@
 <!-- The label wraps the circle, so the whole 44px row chooses it. `group`
      is kept by hand, not with Svelte's `bind:group`, which only links
      inputs inside one component, not radios in sibling components. -->
-<label class={[choiceRowClasses, className]}>
+<label
+  class={[
+    choiceRowClasses,
+    children && choiceRowWithChildrenClasses,
+    className,
+  ]}
+>
   <input
     bind:this={input}
     type="radio"
@@ -72,8 +89,10 @@
       group = value;
       onchange?.(event);
     }}
+    aria-labelledby={children ? choiceLabelId(id) : undefined}
     {...rest}
-    class={choiceInputClasses}
+    aria-describedby={describedBy(id, { hint: children }, callersDescribedBy)}
+    class={[choiceInputClasses, children && choiceInputWithChildrenClasses]}
   />
-  <span>{label}</span>
+  <ChoiceText {id} {label} {children} />
 </label>

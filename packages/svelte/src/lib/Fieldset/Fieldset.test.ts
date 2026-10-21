@@ -55,24 +55,30 @@ describe("Fieldset", () => {
     );
   });
 
-  test("with an error, marks its checkboxes invalid", async () => {
-    const screen = await renderIn("light", Options, {
-      options: "checkbox",
-      error: "Choose at least one.",
-    });
-    for (const name of ["Ground", "Tower"]) {
-      await expect
-        .element(screen.getByRole("checkbox", { name }))
-        .toHaveAttribute("aria-invalid", "true");
-    }
-  });
+  test.each(["checkbox", "switch"] as const)(
+    "with an error, marks its %ses invalid",
+    async (options) => {
+      const screen = await renderIn("light", Options, {
+        options,
+        error: "Choose at least one.",
+      });
+      for (const name of ["Ground", "Tower"]) {
+        await expect
+          .element(screen.getByRole(options, { name }))
+          .toHaveAttribute("aria-invalid", "true");
+      }
+    },
+  );
 
-  test("with no error, leaves its checkboxes valid", async () => {
-    const screen = await renderIn("light", Options, { options: "checkbox" });
-    await expect
-      .element(screen.getByRole("checkbox", { name: "Ground" }))
-      .not.toHaveAttribute("aria-invalid");
-  });
+  test.each(["checkbox", "switch"] as const)(
+    "with no error, leaves its %ses valid",
+    async (options) => {
+      const screen = await renderIn("light", Options, { options });
+      await expect
+        .element(screen.getByRole(options, { name: "Ground" }))
+        .not.toHaveAttribute("aria-invalid");
+    },
+  );
 
   test("when required, makes its radios required but not its checkboxes", async () => {
     const radios = await renderIn("light", Options, {

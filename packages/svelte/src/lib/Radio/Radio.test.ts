@@ -3,6 +3,7 @@ import { userEvent } from "vitest/browser";
 import { SCHEMES } from "../../../test/contrast.ts";
 import { role } from "../../../test/roles.ts";
 import { renderIn } from "../../../test/schemes.ts";
+import { text } from "../../../test/snippets.ts";
 import Radio from "./Radio.svelte";
 import RadioGroup from "./Radio.test.svelte";
 
@@ -29,6 +30,25 @@ describe("Radio", () => {
     await expect
       .element(screen.getByRole("radio", { name: "Tower" }))
       .not.toBeChecked();
+  });
+
+  test("is named by its label alone and described by its children", async () => {
+    const screen = await renderIn("light", Radio, {
+      label: "Tower",
+      name: "position",
+      value: "twr",
+      "aria-describedby": "tower-note",
+      children: text("Local control at a towered field"),
+    });
+    const radio = screen.getByRole("radio", { name: "Tower" });
+    // The caller's id comes first, then the children's.
+    const ids = radio.element().getAttribute("aria-describedby")!.split(" ");
+    expect(ids[0]).toBe("tower-note");
+    expect(document.getElementById(ids[1])).toHaveTextContent(
+      "Local control at a towered field",
+    );
+    await screen.getByText("Local control at a towered field").click();
+    await expect.element(radio).toBeChecked();
   });
 
   test("sets the group to its value when chosen", async () => {
