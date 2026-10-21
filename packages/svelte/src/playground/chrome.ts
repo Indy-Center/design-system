@@ -1,6 +1,6 @@
-// Sample navigation for the AppNav playground page and tests: the
-// community site's menus as the chrome prototype had them. AppsMenu's use
-// the package's own INDY_CENTER_APPS.
+// Sample navigation for the AppNav and AppNavMenu playground page and
+// tests: the community site's menus as the chrome prototype had them.
+// AppsMenu's use the package's own INDY_CENTER_APPS.
 import {
   mdiAccountGroup,
   mdiAccountPlus,
@@ -14,7 +14,7 @@ import {
   mdiInformationOutline,
   mdiMessage,
 } from "@mdi/js";
-import type { NavItem } from "../lib/AppNav/AppNav.svelte";
+import type { NavItem } from "../lib/AppNav/nav.ts";
 
 /** The community site's navigation. */
 export const hubNav: NavItem[] = [

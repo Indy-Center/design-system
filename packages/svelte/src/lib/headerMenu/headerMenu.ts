@@ -1,5 +1,5 @@
-// Class recipes shared by the header's menus (AppsMenu, AppNav, UserMenu).
-// Not exported from the package.
+// Class recipes shared by the header's menus (AppsMenu, AppNav,
+// AppNavMenu, UserMenu). Not exported from the package.
 
 /** Every header control and menu row: 44px at least, small medium text. */
 const target = "min-h-11 min-w-11 rounded-lg px-3 text-sm font-medium";

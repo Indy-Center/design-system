@@ -1,10 +1,10 @@
 <script lang="ts">
-  // AppNav belongs in the dark header and has no background of its own, so
-  // it is shown in a dark header band on a light page and on a dark page,
-  // rather than in <Schemes>' bare light column. Its tests cover all three
-  // schemes. The bar is a row across a wide header, so it shows from lg,
-  // where the header uses it.
-  import { AppNav } from "../../lib/index.ts";
+  // AppNav and AppNavMenu belong in the dark header and have no background
+  // of their own, so they are shown in a dark header band on a light page
+  // and on a dark page, rather than in <Schemes>' bare light column. Their
+  // tests cover all three schemes. The bar is a row across a wide header,
+  // so it shows from lg, where the header uses it.
+  import { AppNav, AppNavMenu } from "../../lib/index.ts";
   import { hubNav } from "../../playground/chrome.ts";
 
   const label =
@@ -24,7 +24,7 @@
     >
       <h2 class={label}>{name}</h2>
 
-      <h3 class="mb-2 text-sm font-medium text-foreground">Bar</h3>
+      <h3 class="mb-2 text-sm font-medium text-foreground">AppNav, the bar</h3>
       <!-- Room under it, for a group's panel. -->
       <div class="mb-6 lg:min-h-60">
         <header data-theme="dark" class={[band, "max-lg:hidden"]}>
@@ -35,9 +35,11 @@
         </p>
       </div>
 
-      <h3 class="mb-2 text-sm font-medium text-foreground">Phone menu</h3>
+      <h3 class="mb-2 text-sm font-medium text-foreground">
+        AppNavMenu, the phone menu
+      </h3>
       <header data-theme="dark" class={[band, "max-w-sm"]}>
-        <AppNav items={hubNav} current="/staff" layout="menu" />
+        <AppNavMenu items={hubNav} current="/staff" />
       </header>
     </section>
   {/each}

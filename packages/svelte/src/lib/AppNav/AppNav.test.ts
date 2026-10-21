@@ -9,6 +9,7 @@ import { role } from "../../../test/roles.ts";
 import { renderIn } from "../../../test/schemes.ts";
 import { hubNav } from "../../playground/chrome.ts";
 import AppNav from "./AppNav.svelte";
+import AppNavMenu from "./AppNavMenu.svelte";
 
 type Screen = Awaited<ReturnType<typeof renderIn>>;
 
@@ -17,12 +18,14 @@ const group = (screen: Screen, name: string) =>
 
 const SOFT_FILL = () => translucent(role("foreground", "dark"), 10);
 
-describe("AppNav", () => {
-  describe.each(["bar", "menu"] as const)("as a %s", (layout) => {
+describe("AppNav and AppNavMenu", () => {
+  describe.each([
+    { name: "AppNav", Nav: AppNav },
+    { name: "AppNavMenu", Nav: AppNavMenu },
+  ])("$name", ({ Nav }) => {
     test("is a navigation named Main, its top-level links and groups in order", async () => {
-      const screen = await renderIn("light", AppNav, {
+      const screen = await renderIn("light", Nav, {
         items: hubNav,
-        layout,
       });
       const nav = screen.getByRole("navigation", { name: "Main" });
       await expect
@@ -37,9 +40,8 @@ describe("AppNav", () => {
     });
 
     test("opens and closes a group from its button", async () => {
-      const screen = await renderIn("light", AppNav, {
+      const screen = await renderIn("light", Nav, {
         items: hubNav,
-        layout,
       });
       const about = group(screen, "About");
       await expect.element(about).toHaveAttribute("aria-expanded", "false");
@@ -58,9 +60,8 @@ describe("AppNav", () => {
     });
 
     test("marks the current page, and a page under it", async () => {
-      const screen = await renderIn("light", AppNav, {
+      const screen = await renderIn("light", Nav, {
         items: hubNav,
-        layout,
         current: "/events/42",
       });
       await expect
@@ -74,9 +75,8 @@ describe("AppNav", () => {
     // Home is "/": every path starts with it, so it is current only on
     // itself.
     test("marks Home only on the home page", async () => {
-      const home = await renderIn("light", AppNav, {
+      const home = await renderIn("light", Nav, {
         items: hubNav,
-        layout,
         current: "/",
       });
       await expect
@@ -84,9 +84,8 @@ describe("AppNav", () => {
         .toHaveAttribute("aria-current", "page");
       home.unmount();
 
-      const other = await renderIn("light", AppNav, {
+      const other = await renderIn("light", Nav, {
         items: hubNav,
-        layout,
         current: "/admin",
       });
       expect(other.container.querySelector("[aria-current]")).toBeNull();
@@ -94,12 +93,11 @@ describe("AppNav", () => {
 
     // Training has "/teach" and "/teach/sessions": on the second, only it.
     test("marks the closest link when one sits under another", async () => {
-      const screen = await renderIn("light", AppNav, {
+      const screen = await renderIn("light", Nav, {
         items: [
           { label: "My Students", href: "/teach" },
           { label: "Sessions", href: "/teach/sessions" },
         ],
-        layout,
         current: "/teach/sessions/7",
       });
       await expect
@@ -111,18 +109,16 @@ describe("AppNav", () => {
     });
 
     test("doesn't match a page that only shares the start of a link", async () => {
-      const screen = await renderIn("light", AppNav, {
+      const screen = await renderIn("light", Nav, {
         items: hubNav,
-        layout,
         current: "/eventsarchive",
       });
       expect(screen.container.querySelector("[aria-current]")).toBeNull();
     });
 
     test("takes another name for its navigation", async () => {
-      const screen = await renderIn("light", AppNav, {
+      const screen = await renderIn("light", Nav, {
         items: hubNav,
-        layout,
         label: "Training",
       });
       await expect
@@ -131,12 +127,11 @@ describe("AppNav", () => {
     });
 
     test("gives every link, group and row a 44px target", async () => {
-      const screen = await renderIn("light", AppNav, {
+      const screen = await renderIn("light", Nav, {
         items: [
           { label: "Go", href: "/go" },
           { label: "Up", children: [{ label: "In", href: "/in" }] },
         ],
-        layout,
       });
       await group(screen, "Up").click();
       for (const name of ["Go", "In"]) {
@@ -149,9 +144,8 @@ describe("AppNav", () => {
     });
 
     test("puts a caller's class and attributes on the <nav>, and stays dark", async () => {
-      const screen = await renderIn("light", AppNav, {
+      const screen = await renderIn("light", Nav, {
         items: hubNav,
-        layout,
         class: "ml-4",
         id: "main-nav",
         "data-theme": "light",
@@ -163,7 +157,7 @@ describe("AppNav", () => {
     });
   });
 
-  describe("as a bar", () => {
+  describe("AppNav, the bar", () => {
     test("Escape closes an open group and puts focus back on its button", async () => {
       const screen = await renderIn("light", AppNav, { items: hubNav });
       await group(screen, "About").click();
@@ -256,11 +250,10 @@ describe("AppNav", () => {
     });
   });
 
-  describe("as a menu", () => {
+  describe("AppNavMenu, the phone menu", () => {
     test("opens the group holding the current page from the start", async () => {
-      const screen = await renderIn("light", AppNav, {
+      const screen = await renderIn("light", AppNavMenu, {
         items: hubNav,
-        layout: "menu",
         current: "/staff",
       });
       await expect
@@ -277,10 +270,7 @@ describe("AppNav", () => {
     // A phone menu lists the groups one under another: opening one leaves
     // the others as they are, and Escape is the phone menu's to handle.
     test("keeps groups open on another group, a click outside and Escape", async () => {
-      const screen = await renderIn("light", AppNav, {
-        items: hubNav,
-        layout: "menu",
-      });
+      const screen = await renderIn("light", AppNavMenu, { items: hubNav });
       await group(screen, "About").click();
       await group(screen, "Flying").click();
       await userEvent.click(document.body, { position: { x: 1, y: 1 } });
@@ -358,6 +348,31 @@ describe("AppNav", () => {
         outlineStyle: "solid",
         outlineColor: role("ring", "dark"),
       });
+    });
+
+    test("draws the phone menu's rows in the link colour, the current page and its group on the soft fill", async () => {
+      const screen = await renderIn(scheme, AppNavMenu, {
+        items: hubNav,
+        current: "/staff",
+      });
+      const home = screen.getByRole("link", { name: "Home" });
+      await expect.element(home).toHaveStyle({
+        color: role("link", "dark"),
+        backgroundColor: "rgba(0, 0, 0, 0)", // no fill
+        textDecorationLine: "none",
+      });
+      await expect.element(group(screen, "About")).toHaveStyle({
+        color: role("link", "dark"),
+        backgroundColor: SOFT_FILL(),
+        textDecorationLine: "underline",
+      });
+      await expect
+        .element(screen.getByRole("link", { name: "Staff" }))
+        .toHaveStyle({
+          color: role("link", "dark"),
+          backgroundColor: SOFT_FILL(),
+          textDecorationLine: "underline",
+        });
     });
   });
 });
