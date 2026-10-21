@@ -3,6 +3,7 @@
   import type { HTMLAttributes } from "svelte/elements";
   import { findPilotRating, findRating } from "../aviation/ratings.js";
   import Chip from "../Chip/Chip.svelte";
+  import Tooltip from "../Tooltip/Tooltip.svelte";
 
   type Props = HTMLAttributes<HTMLSpanElement> & {
     /** The rating as the data source spells it: `5`, `"C1"` or `"Controller1"`; for a pilot, `3` or `"IR"`. */
@@ -32,29 +33,29 @@
 </script>
 
 {#if found}
-  <!-- The focus lands on the abbr inside, but the ring goes round the chip. -->
-  <Chip
-    {...rest}
-    variant="muted"
-    class={[
-      "relative has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-ring",
-      className,
-    ]}
-  >
-    <!-- When focusable, a keyboard user can read the long name too: it shows
-         beneath the chip on focus. No title: some screen readers would say
-         the long name twice. -->
-    <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-    <abbr
-      tabindex={focusable ? 0 : undefined}
-      class="group no-underline outline-none"
-      >{found.short}<span
-        class="sr-only group-focus-visible:not-sr-only group-focus-visible:absolute group-focus-visible:top-full group-focus-visible:left-0 group-focus-visible:z-10 group-focus-visible:mt-2 group-focus-visible:rounded-md group-focus-visible:bg-foreground group-focus-visible:px-2 group-focus-visible:py-1 group-focus-visible:font-sans group-focus-visible:font-normal group-focus-visible:whitespace-nowrap group-focus-visible:text-background"
+  <!-- The hidden text reads the long name, so the tooltip is hidden from
+       screen readers and the trigger's aria-describedby left off: each would
+       say it again. -->
+  <Tooltip text={found.long} aria-hidden="true" class={className}>
+    {#snippet children()}
+      <!-- The focus lands on the abbr inside, but the ring goes round the
+           chip. -->
+      <Chip
+        {...rest}
+        variant="muted"
+        class="has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-ring"
       >
-        {" "}{found.long}</span
-      ></abbr
-    >
-  </Chip>
+        <!-- When focusable, a keyboard can show the tooltip too. No title:
+             some screen readers would say the long name twice. -->
+        <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+        <abbr
+          tabindex={focusable ? 0 : undefined}
+          class="no-underline outline-none"
+          >{found.short}<span class="sr-only">{" "}{found.long}</span></abbr
+        >
+      </Chip>
+    {/snippet}
+  </Tooltip>
 {:else}
   <Chip {...rest} variant="muted" class={className}>{rating}</Chip>
 {/if}

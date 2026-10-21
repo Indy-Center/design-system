@@ -14,13 +14,20 @@ const abbr = (screen: Screen) =>
   page.elementLocator(screen.container.querySelector("abbr")!);
 const chip = (screen: Screen) =>
   page.elementLocator(abbr(screen).element().parentElement!);
+// Hidden from screen readers, so found with includeHidden.
+const tooltip = (screen: Screen) =>
+  screen.getByRole("tooltip", { includeHidden: true });
 
-/** The chip's markup for `rating`, cleaned up after. */
+/** The chip's markup and tooltip text for `rating`, cleaned up after. (The
+    whole markup differs by the tooltip's made-up id.) */
 async function chipFor(rating: number | string, kind?: "controller" | "pilot") {
   const screen = await renderIn("light", Rating, { rating, kind });
-  const html = screen.container.innerHTML;
+  const shown = [
+    chip(screen).element().outerHTML,
+    tooltip(screen).element().textContent,
+  ];
   screen.unmount();
-  return html;
+  return shown;
 }
 
 describe("Rating", () => {
@@ -43,7 +50,7 @@ describe("Rating", () => {
   test.each([5, "Controller1", "c1", "Enroute Controller"])(
     "%j gives the same chip as C1",
     async (rating) => {
-      expect(await chipFor(rating)).toBe(await chipFor("C1"));
+      expect(await chipFor(rating)).toEqual(await chipFor("C1"));
     },
   );
 
@@ -64,21 +71,48 @@ describe("Rating", () => {
     await expect.element(abbr(screen)).not.toHaveFocus();
   });
 
-  test("shows the long name only on focus, when focusable", async () => {
+  test("shows the long name in a tooltip on hover", async () => {
+    const screen = await renderIn("light", Rating, { rating: 5 });
+    await expect.element(tooltip(screen)).not.toBeVisible();
+
+    await chip(screen).hover();
+
+    await expect.element(tooltip(screen)).toBeVisible();
+    await expect
+      .element(tooltip(screen))
+      .toHaveTextContent("Enroute Controller");
+  });
+
+  test("shows the tooltip on keyboard focus, when focusable", async () => {
     const screen = await renderIn("light", Rating, {
       rating: 5,
       focusable: true,
     });
-    const long = screen.getByText("Enroute Controller");
-    expect(long.element().getBoundingClientRect().width).toBeLessThanOrEqual(1);
 
     await userEvent.tab();
+
     await expect.element(abbr(screen)).toHaveFocus();
-    expect(long.element().getBoundingClientRect().width).toBeGreaterThan(50);
-    // Beneath the chip, not over it.
-    expect(long.element().getBoundingClientRect().top).toBeGreaterThanOrEqual(
-      chip(screen).element().getBoundingClientRect().bottom,
-    );
+    await expect.element(tooltip(screen)).toBeVisible();
+  });
+
+  // The hidden text says it, so neither the tooltip nor a description
+  // repeats it.
+  test("reads the long name once while the tooltip shows", async () => {
+    const screen = await renderIn("light", InCell, {
+      rating: 5,
+      focusable: true,
+    });
+    await userEvent.tab();
+    await expect
+      .element(screen.getByRole("tooltip", { includeHidden: true }))
+      .toBeVisible();
+
+    await expect
+      .element(screen.getByRole("cell"))
+      .toHaveAccessibleName("C1 Enroute Controller");
+    await expect
+      .element(page.elementLocator(screen.container.querySelector("abbr")!))
+      .not.toHaveAccessibleDescription();
   });
 
   describe.each(SCHEMES)("in %s", (scheme) => {
@@ -105,14 +139,11 @@ describe("Rating", () => {
       expectReadable(chip(screen).element(), scheme);
     });
 
-    // Inverted, so it stands off whatever it covers.
+    // Tooltip's own look: inverted, so it stands off whatever it covers.
     test("shows the long name in background on foreground", async () => {
-      const screen = await renderIn(scheme, Rating, {
-        rating: "S3",
-        focusable: true,
-      });
-      await userEvent.tab();
-      await expect.element(screen.getByText("Senior Student")).toHaveStyle({
+      const screen = await renderIn(scheme, Rating, { rating: "S3" });
+      await chip(screen).hover();
+      await expect.element(tooltip(screen)).toHaveStyle({
         backgroundColor: role("foreground", scheme),
         color: role("background", scheme),
       });
@@ -133,7 +164,7 @@ describe("Rating", () => {
     test.each([3, "ir", "Instrument Rating"])(
       "%j gives the same chip as IR",
       async (rating) => {
-        expect(await chipFor(rating, "pilot")).toBe(
+        expect(await chipFor(rating, "pilot")).toEqual(
           await chipFor("IR", "pilot"),
         );
       },
@@ -157,16 +188,33 @@ describe("Rating", () => {
     await expect.element(screen.getByText("C4")).toBeVisible();
     expect(screen.container.querySelector("abbr")).toBeNull();
     expect(screen.container.querySelector("[tabindex]")).toBeNull();
+    expect(screen.container.querySelector("[role=tooltip]")).toBeNull();
     expect(warn).toHaveBeenCalledWith(expect.stringContaining('"C4"'));
   });
 
-  test("adds a caller's class and attributes to the chip", async () => {
+  // class is for layout, so it goes on the outermost box.
+  test("adds a caller's class to the box round the chip, and attributes to the chip", async () => {
     const screen = await renderIn("light", Rating, {
       rating: "I1",
       class: "ml-4",
       id: "rating",
     });
     await expect.element(chip(screen)).toHaveAttribute("id", "rating");
-    await expect.element(chip(screen)).toHaveStyle({ marginLeft: "16px" });
+    const box = chip(screen).element().parentElement!;
+    expect(box).toContainElement(tooltip(screen).element() as HTMLElement);
+    expect(getComputedStyle(box).marginLeft).toBe("16px");
+  });
+
+  test("adds a caller's class and attributes to an unknown value's chip", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    onTestFinished(() => warn.mockRestore());
+    const screen = await renderIn("light", Rating, {
+      rating: "C4",
+      class: "ml-4",
+      id: "rating",
+    });
+    const plain = screen.getByText("C4");
+    await expect.element(plain).toHaveAttribute("id", "rating");
+    await expect.element(plain).toHaveStyle({ marginLeft: "16px" });
   });
 });

@@ -1,6 +1,6 @@
 ---
 title: Rating
-description: A member's VATSIM rating as a short code in a soft chip, with the long name on hover and focus.
+description: A member's VATSIM rating as a short code in a soft chip, with the long name in a tooltip.
 ---
 
 ## Checklist
@@ -39,28 +39,33 @@ description: A member's VATSIM rating as a short code in a soft chip, with the l
 | `rating`    | `number \| string`        | Required. Any spelling `findRating` takes (`5`, `"C1"`, `"Controller1"`, `"Enroute Controller"`), or for a pilot any `findPilotRating` takes (`3`, `"IR"`, `"Instrument Rating"`). |
 | `kind`      | `"controller" \| "pilot"` | `"controller"` by default.                                                                                                                                                         |
 | `focusable` | `boolean`                 | Makes it a tab stop. `false` by default.                                                                                                                                           |
-| `class`     | `string`                  | Added after the chip's own classes. Layout only.                                                                                                                                   |
+| `class`     | `string`                  | Added to the `Tooltip` box round the chip. Layout only.                                                                                                                            |
 | others      | `<span>` attributes       | Passed to the chip's `<span>`.                                                                                                                                                     |
 
 A value that is no rating shows as given, as plain chip text without a
-long name, and warns in development.
+long name or tooltip, and warns in development. Its chip takes `class`
+as well as the other attributes.
 
 ## Looks
 
 `Chip`'s `muted` variant: mono, 12px, semibold, on the `muted` fill
-(`#E2E8F0` light, `#334155` dark) in `foreground`. The long name shows
-beneath the chip on keyboard focus, in sans, `background` on `foreground`.
-When `focusable`, a `ring` outline goes round the whole chip on keyboard
-focus (`has-focus-visible:`), though the focus itself is on the `<abbr>`
-inside it.
+(`#E2E8F0` light, `#334155` dark) in `foreground`. The long name shows in
+a `Tooltip` above the chip (below when there's no room) while a mouse is
+on it, and on keyboard focus when `focusable`: `background` on
+`foreground`. When `focusable`, a `ring` outline goes round the whole
+chip on keyboard focus (`has-focus-visible:`), though the focus itself is
+on the `<abbr>` inside it. A tap on a phone shows no tooltip.
 
 ## Accessibility
 
 - An `<abbr>` inside the chip's `<span>`, holding the short code and,
   after it, the long name in visually hidden text, so a screen reader
-  reads "C1 Enroute Controller". It has no `title`: some screen readers
-  would say the long name twice.
+  reads "C1 Enroute Controller", with or without `focusable`.
+- The long name is read once. The `<abbr>` has no `title` (some screen
+  readers would say it again, and the browser's own tooltip would show
+  beside ours). The tooltip is `aria-hidden`, and the `<abbr>` doesn't
+  take Tooltip's `aria-describedby`, unlike Tooltip's other triggers.
 - With `focusable`, the `<abbr>` takes focus (`tabindex="0"`) so a
-  keyboard user can read the long name too. Without it, it is no tab
-  stop. It does nothing on Enter; it isn't a control, so it is exempt
-  from the 44px target size.
+  keyboard user can show the tooltip too; Escape hides it. Without it,
+  it is no tab stop. It does nothing on Enter; it isn't a control, so it
+  is exempt from the 44px target size.
