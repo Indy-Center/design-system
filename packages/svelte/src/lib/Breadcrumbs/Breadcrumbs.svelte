@@ -4,12 +4,10 @@
 </script>
 
 <script lang="ts">
+  import { mdiChevronRight } from "@mdi/js";
   import type { HTMLAttributes } from "svelte/elements";
   import Icon from "../Icon/Icon.svelte";
   import Link from "../Link/Link.svelte";
-
-  // MDI's chevron-right.
-  const chevron = "M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z";
 
   type Props = HTMLAttributes<HTMLElement> & {
     /** The pages from the top down, ending with the page being shown. */
@@ -35,7 +33,11 @@
       {@const current = i === items.length - 1}
       <li class="inline-flex items-center">
         {#if i > 0}
-          <Icon path={chevron} size={16} class="mx-1 text-muted-foreground" />
+          <Icon
+            path={mdiChevronRight}
+            size={16}
+            class="mx-1 text-muted-foreground"
+          />
         {/if}
         {#if current}
           <a

@@ -62,6 +62,7 @@
     "vitest-browser-svelte": "^3.1.0"
   },
   "dependencies": {
+    "@mdi/js": "^7.4.47",
     "esm-env": "^1.2.2"
   }
 }

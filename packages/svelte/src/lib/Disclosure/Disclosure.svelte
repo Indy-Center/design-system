@@ -1,10 +1,8 @@
 <script lang="ts">
+  import { mdiChevronRight } from "@mdi/js";
   import type { Snippet } from "svelte";
   import type { HTMLDetailsAttributes } from "svelte/elements";
   import Icon from "../Icon/Icon.svelte";
-
-  // MDI's chevron-right.
-  const chevron = "M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z";
 
   type Props = HTMLDetailsAttributes & {
     /** The line that is always shown, and opens and closes the rest. */
@@ -33,7 +31,7 @@
     ]}
   >
     <Icon
-      path={chevron}
+      path={mdiChevronRight}
       size={20}
       class="text-muted-foreground motion-safe:transition-transform group-open:rotate-90"
     />
