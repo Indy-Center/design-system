@@ -43,7 +43,9 @@
   };
 
   // One look at a time: small is muted already, so it wins over muted.
-  let look = $derived(lead ? "lead" : (size ?? tone));
+  let look: keyof typeof looks | undefined = $derived(
+    lead ? "lead" : (size ?? tone),
+  );
 </script>
 
 <svelte:element this={as} {...rest} class={[look && looks[look], className]}
