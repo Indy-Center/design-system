@@ -1,5 +1,7 @@
 import { describe, expect, test } from "vitest";
 import { userEvent } from "vitest/browser";
+import { SCHEMES } from "../../../test/contrast.ts";
+import { role } from "../../../test/roles.ts";
 import { renderIn } from "../../../test/schemes.ts";
 import Checkbox from "./Checkbox.svelte";
 
@@ -81,17 +83,12 @@ describe("Checkbox", () => {
     await expect.element(box).not.toHaveAttribute("aria-describedby");
   });
 
-  // The guide's roles: `primary` box (#0369A1 in both), `foreground-soft`
-  // label (#334155 light, #D1D5DB dark), `destructive` error (#B91C1C
-  // light, #F87171 dark). The box is ticked, so the browser paints its fill
+  // The guide's roles: `primary` box, `foreground-soft` label,
+  // `destructive` error. The box is ticked, so the browser paints its fill
   // from `accent-color`.
-  test.each([
-    ["light", "rgb(51, 65, 85)", "rgb(185, 28, 28)"],
-    ["dark", "rgb(209, 213, 219)", "rgb(248, 113, 113)"],
-    ["dark-header", "rgb(209, 213, 219)", "rgb(248, 113, 113)"],
-  ] as const)(
+  test.each(SCHEMES)(
     "colours the box, label and error in %s",
-    async (scheme, label, error) => {
+    async (scheme) => {
       const screen = await renderIn(scheme, Checkbox, {
         label: "Visiting controller",
         checked: true,
@@ -101,31 +98,27 @@ describe("Checkbox", () => {
       await expect.element(box).toBeChecked();
       await expect
         .element(box)
-        .toHaveStyle({ accentColor: "rgb(3, 105, 161)" });
+        .toHaveStyle({ accentColor: role("primary", scheme) });
       await expect
         .element(screen.getByText("Untick this."))
-        .toHaveStyle({ color: error });
+        .toHaveStyle({ color: role("destructive", scheme) });
       await expect
         .element(screen.getByText("Visiting controller"))
-        .toHaveStyle({ color: label });
+        .toHaveStyle({ color: role("foreground-soft", scheme) });
     },
   );
 
-  // The guide's `ring` role: #0284C7 light, #0EA5E9 dark.
-  test.each([
-    ["light", "rgb(2, 132, 199)"],
-    ["dark", "rgb(14, 165, 233)"],
-    ["dark-header", "rgb(14, 165, 233)"],
-  ] as const)(
+  // The guide's `ring` role.
+  test.each(SCHEMES)(
     "shows a ring outline when tabbed to in %s",
-    async (scheme, colour) => {
+    async (scheme) => {
       const screen = await renderIn(scheme, Checkbox, {
         label: "Visiting controller",
       });
       await userEvent.tab();
       await expect.element(screen.getByRole("checkbox")).toHaveStyle({
         outlineStyle: "solid",
-        outlineColor: colour,
+        outlineColor: role("ring", scheme),
       });
     },
   );

@@ -1,4 +1,5 @@
 import { describe, expect, test } from "vitest";
+import { role } from "../../../test/roles.ts";
 import { renderIn } from "../../../test/schemes.ts";
 import { text } from "../../../test/snippets.ts";
 import Text from "./Text.svelte";
@@ -24,8 +25,8 @@ describe("Text", () => {
   });
 
   // Looks chosen in ticket 10, in the guide's roles: lead lg (18px) in
-  // `foreground-soft` (#334155 light, #D1D5DB dark); muted base (16px) and
-  // small sm (14px) in `muted-foreground` (#475569 light, #9CA3AF dark).
+  // `foreground-soft`; muted base (16px) and small sm (14px) in
+  // `muted-foreground`.
   const looks = {
     lead: { props: { lead: true }, fontSize: "18px" },
     muted: { props: { tone: "muted" }, fontSize: "16px" },
@@ -33,22 +34,22 @@ describe("Text", () => {
   } as const;
 
   test.each([
-    ["lead", "light", "rgb(51, 65, 85)"],
-    ["lead", "dark", "rgb(209, 213, 219)"],
-    ["lead", "dark-header", "rgb(209, 213, 219)"],
-    ["muted", "light", "rgb(71, 85, 105)"],
-    ["muted", "dark", "rgb(156, 163, 175)"],
-    ["muted", "dark-header", "rgb(156, 163, 175)"],
-    ["small", "light", "rgb(71, 85, 105)"],
-    ["small", "dark", "rgb(156, 163, 175)"],
-    ["small", "dark-header", "rgb(156, 163, 175)"],
-  ] as const)("%s in %s is %s", async (look, scheme, colour) => {
+    ["lead", "light", "foreground-soft"],
+    ["lead", "dark", "foreground-soft"],
+    ["lead", "dark-header", "foreground-soft"],
+    ["muted", "light", "muted-foreground"],
+    ["muted", "dark", "muted-foreground"],
+    ["muted", "dark-header", "muted-foreground"],
+    ["small", "light", "muted-foreground"],
+    ["small", "dark", "muted-foreground"],
+    ["small", "dark-header", "muted-foreground"],
+  ] as const)("%s in %s is %s", async (look, scheme, name) => {
     const screen = await renderIn(scheme, Text, {
       ...looks[look].props,
       children: text(sentence),
     });
     await expect.element(screen.getByRole("paragraph")).toHaveStyle({
-      color: colour,
+      color: role(name, scheme),
       fontSize: looks[look].fontSize,
     });
   });
@@ -57,6 +58,7 @@ describe("Text", () => {
   // whatever it sits in.
   test("without a look, takes its parent's colour and size", async () => {
     const screen = await renderIn("dark", Text, { children: text(sentence) });
+    // Any colour that isn't a role.
     screen.container.style.color = "rgb(1, 2, 3)";
     screen.container.style.fontSize = "13px";
     await expect
