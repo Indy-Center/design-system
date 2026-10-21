@@ -133,9 +133,24 @@ describe("Modal", () => {
     await expect.element(dialog()).toHaveAttribute("data-testid", "modal");
   });
 
-  test("grows to its size's width", async () => {
-    await open({ size: "lg" });
-    await expect.element(dialog()).toHaveStyle({ maxWidth: "672px" });
+  test.each([
+    [{ size: "sm" }, "448px"],
+    [{}, "512px"], // md
+    [{ size: "lg" }, "672px"],
+  ])("grows to its size's width (%o)", async (props, maxWidth) => {
+    await open(props);
+    await expect.element(dialog()).toHaveStyle({ maxWidth });
+  });
+
+  // A caller's handlers run before it closes on the backdrop.
+  test("runs a caller's onpointerdown and onclick first, while it is open", async () => {
+    const seen: string[] = [];
+    const note = (name: string) => (event: Event) =>
+      seen.push(`${name} ${(event.currentTarget as HTMLDialogElement).open}`);
+    await open({ onpointerdown: note("down"), onclick: note("click") });
+    await userEvent.click(dialog(), { position: { x: 4, y: -20 } });
+    await expect.element(dialog()).not.toBeInTheDocument();
+    expect(seen).toEqual(["down true", "click true"]);
   });
 
   test("is a card with the title in the heading colour", async () => {
