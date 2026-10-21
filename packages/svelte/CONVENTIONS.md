@@ -35,6 +35,11 @@ src/routes/name/+page.svelte its playground page (lower-case folder)
   no folder, doc page or playground page of its own: the component's doc
   page gives it a Props table, and the component's tests and playground
   cover it.
+- Two exported components that draw the same thing for different jobs
+  (`StarRating` to choose, `StarDisplay` to show) share one folder, doc
+  page and playground page, named for the first. Their shared look goes
+  in a module in that folder (`stars.ts`), and the doc page gives each a
+  Props table.
 - Parts that several components share, and that aren't exported, get a
   folder of their own with no doc page: `formControl` (the controls'
   classes), `CloseButton` (Alert's and Toast's close button).
@@ -86,7 +91,8 @@ src/routes/name/+page.svelte its playground page (lower-case folder)
   applies the choice at once. Read the scheme in use from
   `document.documentElement.dataset.theme` after mount. See
   `src/lib/colorScheme/colorScheme.md`.
-- `font-heading` for headings, `font-mono` for CIDs and ratings; Tailwind's
+- `font-heading` for headings, `font-mono` for CIDs and controller ratings
+  (`S3`, `C1`; not star ratings); Tailwind's
   default sizes.
 - Focus: `focus-visible:outline-2 focus-visible:outline-offset-2
 focus-visible:outline-ring`.
