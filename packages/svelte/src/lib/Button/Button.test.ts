@@ -1,7 +1,7 @@
 import { createRawSnippet } from "svelte";
 import { describe, expect, test, vi } from "vitest";
 import { userEvent } from "vitest/browser";
-import { SCHEMES } from "../../../test/contrast.ts";
+import { SCHEMES, translucent } from "../../../test/contrast.ts";
 import { role } from "../../../test/roles.ts";
 import { renderIn } from "../../../test/schemes.ts";
 import Button from "./Button.svelte";
@@ -74,14 +74,6 @@ describe("Button", () => {
 
   // danger's hover is no role of its own: `destructive` at 90%, as the
   // browser mixes it.
-  const at90 = (colour: string) => {
-    const probe = document.createElement("div");
-    probe.style.backgroundColor = `color-mix(in oklab, ${colour} 90%, transparent)`;
-    document.body.append(probe);
-    const mixed = getComputedStyle(probe).backgroundColor;
-    probe.remove();
-    return mixed;
-  };
   test.each(SCHEMES)("danger on hover in %s", async (scheme) => {
     const screen = await renderIn(scheme, Button, {
       variant: "danger",
@@ -91,7 +83,7 @@ describe("Button", () => {
     await userEvent.hover(button);
     await expect
       .poll(() => getComputedStyle(button.element()).backgroundColor)
-      .toBe(at90(role("destructive", scheme)));
+      .toBe(translucent(role("destructive", scheme), 90));
   });
 
   // The `input` role.
