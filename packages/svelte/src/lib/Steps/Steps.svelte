@@ -23,23 +23,32 @@
 
   let { steps, class: className, ...rest }: Props = $props();
 
-  // MDI's check-circle, record-circle and circle-outline: each state has its
-  // own shape, so it isn't told by colour alone.
+  // Each state, to the eye and to readers. The icons are MDI's check-circle,
+  // record-circle and circle-outline: each state has its own shape, so it
+  // isn't told by colour alone. `said` follows the label for readers only.
   const looks = {
     done: {
       path: "M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10s10-4.5 10-10S17.5 2 12 2m-2 15l-5-5l1.41-1.41L10 14.17l7.59-7.59L19 8z",
       icon: "text-success",
       label: "font-medium text-foreground",
+      ariaCurrent: undefined,
+      said: "(done)",
     },
     current: {
       path: "M12 2A10 10 0 0 0 2 12a10 10 0 0 0 10 10a10 10 0 0 0 10-10A10 10 0 0 0 12 2m0 7a3 3 0 0 1 3 3a3 3 0 0 1-3 3a3 3 0 0 1-3-3a3 3 0 0 1 3-3",
       icon: "text-info",
       label: "font-medium text-foreground",
+      ariaCurrent: "step",
+      // Not every reader says aria-current on a list item, so it's in
+      // words too.
+      said: "(current step)",
     },
     upcoming: {
       path: "M12 20a8 8 0 0 1-8-8a8 8 0 0 1 8-8a8 8 0 0 1 8 8a8 8 0 0 1-8 8m0-18A10 10 0 0 0 2 12a10 10 0 0 0 10 10a10 10 0 0 0 10-10A10 10 0 0 0 12 2",
       icon: "text-muted-foreground",
       label: "text-muted-foreground",
+      ariaCurrent: undefined,
+      said: undefined,
     },
   } as const;
 </script>
@@ -51,7 +60,7 @@
   {#each steps as step, index (index)}
     {@const look = looks[step.state]}
     <li
-      aria-current={step.state === "current" ? "step" : undefined}
+      aria-current={look.ariaCurrent}
       class="relative flex gap-3 pb-5 last:pb-0"
     >
       {#if index < steps.length - 1}
@@ -66,8 +75,8 @@
         <div class="flex flex-wrap items-baseline justify-between gap-x-3">
           <span class={look.label}>
             {step.label}
-            {#if step.state === "done"}
-              <span class="sr-only">(done)</span>
+            {#if look.said}
+              <span class="sr-only">{look.said}</span>
             {/if}
           </span>
           {#if step.date}

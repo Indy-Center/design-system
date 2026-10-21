@@ -68,10 +68,10 @@ A `Step`, also exported as a type:
 - An `<ol role="list">`, so readers say how many steps there are and
   where each sits in the list. The role is repeated because Safari stops
   calling a list without bullets a list.
-- The current step's `<li>` has `aria-current="step"`, which readers say
-  as "current step". There's no hidden "(current step)" text as well,
-  which readers that support `aria-current` would say twice; a reader
-  without that support hears the step but not that it's the current one.
+- The current step's `<li>` has `aria-current="step"`, and its label is
+  followed by "(current step)" for readers only. Not every reader says
+  `aria-current` on a list item, so the words make sure it's heard; a
+  reader that does may say it twice.
 - A done step's label is followed by "(done)" for readers only. Upcoming
   steps say nothing extra.
 - The icons and the joining line are hidden from readers.

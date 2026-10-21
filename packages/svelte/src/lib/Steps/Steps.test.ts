@@ -42,6 +42,17 @@ describe("Steps", () => {
     );
   });
 
+  // Not every reader says aria-current on a list item.
+  test("tells readers the current step in words too", async () => {
+    const screen = await renderIn("light", Steps, { steps });
+    const current = screen.getByText("(current step)");
+    await expect.element(current).toHaveStyle({ position: "absolute" });
+    expect(current.elements()).toHaveLength(1);
+    expect(screen.getByRole("listitem").nth(1).element().textContent).toMatch(
+      /Training\s*\(current step\)/,
+    );
+  });
+
   test("shows each state by its own icon, not colour alone", async () => {
     const screen = await renderIn("light", Steps, { steps });
     const icons = screen
@@ -144,8 +155,8 @@ describe("Steps", () => {
         { label: "Training", state: "current", detail: null, date: null },
       ],
     });
-    expect(screen.getByRole("listitem").element().textContent?.trim()).toBe(
-      "Training",
+    expect(screen.getByRole("listitem").element().textContent).toMatch(
+      /^\s*Training\s*\(current step\)\s*$/,
     );
   });
 });
