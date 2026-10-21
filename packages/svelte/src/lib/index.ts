@@ -23,6 +23,7 @@ export { default as DescriptionList } from "./DescriptionList/DescriptionList.sv
 export { default as Disclosure } from "./Disclosure/Disclosure.svelte";
 export { default as Field, type FieldControl } from "./Field/Field.svelte";
 export { default as Fieldset } from "./Fieldset/Fieldset.svelte";
+export { default as FilterChip } from "./FilterChip/FilterChip.svelte";
 export {
   default as Footer,
   type FooterColumn,
