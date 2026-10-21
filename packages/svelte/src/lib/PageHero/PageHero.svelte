@@ -44,8 +44,8 @@
       sizes[size],
     ]}
   >
-    <!-- 3xl on a phone, as PageHeader's title; 4xl from sm up. -->
-    <Heading level={1} class="sm:text-4xl">{title}</Heading>
+    <!-- Heading's look 1 (3xl), as PageHeader's title. -->
+    <Heading level={1}>{title}</Heading>
     {#if children}
       <div class="mt-3">{@render children()}</div>
     {/if}

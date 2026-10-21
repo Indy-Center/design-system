@@ -36,11 +36,11 @@ describe("PageHero", () => {
   });
 
   // The community site's home heading was 4xl on a phone and smaller on
-  // wider screens. Now: 3xl (PageHeader's) on a phone, 4xl from sm up,
+  // wider screens. Now Heading's look 1 at every width: 3xl (PageHeader's),
   // semibold in Source Sans 3 as chosen in ticket 10.
   test.each([
     [390, "30px"],
-    [1280, "36px"],
+    [1280, "30px"],
   ])("at %ipx wide, has a %s semibold title", async (width, size) => {
     await page.viewport(width, 800);
     const screen = await renderIn("light", PageHero, welcome);

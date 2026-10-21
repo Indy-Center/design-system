@@ -55,10 +55,11 @@ As chosen in the surfaces prototype (ticket 10), it follows the scheme:
 - The halftone: 1px dots every 20px, in `foreground` at 12% (dark dots on
   light, white dots on dark).
 - The title: `Heading`'s look 1, semibold in `font-heading`, in
-  `foreground`; `text-3xl` on a phone, `text-4xl` from sm up. It never
-  grows on a phone.
+  `foreground`; `text-3xl` at every width, as `PageHeader`'s title.
 - The content: centred, in `foreground-soft`, readable on both ends of
-  the gradient.
+  the gradient, with or without a dot under it.
+- No room for a header laid over the page: put it after the app's
+  `Header`, which takes its own space.
 
 ## Accessibility
 
