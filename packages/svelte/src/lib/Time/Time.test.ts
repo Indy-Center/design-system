@@ -9,6 +9,8 @@ import {
   vi,
 } from "vitest";
 import { commands } from "vitest/browser";
+import { SCHEMES } from "../../../test/contrast.ts";
+import { role } from "../../../test/roles.ts";
 import { renderIn } from "../../../test/schemes.ts";
 import Time from "./Time.svelte";
 
@@ -84,21 +86,17 @@ describe("Time", () => {
     });
   });
 
-  // The guide's `muted-foreground` role: #475569 light, #9CA3AF dark.
-  test.each([
-    ["light", "rgb(71, 85, 105)"],
-    ["dark", "rgb(156, 163, 175)"],
-    ["dark-header", "rgb(156, 163, 175)"],
-  ] as const)(
+  // The guide's `muted-foreground` role, set on the container.
+  test.each(SCHEMES)(
     "takes the text colour around it in %s",
-    async (scheme, colour) => {
+    async (scheme) => {
       const screen = await renderIn(scheme, Time, {
         value: "2026-10-20T23:00:00Z",
       });
       screen.container.classList.add("text-muted-foreground");
       await expect
         .element(screen.container.querySelector("time"))
-        .toHaveStyle({ color: colour });
+        .toHaveStyle({ color: role("muted-foreground", scheme) });
     },
   );
 

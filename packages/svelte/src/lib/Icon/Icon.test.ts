@@ -41,6 +41,7 @@ describe("Icon", () => {
       .toHaveStyle({ width: "32px", height: "32px" });
   });
 
+  // Any colour the test sets itself, not a role: the icon only follows it.
   test("fills with the text colour around it", async () => {
     const screen = await renderIn("light", Icon, {
       path: airplane,

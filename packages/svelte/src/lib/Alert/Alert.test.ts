@@ -1,6 +1,8 @@
 import { createRawSnippet } from "svelte";
 import { describe, expect, test } from "vitest";
 import { userEvent } from "vitest/browser";
+import { SCHEMES } from "../../../test/contrast.ts";
+import { role, type Role } from "../../../test/roles.ts";
 import { renderIn } from "../../../test/schemes.ts";
 import type { Severity } from "../severity/severity.ts";
 import Alert from "./Alert.svelte";
@@ -38,7 +40,7 @@ describe("Alert", () => {
       );
     await expect
       .element(screen.getByText("Session soon"))
-      .toHaveStyle({ color: "rgb(15, 23, 42)", fontWeight: "600" });
+      .toHaveStyle({ color: role("foreground", "light"), fontWeight: "600" });
   });
 
   test("has no close button unless it's dismissible", async () => {
@@ -87,52 +89,39 @@ describe("Alert", () => {
       .toBeInTheDocument();
   });
 
-  // The brand guide's Roles table: the level's role for the icon, and
-  // foreground-soft (body text) for the message.
-  const role: Record<"light" | "dark", Record<Severity, string>> = {
-    light: {
-      info: "rgb(3, 105, 161)",
-      success: "rgb(21, 128, 61)",
-      caution: "rgb(161, 98, 7)",
-      danger: "rgb(185, 28, 28)",
-    },
-    dark: {
-      info: "rgb(56, 189, 248)",
-      success: "rgb(74, 222, 128)",
-      caution: "rgb(250, 204, 21)",
-      danger: "rgb(248, 113, 113)",
-    },
+  // The level's role for the icon, and foreground-soft (body text) for the
+  // message.
+  const levelRole: Record<Severity, Role> = {
+    info: "info",
+    success: "success",
+    caution: "warning",
+    danger: "destructive",
   };
-  const body = { light: "rgb(51, 65, 85)", dark: "rgb(209, 213, 219)" };
 
-  describe.each(["light", "dark", "dark-header"] as const)(
-    "in %s",
-    (scheme) => {
-      const colours = scheme === "light" ? "light" : "dark";
-      test.each(["info", "success", "caution", "danger"] as Severity[])(
-        "%s has its role's icon and tint, and body text",
-        async (level) => {
-          const screen = await renderIn(scheme, Alert, {
-            level,
-            children: text("The roster updates nightly."),
-          });
-          const box = screen.container.querySelector<HTMLElement>(
-            "[role=alert], [role=status]",
-          )!;
-          await expect
-            .element(box.querySelector<SVGElement>("svg path"))
-            .toHaveStyle({ fill: role[colours][level] });
-          await expect
-            .element(screen.getByText("The roster updates nightly."))
-            .toHaveStyle({ color: body[colours] });
-          // A wash and a faint border of the role's colour, so the page shows
-          // through.
-          const style = getComputedStyle(box);
-          expect(style.backgroundColor).toMatch(/\/ 0\.1\)$/);
-          expect(style.borderTopColor).toMatch(/\/ 0\.4\)$/);
-          expect(style.borderTopWidth).toBe("1px");
-        },
-      );
-    },
-  );
+  describe.each(SCHEMES)("in %s", (scheme) => {
+    test.each(["info", "success", "caution", "danger"] as Severity[])(
+      "%s has its role's icon and tint, and body text",
+      async (level) => {
+        const screen = await renderIn(scheme, Alert, {
+          level,
+          children: text("The roster updates nightly."),
+        });
+        const box = screen.container.querySelector<HTMLElement>(
+          "[role=alert], [role=status]",
+        )!;
+        await expect
+          .element(box.querySelector<SVGElement>("svg path"))
+          .toHaveStyle({ fill: role(levelRole[level], scheme) });
+        await expect
+          .element(screen.getByText("The roster updates nightly."))
+          .toHaveStyle({ color: role("foreground-soft", scheme) });
+        // A wash and a faint border of the role's colour, so the page shows
+        // through.
+        const style = getComputedStyle(box);
+        expect(style.backgroundColor).toMatch(/\/ 0\.1\)$/);
+        expect(style.borderTopColor).toMatch(/\/ 0\.4\)$/);
+        expect(style.borderTopWidth).toBe("1px");
+      },
+    );
+  });
 });

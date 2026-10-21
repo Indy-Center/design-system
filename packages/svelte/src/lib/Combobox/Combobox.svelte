@@ -53,11 +53,17 @@
   // "Ann Archer, selected": the last pick, said once the list closes.
   let pickedMessage = $state("");
 
-  // What a search function last found, whether it is still looking, and
-  // whether its last search failed.
+  // What a search function last found, the text it found it for, whether
+  // it is still looking, and whether its last search failed.
   let found = $state<T[]>([]);
+  let foundFor = $state<string | null>(null);
   let searching = $state(false);
   let failed = $state(false);
+
+  // The list shown answers older text than the box's, while a search for
+  // the new text is under way. Its options no longer match, so the arrows
+  // don't move into it, and Enter, with no active option, can't pick one.
+  const stale = $derived(!Array.isArray(options) && foundFor !== query);
 
   const results = $derived.by(() => {
     if (!Array.isArray(options)) return found;
@@ -71,8 +77,9 @@
     let current = true;
     searching = true;
     const search = options;
+    const text = query;
     // A function that throws fails the same way as one that rejects.
-    new Promise<T[]>((resolve) => resolve(search(query))).then(
+    new Promise<T[]>((resolve) => resolve(search(text))).then(
       (answer) => settle(answer, false),
       () => settle([], true),
     );
@@ -80,6 +87,7 @@
       // A newer text has been typed since; its answer is the one to show.
       if (!current) return;
       found = answer;
+      foundFor = text;
       failed = error;
       searching = false;
       active = -1;
@@ -89,14 +97,26 @@
     };
   });
 
+  // The line under the options when there are none to show yet, or none
+  // at all; both the list and the status region say it.
+  const note = $derived(
+    searching
+      ? "Searching…"
+      : failed
+        ? "Couldn't search"
+        : results.length === 0
+          ? "No matches"
+          : "",
+  );
+
   // What the status region says to screen readers: how many match while
-  // the list is open, then what was picked.
+  // the list is open, then what was picked. "Searching…" isn't said, so
+  // fast answers don't make it chatter.
   const announcement = $derived.by(() => {
     if (!open) return pickedMessage;
     if (searching) return "";
-    if (failed) return "Couldn't search";
+    if (note) return note;
     const count = results.length;
-    if (count === 0) return "No results";
     return count === 1 ? "1 result" : `${count} results`;
   });
 
@@ -125,7 +145,18 @@
     query = value == null ? "" : getText(value);
   });
 
-  /** Sets the pick, leaving the box's text as it is. */
+  // The form sends the hidden input, so the box's own `required` only
+  // checks for text. Text with no pick fails the form's check, required or
+  // not, so typed text is never dropped silently; an empty box passes.
+  $effect(() => {
+    const unpicked = value == null && query !== "";
+    input?.setCustomValidity(unpicked ? "Pick an option from the list." : "");
+  });
+
+  /**
+   * Sets the pick and nothing else: the box's text, the list and the
+   * status region stay as they are. Typing calls it to undo a pick.
+   */
   function pick(next: T | null) {
     shownKey = keyOf(next);
     value = next;
@@ -152,7 +183,7 @@
     const count = results.length;
     const wasOpen = open;
     show();
-    if (count === 0) return;
+    if (count === 0 || stale) return;
     if (!wasOpen || active < 0) {
       active = step === 1 ? 0 : count - 1;
     } else {
@@ -165,6 +196,10 @@
     active = -1;
   }
 
+  /**
+   * The member picks an option from the list: sets the pick, writes its
+   * text in the box, says it in the status region and closes the list.
+   */
   function choose(option: T) {
     pick(option);
     query = getText(option);
@@ -173,9 +208,22 @@
   }
 
   function onlistclick(event: MouseEvent & { currentTarget: HTMLElement }) {
+    // The list still answers older text: its options may no longer match.
+    if (stale) return;
     const row = (event.target as Element).closest("[role=option]");
     const index = row ? [...event.currentTarget.children].indexOf(row) : -1;
     if (index >= 0) choose(results[index]);
+  }
+
+  /** A handler that runs the caller's own handler, then the combobox's. */
+  function chain<E extends Event>(
+    caller: ((event: E) => unknown) | null | undefined,
+    own: (event: E) => void,
+  ) {
+    return (event: E) => {
+      caller?.(event);
+      own(event);
+    };
   }
 
   function onkeydown(event: KeyboardEvent) {
@@ -198,18 +246,25 @@
         break;
       case "Escape":
         // An open list is closed by `dismiss`; a closed one clears the box.
-        if (open) break;
+        // With nothing to clear, the Escape is left for a dialog round it.
+        if (open || (query === "" && value == null)) break;
         event.preventDefault();
         pick(null);
         query = "";
         break;
       case "ArrowDown":
         event.preventDefault();
-        move(1);
+        // Alt+Down shows the list without moving into it.
+        if (event.altKey) show();
+        else move(1);
         break;
       case "ArrowUp":
+        // Alt+Up hides the list; focus stays in the box. With the list
+        // already closed, it's left to the page, as Escape is.
+        if (event.altKey && !open) break;
         event.preventDefault();
-        move(-1);
+        if (event.altKey) close();
+        else move(-1);
         break;
     }
   }
@@ -231,22 +286,10 @@
     aria-activedescendant={active >= 0 ? optionId(active) : undefined}
     bind:this={input}
     bind:value={query}
-    oninput={(event) => {
-      callerInput?.(event);
-      oninput();
-    }}
-    onclick={(event) => {
-      callerClick?.(event);
-      show();
-    }}
-    onblur={(event) => {
-      callerBlur?.(event);
-      close();
-    }}
-    onkeydown={(event) => {
-      callerKeydown?.(event);
-      onkeydown(event);
-    }}
+    oninput={chain(callerInput, oninput)}
+    onclick={chain(callerClick, show)}
+    onblur={chain(callerBlur, close)}
+    onkeydown={chain(callerKeydown, onkeydown)}
     class={[textControlClasses, "pr-10"]}
   />
   <Icon
@@ -285,12 +328,8 @@
         </li>
       {/each}
     </ul>
-    {#if searching}
-      <p class="px-3 py-2 text-muted-foreground">Searching…</p>
-    {:else if failed}
-      <p class="px-3 py-2 text-muted-foreground">Couldn't search</p>
-    {:else if results.length === 0}
-      <p class="px-3 py-2 text-muted-foreground">No matches</p>
+    {#if note}
+      <p class="px-3 py-2 text-muted-foreground">{note}</p>
     {/if}
   </div>
   <div role="status" class="sr-only">{announcement}</div>

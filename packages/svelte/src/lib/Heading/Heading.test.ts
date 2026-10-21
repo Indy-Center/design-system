@@ -1,4 +1,5 @@
 import { describe, expect, test } from "vitest";
+import { role } from "../../../test/roles.ts";
 import { renderIn } from "../../../test/schemes.ts";
 import { text } from "../../../test/snippets.ts";
 import Heading from "./Heading.svelte";
@@ -91,15 +92,15 @@ describe("Heading", () => {
     );
   });
 
-  // The guide's roles: `foreground` (#0F172A light, #FFFFFF dark) for the
-  // sized looks, `muted-foreground` (#475569 light, #9CA3AF dark) for label.
+  // The guide's roles: `foreground` for the sized looks, `muted-foreground`
+  // for label.
   test.each([
-    ["light", 2, "rgb(15, 23, 42)"],
-    ["dark", 2, "rgb(255, 255, 255)"],
-    ["dark-header", 2, "rgb(255, 255, 255)"],
-    ["light", "label", "rgb(71, 85, 105)"],
-    ["dark", "label", "rgb(156, 163, 175)"],
-    ["dark-header", "label", "rgb(156, 163, 175)"],
+    ["light", 2, "foreground"],
+    ["dark", 2, "foreground"],
+    ["dark-header", 2, "foreground"],
+    ["light", "label", "muted-foreground"],
+    ["dark", "label", "muted-foreground"],
+    ["dark-header", "label", "muted-foreground"],
   ] as const)("in %s, look %s is %s", async (scheme, look, colour) => {
     const screen = await renderIn(scheme, Heading, {
       level: 2,
@@ -108,7 +109,7 @@ describe("Heading", () => {
     });
     await expect
       .element(screen.getByRole("heading"))
-      .toHaveStyle({ color: colour });
+      .toHaveStyle({ color: role(colour, scheme) });
   });
 
   test("adds a caller's class and attributes to its own", async () => {

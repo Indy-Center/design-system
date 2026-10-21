@@ -67,13 +67,15 @@ describe("Spinner", () => {
   });
 
   test("is drawn in the text colour around it", async () => {
+    // Any colour the caller sets, not a role.
+    const colour = "rgb(185, 28, 28)";
     const screen = await renderIn("light", Spinner, {
-      style: "color: rgb(185, 28, 28)",
+      style: `color: ${colour}`,
     });
     const circles = screen.container.querySelectorAll<SVGElement>("svg circle");
     expect(circles).toHaveLength(2);
     for (const circle of circles) {
-      await expect.element(circle).toHaveStyle({ stroke: "rgb(185, 28, 28)" });
+      await expect.element(circle).toHaveStyle({ stroke: colour });
     }
   });
 
