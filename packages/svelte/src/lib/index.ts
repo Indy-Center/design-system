@@ -1,6 +1,14 @@
 // One line per component, in alphabetical order.
-export { default as Badge, type BadgeColor } from "./Badge/Badge.svelte";
-export { default as Chip, type ChipTone } from "./Chip/Chip.svelte";
+export {
+  default as Badge,
+  BADGE_VARIANTS,
+  type BadgeVariant,
+} from "./Badge/Badge.svelte";
+export {
+  default as Chip,
+  CHIP_VARIANTS,
+  type ChipVariant,
+} from "./Chip/Chip.svelte";
 export { default as Field, type FieldControl } from "./Field/Field.svelte";
 export { default as Icon } from "./Icon/Icon.svelte";
 export { default as Input } from "./Input/Input.svelte";

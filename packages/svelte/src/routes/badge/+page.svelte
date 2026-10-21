@@ -1,17 +1,6 @@
 <script lang="ts">
-  import { Badge, Icon, type BadgeColor } from "../../lib/index.ts";
+  import { Badge, BADGE_VARIANTS, Icon } from "../../lib/index.ts";
   import Schemes from "../../playground/Schemes.svelte";
-
-  const colors: BadgeColor[] = [
-    "sky",
-    "purple",
-    "green",
-    "red",
-    "orange",
-    "yellow",
-    "blue",
-    "gray",
-  ];
 
   // From @mdi/js: mdiStar.
   const star =
@@ -25,34 +14,34 @@
 <Schemes>
   <div class="space-y-4">
     <div class="flex flex-wrap gap-2">
-      {#each colors as color (color)}
-        <Badge {color}>{color}</Badge>
+      {#each BADGE_VARIANTS as variant (variant)}
+        <Badge {variant}>{variant}</Badge>
       {/each}
     </div>
     <div class="flex flex-wrap gap-2">
-      {#each colors as color (color)}
-        <Badge {color} size="sm">{color}</Badge>
+      {#each BADGE_VARIANTS as variant (variant)}
+        <Badge {variant} size="sm">{variant}</Badge>
       {/each}
     </div>
     <div class="flex flex-wrap gap-2">
-      <Badge color="gray" pill>Draft</Badge>
-      <Badge color="green" pill>In progress</Badge>
-      <Badge color="sky" pill>Next event</Badge>
+      <Badge variant="gray" pill>Draft</Badge>
+      <Badge variant="green" pill>In progress</Badge>
+      <Badge variant="sky" pill>Next event</Badge>
     </div>
     <div class="flex flex-wrap gap-2">
-      <Badge color="yellow" size="sm">
+      <Badge variant="yellow" size="sm">
         {#snippet icon()}<Icon path={star} />{/snippet}
         Member perk
       </Badge>
-      <Badge color="purple">
+      <Badge variant="purple">
         {#snippet icon()}<Icon path={star} />{/snippet}
         Community
       </Badge>
     </div>
     <div class="flex flex-wrap gap-2 rounded-md bg-card p-3">
       <span class="text-sm">On a card:</span>
-      {#each colors as color (color)}
-        <Badge {color} size="sm">{color}</Badge>
+      {#each BADGE_VARIANTS as variant (variant)}
+        <Badge {variant} size="sm">{variant}</Badge>
       {/each}
     </div>
   </div>

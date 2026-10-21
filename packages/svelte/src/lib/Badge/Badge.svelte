@@ -1,19 +1,32 @@
 <script lang="ts" module>
+  /** A badge's colours: the guide's Tailwind hues. */
+  export const BADGE_VARIANTS = [
+    "sky",
+    "purple",
+    "green",
+    "red",
+    "orange",
+    "yellow",
+    "blue",
+    "gray",
+  ] as const;
+
   /** A badge's colour: one of the guide's Tailwind hues. */
-  export type BadgeColor =
-    "sky" | "purple" | "green" | "red" | "orange" | "yellow" | "blue" | "gray";
+  export type BadgeVariant = (typeof BADGE_VARIANTS)[number];
 </script>
 
 <script lang="ts">
+  import { DEV } from "esm-env";
   import type { Snippet } from "svelte";
   import type { HTMLAttributes } from "svelte/elements";
+  import DecorativeIcon from "../decorativeIcon/DecorativeIcon.svelte";
 
   type Props = HTMLAttributes<HTMLSpanElement> & {
     /** The badge's colour. Sky by default. */
-    color?: BadgeColor;
+    variant?: BadgeVariant;
     /** `md` (the default) or `sm`, for tables and tight rows. */
     size?: "sm" | "md";
-    /** Round ends, for a status such as "Draft" or "In progress". */
+    /** Round ends and a stronger tint, for a status such as "Draft". */
     pill?: boolean;
     /** An icon before the text, such as `<Icon path={mdiStar} />`. Hidden from screen readers: the text says it. */
     icon?: Snippet;
@@ -22,7 +35,7 @@
   };
 
   let {
-    color = "sky",
+    variant = "sky",
     size = "md",
     pill = false,
     icon,
@@ -31,34 +44,46 @@
     ...rest
   }: Props = $props();
 
-  // The guide's status-badge steps (decision 0004): in light, a 10% tint of
-  // -600 with -800 text; in dark, a 10% tint of -500 with -300 text. Stock
-  // colours don't follow the scheme as roles do, so these use `dark:`.
-  const colors: Record<BadgeColor, string> = {
-    sky: "border-sky-600/30 bg-sky-600/10 text-sky-800 dark:border-sky-500/30 dark:bg-sky-500/10 dark:text-sky-300",
+  // The guide's status-badge steps. `--hue` is the tint and border: -600 in
+  // light, -500 in dark. `--ink` is the text: -800 in light, -300 in dark.
+  // Tailwind's hues don't follow the scheme as roles do, hence `dark:`.
+  const hues: Record<BadgeVariant, string> = {
+    sky: "[--hue:var(--color-sky-600)] [--ink:var(--color-sky-800)] dark:[--hue:var(--color-sky-500)] dark:[--ink:var(--color-sky-300)]",
     purple:
-      "border-purple-600/30 bg-purple-600/10 text-purple-800 dark:border-purple-500/30 dark:bg-purple-500/10 dark:text-purple-300",
+      "[--hue:var(--color-purple-600)] [--ink:var(--color-purple-800)] dark:[--hue:var(--color-purple-500)] dark:[--ink:var(--color-purple-300)]",
     green:
-      "border-green-600/30 bg-green-600/10 text-green-800 dark:border-green-500/30 dark:bg-green-500/10 dark:text-green-300",
-    red: "border-red-600/30 bg-red-600/10 text-red-800 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300",
+      "[--hue:var(--color-green-600)] [--ink:var(--color-green-800)] dark:[--hue:var(--color-green-500)] dark:[--ink:var(--color-green-300)]",
+    red: "[--hue:var(--color-red-600)] [--ink:var(--color-red-800)] dark:[--hue:var(--color-red-500)] dark:[--ink:var(--color-red-300)]",
     orange:
-      "border-orange-600/30 bg-orange-600/10 text-orange-800 dark:border-orange-500/30 dark:bg-orange-500/10 dark:text-orange-300",
+      "[--hue:var(--color-orange-600)] [--ink:var(--color-orange-800)] dark:[--hue:var(--color-orange-500)] dark:[--ink:var(--color-orange-300)]",
     yellow:
-      "border-yellow-600/30 bg-yellow-600/10 text-yellow-800 dark:border-yellow-500/30 dark:bg-yellow-500/10 dark:text-yellow-300",
-    blue: "border-blue-600/30 bg-blue-600/10 text-blue-800 dark:border-blue-500/30 dark:bg-blue-500/10 dark:text-blue-300",
-    gray: "border-gray-600/30 bg-gray-600/10 text-gray-800 dark:border-gray-500/30 dark:bg-gray-500/10 dark:text-gray-300",
+      "[--hue:var(--color-yellow-600)] [--ink:var(--color-yellow-800)] dark:[--hue:var(--color-yellow-500)] dark:[--ink:var(--color-yellow-300)]",
+    blue: "[--hue:var(--color-blue-600)] [--ink:var(--color-blue-800)] dark:[--hue:var(--color-blue-500)] dark:[--ink:var(--color-blue-300)]",
+    gray: "[--hue:var(--color-gray-600)] [--ink:var(--color-gray-800)] dark:[--hue:var(--color-gray-500)] dark:[--ink:var(--color-gray-300)]",
   };
+
+  let element: HTMLSpanElement;
+
+  // A badge is never icon-only: say so while developing.
+  $effect(() => {
+    if (DEV && !element.textContent?.trim()) {
+      console.warn(
+        "Badge has no text. Give it a word or two, even beside an icon.",
+      );
+    }
+  });
 </script>
 
 <span
+  bind:this={element}
   {...rest}
   class={[
-    "inline-flex items-center gap-2 border font-medium",
+    "inline-flex items-center gap-2 border font-medium text-(--ink)",
     size === "sm" ? "px-2 py-1 text-xs" : "px-3 py-1.5 text-sm",
-    pill ? "rounded-full" : "rounded-lg",
-    colors[color],
+    pill
+      ? "rounded-full border-(--hue)/50 bg-(--hue)/20"
+      : "rounded-lg border-(--hue)/30 bg-(--hue)/10",
+    hues[variant],
     className,
-  ]}
-  >{#if icon}<span aria-hidden="true" class="inline-flex">{@render icon()}</span
-    >{/if}{@render children()}</span
+  ]}><DecorativeIcon {icon} />{@render children()}</span
 >

@@ -1,15 +1,12 @@
-import { createRawSnippet } from "svelte";
-import { describe, expect, test } from "vitest";
+import { describe, expect, test, vi } from "vitest";
 import {
-  contrastOn,
+  expectReadable,
+  SCHEMES,
   styleOfClasses,
-  SURFACES,
 } from "../../../test/contrast.ts";
 import { renderIn } from "../../../test/schemes.ts";
-import Badge from "./Badge.svelte";
-
-const text = (s: string) =>
-  createRawSnippet(() => ({ render: () => `<span>${s}</span>` }));
+import { expectLeadingHiddenIcon, icon, text } from "../../../test/snippets.ts";
+import Badge, { BADGE_VARIANTS } from "./Badge.svelte";
 
 const badgeOf = (label: Element) => label.parentElement!;
 
@@ -23,51 +20,42 @@ describe("Badge", () => {
     await expect.element(badge).toHaveTextContent("Member perk");
   });
 
-  const colours = [
-    "sky",
-    "purple",
-    "green",
-    "red",
-    "orange",
-    "yellow",
-    "blue",
-    "gray",
-  ] as const;
-  const places = [
-    ["light", SURFACES.light],
-    ["dark", SURFACES.dark],
-    ["dark-header", SURFACES.dark],
-  ] as const;
+  describe.each(BADGE_VARIANTS)("in %s", (variant) => {
+    test.each(SCHEMES)("has 4.5:1 text in %s", async (scheme) => {
+      const screen = await renderIn(scheme, Badge, {
+        variant,
+        children: text("Draft"),
+      });
+      expectReadable(badgeOf(screen.getByText("Draft").element()), scheme);
+    });
 
-  // WCAG 2.2 AA: 4.5:1 for text, on the page and on a card.
-  describe.each(colours)("in %s", (color) => {
-    test.each(places)(
-      "has 4.5:1 text in %s",
-      async (scheme, { background, card }) => {
-        const screen = await renderIn(scheme, Badge, {
-          color,
-          children: text("Draft"),
-        });
-        const badge = badgeOf(screen.getByText("Draft").element());
-        expect(contrastOn(badge, background)).toBeGreaterThanOrEqual(4.5);
-        expect(contrastOn(badge, card)).toBeGreaterThanOrEqual(4.5);
-      },
-    );
+    test.each(SCHEMES)("has 4.5:1 text as a pill in %s", async (scheme) => {
+      const screen = await renderIn(scheme, Badge, {
+        variant,
+        pill: true,
+        children: text("Draft"),
+      });
+      expectReadable(badgeOf(screen.getByText("Draft").element()), scheme);
+    });
   });
 
   // The guide: "In light, the tint is Tailwind's -600 step and the text its
-  // -800; in dark, the tint is -500 and the text -300", the tint at 10%.
+  // -800; in dark, the tint is -500 and the text -300", the tint at 10%. A
+  // status pill doubles the tint, as the community site's pills do.
   test.each([
-    ["light", "sky", "bg-sky-600/10 text-sky-800"],
-    ["dark", "sky", "bg-sky-500/10 text-sky-300"],
-    ["dark-header", "sky", "bg-sky-500/10 text-sky-300"],
-    ["light", "gray", "bg-gray-600/10 text-gray-800"],
-    ["dark", "gray", "bg-gray-500/10 text-gray-300"],
+    ["light", "sky", false, "bg-sky-600/10 text-sky-800"],
+    ["dark", "sky", false, "bg-sky-500/10 text-sky-300"],
+    ["dark-header", "sky", false, "bg-sky-500/10 text-sky-300"],
+    ["light", "gray", false, "bg-gray-600/10 text-gray-800"],
+    ["dark", "gray", false, "bg-gray-500/10 text-gray-300"],
+    ["light", "green", true, "bg-green-600/20 text-green-800"],
+    ["dark", "green", true, "bg-green-500/20 text-green-300"],
   ] as const)(
-    "follows the guide's steps in %s for %s",
-    async (scheme, color, guide) => {
+    "follows the guide's steps in %s for %s (pill: %s)",
+    async (scheme, variant, pill, guide) => {
       const screen = await renderIn(scheme, Badge, {
-        color,
+        variant,
+        pill,
         children: text("Draft"),
       });
       const badge = badgeOf(screen.getByText("Draft").element());
@@ -116,18 +104,20 @@ describe("Badge", () => {
   });
 
   test("shows an icon before its text, hidden from screen readers", async () => {
-    const icon = createRawSnippet(() => ({
-      render: () => `<svg data-testid="icon" viewBox="0 0 24 24"></svg>`,
-    }));
     const screen = await renderIn("light", Badge, {
       icon,
       children: text("Member perk"),
     });
     const badge = badgeOf(screen.getByText("Member perk").element());
-    const svg = screen.getByTestId("icon").element();
-    expect(badge.firstElementChild!.contains(svg)).toBe(true);
-    expect(svg.closest("[aria-hidden='true']")).not.toBeNull();
+    expectLeadingHiddenIcon(badge, screen.getByTestId("icon").element());
     await expect.element(badge).toHaveTextContent("Member perk");
+  });
+
+  test("warns while developing when it has no text", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    await renderIn("light", Badge, { icon, children: text("") });
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining("no text"));
+    warn.mockRestore();
   });
 
   test("adds a caller's class and attributes to its own", async () => {

@@ -12,18 +12,19 @@
     <ul class="flex flex-wrap items-center gap-2">
       <li><Chip>S3</Chip></li>
       <li>
-        <Chip tone="initials"
+        <Chip variant="initials"
           >HY<span class="sr-only"> (operating initials)</span></Chip
         >
       </li>
-      <li><Chip tone="senior">ATM</Chip></li>
-      <li><Chip tone="training">TA</Chip></li>
-      <li><Chip tone="team">WEB</Chip></li>
+      <li><Chip variant="senior">ATM</Chip></li>
+      <li><Chip variant="training">TA</Chip></li>
+      <li><Chip variant="team">WEB</Chip></li>
+      <li><Chip variant="certification">IND_APP</Chip></li>
     </ul>
     <p class="flex flex-wrap items-center gap-2 rounded-md bg-card p-3 text-sm">
-      Jordan Sample <Chip tone="initials">JS</Chip>
+      Jordan Sample <Chip variant="initials">JS</Chip>
       <Chip>C1</Chip>
-      <Chip tone="training">INS</Chip>
+      <Chip variant="training">INS</Chip>
     </p>
   </div>
 </Schemes>
