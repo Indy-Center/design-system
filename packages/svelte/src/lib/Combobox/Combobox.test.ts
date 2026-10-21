@@ -439,4 +439,33 @@ describe("Combobox", () => {
       .element(screen.getByRole("status"))
       .toHaveTextContent("Cara Cole, selected");
   });
+
+  test.each([
+    ["by keyboard", "{ArrowDown}{Enter}"],
+    ["by mouse", null],
+  ])("announces the same option picked again, %s", async (_, keys) => {
+    const screen = await renderIn("light", Picker, {});
+    const input = screen.getByRole("combobox");
+    const status = screen.getByRole("status").element();
+    const said: string[] = [];
+    new MutationObserver(() => said.push(status.textContent ?? "")).observe(
+      status,
+      { childList: true, characterData: true, subtree: true },
+    );
+    for (let time = 0; time < 2; time++) {
+      if (keys) {
+        await userEvent.click(input);
+        await userEvent.keyboard("{Escape}");
+        await userEvent.keyboard(keys);
+      } else {
+        await input.click();
+        await screen.getByRole("option", { name: "Ann Archer" }).click();
+      }
+      await expect.element(input).toHaveValue("Ann Archer");
+    }
+    // Each pick is new text in the region, so it is read out each time.
+    await expect
+      .poll(() => said.filter((text) => text === "Ann Archer, selected"))
+      .toHaveLength(2);
+  });
 });
