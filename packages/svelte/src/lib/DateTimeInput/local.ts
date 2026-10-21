@@ -19,3 +19,23 @@ export function fromLocal(text: string): string | undefined {
   const at = new Date(text);
   return Number.isNaN(at.getTime()) ? undefined : at.toISOString();
 }
+
+/** An ISO string in another offset as UTC; anything else as it was given. */
+export function toUtc(iso: string): string {
+  const at = new Date(iso);
+  return Number.isNaN(at.getTime()) ? iso : at.toISOString();
+}
+
+/**
+ * The zone as people say it, "Eastern Daylight Time", at `at`; its ID where
+ * en-US has only an offset for it ("GMT+03:00").
+ */
+export function zoneName(timeZone: string, at = new Date()): string {
+  const name = new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    timeZoneName: "long",
+  })
+    .formatToParts(at)
+    .find((part) => part.type === "timeZoneName")?.value;
+  return name && !/^GMT[+-]/.test(name) ? name : timeZone;
+}

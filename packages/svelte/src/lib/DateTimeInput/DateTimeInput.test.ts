@@ -89,10 +89,18 @@ describe("DateTimeInput", () => {
 
   test("names the member's zone while empty", async () => {
     const screen = await renderIn("light", EventStartField, {});
-    // Chromium gives the zone's older, shorter name.
     await expect
       .element(screen.getByLabelText("Start"))
-      .toHaveAccessibleDescription("In your time zone, America/Indianapolis.");
+      .toHaveAccessibleDescription("In your time zone, Eastern Daylight Time.");
+  });
+
+  // en-US has no name for some zones, only an offset ("GMT-03:00").
+  test("names a zone without a name by its ID", async () => {
+    await commands.emulateTimeZone("America/Punta_Arenas");
+    const screen = await renderIn("light", EventStartField, {});
+    await expect
+      .element(screen.getByLabelText("Start"))
+      .toHaveAccessibleDescription("In your time zone, America/Punta_Arenas.");
   });
 
   test("is described by its read-out, then the field's hint and error", async () => {
@@ -175,8 +183,34 @@ describe("DateTimeInput", () => {
       form: "event",
       value: "2026-10-27T23:00:00Z",
     });
-    expect(new FormData(form).get("start")).toBe("2026-10-27T23:00:00Z");
+    expect(new FormData(form).get("start")).toBe("2026-10-27T23:00:00.000Z");
     form.remove();
+  });
+
+  test("sends a value given with an offset in UTC", async () => {
+    const screen = await renderIn("light", DateTimeInput, {
+      "aria-label": "Start",
+      name: "start",
+      value: "2026-10-27T19:00-04:00",
+    });
+    await expect
+      .element(
+        screen.container.querySelector<HTMLInputElement>('[name="start"]'),
+      )
+      .toHaveValue("2026-10-27T23:00:00.000Z");
+  });
+
+  test("sends a value that isn't a date as it was given", async () => {
+    const screen = await renderIn("light", DateTimeInput, {
+      "aria-label": "Start",
+      name: "start",
+      value: "not a date",
+    });
+    await expect
+      .element(
+        screen.container.querySelector<HTMLInputElement>('[name="start"]'),
+      )
+      .toHaveValue("not a date");
   });
 
   test("sends nothing while disabled", async () => {
@@ -287,7 +321,7 @@ describe("DateTimeInput", () => {
       expect(box.getAttribute("value") ?? "").toBe("");
       expect(
         page.querySelector<HTMLInputElement>('[name="start"]')!.value,
-      ).toBe("2026-10-27T23:00:00Z");
+      ).toBe("2026-10-27T23:00:00.000Z");
       expect(page.querySelector("p")!.textContent!.trim()).toBe("");
     }, 60_000);
   });

@@ -3,7 +3,7 @@
   import type { HTMLInputAttributes } from "svelte/elements";
   import { textControlClasses } from "../formControl/formControl.js";
   import Time from "../Time/Time.svelte";
-  import { fromLocal, toLocal } from "./local.js";
+  import { fromLocal, toLocal, toUtc, zoneName } from "./local.js";
 
   type Props = Omit<
     HTMLInputAttributes,
@@ -58,7 +58,7 @@
     <input
       type="hidden"
       {name}
-      value={value ?? ""}
+      value={value ? toUtc(value) : ""}
       form={rest.form}
       disabled={rest.disabled}
     />
@@ -85,7 +85,7 @@
       <span>Local: <Time {value} show="datetime" /></span>
       <span>Zulu: <Time {value} show="datetime" zone="zulu" /></span>
     {:else if memberZone}
-      In your time zone, {memberZone}.
+      In your time zone, {zoneName(memberZone)}.
     {/if}
   </p>
 </div>

@@ -13,7 +13,8 @@ description: A date and time box that takes the member's local time and gives th
 - [ ] Give and take `value` in UTC, as an ISO string: store it as it
       comes. Don't convert it to or from a zone yourself.
 - [ ] Give `name` to send the value with a form; it goes in UTC, from a
-      hidden input. Give `min` and `max` in UTC too.
+      hidden input, even when `value` was given with an offset. Give
+      `min` and `max` in UTC too.
 - [ ] Don't write your own "in UTC" note or read-out: the one under the
       box says the member's zone, then the value in local time and Zulu.
 - [ ] Don't colour it. `class` is for layout only, on the wrapper round
@@ -44,22 +45,24 @@ Local: Tue 27 Oct, 7:00 PM EDT    Zulu: Tue 27 Oct, 2300Z
 
 ## Props
 
-| Prop    | Type                 | Notes                                                                                                                            |
-| ------- | -------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| `value` | `string`             | Bindable: `bind:value`. The instant as an ISO string in UTC (`2026-10-27T23:00:00.000Z`); undefined while the box is empty.      |
-| `name`  | `string`             | Sends the value, in UTC, with a form, from a hidden input, which also takes `form` and `disabled`. The box itself sends nothing. |
-| `min`   | `string`             | The earliest instant allowed, as an ISO string in UTC; the box gets it in local time.                                            |
-| `max`   | `string`             | The latest instant allowed, as an ISO string in UTC.                                                                             |
-| `class` | `string`             | Added to the wrapper round the box and its read-out. Layout only.                                                                |
-| others  | `<input>` attributes | Passed to the box: `id`, `required`, `disabled`, `aria-*` and the rest. Your `aria-describedby` follows the read-out's id.       |
+| Prop    | Type                 | Notes                                                                                                                                                                                                                                                 |
+| ------- | -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `value` | `string`             | Bindable: `bind:value`. The instant as an ISO string in UTC (`2026-10-27T23:00:00.000Z`); undefined while the box is empty.                                                                                                                           |
+| `name`  | `string`             | Sends the value with a form, from a hidden input, which also takes `form` and `disabled`. It always sends UTC (`2026-10-27T23:00:00.000Z`), even for a value given with an offset; one that isn't a date goes as given. The box itself sends nothing. |
+| `min`   | `string`             | The earliest instant allowed, as an ISO string in UTC; the box gets it in local time.                                                                                                                                                                 |
+| `max`   | `string`             | The latest instant allowed, as an ISO string in UTC.                                                                                                                                                                                                  |
+| `class` | `string`             | Added to the wrapper round the box and its read-out. Layout only.                                                                                                                                                                                     |
+| others  | `<input>` attributes | Passed to the box: `id`, `required`, `disabled`, `aria-*` and the rest. Your `aria-describedby` follows the read-out's id.                                                                                                                            |
 
 ## What it shows
 
 - The box is the browser's own `datetime-local` picker, in the member's
   zone. The browser decides how it writes the date (`10/27/2026, 07:00
 PM` in US English).
-- While it's empty, the read-out names the member's zone: "In your time
-  zone, America/Indianapolis."
+- While it's empty, the read-out names the member's zone as people say
+  it: "In your time zone, Eastern Daylight Time." Where English has no
+  name for a zone, only an offset, it gives the zone's ID instead
+  ("America/Punta_Arenas").
 - With a value, it reads it back with `Time`: local with the zone's
   abbreviation, then Zulu, each with its own day, so an evening event
   that is the next day in Zulu says so (`Local: Tue 27 Oct, 9:00 PM EDT`,
