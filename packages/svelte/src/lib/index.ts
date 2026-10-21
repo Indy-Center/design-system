@@ -35,6 +35,10 @@ export { default as Input } from "./Input/Input.svelte";
 export { default as Link } from "./Link/Link.svelte";
 export { default as PageHero } from "./PageHero/PageHero.svelte";
 export { default as Pagination } from "./Pagination/Pagination.svelte";
+export {
+  default as Position,
+  type PositionField,
+} from "./Position/Position.svelte";
 export { default as ProgressBar } from "./ProgressBar/ProgressBar.svelte";
 export { default as Prose } from "./Prose/Prose.svelte";
 export { default as Radio } from "./Radio/Radio.svelte";
