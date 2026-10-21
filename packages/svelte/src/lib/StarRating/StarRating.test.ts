@@ -173,14 +173,19 @@ describe("StarRating", () => {
       .toBeRequired();
   });
 
-  test("disabled, can't be chosen", async () => {
+  test("disabled, can't be chosen and previews nothing under the pointer", async () => {
     const screen = await renderIn("light", StarRating, {
       legend: "Rating",
       name: "rating",
+      value: 2,
       disabled: true,
     });
+    const five = screen.getByRole("radio", { name: "5 stars" });
+    await expect.element(five).toBeDisabled();
+    await userEvent.hover(starOf(five));
+    await expect.element(screen.getByText("2 out of 5")).toBeVisible();
     await expect
-      .element(screen.getByRole("radio", { name: "5 stars" }))
-      .toBeDisabled();
+      .element(starOf(five))
+      .toHaveStyle({ color: role("muted-foreground", "light") });
   });
 });

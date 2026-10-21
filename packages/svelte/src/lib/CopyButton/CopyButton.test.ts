@@ -64,16 +64,21 @@ describe("CopyButton", () => {
     expect(screen.container.firstElementChild).toHaveClass("ml-2");
   });
 
-  test("says so if copying failed", async () => {
+  // Longer than "Copied": the member has to act on it.
+  test("says so for 5 seconds if copying failed", async () => {
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
     clipboard(true);
     const screen = await renderIn("light", CopyButton, {
       text: "1234567",
       label: "CID",
     });
+    const status = screen.getByRole("status");
     await screen.getByRole("button").click();
-    await expect
-      .element(screen.getByRole("status"))
-      .toHaveTextContent("Couldn't copy");
+    await expect.element(status).toHaveTextContent("Couldn't copy");
+    vi.advanceTimersByTime(4999);
+    await expect.element(status).toHaveTextContent("Couldn't copy");
+    vi.advanceTimersByTime(1);
+    await expect.element(status).toHaveTextContent("");
   });
 
   test("says it again when pressed again", async () => {

@@ -55,6 +55,23 @@ describe("FilterChip", () => {
     expect(clicks).toBe(2);
   });
 
+  test("binds pressed both ways", async () => {
+    let pressed = false;
+    const screen = await renderIn("light", FilterChip, {
+      children: text("Online"),
+      get pressed() {
+        return pressed;
+      },
+      set pressed(value) {
+        pressed = value;
+      },
+    });
+    const chip = screen.getByRole("button");
+    await expect.element(chip).toHaveAttribute("aria-pressed", "false");
+    await chip.click();
+    expect(pressed).toBe(true);
+  });
+
   test("is dimmed when disabled, and takes no fill on hover", async () => {
     const screen = await renderIn("light", FilterChip, {
       pressed: false,
