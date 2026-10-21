@@ -4,6 +4,7 @@ import {
   SCHEMES,
   styleOfClasses,
 } from "../../../test/contrast.ts";
+import { role } from "../../../test/roles.ts";
 import { renderIn } from "../../../test/schemes.ts";
 import { expectLeadingHiddenIcon, icon, text } from "../../../test/snippets.ts";
 import Chip, { CHIP_VARIANTS } from "./Chip.svelte";
@@ -19,18 +20,14 @@ describe("Chip", () => {
     expect(getComputedStyle(chip).fontFamily).toMatch(/monospace/);
   });
 
-  // The guide's `muted` fill and `foreground` text:
-  // #E2E8F0 and #0F172A light, #334155 and #FFFFFF dark.
-  test.each([
-    ["light", "rgb(226, 232, 240)", "rgb(15, 23, 42)"],
-    ["dark", "rgb(51, 65, 85)", "rgb(255, 255, 255)"],
-    ["dark-header", "rgb(51, 65, 85)", "rgb(255, 255, 255)"],
-  ] as const)("is muted by default in %s", async (scheme, fill, colour) => {
+  // The guide's `muted` fill and `foreground` text.
+  test.each(SCHEMES)("is muted by default in %s", async (scheme) => {
     const screen = await renderIn(scheme, Chip, { children: text("S3") });
     const chip = chipOf(screen.getByText("S3").element());
-    await expect
-      .element(chip)
-      .toHaveStyle({ backgroundColor: fill, color: colour });
+    await expect.element(chip).toHaveStyle({
+      backgroundColor: role("muted", scheme),
+      color: role("foreground", scheme),
+    });
   });
 
   describe.each(CHIP_VARIANTS)("the %s variant", (variant) => {
@@ -60,7 +57,7 @@ describe("Chip", () => {
       });
       const chip = chipOf(screen.getByText(scheme).element());
       await expect.element(chip).toHaveStyle({
-        color: "rgb(255, 255, 255)",
+        color: role("white", scheme),
         backgroundColor: styleOfClasses(fill, chip).backgroundColor,
       });
     }

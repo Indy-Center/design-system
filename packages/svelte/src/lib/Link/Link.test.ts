@@ -1,6 +1,8 @@
 import { createRawSnippet } from "svelte";
 import { describe, expect, test } from "vitest";
 import { userEvent } from "vitest/browser";
+import { SCHEMES } from "../../../test/contrast.ts";
+import { role } from "../../../test/roles.ts";
 import { renderIn } from "../../../test/schemes.ts";
 import Link from "./Link.svelte";
 
@@ -17,19 +19,15 @@ describe("Link", () => {
     await expect.element(link).toHaveAttribute("href", "/events");
   });
 
-  // The guide's `link` role: #0369A1 light, #38BDF8 dark.
-  test.each([
-    ["light", "rgb(3, 105, 161)"],
-    ["dark", "rgb(56, 189, 248)"],
-    ["dark-header", "rgb(56, 189, 248)"],
-  ] as const)("is the link colour in %s", async (scheme, colour) => {
+  // The guide's `link` role.
+  test.each(SCHEMES)("is the link colour in %s", async (scheme) => {
     const screen = await renderIn(scheme, Link, {
       href: "/events",
       children: text("Events"),
     });
     await expect
       .element(screen.getByRole("link"))
-      .toHaveStyle({ color: colour });
+      .toHaveStyle({ color: role("link", scheme) });
   });
 
   // Colour alone doesn't mark a link in body text (WCAG 1.4.1).
@@ -58,14 +56,10 @@ describe("Link", () => {
     });
   });
 
-  // The guide's `ring` role: #0284C7 light, #0EA5E9 dark.
-  test.each([
-    ["light", "rgb(2, 132, 199)"],
-    ["dark", "rgb(14, 165, 233)"],
-    ["dark-header", "rgb(14, 165, 233)"],
-  ] as const)(
+  // The guide's `ring` role.
+  test.each(SCHEMES)(
     "shows a ring outline when tabbed to in %s",
-    async (scheme, colour) => {
+    async (scheme) => {
       const screen = await renderIn(scheme, Link, {
         href: "/events",
         children: text("Events"),
@@ -75,7 +69,7 @@ describe("Link", () => {
       await expect.element(link).toHaveFocus();
       await expect.element(link).toHaveStyle({
         outlineStyle: "solid",
-        outlineColor: colour,
+        outlineColor: role("ring", scheme),
       });
     },
   );

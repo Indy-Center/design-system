@@ -22,7 +22,10 @@ description: A text box that searches a list as you type, to pick one option fro
       (a CID in `font-mono`). Keep it to one or two lines, and no links or
       buttons inside.
 - [ ] Give `name` to send the pick's key with a form; the text in the box
-      is not sent.
+      is not sent. Text with no pick stops the form sending ("Pick an
+      option from the list."), so typed text is never dropped silently; an
+      empty box sends nothing. With `required` (on it or its `Field`), an
+      empty box stops it too.
 - [ ] Don't colour it or its list. `class` is for layout only, on the
       wrapper round the box and its list.
 
@@ -99,20 +102,26 @@ manual selection (https://www.w3.org/WAI/ARIA/apg/patterns/combobox/).
 Focus stays in the box; `aria-activedescendant` points at the active
 option.
 
-| Key                          | What it does                                                                           |
-| ---------------------------- | -------------------------------------------------------------------------------------- |
-| Typing                       | Opens the list of matches, none active.                                                |
-| Down Arrow                   | Opens the list on the first option, or moves to the next, wrapping round.              |
-| Up Arrow                     | Opens the list on the last option, or moves to the previous, wrapping round.           |
-| Enter                        | Picks the active option and closes the list. With the list open, never sends the form. |
-| Escape                       | Closes the list; with it closed, clears the box and the pick.                          |
-| Home, End, Left, Right Arrow | Move the caret in the box, and leave the list.                                         |
-| Tab                          | Closes the list and moves on, without picking.                                         |
+| Key                          | What it does                                                                                                             |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| Typing                       | Opens the list of matches, none active.                                                                                  |
+| Down Arrow                   | Opens the list on the first option, or moves to the next, wrapping round.                                                |
+| Up Arrow                     | Opens the list on the last option, or moves to the previous, wrapping round.                                             |
+| Alt+Down Arrow               | Opens the list, none active.                                                                                             |
+| Alt+Up Arrow                 | Closes the list, keeping the text; focus stays in the box. With the list closed, it's left to the page.                  |
+| Enter                        | Picks the active option and closes the list. With the list open, never sends the form.                                   |
+| Escape                       | Closes the list; with it closed, clears the box and the pick. An empty box lets it through, so a dialog round it closes. |
+| Home, End, Left, Right Arrow | Move the caret in the box, and leave the list.                                                                           |
+| Tab                          | Closes the list and moves on, without picking.                                                                           |
 
 - A click on the box opens the list; a click on an option picks it; a
   click outside closes it.
+- While a search function is still looking for new text, the arrows
+  don't move into the list it found for the old text and a click on it
+  does nothing, so neither Enter nor the mouse can pick an option that no
+  longer matches.
 - A status region says how many options match while the list is open
-  ("3 results", "No results", "Couldn't search"), then "Ann Archer,
+  ("3 results", "No matches", "Couldn't search"), then "Ann Archer,
   selected" on a pick.
 - Its name comes from `Field`'s label, or your `aria-label`.
 - It has been tested by its keyboard table in a browser; a person checks it

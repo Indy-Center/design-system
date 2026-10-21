@@ -1,5 +1,7 @@
 import { describe, expect, test } from "vitest";
 import { userEvent } from "vitest/browser";
+import { SCHEMES } from "../../../test/contrast.ts";
+import { role } from "../../../test/roles.ts";
 import { renderIn } from "../../../test/schemes.ts";
 import Pagination from "./Pagination.svelte";
 
@@ -196,15 +198,10 @@ describe("Pagination", () => {
       .toHaveFocus();
   });
 
-  // The guide's `primary` (#0369A1) under `primary-foreground` (#FFFFFF)
-  // for the current page, in both schemes; the others in `foreground-soft`
-  // (#334155 light, #D1D5DB dark) with no fill. The fill marks it, not the
-  // colour of its number.
-  test.each([
-    ["light", "rgb(51, 65, 85)"],
-    ["dark", "rgb(209, 213, 219)"],
-    ["dark-header", "rgb(209, 213, 219)"],
-  ] as const)("fills the current page in %s", async (scheme, other) => {
+  // The guide's `primary` under `primary-foreground` for the current page;
+  // the others in `foreground-soft` with no fill (transparent). The fill
+  // marks it, not the colour of its number.
+  test.each(SCHEMES)("fills the current page in %s", async (scheme) => {
     const screen = await renderIn(scheme, Pagination, {
       pageCount: 3,
       page: 2,
@@ -212,13 +209,16 @@ describe("Pagination", () => {
     await expect
       .element(screen.getByRole("button", { name: "Page 2" }))
       .toHaveStyle({
-        backgroundColor: "rgb(3, 105, 161)",
-        color: "rgb(255, 255, 255)",
+        backgroundColor: role("primary", scheme),
+        color: role("primary-foreground", scheme),
         fontWeight: "600",
       });
     await expect
       .element(screen.getByRole("button", { name: "Page 3" }))
-      .toHaveStyle({ backgroundColor: "rgba(0, 0, 0, 0)", color: other });
+      .toHaveStyle({
+        backgroundColor: "rgba(0, 0, 0, 0)",
+        color: role("foreground-soft", scheme),
+      });
   });
 
   test("every button is at least 44px tall and wide", async () => {
@@ -230,19 +230,18 @@ describe("Pagination", () => {
     }
   });
 
-  // The guide's `ring` role: #0284C7 light, #0EA5E9 dark.
-  test.each([
-    ["light", "rgb(2, 132, 199)"],
-    ["dark", "rgb(14, 165, 233)"],
-    ["dark-header", "rgb(14, 165, 233)"],
-  ] as const)(
+  // The guide's `ring` role.
+  test.each(SCHEMES)(
     "shows a ring outline when tabbed to in %s",
-    async (scheme, colour) => {
+    async (scheme) => {
       const screen = await renderIn(scheme, Pagination, { pageCount: 3 });
       await userEvent.tab();
       await expect
         .element(screen.getByRole("button", { name: "Page 1" }))
-        .toHaveStyle({ outlineStyle: "solid", outlineColor: colour });
+        .toHaveStyle({
+          outlineStyle: "solid",
+          outlineColor: role("ring", scheme),
+        });
     },
   );
 
