@@ -108,6 +108,31 @@ describe("AppNav and AppNavMenu", () => {
         .not.toHaveAttribute("aria-current");
     });
 
+    test("ignores a trailing slash on the path and on the link", async () => {
+      const slashed = await renderIn("light", Nav, {
+        items: hubNav,
+        current: "/events/",
+      });
+      await expect
+        .element(slashed.getByRole("link", { name: "Events" }))
+        .toHaveAttribute("aria-current", "page");
+      slashed.unmount();
+
+      const screen = await renderIn("light", Nav, {
+        items: [
+          { label: "Home", href: "/" },
+          { label: "Events", href: "/events/" },
+        ],
+        current: "/events",
+      });
+      await expect
+        .element(screen.getByRole("link", { name: "Events" }))
+        .toHaveAttribute("aria-current", "page");
+      await expect
+        .element(screen.getByRole("link", { name: "Home" }))
+        .not.toHaveAttribute("aria-current");
+    });
+
     test("doesn't match a page that only shares the start of a link", async () => {
       const screen = await renderIn("light", Nav, {
         items: hubNav,

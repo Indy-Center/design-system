@@ -32,12 +32,12 @@ description: The header's Apps button and the list of Indy Center apps it opens,
 
 ## Props
 
-| Prop      | Type               | Notes                                                                                       |
-| --------- | ------------------ | ------------------------------------------------------------------------------------------- |
-| `apps`    | `readonly App[]`   | Required. `{ href: string; label: string; description?: string; icon?: string }`, in order. |
-| `current` | `string`           | The `href` of the app this page is in. None marked if left out.                             |
-| `class`   | `string`           | Added to its root `<div>`. Layout only.                                                     |
-| others    | `<div>` attributes | Passed to its root `<div>`: `id` and the rest.                                              |
+| Prop      | Type               | Notes                                                                                                     |
+| --------- | ------------------ | --------------------------------------------------------------------------------------------------------- |
+| `apps`    | `readonly App[]`   | Required. `{ href: string; label: string; description?: string; icon?: string }`, in order.               |
+| `current` | `string`           | The `href` of the app this page is in; a trailing slash on either doesn't count. None marked if left out. |
+| `class`   | `string`           | Added to its root `<div>`. Layout only.                                                                   |
+| others    | `<div>` attributes | Passed to its root `<div>`: `id` and the rest.                                                            |
 
 `icon` is an MDI path, such as `mdiSchool` from `@mdi/js`. The type `App`
 is exported beside it.

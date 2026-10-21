@@ -79,6 +79,30 @@ describe("AppsMenu", () => {
     expect(screen.container.querySelectorAll("[aria-current]")).toHaveLength(1);
   });
 
+  test("ignores a trailing slash on current and on an app's href", async () => {
+    const screen = await renderIn("light", AppsMenu, {
+      apps: [
+        { href: "https://x.example", label: "X" },
+        { href: "https://y.example/", label: "Y" },
+      ],
+      current: "https://x.example/",
+    });
+    await button(screen).click();
+    await expect
+      .element(screen.getByRole("link", { name: "X" }))
+      .toHaveAttribute("aria-current", "true");
+    screen.unmount();
+
+    const other = await renderIn("light", AppsMenu, {
+      apps: [{ href: "https://y.example/", label: "Y" }],
+      current: "https://y.example",
+    });
+    await button(other).click();
+    await expect
+      .element(other.getByRole("link", { name: "Y" }))
+      .toHaveAttribute("aria-current", "true");
+  });
+
   test("Escape closes it and puts focus back on the button", async () => {
     const screen = await renderIn("light", AppsMenu, props());
     await button(screen).click();

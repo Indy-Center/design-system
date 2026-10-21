@@ -22,11 +22,15 @@
     headerButton,
     menuRow,
   } from "../headerMenu/headerMenu.js";
+  import { withoutTrailingSlash } from "../headerMenu/withoutTrailingSlash.js";
 
   type Props = HTMLAttributes<HTMLDivElement> & {
     /** Every Indy Center app, in the order they show: `INDY_CENTER_APPS`. */
     apps: readonly App[];
-    /** The `href` of the app this page is in, marked in the list. */
+    /**
+     * The `href` of the app this page is in, marked in the list. A
+     * trailing slash on either doesn't count.
+     */
     current?: string;
   };
 
@@ -46,7 +50,9 @@
     {/snippet}
     <ul class="space-y-1">
       {#each apps as app}
-        {@const isCurrent = app.href === current}
+        {@const isCurrent =
+          current !== undefined &&
+          withoutTrailingSlash(app.href) === withoutTrailingSlash(current)}
         <li>
           <a
             href={app.href}

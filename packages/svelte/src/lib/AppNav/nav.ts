@@ -1,5 +1,6 @@
 // An app's navigation, and which of its pages is current: shared by
 // AppNav (the header bar) and AppNavMenu (the phone menu).
+import { withoutTrailingSlash } from "../headerMenu/withoutTrailingSlash.js";
 
 /** A page in the app's navigation. */
 export type NavLink = {
@@ -26,11 +27,14 @@ export type NavItem = NavLink | NavGroup;
 
 export const isGroup = (item: NavItem): item is NavGroup => "children" in item;
 
-/** `path` is `href`'s page, or a page under it ("/" only itself). */
+/**
+ * `path` is `href`'s page, or a page under it ("/" only itself). A
+ * trailing slash on either doesn't count.
+ */
 function isAtOrUnder(path: string, href: string) {
-  if (href === path) return true;
-  const base = href.replace(/\/$/, "");
-  return base !== "" && path.startsWith(`${base}/`);
+  const page = withoutTrailingSlash(path);
+  const link = withoutTrailingSlash(href);
+  return page === link || (link !== "/" && page.startsWith(`${link}/`));
 }
 
 /**

@@ -16,7 +16,8 @@ description: An app's own navigation in the header, top-level links and one leve
 - [ ] An app's own admin, and anything else only some members see, go
       here, not in the user menu.
 - [ ] Pass the page's path as `current` (`page.url.pathname`). The link it
-      is, or is under, is marked; "/" only on itself.
+      is, or is under, is marked; "/" only on itself. A trailing slash
+      on the path or a link doesn't count: `/events/` is `/events`.
 - [ ] Use each page's own name for its link, a word or two.
 - [ ] Don't colour them or change their sizes. They are dark in both
       schemes by themselves. `class` is for layout only.
