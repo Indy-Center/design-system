@@ -267,6 +267,19 @@ describe("AppNav and AppNavMenu", () => {
         .toHaveAttribute("aria-expanded", "false");
     });
 
+    test("opens one of two groups that share a label by itself", async () => {
+      const screen = await renderIn("light", AppNavMenu, {
+        items: [
+          { label: "More", children: [{ label: "A", href: "/a" }] },
+          { label: "More", children: [{ label: "B", href: "/b" }] },
+        ],
+      });
+      const [first, second] = screen.getByRole("button").all();
+      await first.click();
+      await expect.element(first).toHaveAttribute("aria-expanded", "true");
+      await expect.element(second).toHaveAttribute("aria-expanded", "false");
+    });
+
     // A phone menu lists the groups one under another: opening one leaves
     // the others as they are, and Escape is the phone menu's to handle.
     test("keeps groups open on another group, a click outside and Escape", async () => {

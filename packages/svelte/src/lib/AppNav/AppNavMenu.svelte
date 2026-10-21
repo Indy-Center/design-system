@@ -33,10 +33,10 @@
 
   const currentHref = $derived(findCurrentHref(items, current));
 
-  // The groups the member opened or closed, by label, so a group added
-  // later (an admin group after sign-in) doesn't take another's state; the
-  // rest are open when they hold the current page.
-  let toggled = $state<Record<string, boolean>>({});
+  // The groups the member opened or closed, by position in `items`, so two
+  // groups with one label open separately; the rest are open when they
+  // hold the current page.
+  let toggled = $state<Record<number, boolean>>({});
   const uid = $props.id();
 
   const iconSize = 20;
@@ -51,7 +51,7 @@
       <li>
         {#if isGroup(item)}
           {@const holdsCurrentPage = holdsCurrent(item, currentHref)}
-          {@const open = toggled[item.label] ?? holdsCurrentPage}
+          {@const open = toggled[i] ?? holdsCurrentPage}
           {@const id = `app-nav-menu-${uid}-${i}`}
           <button
             type="button"
@@ -62,7 +62,7 @@
               "cursor-pointer",
               holdsCurrentPage && currentClass,
             ]}
-            onclick={() => (toggled[item.label] = !open)}
+            onclick={() => (toggled[i] = !open)}
           >
             {#if item.icon}<Icon path={item.icon} size={iconSize} />{/if}
             <span class="flex-1 text-left">{item.label}</span>
