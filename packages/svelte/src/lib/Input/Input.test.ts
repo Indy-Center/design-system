@@ -2,6 +2,7 @@ import { describe, expect, test } from "vitest";
 import { role } from "../../../test/roles.ts";
 import { renderIn } from "../../../test/schemes.ts";
 import Input from "./Input.svelte";
+import Bound from "./Input.test.svelte";
 
 describe("Input", () => {
   test("is a text box named by its own label when used alone", async () => {
@@ -27,14 +28,13 @@ describe("Input", () => {
   });
 
   test("binds its value both ways", async () => {
-    const screen = await renderIn("light", Input, {
-      "aria-label": "Callsign",
-      value: "IND_CTR",
-    });
+    const screen = await renderIn("light", Bound, {});
     const box = screen.getByRole("textbox", { name: "Callsign" });
     await expect.element(box).toHaveValue("IND_CTR");
     await box.fill("IND_APP");
-    await expect.element(box).toHaveValue("IND_APP");
+    await expect
+      .element(screen.getByRole("status"))
+      .toHaveTextContent("IND_APP");
   });
 
   // textControlClasses, whose looks formControl's tests hold.
