@@ -23,6 +23,7 @@ export { default as DescriptionList } from "./DescriptionList/DescriptionList.sv
 export { default as Disclosure } from "./Disclosure/Disclosure.svelte";
 export { default as Field, type FieldControl } from "./Field/Field.svelte";
 export { default as Fieldset } from "./Fieldset/Fieldset.svelte";
+export { default as FilterChip } from "./FilterChip/FilterChip.svelte";
 export {
   default as Footer,
   type FooterColumn,
@@ -37,6 +38,7 @@ export { default as Pagination } from "./Pagination/Pagination.svelte";
 export { default as ProgressBar } from "./ProgressBar/ProgressBar.svelte";
 export { default as Prose } from "./Prose/Prose.svelte";
 export { default as Radio } from "./Radio/Radio.svelte";
+export { default as SearchInput } from "./SearchInput/SearchInput.svelte";
 export { default as Select } from "./Select/Select.svelte";
 export { default as SkipLink } from "./SkipLink/SkipLink.svelte";
 export { default as Spinner } from "./Spinner/Spinner.svelte";
