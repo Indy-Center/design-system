@@ -80,7 +80,9 @@ description: A short description of a control that shows on hover and on focus.
 - A tap on a touch screen doesn't show it, so a phone user never sees
   it: keep what it says nice to know.
 - Escape hides it, leaving focus where it was; it shows again on the next
-  hover or focus. A press elsewhere on the page hides it too.
+  hover or focus. In an open `DropdownMenu`, Escape hides only the
+  tooltip; the next Escape closes the menu. A click or tap elsewhere on
+  the page hides it too.
 - It is a manual `popover`, drawn above the page, so a table or a card
   can't clip it, and it doesn't close a `DropdownMenu` it sits in. It is
   placed with CSS anchor positioning; a browser without it shows the

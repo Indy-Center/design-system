@@ -123,7 +123,8 @@ option.
 | Tab                          | Closes the list and moves on, without picking.                                                                           |
 
 - A click on the box opens the list; a click on an option picks it; a
-  click outside closes it.
+  click or tap outside closes it, but a press that scrolls the page
+  doesn't.
 - While a search function is still looking for new text, the arrows
   don't move into the list it found for the old text and a click on it
   does nothing, so neither Enter nor the mouse can pick an option that no

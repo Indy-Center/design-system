@@ -2,6 +2,7 @@
      opens a link and two buttons, and a button elsewhere on the page. -->
 <script lang="ts">
   import Button from "../Button/Button.svelte";
+  import Tooltip from "../Tooltip/Tooltip.svelte";
   import DropdownMenu from "./DropdownMenu.svelte";
   import DropdownMenuItem from "./DropdownMenuItem.svelte";
 
@@ -18,6 +19,8 @@
     disabled?: boolean;
     /** DropdownMenu's class, for the arrow. */
     class?: string;
+    /** Gives the first row a Tooltip. */
+    tooltip?: boolean;
   };
 
   let {
@@ -27,6 +30,7 @@
     inset = false,
     disabled,
     class: className,
+    tooltip = false,
   }: Props = $props();
   let withdrawn = $state(false);
 </script>
@@ -44,7 +48,17 @@
       {disabled}
       class={className}
     >
-      <DropdownMenuItem href="#profile">View profile</DropdownMenuItem>
+      {#if tooltip}
+        <Tooltip text="Opens their roster page">
+          {#snippet children(trigger)}
+            <DropdownMenuItem href="#profile" {...trigger}>
+              View profile
+            </DropdownMenuItem>
+          {/snippet}
+        </Tooltip>
+      {:else}
+        <DropdownMenuItem href="#profile">View profile</DropdownMenuItem>
+      {/if}
       <DropdownMenuItem onclick={() => (withdrawn = true)}>
         Withdraw
       </DropdownMenuItem>

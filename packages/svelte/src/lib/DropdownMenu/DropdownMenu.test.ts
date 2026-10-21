@@ -66,6 +66,29 @@ describe("DropdownMenu", () => {
     await expect.element(arrow(screen)).toHaveFocus();
   });
 
+  test("with a row's tooltip showing, Escape hides it first, then closes the menu", async () => {
+    const screen = await renderIn("light", Menu, { tooltip: true });
+    const tip = screen.getByRole("tooltip", { includeHidden: true });
+    await userEvent.tab();
+    await userEvent.keyboard("{Enter}");
+    await userEvent.tab();
+    await expect.element(tip).toBeVisible();
+
+    await userEvent.keyboard("{Escape}");
+
+    await expect.element(tip).not.toBeVisible();
+    await expect
+      .element(arrow(screen))
+      .toHaveAttribute("aria-expanded", "true");
+
+    await userEvent.keyboard("{Escape}");
+
+    await expect
+      .element(arrow(screen))
+      .toHaveAttribute("aria-expanded", "false");
+    await expect.element(arrow(screen)).toHaveFocus();
+  });
+
   test("a click outside closes it", async () => {
     const screen = await renderIn("light", Menu, {});
     await arrow(screen).click();

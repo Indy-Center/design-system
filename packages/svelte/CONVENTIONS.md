@@ -113,8 +113,11 @@ focus-visible:outline-ring`.
 - For that closing, put the `dismiss` action from `../dismiss/dismiss.js`
   on the panel: `use:dismiss={{ open, trigger, onclose }}`, with the
   trigger from `bind:this` on a `$state`. While open, it closes on Escape
-  (focus goes back to the trigger) and on a press outside the panel and
-  trigger. It is for menus, `Tooltip` and `Combobox`; it isn't exported.
+  (focus goes back to the trigger) and on a tap outside the panel and
+  trigger; a press that moves (a scroll or a drag) leaves it open. With
+  panels open inside each other, one Escape closes only the innermost
+  (the last opened). It is for menus, `Tooltip` and `Combobox`; it isn't
+  exported.
   Its tests, `src/lib/dismiss/dismiss.test.ts`, show it in use.
 - Every control and menu row is at least 44px tall and wide (`min-h-11
 min-w-11`). A link inside a sentence is exempt.

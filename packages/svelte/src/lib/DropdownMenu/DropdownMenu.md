@@ -101,7 +101,10 @@ description: A button with an arrow that opens a short list of actions or links;
 | Escape                      | Closes the menu and puts focus back on the arrow.            |
 | Enter on a row              | Follows the link or presses the button, and closes the menu. |
 
-- A click outside the menu closes it. Choosing a row puts focus back on
-  the arrow.
+- A click or tap outside the menu closes it; a press that scrolls or
+  drags the page leaves it open. Choosing a row puts focus back on the
+  arrow.
+- With a `Tooltip` showing inside the menu, Escape hides the tooltip
+  first, and a second Escape closes the menu.
 - The arrow and every row are at least 44px tall and wide.
 - The chevron is hidden from screen readers; `label` names the arrow.
