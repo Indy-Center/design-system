@@ -12,8 +12,8 @@
 
 <!-- Each row stacks until the list itself is 24rem wide, then puts the
      value beside its term; a container query, so a list in a narrow
-     column stacks too. Written on the rows from here, so a document's
-     plain <dl> could share it later. -->
+     column stacks too. Written on the rows from here, so the caller's
+     plain <div>, <dt> and <dd> take it. -->
 <dl
   {...rest}
   class={[

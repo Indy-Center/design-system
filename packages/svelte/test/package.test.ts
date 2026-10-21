@@ -49,7 +49,6 @@ describe("the packed package", () => {
       expect.arrayContaining([
         "dist/Table/Table.svelte",
         "dist/Table/Th.svelte",
-        "dist/Table/tableClasses.js",
         "dist/Table/Table.md",
         "dist/DescriptionList/DescriptionList.svelte",
         "dist/DescriptionList/DescriptionList.md",

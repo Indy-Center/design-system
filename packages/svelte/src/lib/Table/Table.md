@@ -91,10 +91,6 @@ or `"rowgroup"`.
 - A `border` line runs between rows.
 - The region gets the `ring` outline when focused (only while it scrolls).
 
-The table's classes are written on the `<table>` and reach its plain
-cells. They aren't exported yet; the rich-text feature will share them
-with tables from the CMS.
-
 ## Accessibility
 
 - Renders a `<div role="region">` labelled by the `<caption>`, around a
