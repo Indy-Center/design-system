@@ -304,6 +304,72 @@ describe("DateTimeInput", () => {
     expect(box.getBoundingClientRect().height).toBeGreaterThanOrEqual(44);
   });
 
+  // The device is in Indianapolis; the member saved Chicago (CDT, UTC−5),
+  // so the box, its read-out and Time agree on Chicago.
+  describe("with a saved time zone other than the device's", () => {
+    const chicago = { kind: "zone", zone: "America/Chicago" } as const;
+
+    test("shows a UTC value in the saved zone", async () => {
+      const screen = await renderIn("light", EventStartField, {
+        choice: chicago,
+        value: "2026-10-27T23:00:00Z",
+      });
+      await expect
+        .element(screen.getByLabelText("Start"))
+        .toHaveValue("2026-10-27T18:00");
+      await expect
+        .element(screen.getByText(/^Local/))
+        .toHaveTextContent("Local: Tue 27 Oct, 6:00 PM CDT");
+    });
+
+    test("turns the time typed in the saved zone into UTC", async () => {
+      const screen = await renderIn("light", EventStartField, {
+        choice: chicago,
+      });
+      await screen.getByLabelText("Start").fill("2026-10-27T18:00");
+      await expect
+        .element(screen.getByTestId("bound"))
+        .toHaveTextContent("2026-10-27T23:00:00.000Z");
+      await expect
+        .element(screen.getByText(/^Local/))
+        .toHaveTextContent("Local: Tue 27 Oct, 6:00 PM CDT");
+    });
+
+    test("names the saved zone while empty", async () => {
+      const screen = await renderIn("light", EventStartField, {
+        choice: chicago,
+      });
+      await expect
+        .element(screen.getByLabelText("Start"))
+        .toHaveAccessibleDescription(
+          "In your time zone, Central Daylight Time.",
+        );
+    });
+
+    test("in Zulu, the box is in Zulu too", async () => {
+      const screen = await renderIn("light", EventStartField, {
+        choice: { kind: "zulu" },
+        value: "2026-10-27T23:00:00Z",
+      });
+      const box = screen.getByLabelText("Start");
+      await expect.element(box).toHaveValue("2026-10-27T23:00");
+      await box.fill("2026-10-28T01:30");
+      await expect
+        .element(screen.getByTestId("bound"))
+        .toHaveTextContent("2026-10-28T01:30:00.000Z");
+    });
+
+    test("following the device, it is the device's zone", async () => {
+      const screen = await renderIn("light", EventStartField, {
+        choice: { kind: "device", zone: "America/Chicago" },
+        value: "2026-10-27T23:00:00Z",
+      });
+      await expect
+        .element(screen.getByLabelText("Start"))
+        .toHaveValue("2026-10-27T19:00");
+    });
+  });
+
   describe("on the server", () => {
     // The server can't know the member's zone, so it leaves the box and
     // read-out empty rather than show Zulu as local; the form still sends

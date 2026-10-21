@@ -1,6 +1,5 @@
 <script lang="ts">
   import { DEV } from "esm-env";
-  import { onMount } from "svelte";
   import type { HTMLAttributes } from "svelte/elements";
   import {
     isValid,
@@ -8,7 +7,7 @@
     type TimeShown,
     type TimeZoneShown,
   } from "./format.js";
-  import { getTimeZone } from "../timeZone/timeZoneContext.svelte.js";
+  import { memberZone } from "../timeZone/memberZone.svelte.js";
   import { now } from "./now.svelte.js";
 
   type When = Date | string | number;
@@ -36,15 +35,9 @@
   // The member's saved zone, from the root layout's setTimeZone. With none,
   // the server can't know their zone, so it draws Zulu, and the browser
   // switches to the device's zone once mounted.
-  const timeZone = getTimeZone();
-  let mounted = $state(false);
-  onMount(() => {
-    timeZone.mount();
-    mounted = true;
-  });
-  const memberZone = $derived(timeZone.zone(mounted));
+  const member = memberZone();
   // Chosen Zulu: every time in Zulu, alone.
-  const shownZone = $derived(timeZone.zulu ? "zulu" : zone);
+  const shownZone = $derived(member.zulu ? "zulu" : zone);
 
   const start = $derived(new Date(value));
   const finish = $derived(end === undefined ? undefined : new Date(end));
@@ -63,7 +56,7 @@
       end: finish,
       show,
       zone: shownZone,
-      memberZone,
+      memberZone: member.zone,
       now,
     }),
   );

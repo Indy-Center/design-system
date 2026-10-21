@@ -57,8 +57,11 @@ Local: Tue 27 Oct, 7:00 PM EDT    Zulu: Tue 27 Oct, 2300Z
 ## What it shows
 
 - The box is the browser's own `datetime-local` picker, in the member's
-  zone. The browser decides how it writes the date (`10/27/2026, 07:00
-PM` in US English).
+  zone: the one `Time` shows, so the box and its "Local:" read-out
+  agree. That is the time zone they saved (`setTimeZone`, see the time
+  zone's page), else the device's; Zulu when they chose Zulu. The
+  browser decides how it writes the date (`10/27/2026, 07:00 PM` in US
+  English).
 - While it's empty, the read-out names the member's zone as people say
   it: "In your time zone, Eastern Daylight Time." Where English has no
   name for a zone, only an offset, it gives the zone's ID instead
@@ -69,17 +72,18 @@ PM` in US English).
   `Zulu: Wed 28 Oct, 0100Z`). Within the coming week, the days are
   "Today", "Tomorrow" or the weekday, as `Time` writes them.
 - A time the clocks skip (2:30 AM as summer time starts) is moved on by
-  the browser; the box and read-out show where it landed (3:30 AM). A
+  the gap, as browsers do; the box and read-out show where it landed
+  (3:30 AM). A
   time the clocks pass twice (1:30 AM as summer time ends) is the first
   of the two, in summer time; the read-out's Zulu shows which.
 - It works to the minute: seconds aren't kept.
 
 ## Server and browser
 
-The server can't know the member's zone, so it draws the box and the
-read-out empty rather than show Zulu as local time. The hidden input
+The server draws the box and the read-out empty, as it can't know the
+device's zone, rather than show Zulu as local time. The hidden input
 carries the value from the start. Once the page loads, the box fills in
-the member's local time. Without JavaScript the box stays empty and an
+the member's zone, the same one every `Time` on the page uses. Without JavaScript the box stays empty and an
 edit isn't sent: the form sends the value it was drawn with.
 
 ## Looks

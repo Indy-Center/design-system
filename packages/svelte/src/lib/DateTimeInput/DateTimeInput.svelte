@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { onMount } from "svelte";
   import type { HTMLInputAttributes } from "svelte/elements";
   import { textControlClasses } from "../formControl/formControl.js";
   import Time from "../Time/Time.svelte";
+  import { memberZone } from "../timeZone/memberZone.svelte.js";
   import { fromLocal, toLocal, toUtc, zoneName } from "./local.js";
 
   type Props = Omit<
@@ -40,16 +40,17 @@
     [readOutId, callerDescribedBy].filter(Boolean).join(" "),
   );
 
-  // The box holds the member's local time, which only the browser knows;
-  // the server leaves it and the read-out empty.
-  let memberZone = $state<string>();
-  onMount(() => {
-    memberZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-  });
+  // The box holds the time in the member's zone, the one `Time` shows in
+  // the read-out: the saved zone, the device's, or Zulu's when they chose
+  // Zulu. The server leaves the box and the read-out empty.
+  const member = memberZone();
+  const boxZone = $derived(
+    member.mounted ? (member.zulu ? "UTC" : member.zone) : undefined,
+  );
 
-  // An instant as the box's local text, once the zone is known.
+  // An instant as the box's text, once the zone is known.
   const inZone = (iso: string | undefined) =>
-    memberZone && iso ? toLocal(iso) : "";
+    boxZone && iso ? toLocal(iso, boxZone) : "";
   const local = $derived(inZone(value));
 </script>
 
@@ -71,7 +72,8 @@
     min={inZone(min) || undefined}
     max={inZone(max) || undefined}
     oninput={(event) => {
-      value = fromLocal(event.currentTarget.value);
+      // Typing comes after mount, so the zone is known by then.
+      value = boxZone && fromLocal(event.currentTarget.value, boxZone);
       oninput?.(event);
     }}
     aria-describedby={describedBy}
@@ -84,8 +86,8 @@
     {#if local && value}
       <span>Local: <Time {value} show="datetime" /></span>
       <span>Zulu: <Time {value} show="datetime" zone="zulu" /></span>
-    {:else if memberZone}
-      In your time zone, {zoneName(memberZone)}.
+    {:else if boxZone}
+      In your time zone, {zoneName(boxZone)}.
     {/if}
   </p>
 </div>

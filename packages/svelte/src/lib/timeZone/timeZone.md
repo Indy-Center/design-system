@@ -80,7 +80,10 @@ ticket `time-zone/01`), such as a `fetch` to a form action.
   the device's zone. (The colour scheme's rule is the opposite for now,
   to be revisited when identity stores it.)
 - **A choice applies at once**: every `Time`, `TimeZoneSetting` and
-  `TimeZoneLine` on the page redraws.
+  `TimeZoneLine` on the page redraws, and every `DateTimeInput`'s box
+  moves to the new zone. `Time` and `DateTimeInput` read the zone
+  through one helper (`memberZone`), so a member types in the zone the
+  page shows.
 - **Without `setTimeZone`**, nothing is saved as far as the server knows:
   times follow the device, and the controls still write the cookie.
 
