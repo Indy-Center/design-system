@@ -111,7 +111,11 @@ export {
   type PositionType,
 } from "./aviation/callsign.js";
 export { formatDuration, type DurationStyle } from "./aviation/duration.js";
-export { formatFrequency, spokenFrequency } from "./aviation/frequency.js";
+export {
+  formatFrequency,
+  spokenFrequency,
+  type FrequencyOptions,
+} from "./aviation/frequency.js";
 export {
   findPilotRating,
   findRating,

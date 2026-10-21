@@ -30,15 +30,12 @@
         ? resolvePosition(callsign, positions())?.position.frequency
         : undefined,
   );
-  // formatFrequency gives three decimals; the third is cut, not rounded.
-  const shown = (hz: number) =>
-    decimals === 3 ? formatFrequency(hz) : formatFrequency(hz).slice(0, -1);
 </script>
 
 {#if hz !== undefined}
   <span {...rest} class={["font-mono tabular-nums", className]}
-    ><span aria-hidden="true">{shown(hz)}</span><span class="sr-only"
-      >{spokenFrequency(hz)}</span
+    ><span aria-hidden="true">{formatFrequency(hz, { decimals })}</span><span
+      class="sr-only">{spokenFrequency(hz)}</span
     ></span
   >
 {/if}

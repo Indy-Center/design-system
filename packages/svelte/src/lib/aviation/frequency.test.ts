@@ -3,13 +3,36 @@ import { formatFrequency, spokenFrequency } from "./frequency.ts";
 
 describe("formatFrequency", () => {
   test.each([
+    [128_225_000, "128.22"],
+    [121_500_000, "121.50"],
+    [118_050_000, "118.05"],
+    [135_775_000, "135.77"],
+    [132_175_000, "132.17"],
+  ])("%d Hz is %s: two decimals, the third cut", (hz, text) => {
+    expect(formatFrequency(hz)).toBe(text);
+  });
+
+  test.each([
     [128_225_000, "128.225"],
     [121_500_000, "121.500"],
     [118_050_000, "118.050"],
-    [135_775_000, "135.775"],
-  ])("%d Hz is %s", (hz, text) => {
-    expect(formatFrequency(hz)).toBe(text);
+  ])("with decimals 3, %d Hz is %s", (hz, text) => {
+    expect(formatFrequency(hz, { decimals: 3 })).toBe(text);
   });
+
+  // A third decimal only exists for an 8.33 kHz channel: anything finer
+  // than a whole kHz is cut, never rounded into the digits shown.
+  test.each([
+    [128_229_900, 2, "128.22"],
+    [128_229_900, 3, "128.229"],
+    [121_899_999, 2, "121.89"],
+    [121_899_999, 3, "121.899"],
+  ] as const)(
+    "%d Hz with decimals %d is %s, not rounded",
+    (hz, decimals, text) => {
+      expect(formatFrequency(hz, { decimals })).toBe(text);
+    },
+  );
 });
 
 describe("spokenFrequency, per FAA JO 7110.65 2-4-17", () => {

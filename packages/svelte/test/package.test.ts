@@ -74,6 +74,7 @@ describe("the packed package", () => {
       "findRating",
       "formatDuration",
       "formatFrequency",
+      "FrequencyOptions",
       "isPosition",
       "parseCallsign",
       "PILOT_RATINGS",

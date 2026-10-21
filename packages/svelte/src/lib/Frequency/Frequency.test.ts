@@ -24,6 +24,11 @@ describe("Frequency", () => {
     await expect.element(screen.getByText("128.22")).toBeVisible();
   });
 
+  test("cuts a value finer than a kHz, never rounding it up", async () => {
+    const screen = await renderIn("light", Frequency, { value: "128.2299" });
+    await expect.element(screen.getByText("128.22")).toBeVisible();
+  });
+
   test.each([
     [128225000, "128.225"],
     [121900000, "121.900"],
