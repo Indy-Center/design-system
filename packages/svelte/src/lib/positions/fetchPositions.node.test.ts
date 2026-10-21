@@ -254,7 +254,10 @@ describe("createPositionsFetcher", () => {
       });
 
       await fetchPositions("ZID");
-      now += 11_000;
+      now += 9_000;
+      await fetchPositions("ZID");
+      expect(urls).toHaveLength(1);
+      now += 2_000;
       expect(await fetchPositions("ZID")).toHaveLength(3);
       expect(urls).toHaveLength(2);
     });

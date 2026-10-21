@@ -1,3 +1,4 @@
+import { tick } from "svelte";
 import { describe, expect, test } from "vitest";
 import { userEvent } from "vitest/browser";
 import { role } from "../../../test/roles.ts";
@@ -122,11 +123,11 @@ describe("Radio", () => {
   // Only a sibling in its own group clears its copy: a radio of another
   // name, or of the same name in another form, is another group.
   test.each([
-    ["another name", "other", true],
-    ["the same name in another form", "position", false],
+    ["another name", "other", false],
+    ["the same name in another form", "position", true],
   ])(
     "unbound, stays checked when a radio of %s is chosen",
-    async (_, name, sameForm) => {
+    async (_, name, inOtherForm) => {
       const screen = await renderIn("light", Radio, {
         label: "Ground",
         name: "position",
@@ -137,12 +138,12 @@ describe("Radio", () => {
       other.type = "radio";
       other.name = name;
       other.setAttribute("aria-label", "Other");
-      const holder = sameForm ? other : document.createElement("form");
-      if (!sameForm) holder.append(other);
+      const holder = inOtherForm ? document.createElement("form") : other;
+      if (inOtherForm) holder.append(other);
       document.body.append(holder);
       try {
         other.click();
-        await new Promise((resolve) => setTimeout(resolve));
+        await tick();
         await expect
           .element(screen.getByRole("radio", { name: "Ground" }))
           .toBeChecked();
