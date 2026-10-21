@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { userEvent } from "vitest/browser";
-import { SCHEMES } from "../../../test/contrast.ts";
+import { expectReadable, SCHEMES } from "../../../test/contrast.ts";
 import { role } from "../../../test/roles.ts";
 import { renderIn } from "../../../test/schemes.ts";
 import SearchInput from "./SearchInput.svelte";
@@ -56,6 +56,7 @@ describe("SearchInput", () => {
     await expect.element(box).toHaveValue("1234567");
   });
 
+  // Escape clearing it is Chromium's, which the tests run in.
   test("is reached by Tab, and Escape clears it", async () => {
     const screen = await renderIn("light", SearchInput, { label: "Search" });
     await userEvent.tab();
@@ -81,9 +82,11 @@ describe("SearchInput", () => {
   // `muted-foreground` for the icon.
   test.each(SCHEMES)("colours its label and icon in %s", async (scheme) => {
     const screen = await renderIn(scheme, SearchInput, { label: "Search" });
+    const label = screen.getByText("Search");
     await expect
-      .element(screen.getByText("Search"))
+      .element(label)
       .toHaveStyle({ color: role("foreground-soft", scheme) });
+    expectReadable(label.element(), scheme);
     await expect
       .element(screen.container.querySelector("svg")!)
       .toHaveStyle({ color: role("muted-foreground", scheme) });

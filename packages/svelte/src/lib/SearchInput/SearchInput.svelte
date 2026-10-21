@@ -33,7 +33,6 @@
     >{label}</label
   >
   <div class="relative">
-    <!-- After the box, so a parent's `space-*` and the label's gap ignore it. -->
     <input
       {...rest}
       id={inputId}

@@ -88,12 +88,14 @@ for the sort. On a phone the parts wrap onto their own lines.
 - The label is `Field`'s: `foreground-soft`, small and medium weight.
 - A magnifying glass in `muted-foreground` at the box's start; the text
   begins after it.
-- The browser's own clear button stays at the end of the box.
+- Chrome, Edge and Safari show their own clear button at the end of the
+  box once there is text; Firefox may not.
 
 ## Accessibility
 
 - It renders a `<label>` and a native `<input type="search">`, so it is
-  a searchbox named by the label. Escape clears it, as the browser does.
+  a searchbox named by the label. Chromium browsers (Chrome, Edge) clear
+  it on Escape; don't count on that in the others.
 - The icon is hidden from screen readers; the label does the naming.
 - Filtering as the member types changes the list without moving focus.
   Say how many results there are in a `role="status"` region near the
