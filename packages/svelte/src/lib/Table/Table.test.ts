@@ -1,6 +1,8 @@
 import { describe, expect, test } from "vitest";
 import { userEvent } from "vitest/browser";
 import ControllerTable from "../../../test/ControllerTable.svelte";
+import { SCHEMES } from "../../../test/contrast.ts";
+import { role } from "../../../test/roles.ts";
 import { renderIn } from "../../../test/schemes.ts";
 
 describe("Table", () => {
@@ -68,59 +70,38 @@ describe("Table", () => {
   });
 
   // The guide's roles: `card` the body, `muted` the head, `foreground` the
-  // headers, `foreground-soft` the cells, `border` the lines. A dark
-  // header takes the dark scheme's values.
-  const dark = {
-    card: "rgb(30, 41, 59)",
-    muted: "rgb(51, 65, 85)",
-    foreground: "rgb(255, 255, 255)",
-    soft: "rgb(209, 213, 219)",
-    border: "rgb(51, 65, 85)",
-  };
-  test.each([
-    {
-      scheme: "light",
-      card: "rgb(255, 255, 255)",
-      muted: "rgb(226, 232, 240)",
-      foreground: "rgb(15, 23, 42)",
-      soft: "rgb(51, 65, 85)",
-      border: "rgb(226, 232, 240)",
-    },
-    { scheme: "dark", ...dark },
-    { scheme: "dark-header", ...dark },
-  ] as const)(
-    "takes the roles' colours in $scheme",
-    async ({ scheme, card, muted, foreground, soft, border }) => {
-      const screen = await renderIn(scheme, ControllerTable, {});
-      await expect
-        .element(screen.getByRole("table"))
-        .toHaveStyle({ backgroundColor: card });
-      await expect
-        .element(screen.getByRole("region"))
-        .toHaveStyle({ borderTopColor: border });
-      const header = screen.getByRole("columnheader", { name: "Callsign" });
-      await expect.element(header).toHaveStyle({ color: foreground });
-      const head = header.element().closest("thead")!;
-      await expect.element(head).toHaveStyle({ backgroundColor: muted });
-      await expect
-        .element(screen.getByRole("rowheader"))
-        .toHaveStyle({ color: foreground });
-      const cell = screen.getByRole("cell", { name: "128.225" });
-      await expect.element(cell).toHaveStyle({ color: soft });
-      await expect
-        .element(cell.element().closest("tr")!)
-        .toHaveStyle({ borderTopColor: border });
-    },
-  );
+  // headers, `foreground-soft` the cells, `border` the lines.
+  test.each(SCHEMES)("takes the roles' colours in %s", async (scheme) => {
+    const card = role("card", scheme);
+    const muted = role("muted", scheme);
+    const foreground = role("foreground", scheme);
+    const soft = role("foreground-soft", scheme);
+    const border = role("border", scheme);
+    const screen = await renderIn(scheme, ControllerTable, {});
+    await expect
+      .element(screen.getByRole("table"))
+      .toHaveStyle({ backgroundColor: card });
+    await expect
+      .element(screen.getByRole("region"))
+      .toHaveStyle({ borderTopColor: border });
+    const header = screen.getByRole("columnheader", { name: "Callsign" });
+    await expect.element(header).toHaveStyle({ color: foreground });
+    const head = header.element().closest("thead")!;
+    await expect.element(head).toHaveStyle({ backgroundColor: muted });
+    await expect
+      .element(screen.getByRole("rowheader"))
+      .toHaveStyle({ color: foreground });
+    const cell = screen.getByRole("cell", { name: "128.225" });
+    await expect.element(cell).toHaveStyle({ color: soft });
+    await expect
+      .element(cell.element().closest("tr")!)
+      .toHaveStyle({ borderTopColor: border });
+  });
 
-  // The guide's `ring` role: #0284C7 light, #0EA5E9 dark.
-  test.each([
-    ["light", "rgb(2, 132, 199)"],
-    ["dark", "rgb(14, 165, 233)"],
-    ["dark-header", "rgb(14, 165, 233)"],
-  ] as const)(
+  // The `ring` role.
+  test.each(SCHEMES)(
     "shows a ring outline on its region when tabbed to in %s",
-    async (scheme, colour) => {
+    async (scheme) => {
       const screen = await renderIn(scheme, ControllerTable, {});
       screen.container.style.width = "200px";
       const region = screen.getByRole("region");
@@ -128,7 +109,7 @@ describe("Table", () => {
       await userEvent.tab();
       await expect.element(region).toHaveStyle({
         outlineStyle: "solid",
-        outlineColor: colour,
+        outlineColor: role("ring", scheme),
       });
     },
   );

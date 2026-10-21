@@ -1,14 +1,15 @@
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { commands } from "vitest/browser";
 import { forgetColorScheme } from "../../playground/forgetColorScheme.ts";
+import { role } from "../../../test/roles.ts";
 import { htmlTheme, serve } from "../../../test/serve.ts";
 import { COOKIE_NAME } from "./colorScheme.ts";
 import { colorSchemeHandle } from "./colorSchemeHandle.ts";
 import { saveColorScheme } from "./saveColorScheme.ts";
 
-// The guide's Roles table: background, light and dark.
-const lightBackground = "rgb(241, 245, 249)"; // #F1F5F9
-const darkBackground = "rgb(17, 24, 39)"; // #111827
+// The `background` role, light and dark.
+const lightBackground = role("background", "light");
+const darkBackground = role("background", "dark");
 
 const added: HTMLElement[] = [];
 
