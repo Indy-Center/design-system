@@ -56,6 +56,15 @@
   let title = $derived(
     notFound ? (missing ?? "Radar contact lost") : "Something went wrong",
   );
+  // The error's message as a sentence: SvelteKit's ("Internal Error") has
+  // no full stop.
+  let reason = $derived(
+    message
+      ? /[.!?]$/.test(message)
+        ? message
+        : `${message}.`
+      : "An unexpected error occurred.",
+  );
 </script>
 
 <div
@@ -84,7 +93,7 @@
       We couldn't find the page you were looking for. It may have moved, or the
       link might be wrong.
     {:else}
-      {message ?? "An unexpected error occurred."} Please try again in a moment.
+      {reason} Please try again in a moment.
     {/if}
   </p>
 

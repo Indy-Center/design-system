@@ -44,7 +44,20 @@ describe("ErrorPage", () => {
       .toHaveTextContent("Something went wrong");
     await expect
       .element(screen.getByText(/Internal Error/))
-      .toHaveTextContent("Internal Error Please try again in a moment.");
+      .toHaveTextContent("Internal Error. Please try again in a moment.");
+  });
+
+  // SvelteKit's messages have no full stop; a load's own may.
+  test("ends the message with one full stop", async () => {
+    const screen = await renderIn("light", ErrorPage, {
+      status: 503,
+      message: "The roster is down for maintenance.",
+    });
+    await expect
+      .element(screen.getByText(/maintenance/))
+      .toHaveTextContent(
+        "The roster is down for maintenance. Please try again in a moment.",
+      );
   });
 
   test("shows the status above the title", async () => {
