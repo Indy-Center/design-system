@@ -59,10 +59,13 @@
   let foundFor = $state<string | null>(null);
   let searching = $state(false);
   let failed = $state(false);
-  // The arrow that opened the list before the search's answer came: 1 for
-  // Down, -1 for Up, 0 for none. Once the answer is in, it lands on the
-  // first or last option.
-  let opening: 1 | -1 | 0 = 0;
+  // The arrow that opened the list before the search's answer came (1 for
+  // Down, -1 for Up), if any. Once the answer is in, it enters the list.
+  let opening: 1 | -1 | null = null;
+
+  /** Where an arrow enters a list of `count`: Down the first, Up the last. */
+  const entry = (step: 1 | -1, count: number) =>
+    count === 0 ? -1 : step === 1 ? 0 : count - 1;
 
   // The list shown answers older text than the box's, while a search for
   // the new text is under way. Its options no longer match, so the arrows
@@ -97,10 +100,8 @@
       foundFor = text;
       failed = error;
       searching = false;
-      const count = answer.length;
-      active =
-        count === 0 || opening === 0 ? -1 : opening === 1 ? 0 : count - 1;
-      opening = 0;
+      active = opening === null ? -1 : entry(opening, answer.length);
+      opening = null;
     }
     return () => {
       current = false;
@@ -197,7 +198,7 @@
     pick(null);
     pickedMessage = "";
     active = -1;
-    opening = 0;
+    opening = null;
     open = true;
   }
 
@@ -221,7 +222,7 @@
     }
     if (count === 0) return;
     if (!wasOpen || active < 0) {
-      active = step === 1 ? 0 : count - 1;
+      active = entry(step, count);
     } else {
       active = (active + step + count) % count;
     }
@@ -230,7 +231,7 @@
   function close() {
     open = false;
     active = -1;
-    opening = 0;
+    opening = null;
   }
 
   /**
