@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
 import { userEvent } from "vitest/browser";
 import { renderIn } from "../../../test/schemes.ts";
+import { text } from "../../../test/snippets.ts";
 import Checkbox from "./Checkbox.svelte";
 
 describe("Checkbox", () => {
@@ -70,6 +71,20 @@ describe("Checkbox", () => {
     expect(document.getElementById(ids[1])).toHaveTextContent(
       "Tick this to send the form.",
     );
+  });
+
+  test("is named by its label alone and described by its children", async () => {
+    const screen = await renderIn("light", Checkbox, {
+      label: "Visiting controller",
+      error: "Untick this.",
+      children: text("Home facility elsewhere"),
+    });
+    const box = screen.getByRole("checkbox", { name: "Visiting controller" });
+    await expect
+      .element(box)
+      .toHaveAccessibleDescription("Home facility elsewhere Untick this.");
+    await screen.getByText("Home facility elsewhere").click();
+    await expect.element(box).toBeChecked();
   });
 
   test("is neither invalid nor described with no error", async () => {

@@ -44,19 +44,22 @@ description: A native checkbox with its label beside it, ticked in the primary r
 
 ## Props
 
-| Prop      | Type                 | Notes                                                                                    |
-| --------- | -------------------- | ---------------------------------------------------------------------------------------- |
-| `label`   | `string`             | Required. The text beside the box, which names it.                                       |
-| `checked` | `boolean`            | Bindable: `bind:checked`. `false` when left out.                                         |
-| `error`   | `string`             | For a box on its own: shown under the label, and marks the box invalid.                  |
-| `class`   | `string`             | Added to its outer element after its own classes. Layout only.                           |
-| others    | `<input>` attributes | Passed to the `<input>`: `name`, `value`, `disabled`, `required`, `aria-*` and the rest. |
+| Prop       | Type                 | Notes                                                                                    |
+| ---------- | -------------------- | ---------------------------------------------------------------------------------------- |
+| `label`    | `string`             | Required. The text beside the box, which names it.                                       |
+| `checked`  | `boolean`            | Bindable: `bind:checked`. `false` when left out.                                         |
+| `error`    | `string`             | For a box on its own: shown under the label, and marks the box invalid.                  |
+| `children` | `Snippet`            | More about the option, small, under the label. Read as its description, not its name.    |
+| `class`    | `string`             | Added to its outer element after its own classes. Layout only.                           |
+| others     | `<input>` attributes | Passed to the `<input>`: `name`, `value`, `disabled`, `required`, `aria-*` and the rest. |
 
 ## Looks
 
 - The browser's own box, ticked in `primary` (`accent-color`), in each
   scheme.
-- The label in `foreground-soft`, at body size, beside the box.
+- The label in `foreground-soft`, at body size, beside the box. Any
+  children sit under it, small, in `muted-foreground`, with the box beside
+  the label's first line.
 - A `ring` outline round the box when focused.
 - The row is at least 44px tall, and all of it ticks the box. Disabled,
   the row dims.
@@ -69,5 +72,6 @@ description: A native checkbox with its label beside it, ticked in the primary r
   the label names it, a screen reader says whether it's ticked, and Space
   toggles it.
 - With an `error`, or inside a `Fieldset` with one, the box takes
-  `aria-invalid`. Its own error is linked by `aria-describedby`, after
-  any ids you pass.
+  `aria-invalid`. Its children and its own error are linked by
+  `aria-describedby`, after any ids you pass; with children, the label
+  alone names it (`aria-labelledby`).

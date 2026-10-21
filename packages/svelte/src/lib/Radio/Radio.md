@@ -45,20 +45,23 @@ description: A native radio button with its label beside it, chosen in the prima
 
 ## Props
 
-| Prop    | Type                 | Notes                                                                                        |
-| ------- | -------------------- | -------------------------------------------------------------------------------------------- |
-| `label` | `string`             | Required. The text beside the circle, which names it.                                        |
-| `name`  | `string`             | Required. The group's name, the same on every radio in it.                                   |
-| `value` | `string \| number`   | Required. This radio's value. A number stays a number in `group`; the form sends it as text. |
-| `group` | same as `value`      | Bindable: `bind:group`. The chosen radio's value; this one is checked when it matches.       |
-| `class` | `string`             | Added to the row (the `<label>`) after its own classes. Layout only.                         |
-| others  | `<input>` attributes | Passed to the `<input>`: `disabled`, `required`, `onchange`, `aria-*` and the rest.          |
+| Prop       | Type                 | Notes                                                                                        |
+| ---------- | -------------------- | -------------------------------------------------------------------------------------------- |
+| `label`    | `string`             | Required. The text beside the circle, which names it.                                        |
+| `name`     | `string`             | Required. The group's name, the same on every radio in it.                                   |
+| `value`    | `string \| number`   | Required. This radio's value. A number stays a number in `group`; the form sends it as text. |
+| `group`    | same as `value`      | Bindable: `bind:group`. The chosen radio's value; this one is checked when it matches.       |
+| `children` | `Snippet`            | More about the option, small, under the label. Read as its description, not its name.        |
+| `class`    | `string`             | Added to the row (the `<label>`) after its own classes. Layout only.                         |
+| others     | `<input>` attributes | Passed to the `<input>`: `disabled`, `required`, `onchange`, `aria-*` and the rest.          |
 
 ## Looks
 
 - The browser's own circle, filled in `primary` (`accent-color`), in each
   scheme.
-- The label in `foreground-soft`, at body size, beside the circle.
+- The label in `foreground-soft`, at body size, beside the circle. Any
+  children sit under it, small, in `muted-foreground`, with the circle
+  beside the label's first line.
 - A `ring` outline round the circle when focused.
 - The row is at least 44px tall, and all of it chooses the radio.
   Disabled, the row dims.
@@ -66,7 +69,9 @@ description: A native radio button with its label beside it, chosen in the prima
 ## Accessibility
 
 - It renders a native `<input type="radio">` inside its `<label>`, so the
-  label names it and a screen reader says whether it's chosen.
+  label names it and a screen reader says whether it's chosen. With
+  children, the label alone names it (`aria-labelledby`) and the children
+  describe it (`aria-describedby`, after any ids you pass).
 - The browser gives the group its keyboard: Tab enters at the chosen
   radio (the first, when none is) and leaves after the group; the arrow
   keys move and choose; Space chooses the focused radio.
