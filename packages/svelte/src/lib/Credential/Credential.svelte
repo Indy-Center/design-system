@@ -62,7 +62,7 @@
     >{/if}{/snippet}
 
 {#if name}
-  <AbbrTooltip {code} {name} {focusable} boxClass={className}>
+  <AbbrTooltip {code} {name} {focusable} class={className}>
     {#snippet frame(abbr, ring)}
       <Chip {...rest} variant={kind} class={ring}
         >{@render abbr()}{@render expiryText()}</Chip

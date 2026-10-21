@@ -27,8 +27,7 @@
     code={airport.code}
     name={airport.name}
     {focusable}
-    boxClass={className}
-    class="font-mono"
+    class={className}
   />
 {:else}
   <span {...rest} class={className}

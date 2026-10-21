@@ -37,7 +37,7 @@
     code={found.short}
     name={found.long}
     {focusable}
-    boxClass={className}
+    class={className}
   >
     {#snippet frame(abbr, ring)}
       <Chip {...rest} variant="muted" class={ring}>{@render abbr()}</Chip>
