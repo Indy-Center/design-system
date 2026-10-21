@@ -4,6 +4,8 @@ import { SCHEMES } from "../../../test/contrast.ts";
 import PositionRequest from "../../../test/PositionRequest.svelte";
 import { role } from "../../../test/roles.ts";
 import { renderIn, type Scheme } from "../../../test/schemes.ts";
+import { text } from "../../../test/snippets.ts";
+import Modal from "./Modal.svelte";
 
 const dialog = () => page.getByRole("dialog", { name: "Request position" });
 
@@ -44,6 +46,24 @@ describe("Modal", () => {
     await expect.element(trigger).toHaveFocus();
   });
 
+  test("returns focus when the page removes it while open", async () => {
+    const trigger = document.createElement("button");
+    document.body.append(trigger);
+    trigger.focus();
+    try {
+      const screen = await renderIn("light", Modal, {
+        open: true,
+        title: "Request position",
+        children: text("Ask for a position."),
+      });
+      await expect.element(dialog()).toBeVisible();
+      screen.unmount();
+      await expect.element(trigger).toHaveFocus();
+    } finally {
+      trigger.remove();
+    }
+  });
+
   test("Escape closes it and tells the page", async () => {
     const onclose = vi.fn();
     await openIn("light", { onclose });
@@ -70,14 +90,26 @@ describe("Modal", () => {
     await expect.element(dialog()).not.toBeInTheDocument();
   });
 
-  test("a press that starts inside and ends outside doesn't close it", async () => {
+  // A press and release in different places click their shared parent, the
+  // dialog; only one wholly outside closes it.
+  test.each([
+    ["starts inside and ends outside", { x: 40, y: 40 }, { x: 4, y: -20 }],
+    ["starts outside and ends inside", { x: 4, y: -20 }, { x: 40, y: 40 }],
+    ["is on its border", { x: 0, y: 40 }, { x: 0, y: 40 }],
+  ])("a press that %s doesn't close it", async (_, down, up) => {
     await openIn("light");
-    const field = dialog().getByRole("textbox").element();
-    field.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true }));
-    // The click lands on the dialog, the press's and release's shared parent.
+    const box = dialog().element().getBoundingClientRect();
+    const at = ({ x, y }: { x: number; y: number }) => ({
+      bubbles: true,
+      clientX: box.left + x,
+      clientY: box.top + y,
+    });
     dialog()
       .element()
-      .dispatchEvent(new MouseEvent("click", { bubbles: true }));
+      .dispatchEvent(new PointerEvent("pointerdown", at(down)));
+    dialog()
+      .element()
+      .dispatchEvent(new MouseEvent("click", at(up)));
     await expect.element(dialog()).toBeVisible();
   });
 

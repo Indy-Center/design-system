@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { Snippet } from "svelte";
+  import { onDestroy, type Snippet } from "svelte";
   import type { HTMLDialogAttributes } from "svelte/elements";
   import CloseButton from "../CloseButton/CloseButton.svelte";
   import Heading from "../Heading/Heading.svelte";
@@ -55,31 +55,49 @@
     }
   });
 
+  function giveFocusBack() {
+    if (returnTo?.isConnected) returnTo.focus();
+    returnTo = null;
+  }
+
   // Fires however it closes: Escape, the close button, a click outside,
   // or `open` set to false.
   function handleClose() {
     open = false;
-    if (returnTo?.isConnected) returnTo.focus();
-    returnTo = null;
+    giveFocusBack();
     onclose?.();
   }
 
-  // The panel fills the dialog, so a press on the dialog itself is on the
-  // backdrop around it. (`closedby="any"` would do this, but Safari
-  // doesn't have it yet.)
+  // Taken off the page while open (an `{#if}`, a navigation), it gets no
+  // close event, so focus is given back here.
+  onDestroy(giveFocusBack);
+
+  // The backdrop belongs to the dialog, so a press on it targets the
+  // dialog: it's outside when it's outside the dialog's box, border
+  // included. (`closedby="any"` would do this, but Safari doesn't have it
+  // yet.)
+  function outside(event: MouseEvent) {
+    if (event.target !== dialog) return false;
+    const box = dialog.getBoundingClientRect();
+    const { clientX: x, clientY: y } = event;
+    return x < box.left || x > box.right || y < box.top || y > box.bottom;
+  }
+
   // The caller's own handlers run first.
   function handlePointerDown(
     event: PointerEvent & { currentTarget: EventTarget & HTMLDialogElement },
   ) {
     onpointerdown?.(event);
-    pressOnBackdrop = event.target === dialog;
+    pressOnBackdrop = outside(event);
   }
 
+  // Closes only when the press and release were both outside, so a drag
+  // into or out of it (selecting text) doesn't.
   function handleClick(
     event: MouseEvent & { currentTarget: EventTarget & HTMLDialogElement },
   ) {
     onclick?.(event);
-    if (pressOnBackdrop && event.target === dialog) dialog.close();
+    if (pressOnBackdrop && outside(event)) dialog?.close();
     pressOnBackdrop = false;
   }
 </script>
