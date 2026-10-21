@@ -53,11 +53,17 @@
   // "Ann Archer, selected": the last pick, said once the list closes.
   let pickedMessage = $state("");
 
-  // What a search function last found, whether it is still looking, and
-  // whether its last search failed.
+  // What a search function last found, the text it found it for, whether
+  // it is still looking, and whether its last search failed.
   let found = $state<T[]>([]);
+  let foundFor = $state<string | null>(null);
   let searching = $state(false);
   let failed = $state(false);
+
+  // The list shown answers older text than the box's, while a search for
+  // the new text is under way. Its options no longer match, so the arrows
+  // don't move into it, and Enter, with no active option, can't pick one.
+  const stale = $derived(!Array.isArray(options) && foundFor !== query);
 
   const results = $derived.by(() => {
     if (!Array.isArray(options)) return found;
@@ -71,8 +77,9 @@
     let current = true;
     searching = true;
     const search = options;
+    const text = query;
     // A function that throws fails the same way as one that rejects.
-    new Promise<T[]>((resolve) => resolve(search(query))).then(
+    new Promise<T[]>((resolve) => resolve(search(text))).then(
       (answer) => settle(answer, false),
       () => settle([], true),
     );
@@ -80,6 +87,7 @@
       // A newer text has been typed since; its answer is the one to show.
       if (!current) return;
       found = answer;
+      foundFor = text;
       failed = error;
       searching = false;
       active = -1;
@@ -159,7 +167,7 @@
     const count = results.length;
     const wasOpen = open;
     show();
-    if (count === 0) return;
+    if (count === 0 || stale) return;
     if (!wasOpen || active < 0) {
       active = step === 1 ? 0 : count - 1;
     } else {

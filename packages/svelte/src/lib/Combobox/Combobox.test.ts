@@ -245,6 +245,31 @@ describe("Combobox", () => {
         .not.toBeInTheDocument();
     });
 
+    test("while searching, the arrows and Enter don't reach the last list", async () => {
+      // "Ann" is slow to answer, so the list still shows "Dan"'s.
+      const slowAnn = (query: string) =>
+        new Promise<typeof roster>((resolve) =>
+          setTimeout(
+            () => resolve(roster.filter((c) => c.name.includes(query))),
+            query === "Ann" ? 300 : 20,
+          ),
+        );
+      const screen = await renderIn("light", Picker, { options: slowAnn });
+      const input = screen.getByRole("combobox");
+      await input.fill("Dan");
+      await expect
+        .element(screen.getByRole("option", { name: "Dan Andrews" }))
+        .toBeVisible();
+      await input.fill("Ann");
+      await userEvent.keyboard("{ArrowDown}");
+      expect(input).not.toHaveAttribute("aria-activedescendant");
+      await userEvent.keyboard("{Enter}");
+      await expect.element(input).toHaveValue("Ann");
+      await expect
+        .element(screen.getByTestId("picked"))
+        .toHaveTextContent("none");
+    });
+
     test("ignores an answer that comes back after a newer one", async () => {
       const screen = await renderIn("light", Picker, { options: search });
       const input = screen.getByRole("combobox");
