@@ -1,13 +1,12 @@
 <script lang="ts">
   import { mdiAlertCircleOutline, mdiCheck, mdiContentCopy } from "@mdi/js";
-  import { tick } from "svelte";
   import type { HTMLButtonAttributes } from "svelte/elements";
   import Button from "../Button/Button.svelte";
   import Icon from "../Icon/Icon.svelte";
 
   type Props = Omit<
     HTMLButtonAttributes,
-    "children" | "onclick" | "type" | "aria-label"
+    "children" | "onclick" | "type" | "aria-label" | "aria-labelledby"
   > & {
     /** The text put on the clipboard. */
     text: string;
@@ -17,17 +16,29 @@
 
   let { text, label, class: className, ...rest }: Props = $props();
 
-  // How long the outcome shows: a moment for "Copied", longer for a
-  // failure, which the member has to act on.
-  const SHOWN_FOR = { copied: 2000, failed: 5000 };
-
+  // Each outcome's message, icon and how long it shows: a moment for
+  // "Copied", longer for a failure, which the member has to act on.
   const outcomes = {
-    copied: { message: "Copied", icon: mdiCheck },
-    failed: { message: "Couldn't copy", icon: mdiAlertCircleOutline },
+    copied: { message: "Copied", icon: mdiCheck, shownFor: 2000 },
+    failed: {
+      message: "Couldn't copy",
+      icon: mdiAlertCircleOutline,
+      shownFor: 5000,
+    },
   };
+
+  // How long the live region stays empty before a second press's message,
+  // so screen readers hear a change rather than merging the two.
+  const REFILL_AFTER = 100;
 
   let outcome = $state<keyof typeof outcomes | undefined>();
   let timer: ReturnType<typeof setTimeout> | undefined;
+  let gone = false;
+
+  function show(result: keyof typeof outcomes) {
+    outcome = result;
+    timer = setTimeout(() => (outcome = undefined), outcomes[result].shownFor);
+  }
 
   async function copy() {
     let result: keyof typeof outcomes;
@@ -38,17 +49,21 @@
     } catch {
       result = "failed";
     }
+    if (gone) return;
     clearTimeout(timer);
     // Empty the live region first, so a second press is read again.
     if (outcome) {
       outcome = undefined;
-      await tick();
+      timer = setTimeout(() => show(result), REFILL_AFTER);
+    } else {
+      show(result);
     }
-    outcome = result;
-    timer = setTimeout(() => (outcome = undefined), SHOWN_FOR[result]);
   }
 
-  $effect(() => () => clearTimeout(timer));
+  $effect(() => () => {
+    gone = true;
+    clearTimeout(timer);
+  });
 </script>
 
 <span class={["inline-flex items-center", className]}>

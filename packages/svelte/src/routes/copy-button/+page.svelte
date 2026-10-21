@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { CopyButton } from "../../lib/index.ts";
+  import { CopyButton, DescriptionList } from "../../lib/index.ts";
   import Schemes from "../../playground/Schemes.svelte";
 </script>
 
@@ -10,21 +10,27 @@
 </h1>
 
 <Schemes>
-  <dl class="grid grid-cols-[auto_1fr] items-center gap-x-4 gap-y-2">
-    <dt class="text-foreground-soft">Frequency</dt>
-    <dd class="flex items-center gap-2">
-      <span class="font-mono text-foreground">134.000</span>
-      <CopyButton text="134.000" label="frequency" />
-    </dd>
-    <dt class="text-foreground-soft">CID</dt>
-    <dd class="flex items-center gap-2">
-      <span class="font-mono text-foreground">1234567</span>
-      <CopyButton text="1234567" label="CID" />
-    </dd>
-    <dt class="text-foreground-soft">Callsign</dt>
-    <dd class="flex items-center gap-2">
-      <span class="font-mono text-foreground">IND_CTR</span>
-      <CopyButton text="IND_CTR" label="callsign" />
-    </dd>
-  </dl>
+  <DescriptionList>
+    <div>
+      <dt>Frequency</dt>
+      <dd class="flex items-center gap-2">
+        <span class="font-mono">134.000</span>
+        <CopyButton text="134.000" label="frequency" />
+      </dd>
+    </div>
+    <div>
+      <dt>CID</dt>
+      <dd class="flex items-center gap-2">
+        <span class="font-mono">1234567</span>
+        <CopyButton text="1234567" label="CID" />
+      </dd>
+    </div>
+    <div>
+      <dt>Callsign</dt>
+      <dd class="flex items-center gap-2">
+        <span class="font-mono">ZID_CTR</span>
+        <CopyButton text="ZID_CTR" label="callsign" />
+      </dd>
+    </div>
+  </DescriptionList>
 </Schemes>

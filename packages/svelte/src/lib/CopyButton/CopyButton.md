@@ -31,12 +31,12 @@ description: An icon button that copies a frequency, CID or callsign to the clip
 
 ## Props
 
-| Prop    | Type                  | Notes                                                                                      |
-| ------- | --------------------- | ------------------------------------------------------------------------------------------ |
-| `text`  | `string`              | Put on the clipboard when pressed.                                                         |
-| `label` | `string`              | What it copies. The button is named "Copy" and this: "Copy frequency".                     |
-| `class` | `string`              | On the box around the button and its message, not on the button. Layout only.              |
-| others  | `<button>` attributes | Passed to the button: `id`, `disabled`, `aria-describedby` and the rest. Not `aria-label`. |
+| Prop    | Type                  | Notes                                                                                                           |
+| ------- | --------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `text`  | `string`              | Put on the clipboard when pressed.                                                                              |
+| `label` | `string`              | What it copies. The button is named "Copy" and this: "Copy frequency".                                          |
+| `class` | `string`              | On the box around the button and its message, not on the button. Layout only.                                   |
+| others  | `<button>` attributes | Passed to the button: `id`, `disabled`, `aria-describedby` and the rest. Not `aria-label` or `aria-labelledby`. |
 
 ## Looks
 
@@ -58,5 +58,6 @@ description: An icon button that copies a frequency, CID or callsign to the clip
   "Couldn't copy", so the member knows to select the value instead.
 - The message is in a `role="status"` region beside the button, on the
   page from the start and empty until a press, so readers announce it
-  politely. A second press empties it first, so "Copied" is read again.
+  politely. A second press empties it for a tenth of a second
+  first, so "Copied" is read again.
 - The icons are hidden from readers.
