@@ -1,11 +1,11 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import type { HTMLAttributes } from "svelte/elements";
-  import { pieces, relative, type TimeZoneShown } from "./format.js";
+  import { timeText, type TimeShown, type TimeZoneShown } from "./format.js";
 
   type When = Date | string | number;
-  // A range is a <span> around its <time>s; the attributes go on whichever
-  // is the root.
+  // The root is a <time>, or a <span> around a range's <time>s, so only the
+  // attributes both take; `Time` sets `datetime` itself.
   type Props = Omit<HTMLAttributes<HTMLElement>, "children"> & {
     /** The instant: a `Date`, an ISO string or milliseconds since the epoch. */
     value: When;
@@ -13,11 +13,8 @@
     end?: When;
     /** `"local"` (the default), `"zulu"`, or `"both"`: local, then Zulu. */
     zone?: TimeZoneShown;
-    /**
-     * `"time"` (the default); `"datetime"` for the day before it; or
-     * `"relative"` for "in 2 h" or "1 h 23 m", counting each minute.
-     */
-    show?: "time" | "datetime" | "relative";
+    /** `"time"` (the default), `"datetime"` (day first) or `"relative"` ("in 2 h"). */
+    show?: TimeShown;
   };
   let {
     value,
@@ -30,37 +27,34 @@
 
   // The server can't know the member's zone, so it draws Zulu; the browser
   // switches to its own zone once mounted.
-  let timeZone = $state<string>();
+  let memberZone = $state<string>();
   let now = $state(new Date());
   onMount(() => {
-    timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    memberZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
     if (show !== "relative") return;
     const timer = setInterval(() => (now = new Date()), 60_000);
     return () => clearInterval(timer);
   });
 
-  const start = $derived(new Date(value));
-  const shown = $derived(
-    show === "relative"
-      ? [{ text: relative(start, now), at: start }]
-      : pieces({
-          start,
-          end: end === undefined ? undefined : new Date(end),
-          date: show === "datetime",
-          zone,
-          timeZone,
-          now,
-        }),
+  const pieces = $derived(
+    timeText({
+      start: new Date(value),
+      end: end === undefined ? undefined : new Date(end),
+      show,
+      zone,
+      memberZone,
+      now: () => now,
+    }),
   );
 </script>
 
-{#if shown.length === 1}
-  <time {...rest} datetime={shown[0].at?.toISOString()} class={className}
-    >{shown[0].text}</time
+{#if pieces.length === 1}
+  <time {...rest} datetime={pieces[0].at?.toISOString()} class={className}
+    >{pieces[0].text}</time
   >
 {:else}
   <span {...rest} class={className}>
-    {#each shown as piece, i (i)}
+    {#each pieces as piece, i (i)}
       {#if piece.at}<time datetime={piece.at.toISOString()}>{piece.text}</time
         >{:else}{piece.text}{/if}
     {/each}

@@ -45,7 +45,7 @@ description: A time, date, range or relative time as a <time datetime>, in the m
 | `zone`  | `"local" \| "zulu" \| "both"`        | `"local"` by default. `"both"` is local, then Zulu: `7:00 PM EDT · 2300Z`.                                                     |
 | `show`  | `"time" \| "datetime" \| "relative"` | `"time"` by default. `"datetime"` puts the day first; `"relative"` gives "in 2 h" or "1 h 23 m", and ignores `end` and `zone`. |
 | `class` | `string`                             | Layout only.                                                                                                                   |
-| others  | `<time>` attributes                  | Passed to the root: the `<time>`, or a range's `<span>`.                                                                       |
+| others  | global attributes                    | `id`, `aria-*` and the rest, passed to the root: the `<time>`, or a range's `<span>`. `Time` sets `datetime` itself.           |
 
 ## What it shows
 

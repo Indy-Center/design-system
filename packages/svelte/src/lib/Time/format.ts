@@ -3,57 +3,68 @@ import { formatDuration } from "../aviation/duration.js";
 /** Which zones `Time` shows: local, Zulu, or local then Zulu. */
 export type TimeZoneShown = "local" | "zulu" | "both";
 
+/** What `Time` shows: the time, the day and time, or how far off it is. */
+export type TimeShown = "time" | "datetime" | "relative";
+
 /** A run of `Time`'s text; `at` is the instant it shows, if any. */
 export type Piece = { text: string; at?: Date };
 
 /**
  * `Time`'s text, in pieces: `Today, 7:00 PM–10:00 PM EDT · 2300Z–0200Z`.
- * `timeZone` is the member's zone, or undefined when it isn't known (on the
- * server), which draws Zulu.
+ * `memberZone` is the member's IANA zone, or undefined where it isn't known
+ * (on the server), which draws Zulu. `now` is called only when the text
+ * depends on it, so a caller tracking it follows only those that do.
  */
-export function pieces(options: {
+export function timeText(options: {
   start: Date;
   end?: Date;
-  date: boolean;
+  show: TimeShown;
   zone: TimeZoneShown;
-  timeZone?: string;
-  now: Date;
+  memberZone?: string;
+  now: () => Date;
 }): Piece[] {
-  const { start, end, date, zone, now } = options;
-  const timeZone = zone === "zulu" ? undefined : options.timeZone;
-  const dayIn = timeZone ?? "UTC";
-  const prefix = (at: Date) => (date ? `${day(at, now, dayIn)}, ` : "");
-  const full = (at: Date) =>
-    timeZone ? `${clock(at, timeZone)} ${zoneName(at, timeZone)}` : zulu(at);
-  const withZulu = timeZone && zone === "both";
+  const { start, end, show, zone, memberZone } = options;
+  if (show === "relative") {
+    return [{ text: relative(start, options.now()), at: start }];
+  }
+
+  const local = zone === "zulu" ? undefined : memberZone;
+  const clock = local ? localClock(local) : zuluClock;
+  const withZulu = local !== undefined && zone === "both";
+  const now = show === "datetime" ? options.now() : undefined;
+  const dayOf = (at: Date) => (now ? clock.day(at, now) : undefined);
+  const withDay = (at: Date, time: string) =>
+    [dayOf(at), time].filter(Boolean).join(", ");
+  const timeAndZone = (at: Date) =>
+    [clock.time(at), clock.zoneName(at)].filter(Boolean).join(" ");
 
   if (!end) {
     const text =
-      prefix(start) + full(start) + (withZulu ? ` · ${zulu(start)}` : "");
+      withDay(start, timeAndZone(start)) +
+      (withZulu ? ` · ${zuluClock.time(start)}` : "");
     return [{ text, at: start }];
   }
 
   // A range shares its day and its zone name between the ends, when they
   // have the same.
-  const sameDay = day(start, now, dayIn) === day(end, now, dayIn);
-  const sameZone =
-    !timeZone || zoneName(start, timeZone) === zoneName(end, timeZone);
-  const startText =
-    prefix(start) +
-    (timeZone && sameZone ? clock(start, timeZone) : full(start));
-  const endText = (sameDay ? "" : prefix(end)) + full(end);
+  const sameDay = dayOf(start) === dayOf(end);
+  const sameZone = clock.zoneName(start) === clock.zoneName(end);
+  const startTime = sameZone ? clock.time(start) : timeAndZone(start);
   const range: Piece[] = [
-    { text: startText, at: start },
+    { text: withDay(start, startTime), at: start },
     { text: "–" },
-    { text: endText, at: end },
+    {
+      text: sameDay ? timeAndZone(end) : withDay(end, timeAndZone(end)),
+      at: end,
+    },
   ];
   if (!withZulu) return range;
   return [
     ...range,
     { text: " · " },
-    { text: zulu(start), at: start },
+    { text: zuluClock.time(start), at: start },
     { text: "–" },
-    { text: zulu(end), at: end },
+    { text: zuluClock.time(end), at: end },
   ];
 }
 
@@ -61,31 +72,48 @@ export function pieces(options: {
  * How far `at` is from `now`, in short units: "in 2 h" to come, and a bare
  * "1 h 23 m" gone by, which the caller labels ("online", "ago").
  */
-export function relative(at: Date, now: Date): string {
+function relative(at: Date, now: Date): string {
   const minutes = Math.round((at.getTime() - now.getTime()) / 60_000);
   const length = formatDuration(minutes, "short");
   return minutes > 0 ? `in ${length}` : length;
 }
 
-/** Zulu as four digits and a `Z`: `2300Z`. */
-function zulu(at: Date): string {
-  const h = String(at.getUTCHours()).padStart(2, "0");
-  const m = String(at.getUTCMinutes()).padStart(2, "0");
-  return `${h}${m}Z`;
-}
+/** How one zone writes an instant. */
+type Clock = {
+  /** The time on its clock: `7:00 PM`, or `2300Z` in Zulu. */
+  time(at: Date): string;
+  /** The zone's abbreviation at `at` (`EDT`); none for Zulu, whose `Z` says it. */
+  zoneName(at: Date): string | undefined;
+  /** The day `at` falls on in the zone, seen from `now` (see `dayLabel`). */
+  day(at: Date, now: Date): string;
+};
 
-/** The time on a clock in `timeZone`: `7:00 PM`. */
-function clock(at: Date, timeZone: string): string {
-  return format(at, timeZone, { hour: "numeric", minute: "2-digit" });
-}
+/** Zulu: four digits and a `Z`, and the UTC day. */
+const zuluClock: Clock = {
+  time: (at) => {
+    const h = String(at.getUTCHours()).padStart(2, "0");
+    const m = String(at.getUTCMinutes()).padStart(2, "0");
+    return `${h}${m}Z`;
+  },
+  zoneName: () => undefined,
+  day: (at, now) => dayLabel(at, now, "UTC"),
+};
 
-/** `timeZone`'s abbreviation at `at`: `EDT`, or `GMT+1` where none is set. */
-function zoneName(at: Date, timeZone: string): string {
-  return (
-    new Intl.DateTimeFormat("en-US", { timeZone, timeZoneName: "short" })
-      .formatToParts(at)
-      .find((p) => p.type === "timeZoneName")?.value ?? timeZone
-  );
+/** A member's zone: the 12-hour clock and the zone's abbreviation. */
+function localClock(timeZone: string): Clock {
+  return {
+    time: (at) => {
+      const { hour, minute, dayPeriod } = partsOf(at, timeZone, {
+        hour: "numeric",
+        minute: "2-digit",
+      });
+      return `${hour}:${minute} ${dayPeriod}`;
+    },
+    // A zone without an abbreviation in en-US gives its offset: `GMT+1`.
+    zoneName: (at) =>
+      partsOf(at, timeZone, { timeZoneName: "short" }).timeZoneName ?? timeZone,
+    day: (at, now) => dayLabel(at, now, timeZone),
+  };
 }
 
 /**
@@ -94,41 +122,43 @@ function zoneName(at: Date, timeZone: string): string {
  * day before the month ("Tue 27 Oct"), with the year when it isn't this
  * year ("Thu 4 Mar 2027").
  */
-function day(at: Date, now: Date, timeZone: string): string {
+function dayLabel(at: Date, now: Date, timeZone: string): string {
   const date = calendarDate(at, timeZone);
   const today = calendarDate(now, timeZone);
-  const days = (date.utc - today.utc) / 86_400_000;
+  const days = (date.midnightUtc - today.midnightUtc) / 86_400_000;
   if (days === 0) return "Today";
   if (days === 1) return "Tomorrow";
-  const part = (options: Intl.DateTimeFormatOptions) =>
-    format(at, timeZone, options);
-  if (days > 1 && days < 7) return part({ weekday: "long" });
+  if (days > 1 && days < 7) {
+    return partsOf(at, timeZone, { weekday: "long" }).weekday ?? "";
+  }
+  const { weekday, day, month } = partsOf(at, timeZone, {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+  });
   const year = date.year === today.year ? "" : ` ${date.year}`;
-  return `${part({ weekday: "short" })} ${date.day} ${part({ month: "short" })}${year}`;
+  return `${weekday} ${day} ${month}${year}`;
 }
 
-/** The calendar date `at` falls on in `timeZone`, and its midnight in UTC. */
+/** The calendar date `at` falls on in `timeZone`, and that date's midnight in UTC. */
 function calendarDate(at: Date, timeZone: string) {
-  const parts = new Intl.DateTimeFormat("en-US", {
-    timeZone,
+  const parts = partsOf(at, timeZone, {
     year: "numeric",
     month: "numeric",
     day: "numeric",
-  }).formatToParts(at);
-  const get = (type: string) =>
-    Number(parts.find((p) => p.type === type)?.value);
-  const [year, month, day] = [get("year"), get("month"), get("day")];
-  return { year, day, utc: Date.UTC(year, month - 1, day) };
+  });
+  const [year, month, day] = [parts.year, parts.month, parts.day].map(Number);
+  return { year, midnightUtc: Date.UTC(year, month - 1, day) };
 }
 
-// Browsers put a narrow no-break space before "PM"; written text uses a
-// plain one.
-function format(
+/** `at` in `timeZone`, as Intl's named parts in US English. */
+function partsOf(
   at: Date,
   timeZone: string,
   options: Intl.DateTimeFormatOptions,
-): string {
-  return new Intl.DateTimeFormat("en-US", { timeZone, ...options })
-    .format(at)
-    .replace(/ /g, " ");
+): Partial<Record<Intl.DateTimeFormatPartTypes, string>> {
+  const parts = new Intl.DateTimeFormat("en-US", { timeZone, ...options })
+    .formatToParts(at)
+    .map((p) => [p.type, p.value]);
+  return Object.fromEntries(parts);
 }
