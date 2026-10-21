@@ -1,6 +1,8 @@
 import { createRawSnippet } from "svelte";
 import { describe, expect, test } from "vitest";
 import { userEvent } from "vitest/browser";
+import { SCHEMES } from "../../../test/contrast.ts";
+import { role } from "../../../test/roles.ts";
 import { renderIn } from "../../../test/schemes.ts";
 import Select from "./Select.svelte";
 
@@ -33,32 +35,23 @@ describe("Select", () => {
     await expect.element(select).toHaveValue("S3");
   });
 
-  // The guide's roles: `muted` fill (#E2E8F0 light, #334155 dark), `input`
-  // border (#64748B), `foreground` text (#0F172A light, #FFFFFF dark).
-  test.each([
-    ["light", "rgb(226, 232, 240)", "rgb(15, 23, 42)"],
-    ["dark", "rgb(51, 65, 85)", "rgb(255, 255, 255)"],
-    ["dark-header", "rgb(51, 65, 85)", "rgb(255, 255, 255)"],
-  ] as const)("takes the input roles in %s", async (scheme, fill, text) => {
+  // The guide's roles: `muted` fill, `input` border, `foreground` text.
+  test.each(SCHEMES)("takes the input roles in %s", async (scheme) => {
     const screen = await renderIn(scheme, Select, {
       "aria-label": "Rating",
       children: options,
     });
     await expect.element(screen.getByRole("combobox")).toHaveStyle({
-      backgroundColor: fill,
-      borderColor: "rgb(100, 116, 139)",
-      color: text,
+      backgroundColor: role("muted", scheme),
+      borderColor: role("input", scheme),
+      color: role("foreground", scheme),
     });
   });
 
-  // The guide's `destructive` role: #B91C1C light, #F87171 dark.
-  test.each([
-    ["light", "rgb(185, 28, 28)"],
-    ["dark", "rgb(248, 113, 113)"],
-    ["dark-header", "rgb(248, 113, 113)"],
-  ] as const)(
+  // The guide's `destructive` role.
+  test.each(SCHEMES)(
     "has a destructive border when invalid in %s",
-    async (scheme, colour) => {
+    async (scheme) => {
       const screen = await renderIn(scheme, Select, {
         "aria-label": "Rating",
         "aria-invalid": true,
@@ -66,18 +59,15 @@ describe("Select", () => {
       });
       await expect
         .element(screen.getByRole("combobox"))
-        .toHaveStyle({ borderColor: colour });
+        .toHaveStyle({ borderColor: role("destructive", scheme) });
     },
   );
 
-  // The guide's `ring` role: #0284C7 light, #0EA5E9 dark.
-  test.each([
-    ["light", "rgb(2, 132, 199)"],
-    ["dark", "rgb(14, 165, 233)"],
-    ["dark-header", "rgb(14, 165, 233)"],
-  ] as const)(
+  // The guide's `ring` role.
+  test.each(SCHEMES)(
     "shows a ring outline when tabbed to in %s",
-    async (scheme, colour) => {
+    async (scheme) => {
+      const colour = role("ring", scheme);
       const screen = await renderIn(scheme, Select, {
         "aria-label": "Rating",
         children: options,
