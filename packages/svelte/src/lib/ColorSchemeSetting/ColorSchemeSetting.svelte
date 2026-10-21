@@ -11,20 +11,27 @@
     colorSchemeChoice,
     readColorSchemeChoice,
   } from "../colorScheme/colorSchemeChoice.svelte.js";
+  import { getColorScheme } from "../colorScheme/colorSchemeContext.js";
   import { saveColorScheme } from "../colorScheme/saveColorScheme.js";
   import ChoiceRow from "../preferenceControl/ChoiceRow.svelte";
   import WhatsSaved from "../preferenceControl/WhatsSaved.svelte";
 
-  type Props = Omit<HTMLFieldsetAttributes, "children"> & {
-    /** The domain the cookie is shared across; `flyindycenter.com` by default. */
-    domain?: string;
-  };
+  type Props = Omit<HTMLFieldsetAttributes, "children">;
 
-  let { domain, class: className, ...rest }: Props = $props();
+  let { class: className, ...rest }: Props = $props();
+
+  const { fallback, domain } = getColorScheme();
+  // Under `fallback: 'dark'` the next page is dark whatever the device
+  // says, so following the device isn't offered, and nothing saved is dark.
+  const followsDevice = fallback === "device";
 
   // The cookie is the browser's to read: until then no row is ticked.
   onMount(readColorSchemeChoice);
-  const choice = $derived(colorSchemeChoice.current);
+  const choice = $derived(
+    colorSchemeChoice.current === "device" && !followsDevice
+      ? "dark"
+      : colorSchemeChoice.current,
+  );
 </script>
 
 <fieldset {...rest} class={["min-w-0", className]}>
@@ -40,12 +47,14 @@
       pressed={choice === "dark"}
       onclick={() => saveColorScheme("dark", { domain })}>Dark</ChoiceRow
     >
-    <ChoiceRow
-      icon={mdiThemeLightDark}
-      pressed={choice === "device"}
-      onclick={() => clearColorScheme({ domain })}
-      >Use my device's setting</ChoiceRow
-    >
+    {#if followsDevice}
+      <ChoiceRow
+        icon={mdiThemeLightDark}
+        pressed={choice === "device"}
+        onclick={() => clearColorScheme({ domain })}
+        >Use my device's setting</ChoiceRow
+      >
+    {/if}
   </div>
   <WhatsSaved
     note="Saved on this browser for a year, across flyindycenter.com."

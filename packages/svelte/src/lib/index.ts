@@ -112,6 +112,10 @@ export {
   type SaveColorSchemeOptions,
 } from "./colorScheme/saveColorScheme.js";
 export { clearColorScheme } from "./colorScheme/clearColorScheme.js";
+export {
+  setColorScheme,
+  type SetColorSchemeOptions,
+} from "./colorScheme/colorSchemeContext.js";
 
 // The time zone: the root layout hands the server's choice to every Time.
 // Reading the cookie is server code, in ./server.ts.

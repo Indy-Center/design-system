@@ -212,6 +212,8 @@ describe("the packed package", () => {
       "TimeZoneLine",
       "TimeZoneSetting",
       "clearColorScheme",
+      "setColorScheme",
+      "SetColorSchemeOptions",
       "setTimeZone",
       "TimeZoneChoice",
       "TimeZoneProfileSetting",
