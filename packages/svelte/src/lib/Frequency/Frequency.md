@@ -61,6 +61,6 @@ shows nothing.
 - A `<span>`: the digits are `aria-hidden`, and a visually hidden span
   beside them holds the spoken form per FAA JO 7110.65 2-4-17, so a
   screen reader says "one two eight point two two" rather than "one
-  hundred twenty-eight point two two". The third decimal is never
-  spoken, even with `decimals={3}`.
+  hundred twenty-eight point two two". It says what is shown: with
+  `decimals={3}`, "one two eight point two two five".
 - Copying the text selects the digits, not the spoken form.

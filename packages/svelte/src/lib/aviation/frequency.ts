@@ -39,13 +39,16 @@ function say(digits: string): string {
 
 /**
  * A frequency in hertz as a controller says it, per FAA JO 7110.65 2-4-17:
- * each digit, "point" for the decimal, and nothing after the second
- * decimal. `128225000` is "one two eight point two two"; `121500000` is
- * "one two one point five".
+ * each digit, "point" for the decimal, and the decimals `formatFrequency`
+ * shows: `128225000` is "one two eight point two two", or "… two two five"
+ * with `decimals: 3`; `121500000` is "one two one point five".
  */
-export function spokenFrequency(hz: number): string {
-  const [whole, decimals] = formatFrequency(hz).split(".");
-  // A trailing zero goes ("121.5"), but one digit always stays ("369.0").
-  const kept = decimals.replace(/(?<=.)0$/, "");
+export function spokenFrequency(
+  hz: number,
+  options: FrequencyOptions = {},
+): string {
+  const [whole, decimals] = formatFrequency(hz, options).split(".");
+  // Trailing zeros go ("121.5"), but one digit always stays ("369.0").
+  const kept = decimals.replace(/(?<=.)0+$/, "");
   return `${say(whole)} point ${say(kept)}`;
 }

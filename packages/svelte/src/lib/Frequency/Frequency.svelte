@@ -35,7 +35,7 @@
 {#if hz !== undefined}
   <span {...rest} class={["font-mono tabular-nums", className]}
     ><span aria-hidden="true">{formatFrequency(hz, { decimals })}</span><span
-      class="sr-only">{spokenFrequency(hz)}</span
+      class="sr-only">{spokenFrequency(hz, { decimals })}</span
     ></span
   >
 {/if}

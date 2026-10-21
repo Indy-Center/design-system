@@ -53,4 +53,15 @@ describe("spokenFrequency, per FAA JO 7110.65 2-4-17", () => {
   test("keeps a zero before a digit", () => {
     expect(spokenFrequency(118_050_000)).toBe("one one eight point zero five");
   });
+
+  // Said as shown: with three decimals, the third is said too.
+  test.each([
+    [128_225_000, "one two eight point two two five"],
+    [132_175_000, "one three two point one seven five"],
+    [118_050_000, "one one eight point zero five"],
+    [121_500_000, "one two one point five"],
+    [128_229_900, "one two eight point two two niner"],
+  ])("with decimals 3, %d Hz is said %s", (hz, words) => {
+    expect(spokenFrequency(hz, { decimals: 3 })).toBe(words);
+  });
 });

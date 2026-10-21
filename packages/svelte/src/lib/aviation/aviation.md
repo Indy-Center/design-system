@@ -47,17 +47,19 @@ formatDuration(83, "short"); // "1 h 23 m"
 | Function                             | Returns                                                       |
 | ------------------------------------ | ------------------------------------------------------------- |
 | `formatFrequency(hz, { decimals? })` | Megahertz, two decimals (`"128.22"`), or three (`"128.225"`). |
-| `spokenFrequency(hz)`                | The words, per FAA JO 7110.65 2-4-17.                         |
+| `spokenFrequency(hz, { decimals? })` | The words, per FAA JO 7110.65 2-4-17.                         |
 
 `formatFrequency` cuts, never rounds: 128.225 is `"128.22"`. `decimals: 3`
 shows the third, which only exists for an 8.33 kHz channel; anything finer
 than a whole kHz is cut too, so 128.2299 is `"128.22"`, or `"128.229"`
 with three.
 
-`spokenFrequency` says each digit, "point" for the decimal, and drops the
-digits after the second decimal: 128.225 is "one two eight point two two",
-121.500 is "one two one point five", 118.050 is "one one eight point zero
-five". Nine is "niner" (2-4-16). The words are lower case.
+`spokenFrequency` says what `formatFrequency` shows, with the same
+`decimals`: each digit, "point" for the decimal, and no trailing zeros.
+128.225 is "one two eight point two two", or "one two eight point two two
+five" with three; 121.500 is "one two one point five", 118.050 is "one one
+eight point zero five". Nine is "niner" (2-4-16). The words are lower
+case.
 
 ## Callsigns and position types
 

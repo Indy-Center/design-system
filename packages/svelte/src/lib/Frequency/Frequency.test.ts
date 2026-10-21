@@ -55,14 +55,14 @@ describe("Frequency", () => {
       .toHaveClass("sr-only");
   });
 
-  test("is read out the same with decimals={3}", async () => {
+  test("with decimals={3}, is read out with the third decimal, as shown", async () => {
     const screen = await renderIn("light", Frequency, {
       value: 128225000,
       decimals: 3,
     });
-    expect(readOut(screen.container.firstElementChild!)).toBe(
-      "one two eight point two two",
-    );
+    const host = screen.container.firstElementChild!;
+    expect(readOut(host)).toBe("one two eight point two two five");
+    expect(onScreen(host)).toBe("128.225");
   });
 
   test("is in mono with tabular figures", async () => {
