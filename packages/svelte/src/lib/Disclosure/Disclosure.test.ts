@@ -4,6 +4,7 @@ import { role } from "../../../test/roles.ts";
 import { renderIn } from "../../../test/schemes.ts";
 import { text } from "../../../test/snippets.ts";
 import Disclosure from "./Disclosure.svelte";
+import DisclosureBound from "./Disclosure.test.svelte";
 
 const props = () => ({
   summary: text("Why do I need a rating?"),
@@ -21,6 +22,25 @@ describe("Disclosure", () => {
     await expect
       .element(screen.getByText("Each position needs its own rating."))
       .not.toBeVisible();
+    // The chevron is decoration: readers hear only the summary.
+    expect(
+      screen.container
+        .querySelector("summary svg")!
+        .getAttribute("aria-hidden"),
+    ).toBe("true");
+  });
+
+  test("binds open both ways", async () => {
+    const screen = await renderIn("light", DisclosureBound, {});
+    const status = screen.getByRole("status");
+    await screen.getByText("Why do I need a rating?").click();
+    await expect.element(status).toHaveTextContent("open");
+    await screen.getByText("Why do I need a rating?").click();
+    await expect.element(status).toHaveTextContent("closed");
+    await screen.getByRole("button", { name: "Open it" }).click();
+    await expect
+      .element(screen.getByText("Each position needs its own rating."))
+      .toBeVisible();
   });
 
   test("opens on a click, and can start open", async () => {
