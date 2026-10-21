@@ -22,6 +22,10 @@ export { default as CopyButton } from "./CopyButton/CopyButton.svelte";
 export { default as DescriptionList } from "./DescriptionList/DescriptionList.svelte";
 export { default as Disclosure } from "./Disclosure/Disclosure.svelte";
 export { default as EmptyState } from "./EmptyState/EmptyState.svelte";
+export {
+  default as ErrorPage,
+  type ErrorPageLink,
+} from "./ErrorPage/ErrorPage.svelte";
 export { default as Field, type FieldControl } from "./Field/Field.svelte";
 export { default as Fieldset } from "./Fieldset/Fieldset.svelte";
 export {
