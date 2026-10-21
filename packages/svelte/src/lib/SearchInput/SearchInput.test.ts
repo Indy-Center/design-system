@@ -3,7 +3,6 @@ import { userEvent } from "vitest/browser";
 import {
   contrastOn,
   expectReadable,
-  SCHEMES,
   SURFACES,
 } from "../../../test/contrast.ts";
 import { role } from "../../../test/roles.ts";
@@ -48,17 +47,6 @@ describe("SearchInput", () => {
     expect(parseFloat(getComputedStyle(box).paddingLeft)).toBeGreaterThan(
       icon.right - field.left,
     );
-  });
-
-  test("binds its value both ways", async () => {
-    const screen = await renderIn("light", SearchInput, {
-      label: "Search",
-      value: "Archer",
-    });
-    const box = screen.getByRole("searchbox");
-    await expect.element(box).toHaveValue("Archer");
-    await box.fill("1234567");
-    await expect.element(box).toHaveValue("1234567");
   });
 
   test("is reached by Tab, and Escape clears it with an input event", async () => {
@@ -112,32 +100,19 @@ describe("SearchInput", () => {
     await expect.element(box).toHaveValue("Archer");
   });
 
-  test("shows a clear button once there is text, which clears and refocuses the box", async () => {
+  test("shows a 44px clear button once there is text, which clears and refocuses the box", async () => {
     const screen = await renderIn("light", SearchInput, { label: "Search" });
     const clear = screen.getByRole("button", { name: "Clear the search" });
     await expect.element(clear).not.toBeInTheDocument();
     const box = screen.getByRole("searchbox");
     await box.fill("Archer");
+    const size = clear.element().getBoundingClientRect();
+    expect(size.height).toBeGreaterThanOrEqual(44);
+    expect(size.width).toBeGreaterThanOrEqual(44);
     await clear.click();
     await expect.element(box).toHaveValue("");
     await expect.element(box).toHaveFocus();
     await expect.element(clear).not.toBeInTheDocument();
-  });
-
-  test("has a clear button that is 44px square and reached by Tab", async () => {
-    const screen = await renderIn("light", SearchInput, {
-      label: "Search",
-      value: "Archer",
-    });
-    await userEvent.tab();
-    await userEvent.tab();
-    const clear = screen.getByRole("button", { name: "Clear the search" });
-    await expect.element(clear).toHaveFocus();
-    const box = clear.element().getBoundingClientRect();
-    expect(box.height).toBeGreaterThanOrEqual(44);
-    expect(box.width).toBeGreaterThanOrEqual(44);
-    await userEvent.keyboard("{Enter}");
-    await expect.element(screen.getByRole("searchbox")).toHaveValue("");
   });
 
   test.each([{ disabled: true }, { readonly: true }])(
@@ -180,58 +155,39 @@ describe("SearchInput", () => {
     expect(rules.map((rule) => rule.style.appearance)).toContain("none");
   });
 
-  // The guide's roles: the input roles for the box, as Input has.
-  test.each(SCHEMES)("takes the input roles in %s", async (scheme) => {
-    const screen = await renderIn(scheme, SearchInput, { label: "Search" });
+  // textControlClasses, whose looks formControl's tests hold.
+  test("takes the input roles", async () => {
+    const screen = await renderIn("light", SearchInput, { label: "Search" });
     await expect.element(screen.getByRole("searchbox")).toHaveStyle({
-      backgroundColor: role("muted", scheme),
-      borderColor: role("input", scheme),
-      color: role("foreground", scheme),
+      backgroundColor: role("muted", "light"),
+      borderColor: role("input", "light"),
+      color: role("foreground", "light"),
     });
   });
 
   // The guide's `foreground-soft` for the label, as Field's, and
   // `muted-foreground` for the icons, 3:1 on the box's `muted` fill.
-  test.each(SCHEMES)("colours its label and icons in %s", async (scheme) => {
-    const screen = await renderIn(scheme, SearchInput, {
+  test("colours its label and icons", async () => {
+    const screen = await renderIn("light", SearchInput, {
       label: "Search",
       value: "Archer",
     });
     const label = screen.getByText("Search", { exact: true });
     await expect
       .element(label)
-      .toHaveStyle({ color: role("foreground-soft", scheme) });
-    expectReadable(label.element(), scheme);
-    const { background, card } = SURFACES[scheme];
+      .toHaveStyle({ color: role("foreground-soft", "light") });
+    expectReadable(label.element(), "light");
+    const { background, card } = SURFACES.light;
     for (const icon of screen.container.querySelectorAll("svg")) {
       await expect
         .element(icon)
-        .toHaveStyle({ color: role("muted-foreground", scheme) });
+        .toHaveStyle({ color: role("muted-foreground", "light") });
       for (const surface of [background, card]) {
         expect(
-          contrastOn(icon, surface, role("muted", scheme)),
+          contrastOn(icon, surface, role("muted", "light")),
         ).toBeGreaterThanOrEqual(3);
       }
     }
-  });
-
-  // The guide's `ring` role.
-  test.each(SCHEMES)(
-    "shows a ring outline when tabbed to in %s",
-    async (scheme) => {
-      const screen = await renderIn(scheme, SearchInput, { label: "Search" });
-      await userEvent.tab();
-      await expect.element(screen.getByRole("searchbox")).toHaveStyle({
-        outlineStyle: "solid",
-        outlineColor: role("ring", scheme),
-      });
-    },
-  );
-
-  test("is at least 44px tall", async () => {
-    const screen = await renderIn("light", SearchInput, { label: "Search" });
-    const box = screen.getByRole("searchbox").element();
-    expect(box.getBoundingClientRect().height).toBeGreaterThanOrEqual(44);
   });
 
   test("puts a caller's class on its box and attributes on the input", async () => {

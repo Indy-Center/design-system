@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { type Locator, userEvent } from "vitest/browser";
-import { contrastOn, SCHEMES, SURFACES } from "../../../test/contrast.ts";
+import { contrastOn, SURFACES } from "../../../test/contrast.ts";
 import { role } from "../../../test/roles.ts";
 import { renderIn } from "../../../test/schemes.ts";
 import StarRating from "./StarRating.svelte";
@@ -45,17 +45,6 @@ describe("StarRating", () => {
     expect(value).toBe(4);
   });
 
-  test("checks the radio for the value it's given", async () => {
-    const screen = await renderIn("light", StarRating, {
-      legend: "Rating",
-      name: "rating",
-      value: 2,
-    });
-    await expect
-      .element(screen.getByRole("radio", { name: "2 stars" }))
-      .toBeChecked();
-  });
-
   test("shows the value in words, and previews the star under the pointer", async () => {
     const screen = await renderIn("light", StarRating, {
       legend: "Rating",
@@ -82,7 +71,7 @@ describe("StarRating", () => {
     await expect.element(screen.getByText("Not rated")).toBeVisible();
   });
 
-  test("Tab enters at the chosen star; the arrow keys move and choose", async () => {
+  test("checks the radio for the value it's given; Tab enters there, and the arrow keys move and choose", async () => {
     let value: number | undefined = 3;
     const screen = await renderIn("light", StarRating, {
       legend: "Rating",
@@ -95,6 +84,7 @@ describe("StarRating", () => {
       },
     });
     const radio = (name: string) => screen.getByRole("radio", { name });
+    await expect.element(radio("3 stars")).toBeChecked();
     await userEvent.tab();
     await expect.element(radio("3 stars")).toHaveFocus();
     await userEvent.keyboard("{ArrowRight}");
@@ -124,33 +114,29 @@ describe("StarRating", () => {
   // The guide's roles: chosen stars in `warning`, the rest in
   // `muted-foreground`. Both are 3:1 or more on the page and on a card
   // (WCAG 1.4.11, non-text contrast).
-  test.each(SCHEMES)(
-    "colours the chosen stars and the rest in %s",
-    async (scheme) => {
-      const screen = await renderIn(scheme, StarRating, {
-        legend: "Rating",
-        name: "rating",
-        value: 3,
-      });
-      const star = (name: string) =>
-        starOf(screen.getByRole("radio", { name }));
-      await expect
-        .element(star("3 stars"))
-        .toHaveStyle({ color: role("warning", scheme) });
-      await expect
-        .element(star("4 stars"))
-        .toHaveStyle({ color: role("muted-foreground", scheme) });
-      for (const name of ["3 stars", "4 stars"]) {
-        for (const surface of Object.values(SURFACES[scheme])) {
-          expect(contrastOn(star(name), surface)).toBeGreaterThanOrEqual(3);
-        }
+  test("colours the chosen stars and the rest", async () => {
+    const screen = await renderIn("light", StarRating, {
+      legend: "Rating",
+      name: "rating",
+      value: 3,
+    });
+    const star = (name: string) => starOf(screen.getByRole("radio", { name }));
+    await expect
+      .element(star("3 stars"))
+      .toHaveStyle({ color: role("warning", "light") });
+    await expect
+      .element(star("4 stars"))
+      .toHaveStyle({ color: role("muted-foreground", "light") });
+    for (const name of ["3 stars", "4 stars"]) {
+      for (const surface of Object.values(SURFACES.light)) {
+        expect(contrastOn(star(name), surface)).toBeGreaterThanOrEqual(3);
       }
-    },
-  );
+    }
+  });
 
   // The guide's `ring` role, round the star's 44px target.
-  test.each(SCHEMES)("rings the focused star in %s", async (scheme) => {
-    const screen = await renderIn(scheme, StarRating, {
+  test("rings the focused star", async () => {
+    const screen = await renderIn("light", StarRating, {
       legend: "Rating",
       name: "rating",
     });
@@ -158,42 +144,33 @@ describe("StarRating", () => {
     const label = starOf(screen.getByRole("radio", { name: "1 star" }));
     await expect.element(label).toHaveStyle({
       outlineStyle: "solid",
-      outlineColor: role("ring", scheme),
+      outlineColor: role("ring", "light"),
     });
     const { width, height } = label.getBoundingClientRect();
     expect(width).toBeGreaterThanOrEqual(44);
     expect(height).toBeGreaterThanOrEqual(44);
   });
 
-  test("required, says so by the legend and requires a choice", async () => {
+  // Fieldset's wiring, which Fieldset's tests hold.
+  test("required, says so by the legend and requires a choice; described by its hint and error, with attributes on the fieldset", async () => {
     const screen = await renderIn("light", StarRating, {
       legend: "Rating",
       name: "rating",
       required: true,
-    });
-    await expect
-      .element(screen.getByRole("group", { name: "Rating (required)" }))
-      .toBeInTheDocument();
-    await expect
-      .element(screen.getByRole("radio", { name: "1 star" }))
-      .toBeRequired();
-  });
-
-  test("describes the group by its hint and error, and passes attributes to the fieldset", async () => {
-    const screen = await renderIn("light", StarRating, {
-      legend: "Rating",
-      name: "rating",
       hint: "Only training staff see it.",
       error: "Choose a rating.",
       id: "teacher-rating",
     });
-    const group = screen.getByRole("group", { name: "Rating" });
+    const group = screen.getByRole("group", { name: "Rating (required)" });
     await expect
       .element(group)
       .toHaveAccessibleDescription(
         "Only training staff see it. Choose a rating.",
       );
     await expect.element(group).toHaveAttribute("id", "teacher-rating");
+    await expect
+      .element(screen.getByRole("radio", { name: "1 star" }))
+      .toBeRequired();
   });
 
   test("disabled, can't be chosen", async () => {

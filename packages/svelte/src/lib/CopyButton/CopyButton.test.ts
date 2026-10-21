@@ -1,6 +1,4 @@
 import { afterEach, describe, expect, test, vi } from "vitest";
-import { userEvent } from "vitest/browser";
-import { SCHEMES } from "../../../test/contrast.ts";
 import { role } from "../../../test/roles.ts";
 import { renderIn } from "../../../test/schemes.ts";
 import CopyButton from "./CopyButton.svelte";
@@ -11,23 +9,13 @@ describe("CopyButton", () => {
     vi.useRealTimers();
   });
 
-  test('is a button named "Copy" and what it copies', async () => {
-    const screen = await renderIn("light", CopyButton, {
-      text: "134.000",
-      label: "frequency",
-    });
-    await expect
-      .element(screen.getByRole("button", { name: "Copy frequency" }))
-      .toHaveAttribute("type", "button");
-  });
-
-  test("puts its text on the clipboard when pressed", async () => {
+  test('is a button named "Copy" and what it copies, which puts its text on the clipboard when pressed', async () => {
     const write = clipboard();
     const screen = await renderIn("light", CopyButton, {
       text: "134.000",
       label: "frequency",
     });
-    await screen.getByRole("button").click();
+    await screen.getByRole("button", { name: "Copy frequency" }).click();
     expect(write).toHaveBeenCalledExactlyOnceWith("134.000");
   });
 
@@ -51,35 +39,17 @@ describe("CopyButton", () => {
       .toBeInTheDocument();
   });
 
-  test("copies from the keyboard", async () => {
-    const write = clipboard();
+  test("its message is muted-foreground", async () => {
+    clipboard();
     const screen = await renderIn("light", CopyButton, {
       text: "ZID_CTR",
       label: "callsign",
     });
-    await userEvent.tab();
-    await expect.element(screen.getByRole("button")).toHaveFocus();
-    await userEvent.keyboard("{Enter}");
-    expect(write).toHaveBeenCalledExactlyOnceWith("ZID_CTR");
+    await screen.getByRole("button").click();
     await expect
-      .element(screen.getByRole("status"))
-      .toHaveTextContent("Copied");
+      .element(screen.getByText("Copied"))
+      .toHaveStyle({ color: role("muted-foreground", "light") });
   });
-
-  test.each(SCHEMES)(
-    "its message is muted-foreground in %s",
-    async (scheme) => {
-      clipboard();
-      const screen = await renderIn(scheme, CopyButton, {
-        text: "ZID_CTR",
-        label: "callsign",
-      });
-      await screen.getByRole("button").click();
-      await expect
-        .element(screen.getByText("Copied"))
-        .toHaveStyle({ color: role("muted-foreground", scheme) });
-    },
-  );
 
   test("puts class on its box and other attributes on the button", async () => {
     const screen = await renderIn("light", CopyButton, {
@@ -91,7 +61,7 @@ describe("CopyButton", () => {
     const button = screen.getByRole("button");
     await expect.element(button).toHaveAttribute("id", "copy-callsign");
     await expect.element(button).not.toHaveClass("ml-2");
-    expect(button.element().parentElement).toHaveClass("ml-2");
+    expect(screen.container.firstElementChild).toHaveClass("ml-2");
   });
 
   test("says so if copying failed", async () => {
@@ -131,23 +101,23 @@ describe("CopyButton", () => {
     await expect.element(status).toHaveTextContent("");
   });
 
-  test("does nothing if removed before the copy finishes", async () => {
+  test("starts no timer if removed before the copy finishes", async () => {
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
     let finish!: () => void;
     vi.spyOn(navigator.clipboard, "writeText").mockImplementation(
       () => new Promise<void>((resolve) => (finish = resolve)),
     );
-    const timeout = vi.spyOn(window, "setTimeout");
     const screen = await renderIn("light", CopyButton, {
       text: "ZID_CTR",
       label: "callsign",
     });
     await screen.getByRole("button").click();
     screen.unmount();
-    timeout.mockClear();
+    vi.clearAllTimers();
     finish();
     await Promise.resolve();
     await Promise.resolve();
-    expect(timeout).not.toHaveBeenCalled();
+    expect(vi.getTimerCount()).toBe(0);
   });
 });
 

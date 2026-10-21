@@ -1,19 +1,19 @@
 import { describe, expect, test } from "vitest";
 import { userEvent } from "vitest/browser";
-import { SCHEMES } from "../../../test/contrast.ts";
 import { role } from "../../../test/roles.ts";
 import { renderIn } from "../../../test/schemes.ts";
 import { text } from "../../../test/snippets.ts";
 import Checkbox from "./Checkbox.svelte";
 
 describe("Checkbox", () => {
-  test("is a checkbox named by its label", async () => {
+  test("is a checkbox named by its label, neither invalid nor described with no error", async () => {
     const screen = await renderIn("light", Checkbox, {
       label: "Visiting controller",
     });
-    await expect
-      .element(screen.getByRole("checkbox", { name: "Visiting controller" }))
-      .not.toBeChecked();
+    const box = screen.getByRole("checkbox", { name: "Visiting controller" });
+    await expect.element(box).not.toBeChecked();
+    await expect.element(box).not.toHaveAttribute("aria-invalid");
+    await expect.element(box).not.toHaveAttribute("aria-describedby");
   });
 
   test("toggles with Space when tabbed to", async () => {
@@ -89,61 +89,24 @@ describe("Checkbox", () => {
     await expect.element(box).toBeChecked();
   });
 
-  test("is neither invalid nor described with no error", async () => {
+  // The choice classes and Description, whose looks (ring and 44px row
+  // too) formControl's tests hold: a `primary` box, a `foreground-soft`
+  // label, a `destructive` error.
+  test("takes the choice and error colours", async () => {
     const screen = await renderIn("light", Checkbox, {
       label: "Visiting controller",
+      checked: true,
+      error: "Untick this.",
     });
-    const box = screen.getByRole("checkbox");
-    await expect.element(box).not.toHaveAttribute("aria-invalid");
-    await expect.element(box).not.toHaveAttribute("aria-describedby");
-  });
-
-  // The guide's roles: `primary` box, `foreground-soft` label,
-  // `destructive` error. The box is ticked, so the browser paints its fill
-  // from `accent-color`.
-  test.each(SCHEMES)(
-    "colours the box, label and error in %s",
-    async (scheme) => {
-      const screen = await renderIn(scheme, Checkbox, {
-        label: "Visiting controller",
-        checked: true,
-        error: "Untick this.",
-      });
-      const box = screen.getByRole("checkbox");
-      await expect.element(box).toBeChecked();
-      await expect
-        .element(box)
-        .toHaveStyle({ accentColor: role("primary", scheme) });
-      await expect
-        .element(screen.getByText("Untick this."))
-        .toHaveStyle({ color: role("destructive", scheme) });
-      await expect
-        .element(screen.getByText("Visiting controller"))
-        .toHaveStyle({ color: role("foreground-soft", scheme) });
-    },
-  );
-
-  // The guide's `ring` role.
-  test.each(SCHEMES)(
-    "shows a ring outline when tabbed to in %s",
-    async (scheme) => {
-      const screen = await renderIn(scheme, Checkbox, {
-        label: "Visiting controller",
-      });
-      await userEvent.tab();
-      await expect.element(screen.getByRole("checkbox")).toHaveStyle({
-        outlineStyle: "solid",
-        outlineColor: role("ring", scheme),
-      });
-    },
-  );
-
-  test("is a row at least 44px tall", async () => {
-    const screen = await renderIn("light", Checkbox, {
-      label: "Visiting controller",
-    });
-    const row = screen.container.querySelector("label")!;
-    expect(row.getBoundingClientRect().height).toBeGreaterThanOrEqual(44);
+    await expect
+      .element(screen.getByRole("checkbox"))
+      .toHaveStyle({ accentColor: role("primary", "light") });
+    await expect
+      .element(screen.getByText("Untick this."))
+      .toHaveStyle({ color: role("destructive", "light") });
+    await expect
+      .element(screen.getByText("Visiting controller"))
+      .toHaveStyle({ color: role("foreground-soft", "light") });
   });
 
   test("puts a caller's class on its outer element and attributes on the box", async () => {

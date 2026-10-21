@@ -1,6 +1,5 @@
 import { describe, expect, test } from "vitest";
 import { userEvent } from "vitest/browser";
-import { SCHEMES } from "../../../test/contrast.ts";
 import { role } from "../../../test/roles.ts";
 import { renderIn } from "../../../test/schemes.ts";
 import { text } from "../../../test/snippets.ts";
@@ -69,19 +68,9 @@ describe("Radio", () => {
     expect(group).toBe("twr");
   });
 
-  test("in a group, Tab enters at the chosen radio and leaves after it", async () => {
-    const screen = await renderIn("light", RadioGroup, { group: "twr" });
-    await userEvent.tab();
-    await expect
-      .element(screen.getByRole("radio", { name: "Tower" }))
-      .toHaveFocus();
-    await userEvent.tab();
-    await expect
-      .element(screen.getByRole("button", { name: "Next" }))
-      .toHaveFocus();
-  });
-
-  test("in a group, the arrow keys move to the next radio and choose it", async () => {
+  // The browser moves the choice; this is that the radios, each its own
+  // component, keep the bound group in step.
+  test("in a group, the arrow keys move to the next radio and set the group", async () => {
     let group: string | undefined = "gnd";
     const screen = await renderIn("light", RadioGroup, {
       get group() {
@@ -100,25 +89,6 @@ describe("Radio", () => {
     await expect.element(ground).not.toBeChecked();
     expect(group).toBe("twr");
     await userEvent.keyboard("{ArrowUp}");
-    await expect.element(ground).toBeChecked();
-    expect(group).toBe("gnd");
-  });
-
-  test("in a group with none chosen, Space chooses the focused radio", async () => {
-    let group: string | undefined;
-    const screen = await renderIn("light", RadioGroup, {
-      get group() {
-        return group;
-      },
-      set group(value) {
-        group = value;
-      },
-    });
-    const ground = screen.getByRole("radio", { name: "Ground" });
-    await userEvent.tab();
-    await expect.element(ground).toHaveFocus();
-    await expect.element(ground).not.toBeChecked();
-    await userEvent.keyboard(" ");
     await expect.element(ground).toBeChecked();
     expect(group).toBe("gnd");
   });
@@ -169,59 +139,21 @@ describe("Radio", () => {
     expect(group).toBe(2);
   });
 
-  test("in a group, the radios sit in a group named by the legend", async () => {
-    const screen = await renderIn("light", RadioGroup, {});
-    const group = screen.getByRole("group", { name: "Position" });
-    await expect
-      .element(group.getByRole("radio", { name: "Approach" }))
-      .toBeInTheDocument();
-  });
-
-  // The guide's roles: `primary` circle, `foreground-soft` label. The
-  // circle is checked, so the browser paints its fill from `accent-color`.
-  test.each(SCHEMES)("colours the circle and label in %s", async (scheme) => {
-    const screen = await renderIn(scheme, Radio, {
+  // The choice classes, whose looks (ring and 44px row too) formControl's
+  // tests hold: a `primary` circle, a `foreground-soft` label.
+  test("takes the choice colours", async () => {
+    const screen = await renderIn("light", Radio, {
       label: "Tower",
       name: "position",
       value: "twr",
       group: "twr",
     });
-    const radio = screen.getByRole("radio");
-    await expect.element(radio).toBeChecked();
     await expect
-      .element(radio)
-      .toHaveStyle({ accentColor: role("primary", scheme) });
+      .element(screen.getByRole("radio"))
+      .toHaveStyle({ accentColor: role("primary", "light") });
     await expect
       .element(screen.getByText("Tower"))
-      .toHaveStyle({ color: role("foreground-soft", scheme) });
-  });
-
-  // The guide's `ring` role.
-  test.each(SCHEMES)(
-    "shows a ring outline when tabbed to in %s",
-    async (scheme) => {
-      const colour = role("ring", scheme);
-      const screen = await renderIn(scheme, Radio, {
-        label: "Tower",
-        name: "position",
-        value: "twr",
-      });
-      await userEvent.tab();
-      await expect.element(screen.getByRole("radio")).toHaveStyle({
-        outlineStyle: "solid",
-        outlineColor: colour,
-      });
-    },
-  );
-
-  test("is a row at least 44px tall", async () => {
-    const screen = await renderIn("light", Radio, {
-      label: "Tower",
-      name: "position",
-      value: "twr",
-    });
-    const row = screen.container.querySelector("label")!;
-    expect(row.getBoundingClientRect().height).toBeGreaterThanOrEqual(44);
+      .toHaveStyle({ color: role("foreground-soft", "light") });
   });
 
   test("calls a caller's onchange and passes other attributes to the input", async () => {

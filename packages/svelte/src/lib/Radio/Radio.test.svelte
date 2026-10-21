@@ -1,5 +1,4 @@
-<!-- A radio group for Radio.test.ts: three radios in a Fieldset, and a
-     button after it. -->
+<!-- A radio group for Radio.test.ts: three radios in a Fieldset. -->
 <script lang="ts">
   import Fieldset from "../Fieldset/Fieldset.svelte";
   import Radio from "./Radio.svelte";
@@ -25,4 +24,3 @@
     <Radio label="Approach" name="position" value="app" {group} />
   {/if}
 </Fieldset>
-<button type="button">Next</button>

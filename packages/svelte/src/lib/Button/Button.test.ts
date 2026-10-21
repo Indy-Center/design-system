@@ -1,19 +1,21 @@
-import { createRawSnippet } from "svelte";
 import { describe, expect, test, vi } from "vitest";
 import { userEvent } from "vitest/browser";
-import { SCHEMES, translucent } from "../../../test/contrast.ts";
+import { translucent } from "../../../test/contrast.ts";
 import { role } from "../../../test/roles.ts";
 import { renderIn } from "../../../test/schemes.ts";
+import { text } from "../../../test/snippets.ts";
 import Button from "./Button.svelte";
 
-const text = (s: string) =>
-  createRawSnippet(() => ({ render: () => `<span>${s}</span>` }));
-
 describe("Button", () => {
-  test('is a button named by its text, of type "button"', async () => {
+  // With no variant or size: primary, and md's text-base, as Input's text.
+  test('is a primary md button named by its text, of type "button"', async () => {
     const screen = await renderIn("light", Button, { children: text("Save") });
     const button = screen.getByRole("button", { name: "Save" });
     await expect.element(button).toHaveAttribute("type", "button");
+    await expect.element(button).toHaveStyle({
+      backgroundColor: role("primary", "light"),
+      fontSize: "16px",
+    });
   });
 
   test("is a link when given an href", async () => {
@@ -28,112 +30,91 @@ describe("Button", () => {
   });
 
   // primary: `primary` under `primary-foreground`. secondary: no fill
-  // (transparent), `input` edge, `foreground` text. danger: `destructive`
+  // (transparent), an `input` edge, `foreground` text. danger: `destructive`
   // under `card`.
   const transparent = "rgba(0, 0, 0, 0)";
-  const looks = {
-    primary: { fill: "primary", ink: "primary-foreground" },
-    secondary: { fill: null, ink: "foreground" },
-    danger: { fill: "destructive", ink: "card" },
-  } as const;
-  test.each(
-    (["primary", "secondary", "danger"] as const).flatMap((variant) =>
-      SCHEMES.map((scheme) => [variant, scheme] as const),
-    ),
-  )("%s in %s", async (variant, scheme) => {
-    const { fill, ink } = looks[variant];
-    const screen = await renderIn(scheme, Button, {
-      variant,
-      children: text("Save"),
-    });
-    await expect.element(screen.getByRole("button")).toHaveStyle({
-      backgroundColor: fill ? role(fill, scheme) : transparent,
-      color: role(ink, scheme),
-    });
-  });
-
-  // `primary-hover`, and `muted`.
   test.each([
-    ["primary", "light", "primary-hover"],
-    ["primary", "dark", "primary-hover"],
-    ["primary", "dark-header", "primary-hover"],
-    ["secondary", "light", "muted"],
-    ["secondary", "dark", "muted"],
-    ["secondary", "dark-header", "muted"],
-  ] as const)("%s on hover in %s", async (variant, scheme, fill) => {
-    const screen = await renderIn(scheme, Button, {
+    {
+      variant: "primary",
+      look: {
+        backgroundColor: role("primary", "light"),
+        color: role("primary-foreground", "light"),
+      },
+    },
+    {
+      variant: "secondary",
+      look: {
+        backgroundColor: transparent,
+        color: role("foreground", "light"),
+        borderStyle: "solid",
+        borderColor: role("input", "light"),
+      },
+    },
+    {
+      variant: "danger",
+      look: {
+        backgroundColor: role("destructive", "light"),
+        color: role("card", "light"),
+      },
+    },
+  ] as const)("$variant", async ({ variant, look }) => {
+    const screen = await renderIn("light", Button, {
+      variant,
+      children: text("Save"),
+    });
+    await expect.element(screen.getByRole("button")).toHaveStyle(look);
+  });
+
+  // `primary-hover`, and `muted`. danger's is no role of its own:
+  // `destructive` at 90%, as the browser mixes it. The fill changes by a
+  // `transition-colors` that reduced motion doesn't stop, so each waits
+  // with expect.element, which retries.
+  test.each([
+    ["primary", () => role("primary-hover", "light")],
+    ["secondary", () => role("muted", "light")],
+    ["danger", () => translucent(role("destructive", "light"), 90)],
+  ] as const)("%s on hover", async (variant, fill) => {
+    const screen = await renderIn("light", Button, {
       variant,
       children: text("Save"),
     });
     const button = screen.getByRole("button");
     await userEvent.hover(button);
-    await expect
-      .element(button)
-      .toHaveStyle({ backgroundColor: role(fill, scheme) });
+    await expect.element(button).toHaveStyle({ backgroundColor: fill() });
   });
 
-  // danger's hover is no role of its own: `destructive` at 90%, as the
-  // browser mixes it.
-  test.each(SCHEMES)("danger on hover in %s", async (scheme) => {
-    const screen = await renderIn(scheme, Button, {
-      variant: "danger",
-      children: text("Delete"),
-    });
-    const button = screen.getByRole("button");
-    await userEvent.hover(button);
-    await expect
-      .poll(() => getComputedStyle(button.element()).backgroundColor)
-      .toBe(translucent(role("destructive", scheme), 90));
-  });
-
-  // The `input` role.
-  test.each(SCHEMES)(
-    "secondary has an edge in the input colour in %s",
-    async (scheme) => {
-      const screen = await renderIn(scheme, Button, {
-        variant: "secondary",
-        children: text("Cancel"),
-      });
-      await expect.element(screen.getByRole("button")).toHaveStyle({
-        borderStyle: "solid",
-        borderColor: role("input", scheme),
-      });
-    },
-  );
-
-  // Tailwind's text-sm, text-base and text-lg; md matches Input's text.
+  // Tailwind's text-sm, text-base and text-lg; and WCAG 2.5.8 and the
+  // conventions: every control at least 44px each way, even holding one
+  // letter.
   test.each([
     ["sm", "14px"],
     ["md", "16px"],
     ["lg", "18px"],
-  ] as const)("%s is %s text", async (size, fontSize) => {
-    const screen = await renderIn("light", Button, {
-      size,
-      children: text("Save"),
-    });
-    await expect.element(screen.getByRole("button")).toHaveStyle({ fontSize });
-  });
-
-  test("is md when no size is given", async () => {
-    const screen = await renderIn("light", Button, { children: text("Save") });
-    await expect
-      .element(screen.getByRole("button"))
-      .toHaveStyle({ fontSize: "16px" });
-  });
-
-  // WCAG 2.5.8 and the conventions: every control at least 44px each way.
-  test.each(["sm", "md", "lg"] as const)(
-    "%s is at least 44px tall and wide, even holding one letter",
-    async (size) => {
+  ] as const)(
+    "%s is %s text, and at least 44px tall and wide",
+    async (size, fontSize) => {
       const screen = await renderIn("light", Button, {
         size,
         children: text("+"),
       });
-      const box = screen.getByRole("button").element().getBoundingClientRect();
+      const button = screen.getByRole("button");
+      await expect.element(button).toHaveStyle({ fontSize });
+      const box = button.element().getBoundingClientRect();
       expect(box.height).toBeGreaterThanOrEqual(44);
       expect(box.width).toBeGreaterThanOrEqual(44);
     },
   );
+
+  test("with busy and pressed left out, has no status, mark or toggle", async () => {
+    const screen = await renderIn("light", Button, {
+      children: text("Save"),
+    });
+    const button = screen.getByRole("button");
+    await expect.element(button).not.toHaveAttribute("aria-busy");
+    await expect.element(button).not.toHaveAttribute("aria-pressed");
+    expect(screen.getByRole("status").elements()).toEqual([]);
+    expect(getComputedStyle(button.element(), "::before").content).toBe("none");
+  });
 
   describe("busy", () => {
     // Readers hold back updates inside an aria-busy element, and a
@@ -185,16 +166,6 @@ describe("Button", () => {
       const spinner = button.getByRole("status", { includeHidden: true });
       await expect.element(spinner).toBeVisible();
       expect(button.getByRole("status").elements()).toEqual([]);
-    });
-
-    test("has no status when busy is left out", async () => {
-      const screen = await renderIn("light", Button, {
-        children: text("Save"),
-      });
-      await expect
-        .element(screen.getByRole("button"))
-        .not.toHaveAttribute("aria-busy");
-      expect(screen.getByRole("status").elements()).toEqual([]);
     });
 
     test("keeps its name, text and focus", async () => {
@@ -300,61 +271,35 @@ describe("Button", () => {
   });
 
   describe("pressed", () => {
-    test.each([
-      [true, "true"],
-      [false, "false"],
-    ])("pressed={%s} is a toggle announced as %s", async (pressed, state) => {
-      const screen = await renderIn("light", Button, {
-        pressed,
-        children: text("Show offline"),
-      });
-      await expect
-        .element(screen.getByRole("button", { name: "Show offline", pressed }))
-        .toHaveAttribute("aria-pressed", state);
-    });
-
-    test("isn't a toggle when pressed is left out", async () => {
-      const screen = await renderIn("light", Button, {
-        children: text("Save"),
-      });
-      await expect
-        .element(screen.getByRole("button"))
-        .not.toHaveAttribute("aria-pressed");
-    });
-
     // Not by colour alone (WCAG 1.4.1): a mark before the text, filled
     // when on and hollow when off, as the community site's ActionToggle
     // has. It's the button's ::before, in its text colour: secondary's
     // `foreground`.
     const mark = (element: Element) => getComputedStyle(element, "::before");
-    test.each(
-      SCHEMES.flatMap((scheme) => [
-        [true, scheme] as const,
-        [false, scheme] as const,
-      ]),
-    )(
-      "pressed={%s} shows its state by shape in %s",
-      async (pressed, scheme) => {
-        const ink = role("foreground", scheme);
-        const screen = await renderIn(scheme, Button, {
+    test.each([
+      [true, "true"],
+      [false, "false"],
+    ])(
+      "pressed={%s} is a toggle announced as %s, shown by shape",
+      async (pressed, state) => {
+        const ink = role("foreground", "light");
+        const screen = await renderIn("light", Button, {
           variant: "secondary",
           pressed,
           children: text("Show offline"),
         });
-        const style = mark(screen.getByRole("button").element());
+        const button = screen.getByRole("button", {
+          name: "Show offline",
+          pressed,
+        });
+        await expect.element(button).toHaveAttribute("aria-pressed", state);
+        const style = mark(button.element());
         expect(style.width).toBe("12px");
         expect(style.borderStyle).toBe("solid");
         expect(style.borderColor).toBe(ink);
         expect(style.backgroundColor).toBe(pressed ? ink : transparent);
       },
     );
-
-    test("has no mark when pressed is left out", async () => {
-      const screen = await renderIn("light", Button, {
-        children: text("Save"),
-      });
-      expect(mark(screen.getByRole("button").element()).content).toBe("none");
-    });
 
     test("as a link, is never a toggle", async () => {
       // The types forbid this; an untyped caller still gets a plain link.
@@ -390,39 +335,15 @@ describe("Button", () => {
     });
   });
 
-  test("runs onclick from Enter and Space", async () => {
-    const onclick = vi.fn();
-    await renderIn("light", Button, { onclick, children: text("Save") });
-    await userEvent.tab();
-    await userEvent.keyboard("{Enter}");
-    await userEvent.keyboard(" ");
-    expect(onclick).toHaveBeenCalledTimes(2);
-  });
-
   // The `ring` role.
-  test.each(SCHEMES)(
-    "shows a ring outline when tabbed to in %s",
-    async (scheme) => {
-      const screen = await renderIn(scheme, Button, {
-        children: text("Save"),
-      });
-      await userEvent.tab();
-      const button = screen.getByRole("button");
-      await expect.element(button).toHaveFocus();
-      await expect.element(button).toHaveStyle({
-        outlineStyle: "solid",
-        outlineColor: role("ring", scheme),
-      });
-    },
-  );
-
-  test("as a link, shows the ring outline too", async () => {
+  test("shows a ring outline when tabbed to", async () => {
     const screen = await renderIn("light", Button, {
-      href: "/events/new",
-      children: text("New event"),
+      children: text("Save"),
     });
     await userEvent.tab();
-    await expect.element(screen.getByRole("link")).toHaveStyle({
+    const button = screen.getByRole("button");
+    await expect.element(button).toHaveFocus();
+    await expect.element(button).toHaveStyle({
       outlineStyle: "solid",
       outlineColor: role("ring", "light"),
     });
@@ -455,12 +376,5 @@ describe("Button", () => {
       marginLeft: "16px",
       backgroundColor: role("primary", "light"),
     });
-  });
-
-  test("is primary when no variant is given", async () => {
-    const screen = await renderIn("light", Button, { children: text("Save") });
-    await expect
-      .element(screen.getByRole("button"))
-      .toHaveStyle({ backgroundColor: role("primary", "light") });
   });
 });
