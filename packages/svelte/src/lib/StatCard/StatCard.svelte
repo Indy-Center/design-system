@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
   import type { HTMLAttributes } from "svelte/elements";
+  import Card from "../Card/Card.svelte";
 
   type Props = HTMLAttributes<HTMLDListElement> & {
     /** What is counted, such as "Total users": the list's term. */
@@ -28,12 +29,7 @@
 </script>
 
 <!-- The card is a box around the list: a tile in a dl would need a term. -->
-<div
-  class={[
-    "flex items-center justify-between gap-3 rounded-lg border border-border bg-card p-4",
-    className,
-  ]}
->
+<Card class={["flex items-center justify-between gap-3", className]}>
   <dl {...rest} class="min-w-0">
     <dt class="text-sm text-muted-foreground">{label}</dt>
     <dd class="mt-1 font-heading text-2xl font-semibold text-foreground">
@@ -51,4 +47,4 @@
       {@render icon()}
     </div>
   {/if}
-</div>
+</Card>

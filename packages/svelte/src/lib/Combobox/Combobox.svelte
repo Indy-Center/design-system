@@ -1,19 +1,24 @@
 <script lang="ts" generics="T">
   import { mdiChevronDown } from "@mdi/js";
-  import type { Snippet } from "svelte";
+  import { untrack, type Snippet } from "svelte";
   import type { HTMLInputAttributes } from "svelte/elements";
   import { dismiss } from "../dismiss/dismiss.js";
   import { textControlClasses } from "../formControl/formControl.js";
   import Icon from "../Icon/Icon.svelte";
 
+  /** Searches for the typed text: the options that match it. */
+  type Search = (query: string) => T[] | Promise<T[]>;
+
   type Props = Omit<
     HTMLInputAttributes,
-    "type" | "value" | "role" | "name" | "children"
+    "type" | "value" | "defaultValue" | "role" | "name" | "children"
   > & {
     /** The options: a list, or a function that searches for the typed text. */
-    options: T[] | ((query: string) => T[] | Promise<T[]>);
+    options: T[] | Search;
     /** The option picked, or null; bindable. */
     value?: T | null;
+    /** The option a form reset goes back to, and the first pick when `value` is null. */
+    defaultValue?: T | null;
     /** Sends the picked option's key with a form under this name. */
     name?: string;
     /** An option's text: shown in the box once picked, and matched against. */
@@ -27,6 +32,7 @@
   let {
     options,
     value = $bindable(null),
+    defaultValue = null,
     name,
     getText = String,
     getKey = getText,
@@ -40,6 +46,12 @@
     onblur: callerBlur,
     ...rest
   }: Props = $props();
+
+  // As Svelte's own inputs: a value given first wins, unless it's null.
+  // Only the first `defaultValue` counts here; a reset reads it afresh.
+  untrack(() => {
+    if (value == null && defaultValue != null) value = defaultValue;
+  });
 
   const madeId = $props.id();
   const inputId = $derived(id ?? madeId);
@@ -59,11 +71,24 @@
   let foundFor = $state<string | null>(null);
   let searching = $state(false);
   let failed = $state(false);
+  // The arrow that opened the list before the search's answer came (1 for
+  // Down, -1 for Up), if any. Once the answer is in, it enters the list.
+  let opening: 1 | -1 | null = null;
 
-  // The list shown answers older text than the box's, while a search for
-  // the new text is under way. Its options no longer match, so the arrows
-  // don't move into it, and Enter, with no active option, can't pick one.
-  const stale = $derived(!Array.isArray(options) && foundFor !== query);
+  /** Where an arrow enters a list of `count`: Down the first, Up the last. */
+  const entry = (step: 1 | -1, count: number) =>
+    count === 0 ? -1 : step === 1 ? 0 : count - 1;
+
+  // The search function that found `found`.
+  let foundBy = $state<Search | null>(null);
+
+  // The list shown answers older text than the box's, or came from an
+  // older search function, while a new search is under way. Its options
+  // may no longer match, so the arrows don't move into it, and Enter, with
+  // no active option, can't pick one.
+  const stale = $derived(
+    !Array.isArray(options) && (foundFor !== query || foundBy !== options),
+  );
 
   const results = $derived.by(() => {
     if (!Array.isArray(options)) return found;
@@ -72,12 +97,18 @@
   });
 
   // Asks a search function for each new text while the list is open.
+  // Reopened on text the list already answers, it doesn't ask again (a
+  // failed search, or a new search function, asks again).
   $effect(() => {
     if (Array.isArray(options) || !open) return;
+    // Read outside `untrack`, so new text asks again.
+    const text = query;
+    const search = options;
+    if (untrack(() => foundFor === text && foundBy === search && !failed)) {
+      return;
+    }
     let current = true;
     searching = true;
-    const search = options;
-    const text = query;
     // A function that throws fails the same way as one that rejects.
     new Promise<T[]>((resolve) => resolve(search(text))).then(
       (answer) => settle(answer, false),
@@ -88,9 +119,11 @@
       if (!current) return;
       found = answer;
       foundFor = text;
+      foundBy = search;
       failed = error;
       searching = false;
-      active = -1;
+      active = opening === null ? -1 : entry(opening, answer.length);
+      opening = null;
     }
     return () => {
       current = false;
@@ -135,8 +168,8 @@
   const keyOf = (option: T | null) => (option == null ? null : getKey(option));
 
   // The key of the pick the box's text was last written from. When `value`
-  // changes from outside (a form reset), the box follows it. Keys, not the
-  // options, are compared: a bound value comes back as a proxy.
+  // changes from outside (the page clears it), the box follows it. Keys,
+  // not the options, are compared: a bound value comes back as a proxy.
   let shownKey: string | null = null;
   $effect.pre(() => {
     const key = keyOf(value);
@@ -151,6 +184,26 @@
   $effect(() => {
     const unpicked = value == null && query !== "";
     input?.setCustomValidity(unpicked ? "Pick an option from the list." : "");
+  });
+
+  // A form reset would empty the box but leave the hidden input's value,
+  // so the pick goes back to `defaultValue` (none when it's left out), and
+  // an open list closes. The reset lands after its event, unless the event
+  // is cancelled.
+  $effect(() => {
+    const form = input?.form;
+    if (!form) return;
+    const onreset = (event: Event) => {
+      queueMicrotask(() => {
+        if (event.defaultPrevented) return;
+        pick(defaultValue);
+        query = defaultValue == null ? "" : getText(defaultValue);
+        pickedMessage = "";
+        close();
+      });
+    };
+    form.addEventListener("reset", onreset);
+    return () => form.removeEventListener("reset", onreset);
   });
 
   /**
@@ -168,6 +221,7 @@
     pick(null);
     pickedMessage = "";
     active = -1;
+    opening = null;
     open = true;
   }
 
@@ -183,9 +237,15 @@
     const count = results.length;
     const wasOpen = open;
     show();
-    if (count === 0 || stale) return;
+    if (stale) {
+      // The answer isn't in yet. The arrow that opened the list moves into
+      // it once it is; one pressed in a list already open does nothing.
+      if (!wasOpen) opening = step;
+      return;
+    }
+    if (count === 0) return;
     if (!wasOpen || active < 0) {
-      active = step === 1 ? 0 : count - 1;
+      active = entry(step, count);
     } else {
       active = (active + step + count) % count;
     }
@@ -194,6 +254,7 @@
   function close() {
     open = false;
     active = -1;
+    opening = null;
   }
 
   /**

@@ -7,7 +7,7 @@ description: A text box that searches a list as you type, to pick one option fro
 
 - [ ] Use it to pick one from many by typing: a controller, a position, a
       member. For a short fixed list (a rating, a facility), use `Select`;
-      to filter a page's results, use the search box in `Input`.
+      to filter a page's results, use `SearchInput`.
 - [ ] Put it in a `Field`, which gives it its label, hint and error. Used
       alone, give it an `aria-label`.
 - [ ] Give `getText` (the words shown and matched) and `getKey` (unique;
@@ -17,7 +17,9 @@ description: A text box that searches a list as you type, to pick one option fro
       function to search your own way (several fields, a server). The
       function runs on each change to the text while the list is open, and
       only its latest answer shows; slow it down yourself if it calls a
-      server.
+      server. Reopened on text it has already answered, the list shows
+      that answer without asking again; to search fresh, pass a new
+      function.
 - [ ] Draw each option with the `option` snippet for more than its text
       (a CID in `font-mono`). Keep it to one or two lines, and no links or
       buttons inside.
@@ -26,6 +28,11 @@ description: A text box that searches a list as you type, to pick one option fro
       option from the list."), so typed text is never dropped silently; an
       empty box sends nothing. With `required` (on it or its `Field`), an
       empty box stops it too.
+- [ ] On an edit form, give `defaultValue` the saved pick, so a reset of
+      the form goes back to it; without one, a reset clears the pick.
+      SvelteKit's `use:enhance` resets the form after each successful
+      send, so an edit form that stays on the page passes
+      `update({ reset: false })`.
 - [ ] Don't colour it or its list. `class` is for layout only, on the
       wrapper round the box and its list.
 
@@ -71,16 +78,17 @@ With a search function:
 
 ## Props
 
-| Prop      | Type                                    | Notes                                                                                                                                                                                                                            |
-| --------- | --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `options` | `T[] \| (query) => T[] \| Promise<T[]>` | Required. A list is matched on `getText`, ignoring case; a function does its own search.                                                                                                                                         |
-| `value`   | `T \| null`                             | Bindable: `bind:value`. The pick; null until one is made. Typing in the box clears it.                                                                                                                                           |
-| `getText` | `(option: T) => string`                 | The option's words: shown in the box once picked, and matched. `String` by default.                                                                                                                                              |
-| `getKey`  | `(option: T) => string`                 | Unique per option; sent with the form. `getText` by default.                                                                                                                                                                     |
-| `name`    | `string`                                | Sends the pick's key with a form, from a hidden input.                                                                                                                                                                           |
-| `option`  | `Snippet<[T]>`                          | Draws one option in the list. Its text when left out.                                                                                                                                                                            |
-| `class`   | `string`                                | Added to the wrapper. Layout only.                                                                                                                                                                                               |
-| others    | `<input>` attributes                    | Passed to the box: `id`, `placeholder`, `required`, `disabled`, `aria-*` and the rest. Your `oninput`, `onkeydown`, `onclick` and `onblur` run before the combobox's own; `preventDefault()` in `onkeydown` keeps a key from it. |
+| Prop           | Type                                    | Notes                                                                                                                                                                                                                            |
+| -------------- | --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `options`      | `T[] \| (query) => T[] \| Promise<T[]>` | Required. A list is matched on `getText`, ignoring case; a function does its own search.                                                                                                                                         |
+| `value`        | `T \| null`                             | Bindable: `bind:value`. The pick; null until one is made. Typing in the box clears it; a reset of its form sets it to `defaultValue`.                                                                                            |
+| `defaultValue` | `T \| null`                             | The pick a reset of its form goes back to; null (no pick) by default. Also the first pick when `value` starts null, as with Svelte's own inputs.                                                                                 |
+| `getText`      | `(option: T) => string`                 | The option's words: shown in the box once picked, and matched. `String` by default.                                                                                                                                              |
+| `getKey`       | `(option: T) => string`                 | Unique per option; sent with the form. `getText` by default.                                                                                                                                                                     |
+| `name`         | `string`                                | Sends the pick's key with a form, from a hidden input.                                                                                                                                                                           |
+| `option`       | `Snippet<[T]>`                          | Draws one option in the list. Its text when left out.                                                                                                                                                                            |
+| `class`        | `string`                                | Added to the wrapper. Layout only.                                                                                                                                                                                               |
+| others         | `<input>` attributes                    | Passed to the box: `id`, `placeholder`, `required`, `disabled`, `aria-*` and the rest. Your `oninput`, `onkeydown`, `onclick` and `onblur` run before the combobox's own; `preventDefault()` in `onkeydown` keeps a key from it. |
 
 ## Looks
 
@@ -119,7 +127,8 @@ option.
 - While a search function is still looking for new text, the arrows
   don't move into the list it found for the old text and a click on it
   does nothing, so neither Enter nor the mouse can pick an option that no
-  longer matches.
+  longer matches. The arrow that opens the list lands on its first or last
+  option once the answer is in.
 - A status region says how many options match while the list is open
   ("3 results", "No matches", "Couldn't search"), then "Ann Archer,
   selected" on a pick.

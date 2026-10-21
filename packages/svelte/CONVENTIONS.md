@@ -35,6 +35,11 @@ src/routes/name/+page.svelte its playground page (lower-case folder)
   no folder, doc page or playground page of its own: the component's doc
   page gives it a Props table, and the component's tests and playground
   cover it.
+- Two exported components that draw the same thing for different jobs
+  (`StarRating` to choose, `StarDisplay` to show) share one folder, doc
+  page and playground page, named for the first. Their shared look goes
+  in a module in that folder (`stars.ts`), and the doc page gives each a
+  Props table.
 - Parts that several components share, and that aren't exported, get a
   folder of their own with no doc page: `formControl` (the controls'
   classes), `CloseButton` (Alert's and Toast's close button).
@@ -43,6 +48,11 @@ src/routes/name/+page.svelte its playground page (lower-case folder)
   function and its state), `Toaster.svelte` (the one component that shows
   them), `Toast.md` and `Toast.test.ts`, and the playground is
   `routes/toast`.
+- A component that is both placed and raised with a function keeps the
+  function in the component's folder: `ConfirmDialog/` holds
+  `ConfirmDialog.svelte`, `confirmAction.ts` and the private
+  `ConfirmPrompt.svelte` it mounts, with one doc page and playground for
+  both.
 
 ## Props
 
@@ -86,7 +96,8 @@ src/routes/name/+page.svelte its playground page (lower-case folder)
   applies the choice at once. Read the scheme in use from
   `document.documentElement.dataset.theme` after mount. See
   `src/lib/colorScheme/colorScheme.md`.
-- `font-heading` for headings, `font-mono` for CIDs and ratings; Tailwind's
+- `font-heading` for headings, `font-mono` for CIDs and controller ratings
+  (`S3`, `C1`; not star ratings); Tailwind's
   default sizes.
 - Focus: `focus-visible:outline-2 focus-visible:outline-offset-2
 focus-visible:outline-ring`.
@@ -158,6 +169,16 @@ A short example importing from "@indy-center/svelte".
 ## Props
 
 | Prop | Type | Notes |
+
+## What it shows (optional)
+
+What the member sees in each state, when the props alone don't say it:
+an empty value, a value that crosses midnight, a value it can't read.
+
+## Server and browser (optional)
+
+What the server draws and what changes once the page loads, when they
+differ: anything that needs the member's zone or device.
 
 ## Looks
 
