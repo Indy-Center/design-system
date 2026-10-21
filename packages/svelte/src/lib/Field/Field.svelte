@@ -22,6 +22,8 @@
     DescriptionProps & {
       /** The label's text. */
       label: string;
+      /** Hides the label from sight but not from screen readers, where what is around the control makes it plain. */
+      hideLabel?: boolean;
       /** Says "(required)" by the label and makes the control required. */
       required?: boolean;
       /** The control's id; one is made when left out. */
@@ -32,6 +34,7 @@
 
   let {
     label,
+    hideLabel = false,
     hint,
     error,
     required = false,
@@ -53,7 +56,10 @@
 </script>
 
 <div {...rest} class={["flex flex-col gap-1.5", className]}>
-  <label for={controlId} class="text-sm font-medium text-foreground-soft">
+  <label
+    for={controlId}
+    class={hideLabel ? "sr-only" : "text-sm font-medium text-foreground-soft"}
+  >
     {label}
     {#if required}
       <!-- The control's own `required` says it to screen readers. -->

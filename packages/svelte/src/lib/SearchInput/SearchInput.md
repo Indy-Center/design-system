@@ -78,6 +78,7 @@ for the sort. On a phone the parts wrap onto their own lines.
 | `value`     | `string`             | Bindable: `bind:value`.                                                                |
 | `id`        | `string`             | The box's id; one is made when left out.                                               |
 | `class`     | `string`             | On the outer box that holds the label and the input, since it is for layout.           |
+| `onkeydown` | `function`           | Runs before the box's own Escape; `preventDefault()` there keeps the text.             |
 | others      | `<input>` attributes | Passed to the `<input>`: `name`, `placeholder`, `autocomplete`, `aria-*` and the rest. |
 
 ## Looks
@@ -85,17 +86,27 @@ for the sort. On a phone the parts wrap onto their own lines.
 - The box is `Input`'s: fill `muted`, border `input`, text `foreground`,
   placeholder `placeholder`, a `ring` outline when focused, 44px tall
   and 16px text, in each scheme.
-- The label is `Field`'s: `foreground-soft`, small and medium weight.
+- The label is `Field`'s own, so it looks as Field's does:
+  `foreground-soft`, small and medium weight.
 - A magnifying glass in `muted-foreground` at the box's start; the text
   begins after it.
-- Chrome, Edge and Safari show their own clear button at the end of the
-  box once there is text; Firefox may not.
+- Once there is text, a clear button (a cross in `muted-foreground`,
+  `foreground` on hover) at the box's end, 44px square. It replaces the
+  browser's own, which is hidden, so every browser shows the same one.
+  It isn't shown when the box is `disabled` or `readonly`.
 
 ## Accessibility
 
-- It renders a `<label>` and a native `<input type="search">`, so it is
-  a searchbox named by the label. Chromium browsers (Chrome, Edge) clear
-  it on Escape; don't count on that in the others.
+- It renders a `Field` around a native `<input type="search">`, so it is
+  a searchbox named by the label.
+- Escape clears it in every browser, and focus stays in the box. While
+  there is text, that Escape goes no further; once the box is empty,
+  Escape goes on to whatever is around it, so a second press closes a
+  dialog or menu. To handle Escape yourself, call `preventDefault()` in
+  your `onkeydown` and the box leaves it alone.
+- The clear button is named "Clear the search", comes after the box in
+  Tab order, and puts focus back in the box. Clearing either way sends
+  an `input` event, so `bind:value` and an `oninput` both hear it.
 - The icon is hidden from screen readers; the label does the naming.
 - Filtering as the member types changes the list without moving focus.
   Say how many results there are in a `role="status"` region near the
