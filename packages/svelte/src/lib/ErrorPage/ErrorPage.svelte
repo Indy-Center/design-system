@@ -123,7 +123,7 @@
       <!-- Heading's label look, on a <p>: the page's h1 is its one heading. -->
       <p id={linksId} class={["mb-3", labelClasses]}>Or try one of these</p>
       <ul class="flex flex-wrap justify-center gap-2">
-        {#each links as link (link.href)}
+        {#each links as link}
           <li>
             <a
               href={link.href}

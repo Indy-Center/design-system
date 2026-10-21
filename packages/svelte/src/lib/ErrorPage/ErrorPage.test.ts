@@ -133,6 +133,20 @@ describe("ErrorPage", () => {
     expect(svg.getAttribute("aria-hidden")).toBe("true");
   });
 
+  // A static list, not keyed: two pages at one address don't throw.
+  test("offers two pages that share an address", async () => {
+    const links = [
+      { label: "Events", href: "/events" },
+      { label: "Calendar", href: "/events" },
+    ];
+    const screen = await renderIn("light", ErrorPage, { ...notFound, links });
+    const nav = screen.getByRole("navigation", { name: "Or try one of these" });
+    expect(nav.getByRole("link").elements()).toHaveLength(2);
+    await expect
+      .element(nav.getByRole("link", { name: "Calendar" }))
+      .toHaveAttribute("href", "/events");
+  });
+
   test("has no other pages when none are given, or for other errors", async () => {
     const links = [{ label: "Events", href: "/events" }];
     const none = await renderIn("light", ErrorPage, notFound);
