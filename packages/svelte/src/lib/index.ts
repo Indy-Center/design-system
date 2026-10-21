@@ -25,6 +25,10 @@ export { default as ColorSchemeSetting } from "./ColorSchemeSetting/ColorSchemeS
 export { default as Combobox } from "./Combobox/Combobox.svelte";
 export { default as ConfirmDialog } from "./ConfirmDialog/ConfirmDialog.svelte";
 export { default as CopyButton } from "./CopyButton/CopyButton.svelte";
+export {
+  default as Credential,
+  type CredentialKind,
+} from "./Credential/Credential.svelte";
 export { default as DateTimeInput } from "./DateTimeInput/DateTimeInput.svelte";
 export { default as DescriptionList } from "./DescriptionList/DescriptionList.svelte";
 export { default as Disclosure } from "./Disclosure/Disclosure.svelte";
