@@ -171,6 +171,21 @@ describe("Position", () => {
         "Indy Center IND_83_CTR Falmouth 83 one two eight point two two",
       );
     });
+
+    test.each([
+      ["left", "KLEX Lexington Tower · 119.10"],
+      ["right", "Lexington Tower · KLEX · 119.10"],
+      ["under", "Lexington Tower · KLEX Blue Grass · 119.10"],
+    ] as const)('with airportAt="%s" reads %s', async (airportAt, text) => {
+      const { root } = await show({
+        callsign: "LEX_TWR",
+        show: [...PILOTS],
+        layout: "inline",
+        airportAt,
+        airport: KLEX,
+      });
+      expect(onScreen(root)).toBe(text);
+    });
   });
 
   describe("airportAt", () => {
@@ -308,6 +323,16 @@ describe("Position", () => {
       });
       expect(onScreen(screen.container)).toBe(
         "Lexington Approach 120.15 LEX_E_APP · Radar East",
+      );
+    });
+
+    test("a positionId wins over the callsign", async () => {
+      const { root } = await show({
+        callsign: "LEX_TWR",
+        positionId: indyCenter.id,
+      });
+      expect(onScreen(root)).toBe(
+        "Indy Center 128.22 IND_83_CTR · Falmouth 83",
       );
     });
   });
