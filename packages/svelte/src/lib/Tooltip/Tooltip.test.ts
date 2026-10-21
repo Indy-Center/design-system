@@ -47,6 +47,41 @@ describe("Tooltip", () => {
     await expect.element(tooltip(screen)).not.toBeVisible();
   });
 
+  // A click focuses the button, but not visibly: once the pointer leaves,
+  // the tooltip goes, rather than staying until focus moves.
+  test("hides when the pointer leaves a trigger it clicked", async () => {
+    const screen = await renderIn("light", Described, {});
+
+    await trigger(screen).click();
+    await expect.element(tooltip(screen)).toBeVisible();
+    await trigger(screen).unhover();
+
+    await expect.element(trigger(screen)).toHaveFocus();
+    await expect.element(tooltip(screen)).not.toBeVisible();
+  });
+
+  test("Escape on hover, then leaving and coming back, shows it again", async () => {
+    const screen = await renderIn("light", Described, {});
+    await trigger(screen).hover();
+    await userEvent.keyboard("{Escape}");
+    await expect.element(tooltip(screen)).not.toBeVisible();
+
+    await trigger(screen).unhover();
+    await trigger(screen).hover();
+
+    await expect.element(tooltip(screen)).toBeVisible();
+  });
+
+  test("puts class on the box round the trigger, and other attributes on the tooltip", async () => {
+    const screen = await renderIn("light", Described, {
+      class: "ml-8",
+      lang: "en-GB",
+    });
+
+    expect(trigger(screen).element().parentElement).toHaveClass("ml-8");
+    await expect.element(tooltip(screen)).toHaveAttribute("lang", "en-GB");
+  });
+
   // WCAG 1.4.13: the pointer can move onto the tooltip to read it.
   test("stays while the pointer moves onto the tooltip", async () => {
     const screen = await renderIn("light", Described, {});

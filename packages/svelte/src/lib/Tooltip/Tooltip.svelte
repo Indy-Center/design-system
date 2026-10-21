@@ -51,18 +51,24 @@
   let leaving: ReturnType<typeof setTimeout> | undefined;
   $effect(() => () => clearTimeout(leaving));
 
-  function onpointerenter() {
+  // A tap isn't a hover: on a phone it would flash the tooltip and go.
+  function onpointerenter(event: PointerEvent) {
+    if (event.pointerType === "touch") return;
     clearTimeout(leaving);
-    if (!hovered) dismissed = false;
+    dismissed = false;
     hovered = true;
   }
 
-  function onpointerleave() {
+  function onpointerleave(event: PointerEvent) {
+    if (event.pointerType === "touch") return;
     clearTimeout(leaving);
     leaving = setTimeout(() => (hovered = false), 100);
   }
 
-  function onfocusin() {
+  // Only focus a keyboard gives, so a click doesn't leave it showing once
+  // the pointer has gone.
+  function onfocusin(event: FocusEvent) {
+    if (!(event.target as Element).matches(":focus-visible")) return;
     dismissed = false;
     focused = true;
   }

@@ -14,7 +14,9 @@ description: A short description of a control that shows on hover and on focus.
       a code, give its element `tabindex="0"`. Don't use one on a
       disabled button: it can't take focus.
 - [ ] Spread the attributes the `children` snippet is given on the
-      trigger, so its text becomes the trigger's description.
+      trigger, so its text becomes the trigger's description. It replaces
+      any `aria-describedby` already there, so don't put it on a control
+      in a `Field` that has a hint or an error.
 - [ ] Write `text` as plain words, short enough for a line or two; no
       links or buttons. It is a description, not a name: an icon button
       still needs its own `aria-label`.
@@ -71,10 +73,15 @@ description: A short description of a control that shows on hover and on focus.
 - The tooltip is a `<span role="tooltip">`, and the trigger's
   `aria-describedby` points at it, so screen readers read its text after
   the trigger's name, shown or not.
-- It shows while the pointer is on the trigger or the trigger has focus,
-  and hides when both have left. The pointer can move onto the tooltip to
-  read it without it closing.
+- It shows while a mouse or pen is on the trigger or the trigger has
+  keyboard focus (`:focus-visible`), and hides when both have left; a
+  click's focus doesn't keep it up. The pointer can move onto the tooltip
+  to read it without it closing.
+- A tap on a touch screen doesn't show it, so a phone user never sees
+  it: keep what it says nice to know.
 - Escape hides it, leaving focus where it was; it shows again on the next
   hover or focus. A press elsewhere on the page hides it too.
 - It is a manual `popover`, drawn above the page, so a table or a card
-  can't clip it, and it doesn't close a `DropdownMenu` it sits in.
+  can't clip it, and it doesn't close a `DropdownMenu` it sits in. It is
+  placed with CSS anchor positioning; a browser without it shows the
+  tooltip in a corner of the window.
