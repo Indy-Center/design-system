@@ -14,8 +14,8 @@ description: A real h1 to h6 at the level you give it, with its size set apart, 
       case; the look makes it uppercase.
 - [ ] Don't colour, resize or re-weight it with classes. `class` is for
       layout only, such as a margin.
-- [ ] A page's title with a lead line and actions belongs in `PageHeader`
-      (arriving in this release), which uses `Heading` inside.
+- [ ] A page's title, with its lead line and actions, belongs in
+      `PageHeader`; a panel's title in `Panel`. Both use `Heading` inside.
 
 ## Use
 

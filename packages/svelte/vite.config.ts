@@ -15,6 +15,10 @@ export default defineConfig({
   // The tokens package is linked from beside this one; its font is served
   // from there.
   server: { fs: { allow: ["../tokens"] } },
+  // For any server render here (the tests' inlines dependencies; the
+  // playground's), take a package's ES module (`@mdi/js`'s) over its
+  // CommonJS `main`, which can't run inlined.
+  ssr: { resolve: { mainFields: ["module", "main"] } },
   test: {
     // expect.element retries until the test times out, so keep this short.
     testTimeout: 10_000,
@@ -22,9 +26,6 @@ export default defineConfig({
       {
         // Component tests, beside each component, in headless Chromium.
         extends: true,
-        // The tests' server renders (`serverRender`) run the icons' CommonJS
-        // build otherwise, which Vite's module runner can't.
-        ssr: { resolve: { mainFields: ["module"] } },
         test: {
           name: "components",
           include: ["src/lib/**/*.test.ts"],

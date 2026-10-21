@@ -69,12 +69,16 @@ describe("the packed package", () => {
   test("exports the aviation helpers from the package root, with types", async () => {
     const index = await readFile(new URL("dist/index.d.ts", root), "utf8");
     for (const name of [
+      "AirportInfo",
       "comparePositionTypes",
+      "findPilotRating",
       "findRating",
       "formatDuration",
       "formatFrequency",
+      "FrequencyOptions",
       "isPosition",
       "parseCallsign",
+      "PILOT_RATINGS",
       "POSITION_TYPES",
       "RATINGS",
       "resolvePosition",
@@ -102,6 +106,30 @@ describe("the packed package", () => {
         "dist/Toast/Toast.md",
         "dist/Toast/toast.svelte.js",
         "dist/severity/severity.md",
+      ]),
+    );
+  });
+
+  test("exports the header's parts and the Indy Center apps, with docs", async () => {
+    const index = await readFile(new URL("dist/index.d.ts", root), "utf8");
+    for (const name of [
+      "AppsMenu",
+      "App",
+      "INDY_CENTER_APPS",
+      "AppNav",
+      "AppNavMenu",
+      "NavItem",
+      "NavLink",
+      "NavGroup",
+    ])
+      expect(index).toMatch(new RegExp(`\\b${name}\\b`));
+    expect(files).toEqual(
+      expect.arrayContaining([
+        "dist/AppsMenu/AppsMenu.md",
+        "dist/AppsMenu/apps.js",
+        "dist/AppNav/AppNav.md",
+        "dist/AppNav/AppNavMenu.svelte",
+        "dist/AppNav/nav.js",
       ]),
     );
   });

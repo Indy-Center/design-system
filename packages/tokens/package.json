@@ -12,6 +12,7 @@
   "files": [
     "dist",
     "fonts",
+    "base.css",
     "prose.css"
   ],
   "exports": {
@@ -21,6 +22,7 @@
     "./tokens.json": "./dist/tokens.json",
     "./tables.md": "./dist/tables.md",
     "./fonts.css": "./fonts/fonts.css",
+    "./base.css": "./base.css",
     "./prose.css": "./prose.css",
     "./package.json": "./package.json"
   },

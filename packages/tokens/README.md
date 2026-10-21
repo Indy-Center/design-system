@@ -11,6 +11,7 @@ In a Tailwind v4 app's stylesheet:
 @import "tailwindcss";
 @import "@indy-center/tokens/tokens.css";
 @import "@indy-center/tokens/theme.css";
+@import "@indy-center/tokens/base.css";
 @import "@indy-center/tokens/fonts.css";
 ```
 
@@ -23,6 +24,18 @@ In a Tailwind v4 app's stylesheet:
   `text-foreground`, `font-heading` and the rest exist; a `dark:` variant
   that applies on and inside `data-theme="dark"`; and tabular numbers on
   `font-mono`.
+- `base.css`: page defaults from the roles, in `@layer base`, so a `<p>`
+  with no class is the right colour. `body` takes `background`,
+  `foreground` and the sans font, and any `data-theme` element its own
+  `foreground`, so a dark header's text is light; `h1`–`h6` the heading
+  font (sizes stay with `Heading`); borders default to `border`, so
+  `border` and `divide-y` need no colour; placeholders take
+  `placeholder`; and enabled buttons get a pointer cursor (a
+  `role="button"` is disabled by `aria-disabled="true"`). It leaves `p`,
+  `a`, `li` and `strong` alone, so they inherit, and sets no focus
+  outline. Import it after `theme.css`. Apps without Tailwind can use it
+  after `tokens.css`; being layered, it loses to any of their unlayered
+  CSS.
 - `fonts.css`: Source Sans 3, the heading font, as one variable Latin
   WOFF2 (weights 200 to 900, `font-display: swap`) beside it. The app's
   bundler copies the file.
@@ -92,6 +105,9 @@ The token files in `src/` are in the W3C Design Tokens format (2025.10):
 write the CSS and SCSS; two small plugins in `scripts/` write
 `tokens.json` and `tables.md`. The brand team reviews changes to `src/`
 (CODEOWNERS).
+
+`base.css` is hand-written: it names the roles' variables and holds no
+values of its own.
 
 `prose.css` is hand-written: every colour in it is a role's variable,
 or, for the shadow under `<kbd>`, `foreground` mixed with transparent.

@@ -5,6 +5,7 @@ import { SCHEMES } from "../../../test/contrast.ts";
 import { role } from "../../../test/roles.ts";
 import { renderIn } from "../../../test/schemes.ts";
 import Combobox from "./Combobox.svelte";
+import InlineSearch from "./Combobox.inline.test.svelte";
 import Picker from "./Combobox.test.svelte";
 
 type Screen = RenderResult<typeof Picker>;
@@ -267,6 +268,142 @@ describe("Combobox", () => {
         .not.toBeInTheDocument();
     });
 
+    test("reopened on the same text, one Down Arrow lands on the first option", async () => {
+      const screen = await renderIn("light", Picker, { options: search });
+      const input = screen.getByRole("combobox");
+      await input.fill("Dan Andrews");
+      await expect
+        .element(screen.getByRole("option", { name: "Dan Andrews" }))
+        .toBeVisible();
+      await userEvent.keyboard("{Escape}{ArrowDown}");
+      await expect
+        .poll(() => activeOption(screen))
+        .toEqual({ text: "Dan Andrews", selected: "true" });
+      // Long enough for a second search to have landed and cleared it.
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      expect(activeOption(screen)).toEqual({
+        text: "Dan Andrews",
+        selected: "true",
+      });
+    });
+
+    test.each([
+      ["{ArrowDown}", "Ann Archer"],
+      ["{ArrowUp}", "Dan Andrews"],
+    ])(
+      "%s on a closed box opens it on %s once the answer comes",
+      async (key, name) => {
+        const screen = await renderIn("light", Picker, { options: search });
+        await userEvent.tab();
+        await userEvent.keyboard(key);
+        await expect
+          .poll(() => activeOption(screen))
+          .toEqual({ text: name, selected: "true" });
+      },
+    );
+
+    test("after a pick, one Down Arrow reopens the list on the first option", async () => {
+      const screen = await renderIn("light", Picker, { options: search });
+      const input = screen.getByRole("combobox");
+      await input.fill("Dan");
+      await expect
+        .element(screen.getByRole("option", { name: "Dan Andrews" }))
+        .toBeVisible();
+      await userEvent.keyboard("{ArrowDown}{Enter}");
+      await expect.element(input).toHaveValue("Dan Andrews");
+      await userEvent.keyboard("{ArrowDown}");
+      await expect
+        .poll(() => activeOption(screen))
+        .toEqual({ text: "Dan Andrews", selected: "true" });
+    });
+
+    test("typing before the answer comes cancels the Down Arrow's move", async () => {
+      const screen = await renderIn("light", Picker, { options: search });
+      const input = screen.getByRole("combobox");
+      await userEvent.tab();
+      await userEvent.keyboard("{ArrowDown}A");
+      await expect
+        .element(screen.getByRole("option", { name: "Dan Andrews" }))
+        .toBeVisible();
+      expect(input).not.toHaveAttribute("aria-activedescendant");
+    });
+
+    test("reopened on the same text, typing new text searches it", async () => {
+      const screen = await renderIn("light", Picker, { options: search });
+      const input = screen.getByRole("combobox");
+      await input.fill("Dan");
+      await expect
+        .element(screen.getByRole("option", { name: "Dan Andrews" }))
+        .toBeVisible();
+      await userEvent.keyboard("{Escape}{ArrowDown}");
+      await expect
+        .poll(() => activeOption(screen))
+        .toEqual({ text: "Dan Andrews", selected: "true" });
+      await input.fill("Ann");
+      await expect
+        .element(screen.getByRole("option", { name: "Ann Archer" }))
+        .toBeVisible();
+    });
+
+    test("a new search function searches the same text again", async () => {
+      const screen = await renderIn("light", Picker, { options: search });
+      await screen.getByRole("combobox").fill("Dan");
+      await expect
+        .element(screen.getByRole("option", { name: "Dan Andrews" }))
+        .toBeVisible();
+      const otherRoster = [{ cid: "1000009", name: "Dana Dunn" }];
+      await screen.rerender({ options: async () => otherRoster });
+      await expect
+        .element(screen.getByRole("option", { name: "Dana Dunn" }))
+        .toBeVisible();
+    });
+
+    test("while a new search function looks, its old list can't be picked from", async () => {
+      const screen = await renderIn("light", Picker, { options: search });
+      const input = screen.getByRole("combobox");
+      await input.fill("Dan");
+      const dan = screen.getByRole("option", { name: "Dan Andrews" });
+      await expect.element(dan).toBeVisible();
+      const otherRoster = [{ cid: "1000009", name: "Dana Dunn" }];
+      await screen.rerender({
+        options: () =>
+          new Promise((resolve) => setTimeout(() => resolve(otherRoster), 300)),
+      });
+      await userEvent.keyboard("{ArrowDown}");
+      expect(input).not.toHaveAttribute("aria-activedescendant");
+      await dan.click();
+      await expect
+        .element(screen.getByTestId("picked"))
+        .toHaveTextContent("none");
+      await expect
+        .element(screen.getByRole("option", { name: "Dana Dunn" }))
+        .toBeVisible();
+    });
+
+    test("a search function written inline searches once per text", async () => {
+      const searches: string[] = [];
+      const screen = await renderIn("light", InlineSearch, {
+        onsearch: (query) => searches.push(query),
+      });
+      const input = screen.getByRole("combobox");
+      await input.fill("Dan");
+      await expect
+        .element(screen.getByRole("option", { name: "Dan Andrews" }))
+        .toBeVisible();
+      // The page changes something else; the list stays the same answer.
+      await userEvent.keyboard("{Escape}");
+      await screen.getByRole("button", { name: "Count 0" }).click();
+      await expect
+        .element(screen.getByRole("button", { name: "Count 1" }))
+        .toBeVisible();
+      await input.click();
+      await userEvent.keyboard("{ArrowDown}");
+      await expect
+        .poll(() => input.element().getAttribute("aria-activedescendant"))
+        .not.toBeNull();
+      expect(searches.filter((query) => query === "Dan")).toHaveLength(1);
+    });
+
     /** Searches the roster; "Ann" is slow, so "Dan"'s list stays a while. */
     const slowAnn = (query: string) =>
       new Promise<typeof roster>((resolve) =>
@@ -357,6 +494,100 @@ describe("Combobox", () => {
     await userEvent.keyboard("{ArrowDown}{Enter}");
     await expect.element(input).toHaveValue("Ann Archer");
     await expect.poll(() => form.checkValidity()).toBe(true);
+  });
+
+  test("a form reset clears the box and the pick it sends", async () => {
+    const screen = await renderIn("light", Picker, {});
+    const input = screen.getByRole("combobox");
+    const form = input.element().closest("form")!;
+    await userEvent.tab();
+    await userEvent.keyboard("{ArrowDown}{Enter}");
+    await expect.element(input).toHaveValue("Ann Archer");
+    expect(new FormData(form).get("controller")).toBe("1000001");
+    form.reset();
+    await expect.element(input).toHaveValue("");
+    await expect
+      .element(screen.getByTestId("picked"))
+      .toHaveTextContent("none");
+    expect(new FormData(form).get("controller")).toBe("");
+    expect(form.checkValidity()).toBe(true);
+  });
+
+  test("a form reset closes the open list", async () => {
+    const screen = await renderIn("light", Picker, {});
+    const input = screen.getByRole("combobox");
+    await userEvent.tab();
+    await userEvent.keyboard("{ArrowDown}{ArrowDown}");
+    input.element().closest("form")!.reset();
+    await expect.element(input).toHaveAttribute("aria-expanded", "false");
+    expect(input).not.toHaveAttribute("aria-activedescendant");
+  });
+
+  test("a reset the page cancels keeps the pick", async () => {
+    const screen = await renderIn("light", Picker, {});
+    const input = screen.getByRole("combobox");
+    const form = input.element().closest("form")!;
+    form.addEventListener("reset", (event) => event.preventDefault());
+    await userEvent.tab();
+    await userEvent.keyboard("{ArrowDown}{Enter}");
+    form.reset();
+    // Long enough for a reset to have landed.
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    await expect.element(input).toHaveValue("Ann Archer");
+    expect(new FormData(form).get("controller")).toBe("1000001");
+  });
+
+  describe("with a defaultValue", () => {
+    const ann = { cid: "1000001", name: "Ann Archer" };
+    const ben = { cid: "1000002", name: "Ben Baker" };
+
+    test("starts on it when no value is given", async () => {
+      const screen = await renderIn("light", Picker, { defaultValue: ben });
+      const input = screen.getByRole("combobox");
+      await expect.element(input).toHaveValue("Ben Baker");
+      await expect
+        .element(screen.getByTestId("picked"))
+        .toHaveTextContent("1000002");
+      const form = input.element().closest("form")!;
+      expect(new FormData(form).get("controller")).toBe("1000002");
+    });
+
+    test("a given value comes first", async () => {
+      const screen = await renderIn("light", Picker, {
+        value: ann,
+        defaultValue: ben,
+      });
+      await expect
+        .element(screen.getByRole("combobox"))
+        .toHaveValue("Ann Archer");
+    });
+
+    test("a form reset goes back to it", async () => {
+      const screen = await renderIn("light", Picker, {
+        value: ann,
+        defaultValue: ben,
+      });
+      const input = screen.getByRole("combobox");
+      const form = input.element().closest("form")!;
+      await input.fill("Car");
+      await userEvent.keyboard("{ArrowDown}{Enter}");
+      await expect.element(input).toHaveValue("Cara Cole");
+      form.reset();
+      await expect.element(input).toHaveValue("Ben Baker");
+      await expect
+        .element(screen.getByTestId("picked"))
+        .toHaveTextContent("1000002");
+      expect(new FormData(form).get("controller")).toBe("1000002");
+      expect(form.checkValidity()).toBe(true);
+    });
+
+    test("a form reset goes back to it as it is now", async () => {
+      const screen = await renderIn("light", Picker, { defaultValue: ann });
+      const input = screen.getByRole("combobox");
+      await screen.rerender({ defaultValue: ben });
+      input.element().closest("form")!.reset();
+      await expect.element(input).toHaveValue("Ben Baker");
+    });
   });
 
   test("not required, text with no pick fails the form; an empty box passes", async () => {

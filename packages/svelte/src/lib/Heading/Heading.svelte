@@ -1,3 +1,9 @@
+<script lang="ts" module>
+  /** The label look's classes, for a label that can't be a heading, such as ErrorPage's above its links. In the body font, not the heading font. */
+  export const labelClasses =
+    "font-sans text-xs font-semibold tracking-wider text-muted-foreground uppercase";
+</script>
+
 <script lang="ts">
   import type { Snippet } from "svelte";
   import type { HTMLAttributes } from "svelte/elements";
@@ -8,9 +14,7 @@
     2: `text-xl ${headingFont}`,
     3: `text-lg ${headingFont}`,
     4: `text-base ${headingFont}`,
-    // The section label is in the body font, not the heading font.
-    label:
-      "font-sans text-xs font-semibold tracking-wider text-muted-foreground uppercase",
+    label: labelClasses,
   };
 
   type Look = keyof typeof looks;

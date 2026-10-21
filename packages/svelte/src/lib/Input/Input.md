@@ -5,11 +5,12 @@ description: A one-line text, number, date or time box on the input roles.
 
 ## Checklist
 
-- [ ] Put it in a `Field`, which gives it its label, hint and error. Used
-      alone (a search box in a filter bar), give it an `aria-label`.
-- [ ] Pick the `type` for the value: `search` for a search box, `url`,
-      `number`, `date`, `time` or `datetime-local`. The browser's own
-      pickers stay; there is no date-picker library.
+- [ ] Put it in a `Field`, which gives it its label, hint and error. For
+      a search box in a filter bar, use `SearchInput`, which brings its
+      own label and icon.
+- [ ] Pick the `type` for the value: `search` for a search box in a
+      form, `url`, `number`, `date`, `time` or `datetime-local`. The
+      browser's own pickers stay; there is no date-picker library.
 - [ ] A placeholder is an example, not the label or the hint: it goes when
       the member types.
 - [ ] Don't colour it: no `bg-*`, `border-*` or `text-*` classes. `class`

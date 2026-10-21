@@ -1,5 +1,8 @@
 // One line per component, in alphabetical order.
 export { default as Alert } from "./Alert/Alert.svelte";
+export { default as AppNav } from "./AppNav/AppNav.svelte";
+export { default as AppNavMenu } from "./AppNav/AppNavMenu.svelte";
+export { default as AppsMenu, type App } from "./AppsMenu/AppsMenu.svelte";
 export {
   default as Badge,
   BADGE_VARIANTS,
@@ -10,6 +13,7 @@ export {
   type Crumb,
 } from "./Breadcrumbs/Breadcrumbs.svelte";
 export { default as Button } from "./Button/Button.svelte";
+export { default as Card } from "./Card/Card.svelte";
 export { default as Checkbox } from "./Checkbox/Checkbox.svelte";
 export { default as ChoiceCard } from "./ChoiceCard/ChoiceCard.svelte";
 export {
@@ -19,28 +23,50 @@ export {
 } from "./Chip/Chip.svelte";
 export { default as ColorSchemeSetting } from "./ColorSchemeSetting/ColorSchemeSetting.svelte";
 export { default as Combobox } from "./Combobox/Combobox.svelte";
+export { default as ConfirmDialog } from "./ConfirmDialog/ConfirmDialog.svelte";
 export { default as CopyButton } from "./CopyButton/CopyButton.svelte";
+export { default as DateTimeInput } from "./DateTimeInput/DateTimeInput.svelte";
 export { default as DescriptionList } from "./DescriptionList/DescriptionList.svelte";
 export { default as Disclosure } from "./Disclosure/Disclosure.svelte";
+export { default as DropdownMenu } from "./DropdownMenu/DropdownMenu.svelte";
+export { default as DropdownMenuItem } from "./DropdownMenu/DropdownMenuItem.svelte";
+export { default as EmptyState } from "./EmptyState/EmptyState.svelte";
+export {
+  default as ErrorPage,
+  type ErrorPageLink,
+} from "./ErrorPage/ErrorPage.svelte";
 export { default as Field, type FieldControl } from "./Field/Field.svelte";
 export { default as Fieldset } from "./Fieldset/Fieldset.svelte";
+export { default as FilterChip } from "./FilterChip/FilterChip.svelte";
 export {
   default as Footer,
   type FooterColumn,
   type FooterLink,
 } from "./Footer/Footer.svelte";
+export { default as Frequency } from "./Frequency/Frequency.svelte";
 export { default as Heading } from "./Heading/Heading.svelte";
 export { default as Icon } from "./Icon/Icon.svelte";
 export { default as Input } from "./Input/Input.svelte";
 export { default as Link } from "./Link/Link.svelte";
+export { default as Modal } from "./Modal/Modal.svelte";
+export { default as PageHeader } from "./PageHeader/PageHeader.svelte";
 export { default as PageHero } from "./PageHero/PageHero.svelte";
 export { default as Pagination } from "./Pagination/Pagination.svelte";
+export { default as Panel } from "./Panel/Panel.svelte";
+export {
+  default as Position,
+  type PositionField,
+} from "./Position/Position.svelte";
 export { default as ProgressBar } from "./ProgressBar/ProgressBar.svelte";
 export { default as Prose } from "./Prose/Prose.svelte";
 export { default as Radio } from "./Radio/Radio.svelte";
+export { default as Rating } from "./Rating/Rating.svelte";
+export { default as SearchInput } from "./SearchInput/SearchInput.svelte";
 export { default as Select } from "./Select/Select.svelte";
 export { default as SkipLink } from "./SkipLink/SkipLink.svelte";
 export { default as Spinner } from "./Spinner/Spinner.svelte";
+export { default as StarDisplay } from "./StarRating/StarDisplay.svelte";
+export { default as StarRating } from "./StarRating/StarRating.svelte";
 export { default as StatCard } from "./StatCard/StatCard.svelte";
 export { default as Steps, type Step } from "./Steps/Steps.svelte";
 export { default as Switch } from "./Switch/Switch.svelte";
@@ -53,6 +79,15 @@ export { default as Time } from "./Time/Time.svelte";
 export { default as TimeZoneLine } from "./TimeZoneLine/TimeZoneLine.svelte";
 export { default as TimeZoneSetting } from "./TimeZoneSetting/TimeZoneSetting.svelte";
 export { default as Toaster } from "./Toast/Toaster.svelte";
+export {
+  default as Tooltip,
+  type TooltipTrigger,
+} from "./Tooltip/Tooltip.svelte";
+
+// Every Indy Center app, for AppsMenu; an app's pages, for AppNav and
+// AppNavMenu.
+export { INDY_CENTER_APPS } from "./AppsMenu/apps.js";
+export type { NavGroup, NavItem, NavLink } from "./AppNav/nav.js";
 
 // The severity scale, for Alert and Toast; and the functions that raise a
 // toast, in the browser and from the server.
@@ -63,6 +98,12 @@ export {
 } from "./severity/severity.js";
 export { toast } from "./Toast/toast.svelte.js";
 export { toastFromServer, type ToastCookies } from "./Toast/toastFromServer.js";
+
+// Asks the member to confirm an action, in place of confirm().
+export {
+  confirmAction,
+  type ConfirmActionOptions,
+} from "./ConfirmDialog/confirmAction.js";
 
 // The colour scheme, in the browser. Its server hook is in ./hooks.ts.
 export type { ColorScheme } from "./colorScheme/colorScheme.js";
@@ -84,6 +125,7 @@ export {
 } from "./timeZone/timeZoneContext.svelte.js";
 
 // Aviation helpers: plain functions, for components and apps alike.
+export type { AirportInfo } from "./aviation/airport.js";
 export {
   comparePositionTypes,
   isPosition,
@@ -93,8 +135,18 @@ export {
   type PositionType,
 } from "./aviation/callsign.js";
 export { formatDuration, type DurationStyle } from "./aviation/duration.js";
-export { formatFrequency, spokenFrequency } from "./aviation/frequency.js";
-export { findRating, RATINGS, type Rating } from "./aviation/ratings.js";
+export {
+  formatFrequency,
+  spokenFrequency,
+  type FrequencyOptions,
+} from "./aviation/frequency.js";
+export {
+  findPilotRating,
+  findRating,
+  PILOT_RATINGS,
+  RATINGS,
+  type RatingDetails,
+} from "./aviation/ratings.js";
 export {
   resolvePosition,
   type PositionMatch,
