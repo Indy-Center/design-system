@@ -105,6 +105,8 @@
 
   {#if notFound && links.length > 0}
     <nav aria-labelledby={linksId} class="mt-10 border-t border-border pt-6">
+      <!-- Heading's label look, on a <p>: the page's h1 is its one heading.
+           Keep these classes in step with Heading's `label`. -->
       <p
         id={linksId}
         class="mb-3 text-xs font-semibold tracking-wider text-muted-foreground uppercase"
@@ -116,7 +118,7 @@
           <li>
             <a
               href={link.href}
-              class="flex min-h-11 items-center gap-2 rounded-lg px-3 text-sm text-foreground-soft transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+              class="flex min-h-11 min-w-11 items-center gap-2 rounded-lg px-3 text-sm text-foreground-soft transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
             >
               {#if link.icon}<Icon path={link.icon} />{/if}
               {link.label}
