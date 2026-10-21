@@ -101,7 +101,10 @@ src/routes/name/+page.svelte its playground page (lower-case folder)
   (`S3`, `C1`; not star ratings); Tailwind's
   default sizes.
 - Focus: `focus-visible:outline-2 focus-visible:outline-offset-2
-focus-visible:outline-ring`.
+focus-visible:outline-ring`. Where a parent's `overflow-hidden` (or a
+  scrolling list) would clip that ring, inset it instead with
+  `focus-visible:-outline-offset-2`: a menu's rows (`DropdownMenuItem`)
+  and `Tabs`.
 
 ## Behaviour
 
