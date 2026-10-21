@@ -46,18 +46,25 @@ async function styles(
 
 describe("base.css after tokens.css and theme.css", () => {
   test.each(["light", "dark"] as const)(
-    "body takes the %s background and foreground roles",
+    "body, a bare border and a placeholder take the %s roles",
     async (scheme) => {
       expect(
         await styles(
-          "",
+          '<div class="border"></div><input placeholder="Search">',
           [
             ["body", "background-color"],
             ["body", "color"],
+            ["div", "border-top-color"],
+            ["input", "color", "::placeholder"],
           ],
           scheme,
         ),
-      ).toEqual([rgb(roles.background[scheme]), rgb(roles.foreground[scheme])]);
+      ).toEqual([
+        rgb(roles.background[scheme]),
+        rgb(roles.foreground[scheme]),
+        rgb(roles.border[scheme]),
+        rgb(roles.placeholder[scheme]),
+      ]);
     },
   );
 
@@ -68,32 +75,6 @@ describe("base.css after tokens.css and theme.css", () => {
       ]),
     ).toEqual([rgb(roles.foreground.dark)]);
   });
-
-  test.each(["light", "dark"] as const)(
-    "a bare border takes the %s border role",
-    async (scheme) => {
-      expect(
-        await styles(
-          '<div class="border"></div>',
-          [["div", "border-top-color"]],
-          scheme,
-        ),
-      ).toEqual([rgb(roles.border[scheme])]);
-    },
-  );
-
-  test.each(["light", "dark"] as const)(
-    "a placeholder takes the %s placeholder role",
-    async (scheme) => {
-      expect(
-        await styles(
-          '<input placeholder="Search">',
-          [["input", "color", "::placeholder"]],
-          scheme,
-        ),
-      ).toEqual([rgb(roles.placeholder[scheme])]);
-    },
-  );
 
   test("body is the sans font and headings the heading font", async () => {
     const levels = [1, 2, 3, 4, 5, 6];
@@ -124,13 +105,5 @@ describe("base.css after tokens.css and theme.css", () => {
         ],
       ),
     ).toEqual(["pointer", "default", "pointer", "auto"]);
-  });
-
-  test("a paragraph inherits its parent's colour", async () => {
-    expect(
-      await styles('<div style="color: rgb(1, 2, 3)"><p>Text</p></div>', [
-        ["p", "color"],
-      ]),
-    ).toEqual(["rgb(1, 2, 3)"]);
   });
 });

@@ -33,8 +33,10 @@ const css = await tailwind(appCss, [
   "font-mono",
 ]);
 
+// One page for every test; closeBrowser closes it with the browser.
+const p = await pageWith(`<style>${css}</style>${page}`);
+
 async function style(selector: string, property: string) {
-  const p = await pageWith(`<style>${css}</style>${page}`);
   return p.$eval(
     selector,
     (el, property) => getComputedStyle(el).getPropertyValue(property),

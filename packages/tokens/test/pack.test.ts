@@ -16,9 +16,12 @@ async function packedFiles(): Promise<string[]> {
   return pack.files.map((file: { path: string }) => file.path).sort();
 }
 
+// Packed once, for both tests.
+const files = await packedFiles();
+
 describe("the packed package", () => {
-  test("holds every output, the font with its OFL, and the MIT licence", async () => {
-    expect(await packedFiles()).toEqual(
+  test("holds every output, the font with its OFL, and the MIT licence", () => {
+    expect(files).toEqual(
       [
         "LICENSE",
         "README.md",
@@ -38,7 +41,6 @@ describe("the packed package", () => {
   });
 
   test("every export points at a packed file", async () => {
-    const files = await packedFiles();
     const { exports } = JSON.parse(
       await readFile(new URL("package.json", packageDir), "utf8"),
     );
