@@ -45,14 +45,10 @@
 
 <script lang="ts">
   import { mdiChevronDown } from "@mdi/js";
-  import type { HTMLAttributes } from "svelte/elements";
+  import type { ClassValue, HTMLAttributes } from "svelte/elements";
   import Icon from "../Icon/Icon.svelte";
   import HeaderMenu from "../headerMenu/HeaderMenu.svelte";
-  import {
-    barItem,
-    current as currentClass,
-    menuRow,
-  } from "../headerMenu/headerMenu.js";
+  import { barItem, currentClass, menuRow } from "../headerMenu/headerMenu.js";
 
   type Props = HTMLAttributes<HTMLElement> & {
     /** The app's pages and groups, in order. */
@@ -85,13 +81,17 @@
   const holdsHere = (group: NavGroup) =>
     group.children.some((link) => link.href === here);
 
-  // The menu's groups the member opened or closed, by position; the rest
-  // are open when they hold the current page.
-  let toggled = $state<Record<number, boolean>>({});
+  // The menu's groups the member opened or closed, by label, so a group
+  // added later (an admin group after sign-in) doesn't take another's
+  // state; the rest are open when they hold the current page.
+  let toggled = $state<Record<string, boolean>>({});
   const uid = $props.id();
+
+  // Icons are smaller in the bar's tighter row.
+  const iconSize = $derived(layout === "bar" ? 16 : 20);
 </script>
 
-{#snippet link(item: NavLink, style: typeof barItem, iconSize: number)}
+{#snippet link(item: NavLink, style: ClassValue)}
   {@const isHere = item.href === here}
   <a
     href={item.href}
@@ -126,17 +126,17 @@
               {#snippet trigger(open)}
                 {#if item.icon}<Icon
                     path={item.icon}
-                    size={16}
+                    size={iconSize}
                   />{/if}{item.label}{@render chevron(open)}
               {/snippet}
               <ul class="space-y-1">
                 {#each item.children as child}
-                  <li>{@render link(child, menuRow, 16)}</li>
+                  <li>{@render link(child, menuRow)}</li>
                 {/each}
               </ul>
             </HeaderMenu>
           {:else}
-            {@render link(item, barItem, 16)}
+            {@render link(item, barItem)}
           {/if}
         </li>
       {/each}
@@ -146,7 +146,7 @@
       {#each items as item, i}
         <li>
           {#if isGroup(item)}
-            {@const open = toggled[i] ?? holdsHere(item)}
+            {@const open = toggled[item.label] ?? holdsHere(item)}
             {@const id = `app-nav-${uid}-${i}`}
             <button
               type="button"
@@ -157,19 +157,19 @@
                 "cursor-pointer",
                 holdsHere(item) && currentClass,
               ]}
-              onclick={() => (toggled[i] = !open)}
+              onclick={() => (toggled[item.label] = !open)}
             >
-              {#if item.icon}<Icon path={item.icon} size={20} />{/if}
+              {#if item.icon}<Icon path={item.icon} size={iconSize} />{/if}
               <span class="flex-1 text-left">{item.label}</span>
               {@render chevron(open)}
             </button>
             <ul {id} hidden={!open} class="mt-1 space-y-1 pl-6">
               {#each item.children as child}
-                <li>{@render link(child, menuRow, 20)}</li>
+                <li>{@render link(child, menuRow)}</li>
               {/each}
             </ul>
           {:else}
-            {@render link(item, menuRow, 20)}
+            {@render link(item, menuRow)}
           {/if}
         </li>
       {/each}

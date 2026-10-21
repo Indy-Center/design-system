@@ -18,7 +18,7 @@
   import Icon from "../Icon/Icon.svelte";
   import HeaderMenu from "../headerMenu/HeaderMenu.svelte";
   import {
-    current as currentClass,
+    currentClass,
     headerButton,
     menuRow,
   } from "../headerMenu/headerMenu.js";
@@ -57,7 +57,9 @@
             <span class="flex-1">
               <span class="block">{app.name}</span>
               {#if app.description}
-                <span class="block text-xs font-normal text-muted-foreground"
+                <!-- inline-block, so the name's underline doesn't reach it -->
+                <span
+                  class="inline-block text-xs font-normal text-muted-foreground"
                   >{app.description}</span
                 >
               {/if}
