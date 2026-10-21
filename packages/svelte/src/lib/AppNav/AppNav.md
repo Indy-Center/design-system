@@ -62,7 +62,13 @@ description: An app's own navigation in the header, top-level links and one leve
 
 ### AppNavMenu
 
-The same props as `AppNav`.
+| Prop      | Type               | Notes                                                                                                 |
+| --------- | ------------------ | ----------------------------------------------------------------------------------------------------- |
+| `items`   | `NavItem[]`        | Required. Each `{ label, href, icon? }` (a `NavLink`) or `{ label, children, icon? }` (a `NavGroup`). |
+| `current` | `string`           | The page's path. Marks the closest link it is, or is under, and opens the group holding it.           |
+| `label`   | `string`           | Names the `<nav>` for screen readers. `"Main"` by default.                                            |
+| `class`   | `string`           | Added to the `<nav>`. Layout only.                                                                    |
+| others    | `<nav>` attributes | Passed to the `<nav>`: `id` and the rest, but not `aria-label`; `label` names it.                     |
 
 `icon` is an MDI path, such as `mdiCalendar` from `@mdi/js`. The types
 `NavItem`, `NavLink` and `NavGroup` are exported beside them.
