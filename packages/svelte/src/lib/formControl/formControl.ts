@@ -30,7 +30,7 @@ export function describedBy(
   );
 }
 
-// The look Input, Textarea and Select share: the input roles, the ring
+// The look Input, Textarea, Select and Combobox share: the input roles, the ring
 // outline, a destructive border when invalid, and 44px targets.
 export const textControlClasses = [
   "min-h-11 w-full rounded-lg border border-input bg-muted px-3 py-2 text-base text-foreground",
