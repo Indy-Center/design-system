@@ -1,5 +1,5 @@
 <!-- A DropdownMenu for DropdownMenu.test.ts: a split button whose arrow
-     opens a link and two buttons, and a button elsewhere on the page. -->
+     opens a link and two buttons (the last can be disabled), and a button elsewhere on the page. -->
 <script lang="ts">
   import Button from "../Button/Button.svelte";
   import Tooltip from "../Tooltip/Tooltip.svelte";
@@ -21,6 +21,8 @@
     class?: string;
     /** Gives the first row a Tooltip. */
     tooltip?: boolean;
+    /** Disables the last row, Remove. */
+    removeDisabled?: boolean;
   };
 
   let {
@@ -31,6 +33,7 @@
     disabled,
     class: className,
     tooltip = false,
+    removeDisabled,
   }: Props = $props();
   let withdrawn = $state(false);
 </script>
@@ -62,7 +65,7 @@
       <DropdownMenuItem onclick={() => (withdrawn = true)}>
         Withdraw
       </DropdownMenuItem>
-      <DropdownMenuItem>Remove</DropdownMenuItem>
+      <DropdownMenuItem disabled={removeDisabled}>Remove</DropdownMenuItem>
     </DropdownMenu>
   </div>
   <button type="button">Elsewhere</button>
