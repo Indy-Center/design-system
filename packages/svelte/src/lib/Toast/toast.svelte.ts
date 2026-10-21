@@ -1,5 +1,6 @@
 import { BROWSER } from "esm-env";
 import { SEVERITIES, type Severity } from "../severity/severity.js";
+import { parseKept, TOAST_COOKIE, type KeptToast } from "./kept.js";
 
 /** How long a toast shows, in milliseconds, while nothing is on it. */
 export const TOAST_DURATION = 5000;
@@ -78,11 +79,12 @@ class Toasts {
   save() {
     const left = [...this.shown].reverse().concat(this.queued);
     if (!left.length) return;
+    const kept: KeptToast[] = left.map(({ level, message }) => ({
+      level,
+      message,
+    }));
     try {
-      sessionStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify(left.map(({ level, message }) => ({ level, message }))),
-      );
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(kept));
     } catch {
       // Storage is blocked: they're lost with the page.
     }
@@ -99,16 +101,29 @@ class Toasts {
 
   /** Shows, and reads again, the toasts the last page kept. */
   restore() {
-    let kept: { level: Severity; message: string }[] = [];
+    let json: string | null;
     try {
-      kept = JSON.parse(sessionStorage.getItem(STORAGE_KEY) ?? "[]");
+      json = sessionStorage.getItem(STORAGE_KEY);
       sessionStorage.removeItem(STORAGE_KEY);
     } catch {
       return;
     }
-    for (const { level, message } of kept)
-      if (level in SEVERITIES && typeof message === "string")
-        this.raise(level, message);
+    this.#raiseAll(parseKept(json));
+  }
+
+  /** Shows the toasts `toastFromServer` left in the cookie, and deletes it. */
+  takeFromCookie() {
+    const prefix = `${TOAST_COOKIE}=`;
+    const pair = document.cookie.split("; ").find((c) => c.startsWith(prefix));
+    if (!pair) return;
+    document.cookie = `${TOAST_COOKIE}=; path=/; max-age=0`;
+    let json: string;
+    try {
+      json = decodeURIComponent(pair.slice(prefix.length));
+    } catch {
+      return;
+    }
+    this.#raiseAll(parseKept(json));
   }
 
   /** Forgets every toast, shown and queued. */
@@ -116,6 +131,10 @@ class Toasts {
     this.shown = [];
     this.queued = [];
     this.lines = { status: [], alert: [] };
+  }
+
+  #raiseAll(kept: KeptToast[]) {
+    for (const { level, message } of kept) this.raise(level, message);
   }
 
   // Puts a toast at the top, and reads it the first time it shows, so
@@ -156,8 +175,8 @@ export const toasts = new Toasts();
 /**
  * Shows a brief message after an action, such as `toast("success", "Roster
  * saved.")`. It shows on the next page too, after a redirect. Needs one
- * `<Toaster />` in the root layout. Does nothing on the server, so a form
- * action or `load` can't raise one.
+ * `<Toaster />` in the root layout. Does nothing on the server: there, in
+ * a form action or `load`, use `toastFromServer`.
  */
 export function toast(level: Severity, message: string) {
   if (BROWSER) toasts.raise(level, message);

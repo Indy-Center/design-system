@@ -70,7 +70,14 @@ describe("the packed package", () => {
 
   test("exports Alert, Toast and the severity scale, with types and docs", async () => {
     const index = await readFile(new URL("dist/index.d.ts", root), "utf8");
-    for (const name of ["Alert", "Toaster", "toast", "SEVERITIES", "Severity"])
+    for (const name of [
+      "Alert",
+      "Toaster",
+      "toast",
+      "toastFromServer",
+      "SEVERITIES",
+      "Severity",
+    ])
       expect(index).toMatch(new RegExp(`\\b${name}\\b`));
     expect(files).toEqual(
       expect.arrayContaining([

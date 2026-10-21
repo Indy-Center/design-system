@@ -21,10 +21,13 @@
   onMount(() => {
     mounted = true;
     toasts.restore();
+    toasts.takeFromCookie();
     // The clocks stop while the pointer or focus is on the toasts. Focus is
     // checked on each step, as no event fires when a focused toast is
-    // removed.
+    // removed. Each step also picks up toasts the server raised, which
+    // arrive in a cookie after a form action, with or without a new page.
     const clock = setInterval(() => {
+      toasts.takeFromCookie();
       const focusOn = section?.contains(document.activeElement);
       if (!pointerOn && !focusOn) toasts.tick(STEP);
     }, STEP);

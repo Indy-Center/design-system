@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { enhance } from "$app/forms";
   import {
     Icon,
     SEVERITIES,
@@ -25,7 +26,9 @@
 
 <p class="mb-4">
   Raise toasts; they show below the playground's header. "Raise and reload"
-  shows one surviving a full-page load.
+  shows one surviving a full-page load. The two form buttons post to a form
+  action that raises a toast on the server and redirects: one with a full page
+  load, one with <code>use:enhance</code>.
 </p>
 
 <div class="flex flex-wrap gap-2">
@@ -56,6 +59,12 @@
   >
     Raise and reload
   </button>
+  <form method="POST">
+    <button class={button}>Save on the server</button>
+  </form>
+  <form method="POST" use:enhance>
+    <button class={button}>Save on the server, enhanced</button>
+  </form>
 </div>
 
 <!-- Not in <Schemes>: the toasts are fixed to the window, so there's one

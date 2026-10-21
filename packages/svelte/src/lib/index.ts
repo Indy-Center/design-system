@@ -10,13 +10,15 @@ export { default as Spinner } from "./Spinner/Spinner.svelte";
 export { default as Textarea } from "./Textarea/Textarea.svelte";
 export { default as Toaster } from "./Toast/Toaster.svelte";
 
-// The severity scale, for Alert and Toast; and the function that raises a toast.
+// The severity scale, for Alert and Toast; and the functions that raise a
+// toast, in the browser and from the server.
 export {
   SEVERITIES,
   type Severity,
   type SeverityDetails,
 } from "./severity/severity.js";
 export { toast } from "./Toast/toast.svelte.js";
+export { toastFromServer, type ToastCookies } from "./Toast/toastFromServer.js";
 
 // The colour scheme, in the browser. Its server hook is in ./hooks.ts.
 export type { ColorScheme } from "./colorScheme/colorScheme.js";

@@ -1,14 +1,17 @@
 ---
 title: Toast
-description: A brief message after an action, raised with toast() and announced by screen readers, even after a redirect.
+description: A brief message after an action, raised with toast() or toastFromServer() and announced by screen readers, even after a redirect.
 ---
 
 ## Checklist
 
 - [ ] Put one `<Toaster />` in the app's root layout, and no other.
-- [ ] Call `toast(level, message)` after an action finishes: "Roster
-      saved.", "Session request sent.". It shows on the next page too,
-      so call it before a redirect.
+- [ ] In the browser, call `toast(level, message)` after an action
+      finishes: "Roster saved.", "Session request sent.". It shows on
+      the next page too, so call it before a redirect.
+- [ ] On the server, in a form action or `load`, call
+      `toastFromServer(cookies, level, message)` instead, before
+      `redirect()` or returning.
 - [ ] For something the member must read or act on, use
       [`Alert`](../Alert/Alert.md) on the page instead: a toast leaves
       after 5 seconds.
@@ -31,6 +34,8 @@ description: A brief message after an action, raised with toast() and announced 
 <Toaster />
 ```
 
+In the browser, such as in an event handler or a `use:enhance` callback:
+
 ```ts
 import { toast } from "@indy-center/svelte";
 
@@ -38,22 +43,44 @@ toast("success", "Roster saved.");
 toast("danger", "We couldn't save the roster. Try again.");
 ```
 
-`toast()` does nothing on the server; call it from the browser, such as
-in a `use:enhance` callback or an event handler. A form action or `load`
-that redirects can't raise one yet: return a result instead, and toast it
-in the `use:enhance` callback before going on.
+On the server, such as in a form action that redirects:
+
+```ts
+// src/routes/roster/+page.server.ts
+import { redirect } from "@sveltejs/kit";
+import { toastFromServer } from "@indy-center/svelte";
+
+export const actions = {
+  default: async ({ cookies }) => {
+    // …save the roster…
+    toastFromServer(cookies, "success", "Roster saved.");
+    redirect(303, "/roster");
+  },
+};
+```
+
+`toast()` does nothing on the server. `toastFromServer()` puts the toast
+in a short-lived cookie; `<Toaster>` shows it on the page the browser
+lands on, whether that's a full page load or a `use:enhance` update.
+
+The cookie is `centerline-toasts`: first-party, for this app only,
+holding just the messages and no identifier. The browser reads it, so it
+isn't `httpOnly`. `<Toaster>` deletes it as soon as it shows the toasts,
+and it expires after a minute regardless. List it on the app's privacy
+page with its purpose.
 
 ## Props
 
 `<Toaster />` takes no props, and the app doesn't style it: there is one,
 for the whole page.
 
-`toast(level, message)`:
+`toast(level, message)` and `toastFromServer(cookies, level, message)`:
 
-| Argument  | Type                                           | Notes                      |
-| --------- | ---------------------------------------------- | -------------------------- |
-| `level`   | `"info" \| "success" \| "caution" \| "danger"` | How serious it is.         |
-| `message` | `string`                                       | The text, a full sentence. |
+| Argument  | Type                                           | Notes                                                  |
+| --------- | ---------------------------------------------- | ------------------------------------------------------ |
+| `cookies` | SvelteKit's `cookies`                          | `toastFromServer` only: the request event's `cookies`. |
+| `level`   | `"info" \| "success" \| "caution" \| "danger"` | How serious it is.                                     |
+| `message` | `string`                                       | The text, a full sentence.                             |
 
 ## Looks
 
@@ -77,8 +104,8 @@ for the whole page.
 - Each toast stays 5 seconds. Its clock stops while the pointer or focus
   is on the toasts, so there's time to read it.
 - Each has a 44px close button named after its message. Escape closes the
-  top one, the newest shown, unless a menu used that Escape or a modal is open. Closing the
-  focused toast moves focus to the next one.
+  top one, the newest shown, unless a menu used that Escape or a modal is
+  open. Closing the focused toast moves focus to the next one.
 - Toasts still showing or waiting when the page goes (a full-page
   redirect) are kept for this tab and shown, and read, on the next page.
   After a reload within 5 seconds they show again.

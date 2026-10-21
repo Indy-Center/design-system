@@ -5,6 +5,7 @@ import { renderIn } from "../../../test/schemes.ts";
 import type { Severity } from "../severity/severity.ts";
 import Toaster from "./Toaster.svelte";
 import { toast } from "./toast.svelte.ts";
+import { toastFromServer, type ToastCookies } from "./toastFromServer.ts";
 
 const notifications = () => document.querySelector("section[aria-label]");
 
@@ -110,6 +111,72 @@ describe("Toast", () => {
     await expect
       .element(next.getByRole("status"))
       .toHaveTextContent("Success: Roster saved.Caution: Session soon.");
+  });
+
+  describe("raised from the server", () => {
+    // SvelteKit's cookies, as the browser ends up holding them: the value
+    // URI-encoded, as Kit writes it.
+    const cookies: ToastCookies = {
+      get: (name) => {
+        const pair = document.cookie
+          .split("; ")
+          .find((c) => c.startsWith(`${name}=`));
+        return pair && decodeURIComponent(pair.slice(name.length + 1));
+      },
+      set: (name, value, { path, maxAge, sameSite }) => {
+        document.cookie = `${name}=${encodeURIComponent(value)}; path=${path}; max-age=${maxAge}; samesite=${sameSite}`;
+      },
+    };
+    const kept = () => document.cookie.includes("centerline-toasts=");
+    afterEach(() => {
+      document.cookie = "centerline-toasts=; path=/; max-age=0";
+    });
+
+    test("shows and reads, on the page it lands on, each toast a form action raised", async () => {
+      toastFromServer(cookies, "success", "Roster saved.");
+      toastFromServer(cookies, "info", "Emails go out tonight.");
+      const screen = await renderIn("light", Toaster, {});
+      await expect
+        .element(screen.getByRole("listitem").first())
+        .toHaveTextContent("Info: Emails go out tonight.");
+      await expect
+        .element(screen.getByRole("listitem").nth(1))
+        .toHaveTextContent("Success: Roster saved.");
+      await expect
+        .element(screen.getByRole("status"))
+        .toHaveTextContent(
+          "Success: Roster saved.Info: Emails go out tonight.",
+        );
+      expect(kept()).toBe(false);
+    });
+
+    test("shows one that arrives without a new page, such as after use:enhance", async () => {
+      const screen = await renderIn("light", Toaster, {});
+      toastFromServer(cookies, "danger", "We couldn't save the roster.");
+      vi.advanceTimersByTime(100);
+      await expect
+        .element(screen.getByRole("alert"))
+        .toHaveTextContent("Danger: We couldn't save the roster.");
+      expect(kept()).toBe(false);
+    });
+
+    test("tells the browser it may read the cookie, for a minute at most", () => {
+      const set = vi.fn();
+      toastFromServer({ get: () => undefined, set }, "success", "Saved.");
+      expect(set).toHaveBeenCalledWith(
+        "centerline-toasts",
+        JSON.stringify([{ level: "success", message: "Saved." }]),
+        { path: "/", httpOnly: false, maxAge: 60, sameSite: "lax" },
+      );
+    });
+
+    test("leaves out a cookie that doesn't hold toasts", async () => {
+      document.cookie = `centerline-toasts=${encodeURIComponent('[{"level":"purple","message":"Hi"},{"level":"info"}]')}; path=/`;
+      await renderIn("light", Toaster, {});
+      await tick();
+      expect(notifications()).toBeNull();
+      expect(kept()).toBe(false);
+    });
   });
 
   test("a toast raised before the Toaster mounts shows, and is read, once it does", async () => {
