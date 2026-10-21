@@ -3,6 +3,7 @@
   import type {
     HTMLAnchorAttributes,
     HTMLButtonAttributes,
+    MouseEventHandler,
   } from "svelte/elements";
   import Spinner from "../Spinner/Spinner.svelte";
 
@@ -15,12 +16,14 @@
     busy?: boolean;
     /** What screen readers are told while busy. "Working" by default. */
     busyLabel?: string;
+    /** Runs on a press, unless busy. */
+    onclick?: MouseEventHandler<HTMLButtonElement | HTMLAnchorElement>;
     /** The button's text. */
     children: Snippet;
   };
 
   type AsButton = Own &
-    HTMLButtonAttributes & {
+    Omit<HTMLButtonAttributes, "onclick"> & {
       /** Leave out for a button; give it to make a link that looks like one. */
       href?: undefined;
       /** Makes it a toggle: on (true) or off (false). The app flips it in onclick. */
@@ -28,7 +31,7 @@
     };
 
   type AsLink = Own &
-    HTMLAnchorAttributes & {
+    Omit<HTMLAnchorAttributes, "onclick"> & {
       /** Where the link goes. */
       href: string;
       /** Links can't be toggles. */
@@ -64,47 +67,42 @@
     lg: "min-h-12 px-6 py-3 text-lg",
   };
 
+  // A toggle only on a button: links can't be pressed.
+  const toggle = $derived(href === undefined && pressed !== undefined);
+
   const classes = $derived([
     "inline-flex min-w-11 cursor-pointer items-center justify-center gap-2 rounded-lg font-medium transition-colors",
     "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
     "disabled:cursor-not-allowed disabled:opacity-60",
     variants[variant],
     sizes[size],
+    // The toggle's mark, before the text: filled when on, hollow when off,
+    // so the state is shown by shape, not colour.
+    toggle &&
+      "before:size-3 before:shrink-0 before:rounded-full before:border-2 before:border-current aria-pressed:before:bg-current",
     busy && "cursor-wait",
     className,
   ]);
 
   // Busy stays focusable (not `disabled`), so focus isn't lost; it just
   // drops the press. preventDefault also stops a submit or a link.
-  function handleClick(event: MouseEvent & { currentTarget: HTMLElement }) {
+  function handleClick(
+    event: MouseEvent & {
+      currentTarget: EventTarget & (HTMLButtonElement | HTMLAnchorElement);
+    },
+  ) {
     if (busy) {
       event.preventDefault();
       return;
     }
-    (onclick as ((e: typeof event) => void) | null | undefined)?.(event);
+    onclick?.(event);
+  }
+
+  // A middle-click opens a link in a new tab; drop that while busy too.
+  function handleAuxClick(event: MouseEvent) {
+    if (busy && href !== undefined) event.preventDefault();
   }
 </script>
-
-{#snippet content()}
-  {#if pressed !== undefined}
-    <!-- Filled when on, hollow when off: the state by shape, not colour. -->
-    <span
-      data-pressed-mark
-      aria-hidden="true"
-      class={[
-        "size-3 shrink-0 rounded-full border-2 border-current",
-        pressed && "bg-current",
-      ]}
-    ></span>
-  {/if}
-  {#if busy}
-    <!-- Only drawn: the status beside the button does the telling. -->
-    <span aria-hidden="true" class="inline-flex">
-      <Spinner label={busyLabel} />
-    </span>
-  {/if}
-  {@render children()}
-{/snippet}
 
 {#if busy !== undefined}
   <!-- Beside the button, not in it: readers hold back updates inside an
@@ -114,21 +112,20 @@
   <span role="status" class="sr-only">{busy ? busyLabel : ""}</span>
 {/if}
 
-{#if href !== undefined}
-  <a
-    {href}
-    {...rest as HTMLAnchorAttributes}
-    aria-busy={busy || undefined}
-    onclick={handleClick}
-    class={classes}>{@render content()}</a
-  >
-{:else}
-  <button
-    type="button"
-    {...rest as HTMLButtonAttributes}
-    aria-pressed={pressed}
-    aria-busy={busy || undefined}
-    onclick={handleClick}
-    class={classes}>{@render content()}</button
-  >
-{/if}
+<svelte:element
+  this={href === undefined ? "button" : "a"}
+  type={href === undefined ? "button" : undefined}
+  {href}
+  {...rest}
+  aria-pressed={toggle ? pressed : undefined}
+  aria-busy={busy || undefined}
+  onclick={handleClick}
+  onauxclick={handleAuxClick}
+  class={classes}
+>
+  {#if busy}
+    <!-- Only drawn: the status beside the button does the telling. -->
+    <span aria-hidden="true" class="inline-flex"><Spinner /></span>
+  {/if}
+  {@render children()}
+</svelte:element>

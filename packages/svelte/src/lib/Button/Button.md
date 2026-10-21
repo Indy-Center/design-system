@@ -59,7 +59,7 @@ description: A button for an action on the page, or a link that looks like one, 
 | `variant`   | `"primary"` \| `"secondary"` \| `"danger"` | `primary` by default.                                                                                             |
 | `size`      | `"sm"` \| `"md"` \| `"lg"`                 | `md` by default, the same text size as `Input`.                                                                   |
 | `href`      | `string`                                   | Makes it an `<a>`. Without it, a `<button type="button">`.                                                        |
-| `busy`      | `boolean`                                  | Shows a `Spinner`, sets `aria-busy` and ignores presses. Pass it from the start.                                  |
+| `busy`      | `boolean`                                  | Shows a `Spinner`, sets `aria-busy` and ignores presses.                                                          |
 | `busyLabel` | `string`                                   | What screen readers are told while busy. "Working" by default.                                                    |
 | `pressed`   | `boolean`                                  | Makes it a toggle, with `aria-pressed`. Buttons only, not with `href`.                                            |
 | `children`  | `Snippet`                                  | The button's text.                                                                                                |
@@ -89,12 +89,15 @@ description: A button for an action on the page, or a link that looks like one, 
   a button) presses it.
 - `busy` keeps it focusable and enabled, so focus isn't lost while the
   work runs; presses are dropped, and a submit or link doesn't go
-  through. Its name stays the same ("Save changes").
+  through, nor does a middle-click on a link. (The browser's own "Open in
+  new tab" menu item still works.) Its name stays the same ("Save
+  changes").
 - The busy label is said through a screen-reader-only `role="status"`
   just before the button, not inside it: readers hold back updates inside
   an `aria-busy` element, and a button's contents are presentational. It
-  is there whenever `busy` is passed, empty until busy starts, so the
-  change is announced politely. The spinner inside is hidden from readers.
+  is there whenever `busy` is passed (hence the checklist's "from the
+  start"), empty until busy starts, so the change is announced politely.
+  The spinner inside is hidden from readers.
 - `pressed` sets `aria-pressed`, so readers say "toggle button, pressed"
   or "not pressed".
 - Every size meets the 44px target (WCAG 2.5.8).
