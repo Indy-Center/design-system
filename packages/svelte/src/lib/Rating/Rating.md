@@ -51,9 +51,9 @@ focus itself is on the `<abbr>` inside it.
 
 ## Accessibility
 
-- An `<abbr title>` holding the short code, inside the chip's `<span>`.
-  It follows the long name in visually hidden text, so a screen reader
-  reads "C1 Enroute Controller" without relying on `title`.
+- An `<abbr title>` inside the chip's `<span>`, holding the short code
+  and, after it, the long name in visually hidden text, so a screen
+  reader reads "C1 Enroute Controller" without relying on `title`.
 - The `<abbr>` takes focus (`tabindex="0"`) so a keyboard user can read
   the long name too. It does nothing on Enter; it isn't a control, so it
   is exempt from the 44px target size.
