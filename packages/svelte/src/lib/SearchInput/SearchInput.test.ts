@@ -100,8 +100,13 @@ describe("SearchInput", () => {
     await expect.element(box).toHaveValue("Archer");
   });
 
-  test("shows a 44px clear button once there is text, which clears and refocuses the box", async () => {
-    const screen = await renderIn("light", SearchInput, { label: "Search" });
+  test("shows a 44px clear button once there is text, which clears and refocuses the box with an input event", async () => {
+    const inputs: string[] = [];
+    const screen = await renderIn("light", SearchInput, {
+      label: "Search",
+      oninput: (event: Event) =>
+        inputs.push((event.target as HTMLInputElement).value),
+    });
     const clear = screen.getByRole("button", { name: "Clear the search" });
     await expect.element(clear).not.toBeInTheDocument();
     const box = screen.getByRole("searchbox");
@@ -113,6 +118,23 @@ describe("SearchInput", () => {
     await expect.element(box).toHaveValue("");
     await expect.element(box).toHaveFocus();
     await expect.element(clear).not.toBeInTheDocument();
+    expect(inputs.at(-1)).toBe("");
+  });
+
+  // The `ring` role.
+  test("its clear button shows a ring outline when tabbed to", async () => {
+    const screen = await renderIn("light", SearchInput, {
+      label: "Search",
+      value: "Archer",
+    });
+    await userEvent.tab();
+    await userEvent.tab();
+    const clear = screen.getByRole("button", { name: "Clear the search" });
+    await expect.element(clear).toHaveFocus();
+    await expect.element(clear).toHaveStyle({
+      outlineStyle: "solid",
+      outlineColor: role("ring", "light"),
+    });
   });
 
   test.each([{ disabled: true }, { readonly: true }])(
