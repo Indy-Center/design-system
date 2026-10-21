@@ -4,6 +4,10 @@ export {
   BADGE_VARIANTS,
   type BadgeVariant,
 } from "./Badge/Badge.svelte";
+export {
+  default as Breadcrumbs,
+  type Crumb,
+} from "./Breadcrumbs/Breadcrumbs.svelte";
 export { default as Button } from "./Button/Button.svelte";
 export { default as Checkbox } from "./Checkbox/Checkbox.svelte";
 export {
@@ -12,16 +16,19 @@ export {
   type ChipVariant,
 } from "./Chip/Chip.svelte";
 export { default as Combobox } from "./Combobox/Combobox.svelte";
+export { default as Disclosure } from "./Disclosure/Disclosure.svelte";
 export { default as Field, type FieldControl } from "./Field/Field.svelte";
 export { default as Fieldset } from "./Fieldset/Fieldset.svelte";
 export { default as Icon } from "./Icon/Icon.svelte";
 export { default as Input } from "./Input/Input.svelte";
 export { default as Link } from "./Link/Link.svelte";
+export { default as Pagination } from "./Pagination/Pagination.svelte";
 export { default as Prose } from "./Prose/Prose.svelte";
 export { default as Radio } from "./Radio/Radio.svelte";
 export { default as Select } from "./Select/Select.svelte";
 export { default as SkipLink } from "./SkipLink/SkipLink.svelte";
 export { default as Spinner } from "./Spinner/Spinner.svelte";
+export { default as Tabs, type Tab } from "./Tabs/Tabs.svelte";
 export { default as Textarea } from "./Textarea/Textarea.svelte";
 
 // The colour scheme, in the browser. Its server hook is in ./hooks.ts.
