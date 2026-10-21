@@ -29,6 +29,28 @@ describe("Button", () => {
     await expect.element(screen.getByRole("button")).not.toBeInTheDocument();
   });
 
+  test("as a link, calls onclick and follows its href", async () => {
+    const followed = vi.fn();
+    const watch = (e: Event) => {
+      if (!e.defaultPrevented) followed();
+      e.preventDefault(); // keep the test page where it is
+    };
+    document.addEventListener("click", watch);
+    try {
+      const onclick = vi.fn();
+      const screen = await renderIn("light", Button, {
+        href: "/events/new",
+        onclick,
+        children: text("New event"),
+      });
+      await screen.getByRole("link").click();
+      expect(onclick).toHaveBeenCalledOnce();
+      expect(followed).toHaveBeenCalledOnce();
+    } finally {
+      document.removeEventListener("click", watch);
+    }
+  });
+
   // primary: `primary` under `primary-foreground`. secondary: no fill
   // (transparent), an `input` edge, `foreground` text. danger: `destructive`
   // under `card`.
@@ -267,6 +289,24 @@ describe("Button", () => {
       await screen.rerender({ busy: false });
       await screen.getByRole("button").click();
       expect(onclick).toHaveBeenCalledOnce();
+    });
+
+    test("and disabled, is disabled and says it's busy", async () => {
+      const onclick = vi.fn();
+      const screen = await renderIn("light", Button, {
+        busy: true,
+        disabled: true,
+        onclick,
+        children: text("Save"),
+      });
+      const button = screen.getByRole("button");
+      await expect.element(button).toBeDisabled();
+      await expect.element(button).toHaveAttribute("aria-busy", "true");
+      await expect
+        .element(screen.getByRole("status"))
+        .toHaveTextContent("Working");
+      await button.click({ force: true });
+      expect(onclick).not.toHaveBeenCalled();
     });
   });
 
