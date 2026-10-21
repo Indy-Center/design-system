@@ -18,8 +18,8 @@
     </ul>
     <p class="flex flex-wrap items-center gap-2 rounded-md bg-card p-3 text-sm">
       Jordan Sample <Chip variant="initials">JS</Chip>
-      <Rating rating="S3" />
-      <Rating rating="PPL" kind="pilot" />
+      <Rating rating="S3" focusable />
+      <Rating rating="PPL" kind="pilot" focusable />
     </p>
   </div>
 </Schemes>

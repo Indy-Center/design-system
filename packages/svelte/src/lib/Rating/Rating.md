@@ -13,6 +13,10 @@ description: A member's VATSIM rating as a short code in a soft chip, with the l
       `"Controller1"` all show C1. Don't look it up or shorten it first.
 - [ ] Add `kind="pilot"` for a pilot rating, or its number is read from
       the controller table.
+- [ ] Add `focusable` where a page has only a few ratings (a member's
+      menu, a profile), so a keyboard can reach its long name. Leave it
+      off in a roster column, which would get a tab stop per row. Screen
+      readers read the long name either way.
 - [ ] Don't recolour it: it stays neutral so blue is left for links and
       buttons. `class` is for layout only, such as a margin.
 
@@ -24,18 +28,19 @@ description: A member's VATSIM rating as a short code in a soft chip, with the l
 </script>
 
 <Rating rating={user.rating} />
-<Rating rating="Controller1" />
+<Rating rating="Controller1" focusable />
 <Rating rating={user.pilotRating} kind="pilot" />
 ```
 
 ## Props
 
-| Prop     | Type                      | Notes                                                                                                                                                                              |
-| -------- | ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `rating` | `number \| string`        | Required. Any spelling `findRating` takes (`5`, `"C1"`, `"Controller1"`, `"Enroute Controller"`), or for a pilot any `findPilotRating` takes (`3`, `"IR"`, `"Instrument Rating"`). |
-| `kind`   | `"controller" \| "pilot"` | `"controller"` by default.                                                                                                                                                         |
-| `class`  | `string`                  | Added after the chip's own classes. Layout only.                                                                                                                                   |
-| others   | `<span>` attributes       | Passed to the chip's `<span>`.                                                                                                                                                     |
+| Prop        | Type                      | Notes                                                                                                                                                                              |
+| ----------- | ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `rating`    | `number \| string`        | Required. Any spelling `findRating` takes (`5`, `"C1"`, `"Controller1"`, `"Enroute Controller"`), or for a pilot any `findPilotRating` takes (`3`, `"IR"`, `"Instrument Rating"`). |
+| `kind`      | `"controller" \| "pilot"` | `"controller"` by default.                                                                                                                                                         |
+| `focusable` | `boolean`                 | Makes it a tab stop. `false` by default.                                                                                                                                           |
+| `class`     | `string`                  | Added after the chip's own classes. Layout only.                                                                                                                                   |
+| others      | `<span>` attributes       | Passed to the chip's `<span>`.                                                                                                                                                     |
 
 A value that is no rating shows as given, as plain chip text without a
 long name, and warns in development.
@@ -45,9 +50,9 @@ long name, and warns in development.
 `Chip`'s `muted` variant: mono, 12px, semibold, on the `muted` fill
 (`#E2E8F0` light, `#334155` dark) in `foreground`. The long name shows
 beneath the chip on keyboard focus, in sans, `background` on `foreground`.
-A `ring` outline goes
-round the whole chip on keyboard focus (`has-focus-visible:`), though the
-focus itself is on the `<abbr>` inside it.
+When `focusable`, a `ring` outline goes round the whole chip on keyboard
+focus (`has-focus-visible:`), though the focus itself is on the `<abbr>`
+inside it.
 
 ## Accessibility
 
@@ -55,6 +60,7 @@ focus itself is on the `<abbr>` inside it.
   after it, the long name in visually hidden text, so a screen reader
   reads "C1 Enroute Controller". It has no `title`: some screen readers
   would say the long name twice.
-- The `<abbr>` takes focus (`tabindex="0"`) so a keyboard user can read
-  the long name too. It does nothing on Enter; it isn't a control, so it
-  is exempt from the 44px target size.
+- With `focusable`, the `<abbr>` takes focus (`tabindex="0"`) so a
+  keyboard user can read the long name too. Without it, it is no tab
+  stop. It does nothing on Enter; it isn't a control, so it is exempt
+  from the 44px target size.

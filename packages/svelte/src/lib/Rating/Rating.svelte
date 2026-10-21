@@ -9,11 +9,14 @@
     rating: number | string;
     /** Whose rating it is: a controller's (the default) or a pilot's. */
     kind?: "controller" | "pilot";
+    /** Whether it is a tab stop, for places with few ratings (a member's menu, a profile). */
+    focusable?: boolean;
   };
 
   let {
     rating,
     kind = "controller",
+    focusable = false,
     class: className,
     ...rest
   }: Props = $props();
@@ -38,11 +41,13 @@
       className,
     ]}
   >
-    <!-- Focusable, so a keyboard user can read the long name too: it shows
+    <!-- When focusable, a keyboard user can read the long name too: it shows
          beneath the chip on focus. No title: some screen readers would say
          the long name twice. -->
     <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-    <abbr tabindex="0" class="group no-underline outline-none"
+    <abbr
+      tabindex={focusable ? 0 : undefined}
+      class="group no-underline outline-none"
       >{found.short}<span
         class="sr-only group-focus-visible:not-sr-only group-focus-visible:absolute group-focus-visible:top-full group-focus-visible:left-0 group-focus-visible:z-10 group-focus-visible:mt-2 group-focus-visible:rounded-md group-focus-visible:bg-foreground group-focus-visible:px-2 group-focus-visible:py-1 group-focus-visible:font-sans group-focus-visible:font-normal group-focus-visible:whitespace-nowrap group-focus-visible:text-background"
       >

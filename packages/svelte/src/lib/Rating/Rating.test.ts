@@ -54,8 +54,21 @@ describe("Rating", () => {
       .toHaveAccessibleName("C1 Enroute Controller");
   });
 
-  test("shows the long name only on focus", async () => {
+  // A roster column would otherwise have one tab stop per row.
+  test("is no tab stop unless focusable", async () => {
     const screen = await renderIn("light", Rating, { rating: 5 });
+    expect(screen.container.querySelector("[tabindex]")).toBeNull();
+
+    await userEvent.tab();
+
+    await expect.element(abbr(screen)).not.toHaveFocus();
+  });
+
+  test("shows the long name only on focus, when focusable", async () => {
+    const screen = await renderIn("light", Rating, {
+      rating: 5,
+      focusable: true,
+    });
     const long = screen.getByText("Enroute Controller");
     expect(long.element().getBoundingClientRect().width).toBeLessThanOrEqual(1);
 
@@ -71,7 +84,10 @@ describe("Rating", () => {
   describe.each(SCHEMES)("in %s", (scheme) => {
     // The guide's `ring` role.
     test("shows a ring around the chip on keyboard focus", async () => {
-      const screen = await renderIn(scheme, Rating, { rating: "S2" });
+      const screen = await renderIn(scheme, Rating, {
+        rating: "S2",
+        focusable: true,
+      });
       await userEvent.tab();
       await expect.element(chip(screen)).toHaveStyle({
         outlineStyle: "solid",
@@ -91,7 +107,10 @@ describe("Rating", () => {
 
     // Inverted, so it stands off whatever it covers.
     test("shows the long name in background on foreground", async () => {
-      const screen = await renderIn(scheme, Rating, { rating: "S3" });
+      const screen = await renderIn(scheme, Rating, {
+        rating: "S3",
+        focusable: true,
+      });
       await userEvent.tab();
       await expect.element(screen.getByText("Senior Student")).toHaveStyle({
         backgroundColor: role("foreground", scheme),
