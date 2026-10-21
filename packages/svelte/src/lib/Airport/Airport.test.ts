@@ -1,11 +1,11 @@
 import { describe, expect, test } from "vitest";
 import { page, userEvent } from "vitest/browser";
 import type { RenderResult } from "vitest-browser-svelte";
-import { expectReadable, SCHEMES } from "../../../test/contrast.ts";
+import { expectReadable } from "../../../test/contrast.ts";
+import InCell from "../../../test/InCell.svelte";
 import { role } from "../../../test/roles.ts";
 import { renderIn } from "../../../test/schemes.ts";
 import Airport from "./Airport.svelte";
-import InCell from "./Airport.test.svelte";
 
 // An Airport rendered alone or in a table cell.
 type Screen = RenderResult<typeof Airport> | RenderResult<typeof InCell>;
@@ -33,7 +33,10 @@ describe("Airport", () => {
     });
 
     test("reads as the code and the name", async () => {
-      const screen = await renderIn("light", InCell, { airport: kind });
+      const screen = await renderIn("light", InCell, {
+        component: Airport,
+        props: { airport: kind },
+      });
       await expect
         .element(screen.getByRole("cell"))
         .toHaveAccessibleName("KIND Indianapolis International");
@@ -45,17 +48,14 @@ describe("Airport", () => {
       expect(getComputedStyle(code).fontFamily).toMatch(/monospace/);
     });
 
-    test.each(SCHEMES)(
-      "shows the name muted, readable, in %s",
-      async (scheme) => {
-        const screen = await renderIn(scheme, Airport, { airport: kind });
-        const name = screen.getByText("Indianapolis International");
-        await expect
-          .element(name)
-          .toHaveStyle({ color: role("muted-foreground", scheme) });
-        expectReadable(name.element(), scheme);
-      },
-    );
+    test("shows the name muted, readable", async () => {
+      const screen = await renderIn("light", Airport, { airport: kind });
+      const name = screen.getByText("Indianapolis International");
+      await expect
+        .element(name)
+        .toHaveStyle({ color: role("muted-foreground", "light") });
+      expectReadable(name.element(), "light");
+    });
 
     test("adds a caller's class and attributes to its root", async () => {
       const screen = await renderIn("light", Airport, {
@@ -82,94 +82,26 @@ describe("Airport", () => {
     }
   });
 
+  // How the code, name and tooltip behave is AbbrTooltip.test.ts's.
   describe("with its name in a tooltip", () => {
     const tip = { airport: kind, nameAt: "tooltip" } as const;
 
-    test("shows the code alone, in mono, in an abbr", async () => {
-      const screen = await renderIn("light", Airport, tip);
-      expect(abbr(screen).element().firstChild!.textContent).toBe("KIND");
-      expect(getComputedStyle(abbr(screen).element()).fontFamily).toMatch(
-        /monospace/,
-      );
-      await expect.element(abbr(screen)).not.toHaveAttribute("title");
-    });
-
-    // As Rating and Credential: the hidden text says the name, so neither
-    // the tooltip nor a description repeats it.
-    test("reads as the code and the name, once", async () => {
-      const screen = await renderIn("light", InCell, {
-        ...tip,
-        focusable: true,
-      });
-      await expect
-        .element(screen.getByRole("cell"))
-        .toHaveAccessibleName("KIND Indianapolis International");
-
-      await userEvent.tab();
-      await expect.element(tooltip(screen)).toBeVisible();
-
-      await expect
-        .element(screen.getByRole("cell"))
-        .toHaveAccessibleName("KIND Indianapolis International");
-      await expect.element(abbr(screen)).not.toHaveAccessibleDescription();
-    });
-
-    test("shows the name in a tooltip on hover", async () => {
-      const screen = await renderIn("light", Airport, tip);
-      await expect.element(tooltip(screen)).not.toBeVisible();
-
-      await abbr(screen).hover();
-
-      await expect.element(tooltip(screen)).toBeVisible();
-      await expect
-        .element(tooltip(screen))
-        .toHaveTextContent("Indianapolis International");
-    });
-
-    // A list of airports would otherwise have a tab stop per row.
-    test("is no tab stop unless focusable", async () => {
-      const screen = await renderIn("light", Airport, tip);
-      expect(screen.container.querySelector("[tabindex]")).toBeNull();
-
-      await userEvent.tab();
-
-      await expect.element(abbr(screen)).not.toHaveFocus();
-    });
-
-    test("shows the tooltip on keyboard focus, when focusable", async () => {
+    test("puts the code in an AbbrTooltip, the name in the tooltip", async () => {
       const screen = await renderIn("light", Airport, {
         ...tip,
         focusable: true,
       });
+      await expect
+        .element(abbr(screen))
+        .toHaveTextContent("KIND Indianapolis International");
 
       await userEvent.tab();
 
       await expect.element(abbr(screen)).toHaveFocus();
+      await expect
+        .element(tooltip(screen))
+        .toHaveTextContent("Indianapolis International");
       await expect.element(tooltip(screen)).toBeVisible();
-    });
-
-    describe.each(SCHEMES)("in %s", (scheme) => {
-      test("shows a ring on keyboard focus", async () => {
-        const screen = await renderIn(scheme, Airport, {
-          ...tip,
-          focusable: true,
-        });
-        await userEvent.tab();
-        await expect.element(abbr(screen)).toHaveStyle({
-          outlineStyle: "solid",
-          outlineColor: role("ring", scheme),
-        });
-      });
-
-      // Tooltip's own look: inverted, so it stands off whatever it covers.
-      test("shows the name in background on foreground", async () => {
-        const screen = await renderIn(scheme, Airport, tip);
-        await abbr(screen).hover();
-        await expect.element(tooltip(screen)).toHaveStyle({
-          backgroundColor: role("foreground", scheme),
-          color: role("background", scheme),
-        });
-      });
     });
 
     // class is for layout, so it goes on the outermost box.

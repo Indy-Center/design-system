@@ -1,18 +1,15 @@
 import { describe, expect, onTestFinished, test, vi } from "vitest";
 import { page, userEvent } from "vitest/browser";
 import type { RenderResult } from "vitest-browser-svelte";
-import {
-  expectReadable,
-  SCHEMES,
-  styleOfClasses,
-  translucent,
-} from "../../../test/contrast.ts";
+import { translucent } from "../../../test/contrast.ts";
+import InCell from "../../../test/InCell.svelte";
 import { role } from "../../../test/roles.ts";
 import { renderIn } from "../../../test/schemes.ts";
 import Credential from "./Credential.svelte";
-import InCell from "./Credential.test.svelte";
 
-// A Credential rendered alone or in a table cell.
+// Each kind's colour is Chip.test.ts's; how the code, long name and
+// tooltip behave is AbbrTooltip.test.ts's.
+
 type Screen = RenderResult<typeof Credential> | RenderResult<typeof InCell>;
 
 // An abbr has no role, so it is found by its tag.
@@ -47,77 +44,36 @@ const appSolo = {
 } as const;
 
 describe("Credential", () => {
-  test("is a mono chip holding the code in an abbr", async () => {
-    const screen = await renderIn("light", Credential, sGc);
-    expect(abbr(screen).element().firstChild!.textContent).toBe("S-GC");
-    expect(chip(screen).element().tagName).toBe("SPAN");
-    expect(getComputedStyle(chip(screen).element()).fontFamily).toMatch(
-      /monospace/,
-    );
-  });
-
-  // As Rating: some screen readers said the long name twice, and the
-  // browser's own tooltip would show beside the chip's.
-  test("gives the abbr no title", async () => {
-    const screen = await renderIn("light", Credential, sGc);
-    await expect.element(abbr(screen)).not.toHaveAttribute("title");
-  });
-
-  test("reads as the code and the long name, once", async () => {
-    const screen = await renderIn("light", InCell, sGc);
+  // The kind picks Chip's variant; the guide's `ring` goes round the chip.
+  test("is its kind's chip with the code in an AbbrTooltip, its long name in the tooltip", async () => {
+    const screen = await renderIn("light", Credential, {
+      ...sLc,
+      focusable: true,
+    });
     await expect
-      .element(screen.getByRole("cell"))
-      .toHaveAccessibleName("S-GC Simple Ground Control");
+      .element(abbr(screen))
+      .toHaveTextContent("S-LC Simple Local Control");
+    await expect.element(chip(screen)).toHaveStyle({
+      backgroundColor: translucent(role("info", "light"), 20),
+    });
+
+    await userEvent.tab();
+
+    await expect.element(abbr(screen)).toHaveFocus();
+    await expect
+      .element(tooltip(screen))
+      .toHaveTextContent("Simple Local Control");
+    await expect.element(tooltip(screen)).toBeVisible();
+    await expect.element(chip(screen)).toHaveStyle({
+      outlineStyle: "solid",
+      outlineColor: role("ring", "light"),
+    });
   });
 
   // A roster column would otherwise have a tab stop per credential.
   test("is no tab stop unless focusable", async () => {
     const screen = await renderIn("light", Credential, sGc);
     expect(screen.container.querySelector("[tabindex]")).toBeNull();
-
-    await userEvent.tab();
-
-    await expect.element(abbr(screen)).not.toHaveFocus();
-  });
-
-  test("shows the long name in a tooltip on hover", async () => {
-    const screen = await renderIn("light", Credential, sGc);
-    await expect.element(tooltip(screen)).not.toBeVisible();
-
-    await chip(screen).hover();
-
-    await expect.element(tooltip(screen)).toBeVisible();
-    await expect
-      .element(tooltip(screen))
-      .toHaveTextContent("Simple Ground Control");
-  });
-
-  test("shows the tooltip on keyboard focus, when focusable", async () => {
-    const screen = await renderIn("light", Credential, {
-      ...sGc,
-      focusable: true,
-    });
-
-    await userEvent.tab();
-
-    await expect.element(abbr(screen)).toHaveFocus();
-    await expect.element(tooltip(screen)).toBeVisible();
-  });
-
-  // The hidden text says it, so neither the tooltip nor a description
-  // repeats it.
-  test("reads the long name once while the tooltip shows", async () => {
-    const screen = await renderIn("light", InCell, {
-      ...sGc,
-      focusable: true,
-    });
-    await userEvent.tab();
-    await expect.element(tooltip(screen)).toBeVisible();
-
-    await expect
-      .element(screen.getByRole("cell"))
-      .toHaveAccessibleName("S-GC Simple Ground Control");
-    await expect.element(abbr(screen)).not.toHaveAccessibleDescription();
   });
 
   describe("a solo", () => {
@@ -127,7 +83,10 @@ describe("Credential", () => {
     });
 
     test("reads as the code, the long name and the expiry", async () => {
-      const screen = await renderIn("light", InCell, appSolo);
+      const screen = await renderIn("light", InCell, {
+        component: Credential,
+        props: appSolo,
+      });
       await expect
         .element(screen.getByRole("cell"))
         .toHaveAccessibleName("APP-SOLO Approach solo until 3 Nov");
@@ -178,62 +137,6 @@ describe("Credential", () => {
       expect(plain.textContent!.replace(/\s+/g, " ").trim()).toBe(
         "APP-SOLO · until 3 Nov",
       );
-    });
-  });
-
-  describe.each(SCHEMES)("in %s", (scheme) => {
-    // Chip's certification variant, the same in every scheme.
-    test("a certification is white on emerald-700, readable", async () => {
-      const screen = await renderIn(scheme, Credential, sGc);
-      await expect.element(chip(screen)).toHaveStyle({
-        color: role("white", scheme),
-        backgroundColor: styleOfClasses(
-          "bg-emerald-700",
-          chip(screen).element(),
-        ).backgroundColor,
-      });
-      expectReadable(chip(screen).element(), scheme);
-    });
-
-    test("an endorsement is foreground on an info tint, readable", async () => {
-      const screen = await renderIn(scheme, Credential, sLc);
-      await expect.element(chip(screen)).toHaveStyle({
-        color: role("foreground", scheme),
-        backgroundColor: translucent(role("info", scheme), 20),
-      });
-      expectReadable(chip(screen).element(), scheme);
-    });
-
-    test("a solo is foreground on a warning tint, readable", async () => {
-      const screen = await renderIn(scheme, Credential, appSolo);
-      await expect.element(chip(screen)).toHaveStyle({
-        color: role("foreground", scheme),
-        backgroundColor: translucent(role("warning", scheme), 20),
-      });
-      expectReadable(chip(screen).element(), scheme);
-    });
-
-    // The guide's `ring` role, round the chip though the abbr has focus.
-    test("shows a ring around the chip on keyboard focus", async () => {
-      const screen = await renderIn(scheme, Credential, {
-        ...sLc,
-        focusable: true,
-      });
-      await userEvent.tab();
-      await expect.element(chip(screen)).toHaveStyle({
-        outlineStyle: "solid",
-        outlineColor: role("ring", scheme),
-      });
-    });
-
-    // Tooltip's own look: inverted, so it stands off whatever it covers.
-    test("shows the long name in background on foreground", async () => {
-      const screen = await renderIn(scheme, Credential, sLc);
-      await chip(screen).hover();
-      await expect.element(tooltip(screen)).toHaveStyle({
-        backgroundColor: role("foreground", scheme),
-        color: role("background", scheme),
-      });
     });
   });
 
