@@ -119,7 +119,8 @@ option.
 - While a search function is still looking for new text, the arrows
   don't move into the list it found for the old text and a click on it
   does nothing, so neither Enter nor the mouse can pick an option that no
-  longer matches.
+  longer matches. The arrow that opens the list lands on its first or last
+  option once the answer is in.
 - A status region says how many options match while the list is open
   ("3 results", "No matches", "Couldn't search"), then "Ann Archer,
   selected" on a pick.

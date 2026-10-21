@@ -267,6 +267,47 @@ describe("Combobox", () => {
         .not.toBeInTheDocument();
     });
 
+    test.each([
+      ["{ArrowDown}", "Ann Archer"],
+      ["{ArrowUp}", "Dan Andrews"],
+    ])(
+      "%s on a closed box opens it on %s once the answer comes",
+      async (key, name) => {
+        const screen = await renderIn("light", Picker, { options: search });
+        await userEvent.tab();
+        await userEvent.keyboard(key);
+        await expect
+          .poll(() => activeOption(screen))
+          .toEqual({ text: name, selected: "true" });
+      },
+    );
+
+    test("after a pick, one Down Arrow reopens the list on the first option", async () => {
+      const screen = await renderIn("light", Picker, { options: search });
+      const input = screen.getByRole("combobox");
+      await input.fill("Dan");
+      await expect
+        .element(screen.getByRole("option", { name: "Dan Andrews" }))
+        .toBeVisible();
+      await userEvent.keyboard("{ArrowDown}{Enter}");
+      await expect.element(input).toHaveValue("Dan Andrews");
+      await userEvent.keyboard("{ArrowDown}");
+      await expect
+        .poll(() => activeOption(screen))
+        .toEqual({ text: "Dan Andrews", selected: "true" });
+    });
+
+    test("typing before the answer comes cancels the Down Arrow's move", async () => {
+      const screen = await renderIn("light", Picker, { options: search });
+      const input = screen.getByRole("combobox");
+      await userEvent.tab();
+      await userEvent.keyboard("{ArrowDown}A");
+      await expect
+        .element(screen.getByRole("option", { name: "Dan Andrews" }))
+        .toBeVisible();
+      expect(input).not.toHaveAttribute("aria-activedescendant");
+    });
+
     /** Searches the roster; "Ann" is slow, so "Dan"'s list stays a while. */
     const slowAnn = (query: string) =>
       new Promise<typeof roster>((resolve) =>
