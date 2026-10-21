@@ -6,7 +6,11 @@ import { renderIn } from "../../../test/schemes.ts";
 function layout(term: Element, value: Element) {
   const t = term.getBoundingClientRect();
   const v = value.getBoundingClientRect();
-  return { stacked: v.top >= t.bottom, sideBySide: v.left >= t.right };
+  return {
+    stacked: v.top >= t.bottom,
+    sideBySide: v.left >= t.right,
+    leftAligned: v.left === t.left,
+  };
 }
 
 describe("DescriptionList", () => {
@@ -26,7 +30,11 @@ describe("DescriptionList", () => {
     screen.container.style.width = "360px";
     const term = screen.getByText("CID").element();
     const value = screen.getByText("1234567").element();
-    expect(layout(term, value)).toEqual({ stacked: true, sideBySide: false });
+    expect(layout(term, value)).toEqual({
+      stacked: true,
+      sideBySide: false,
+      leftAligned: true,
+    });
   });
 
   // From 24rem wide (the list's own width), the value sits beside its term.
@@ -35,7 +43,11 @@ describe("DescriptionList", () => {
     screen.container.style.width = "800px";
     const term = screen.getByText("CID").element();
     const value = screen.getByText("1234567").element();
-    expect(layout(term, value)).toEqual({ stacked: false, sideBySide: true });
+    expect(layout(term, value)).toEqual({
+      stacked: false,
+      sideBySide: true,
+      leftAligned: false,
+    });
   });
 
   test("lines a row's second value up under its first when wide", async () => {
@@ -43,14 +55,21 @@ describe("DescriptionList", () => {
     screen.container.style.width = "800px";
     const first = screen.getByText("IND Tier 1").element();
     const second = screen.getByText("SDF Tower").element();
-    const a = first.getBoundingClientRect();
-    const b = second.getBoundingClientRect();
-    expect(b.left).toBe(a.left);
-    expect(b.top).toBeGreaterThanOrEqual(a.bottom);
+    expect(layout(first, second)).toEqual({
+      stacked: true,
+      sideBySide: false,
+      leftAligned: true,
+    });
   });
 
   // The guide's roles: `muted-foreground` the terms, `foreground` the
-  // values, `border` the lines between rows.
+  // values, `border` the lines between rows. A dark header takes the dark
+  // scheme's values.
+  const dark = {
+    term: "rgb(156, 163, 175)",
+    value: "rgb(255, 255, 255)",
+    line: "rgb(51, 65, 85)",
+  };
   test.each([
     {
       scheme: "light",
@@ -58,18 +77,8 @@ describe("DescriptionList", () => {
       value: "rgb(15, 23, 42)",
       line: "rgb(226, 232, 240)",
     },
-    {
-      scheme: "dark",
-      term: "rgb(156, 163, 175)",
-      value: "rgb(255, 255, 255)",
-      line: "rgb(51, 65, 85)",
-    },
-    {
-      scheme: "dark-header",
-      term: "rgb(156, 163, 175)",
-      value: "rgb(255, 255, 255)",
-      line: "rgb(51, 65, 85)",
-    },
+    { scheme: "dark", ...dark },
+    { scheme: "dark-header", ...dark },
   ] as const)(
     "takes the roles' colours in $scheme",
     async ({ scheme, term, value, line }) => {

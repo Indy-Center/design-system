@@ -68,7 +68,15 @@ describe("Table", () => {
   });
 
   // The guide's roles: `card` the body, `muted` the head, `foreground` the
-  // headers, `foreground-soft` the cells, `border` the lines.
+  // headers, `foreground-soft` the cells, `border` the lines. A dark
+  // header takes the dark scheme's values.
+  const dark = {
+    card: "rgb(30, 41, 59)",
+    muted: "rgb(51, 65, 85)",
+    foreground: "rgb(255, 255, 255)",
+    soft: "rgb(209, 213, 219)",
+    border: "rgb(51, 65, 85)",
+  };
   test.each([
     {
       scheme: "light",
@@ -78,22 +86,8 @@ describe("Table", () => {
       soft: "rgb(51, 65, 85)",
       border: "rgb(226, 232, 240)",
     },
-    {
-      scheme: "dark",
-      card: "rgb(30, 41, 59)",
-      muted: "rgb(51, 65, 85)",
-      foreground: "rgb(255, 255, 255)",
-      soft: "rgb(209, 213, 219)",
-      border: "rgb(51, 65, 85)",
-    },
-    {
-      scheme: "dark-header",
-      card: "rgb(30, 41, 59)",
-      muted: "rgb(51, 65, 85)",
-      foreground: "rgb(255, 255, 255)",
-      soft: "rgb(209, 213, 219)",
-      border: "rgb(51, 65, 85)",
-    },
+    { scheme: "dark", ...dark },
+    { scheme: "dark-header", ...dark },
   ] as const)(
     "takes the roles' colours in $scheme",
     async ({ scheme, card, muted, foreground, soft, border }) => {
