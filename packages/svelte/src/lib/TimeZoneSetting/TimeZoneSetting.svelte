@@ -4,6 +4,7 @@
   import type { HTMLFieldsetAttributes } from "svelte/elements";
   import ChoiceRow from "../preferenceControl/ChoiceRow.svelte";
   import WhatsSaved from "../preferenceControl/WhatsSaved.svelte";
+  import type { TimeZoneChoice } from "../timeZone/timeZone.js";
   import { getTimeZone } from "../timeZone/timeZoneContext.svelte.js";
   import {
     zoneGroups,
@@ -43,15 +44,24 @@
     timeZone.choice?.kind === "zone" ? timeZone.choice.zone : undefined,
   );
 
-  let picking = $state(false);
-  const pickerOpen = $derived(picking || kind === "zone");
+  // "Another time zone" opened on the choice then saved: it reads as the
+  // choice, picker showing, until a zone is picked or the choice changes
+  // (here or in another control on the page).
+  let opened = $state.raw<{ on: TimeZoneChoice | undefined }>();
+  const picking = $derived(!!opened && opened.on === timeZone.choice);
+  // The row ticked; the picker shows while "Another time zone" is.
+  const ticked = $derived(picking ? "zone" : kind);
   let picker = $state<HTMLSelectElement>();
 
   async function openPicker() {
     if (kind === "zone") return picker?.focus();
-    picking = !picking;
+    if (picking) {
+      opened = undefined;
+      return;
+    }
+    opened = { on: timeZone.choice };
     await tick();
-    if (picking) picker?.focus();
+    picker?.focus();
   }
 
   // A saved zone under a name this browser doesn't list (Asia/Calcutta
@@ -77,17 +87,17 @@
   <div class="mt-1 space-y-0.5">
     <ChoiceRow
       icon={mdiEarth}
-      pressed={kind === "zulu"}
+      pressed={ticked === "zulu"}
       onclick={() => {
-        picking = false;
+        opened = undefined;
         timeZone.choose({ kind: "zulu" });
       }}>Zulu</ChoiceRow
     >
     <ChoiceRow
       icon={mdiCellphone}
-      pressed={kind === "device"}
+      pressed={ticked === "device"}
       onclick={() => {
-        picking = false;
+        opened = undefined;
         timeZone.choose({ kind: "device" });
       }}
     >
@@ -96,15 +106,14 @@
     </ChoiceRow>
     <ChoiceRow
       icon={mdiMapMarkerOutline}
-      pressed={kind === "zone"}
-      aria-expanded={pickerOpen}
+      pressed={ticked === "zone"}
       aria-controls="{id}-picker"
       onclick={openPicker}
     >
       Another time zone
       {#snippet detail()}{savedZone ? zoneLabel(savedZone) : ""}{/snippet}
     </ChoiceRow>
-    <div id="{id}-picker" hidden={!pickerOpen} class="pb-1 pl-11">
+    <div id="{id}-picker" hidden={ticked !== "zone"} class="pb-1 pl-11">
       <select
         bind:this={picker}
         aria-label="Pick a time zone"

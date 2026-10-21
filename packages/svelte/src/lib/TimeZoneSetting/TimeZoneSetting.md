@@ -41,9 +41,11 @@ Three rows, one always ticked:
   beneath ("Indianapolis (EDT)"). Ticked when nothing is saved. Saved as
   `device:<zone>`, so the server draws the zone and the browser follows
   the device after travel.
-- **Another time zone**, which opens a picker of every zone, grouped by
-  region and named by city ("Chicago (CDT)"). Picking one saves it, and
-  the row shows it beneath.
+- **Another time zone**, which ticks and opens a picker of every zone,
+  grouped by region and named by city ("Chicago (CDT)"). Picking one
+  saves it, and the row shows it beneath. The picker shows whenever this
+  row is ticked; pressing it again before a zone is picked goes back to
+  the saved choice.
 
 Under them, "What's saved?" opens the note: "Saved on this browser for a
 year, across flyindycenter.com, and to your Indy Center profile for every
@@ -62,9 +64,9 @@ note leaves the profile out.
 - A `<fieldset>` named by its legend, "Time zone". Each row is a
   `<button aria-pressed>`, named by its choice alone and described by the
   line beneath.
-- "Another time zone" also carries `aria-expanded` for the picker, a
-  native `<select>` named "Pick a time zone", which takes focus when it
-  opens.
+- "Another time zone" is a toggle like the others, not a disclosure: its
+  picker, a native `<select>` named "Pick a time zone", shows while it
+  is pressed and takes focus when it opens.
 - "What's saved?" is a `<button aria-expanded>` for the note.
 - Until the page has loaded in the browser, the device's city is blank
   and the picker lists only the saved zone.

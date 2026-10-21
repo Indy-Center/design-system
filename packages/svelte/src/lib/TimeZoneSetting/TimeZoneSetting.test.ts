@@ -108,7 +108,9 @@ describe("TimeZoneSetting", () => {
     const screen = await setting({ saveToProfile });
     const another = screen.getByRole("button", { name: ANOTHER });
     const picker = screen.getByRole("combobox", { name: "Pick a time zone" });
-    await expect.element(another).toHaveAttribute("aria-expanded", "false");
+    // A toggle, not a disclosure too: the picker shows while it's pressed.
+    await expect.element(another).toHaveAttribute("aria-pressed", "false");
+    expect(another.element().hasAttribute("aria-expanded")).toBe(false);
     await expect
       .element(
         screen.getByRole("combobox", {
@@ -119,8 +121,12 @@ describe("TimeZoneSetting", () => {
       .not.toBeVisible();
 
     await another.click();
-    await expect.element(another).toHaveAttribute("aria-expanded", "true");
+    await expect.element(another).toHaveAttribute("aria-pressed", "true");
+    await expect
+      .element(screen.getByRole("button", { name: DEVICE }))
+      .toHaveAttribute("aria-pressed", "false");
     await expect.element(picker).toHaveFocus();
+    expect(another.element().hasAttribute("aria-expanded")).toBe(false);
 
     await picker.selectOptions("America/Chicago");
 
