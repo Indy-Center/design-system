@@ -1,39 +1,44 @@
 <script lang="ts">
-  // The bar is a row across the header, too wide for <Schemes>' narrow
-  // columns, so it is shown full width in a dark header band on a light
-  // page and on a dark page. The phone menu fits them.
+  // AppNav belongs in the dark header and has no background of its own, so
+  // it is shown in a dark header band on a light page and on a dark page,
+  // rather than in <Schemes>' bare light column. Its tests cover all three
+  // schemes. The bar is a row across a wide header, so it shows from lg,
+  // where the header uses it.
   import { AppNav } from "../../lib/index.ts";
   import { hubNav } from "../../playground/chrome.ts";
-  import Schemes from "../../playground/Schemes.svelte";
 
   const label =
     "mb-3 text-xs font-semibold tracking-wider text-muted-foreground uppercase";
+  const band = "rounded-md bg-background p-2";
 </script>
 
 <svelte:head><title>AppNav · Centerline playground</title></svelte:head>
 
 <h1 class="mb-4 font-heading text-3xl font-semibold text-foreground">AppNav</h1>
 
-<h2 class="mb-2 font-heading text-xl font-semibold text-foreground">Bar</h2>
-<div class="mb-8 grid gap-4">
+<div class="grid gap-4">
   {#each ["Light page", "Dark page"] as name}
     <section
       data-theme={name === "Dark page" ? "dark" : undefined}
-      class="min-h-72 rounded-lg border border-border bg-background p-4"
+      class="rounded-lg border border-border bg-background p-4"
     >
-      <h3 class={label}>{name}</h3>
-      <!-- Not clipped, so a group's panel can hang below it. The bar is
-           for wide screens: on a phone it runs off the edge. -->
-      <header data-theme="dark" class="rounded-md bg-background p-2">
-        <AppNav items={hubNav} current="/staff" />
+      <h2 class={label}>{name}</h2>
+
+      <h3 class="mb-2 text-sm font-medium text-foreground">Bar</h3>
+      <!-- Room under it, for a group's panel. -->
+      <div class="mb-6 lg:min-h-60">
+        <header data-theme="dark" class={[band, "max-lg:hidden"]}>
+          <AppNav items={hubNav} current="/staff" />
+        </header>
+        <p class="text-sm lg:hidden">
+          The bar is for screens 1024px and wider. Widen the window to see it.
+        </p>
+      </div>
+
+      <h3 class="mb-2 text-sm font-medium text-foreground">Phone menu</h3>
+      <header data-theme="dark" class={[band, "max-w-sm"]}>
+        <AppNav items={hubNav} current="/staff" layout="menu" />
       </header>
     </section>
   {/each}
 </div>
-
-<h2 class="mb-2 font-heading text-xl font-semibold text-foreground">
-  Phone menu
-</h2>
-<Schemes>
-  <AppNav items={hubNav} current="/staff" layout="menu" />
-</Schemes>
