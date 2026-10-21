@@ -1,6 +1,8 @@
 import { createRawSnippet } from "svelte";
 import { describe, expect, test } from "vitest";
 import { page } from "vitest/browser";
+import { SCHEMES } from "../../../test/contrast.ts";
+import { role } from "../../../test/roles.ts";
 import { renderIn } from "../../../test/schemes.ts";
 import Fieldset from "./Fieldset.svelte";
 import Options from "./Fieldset.test.svelte";
@@ -53,24 +55,30 @@ describe("Fieldset", () => {
     );
   });
 
-  test("with an error, marks its checkboxes invalid", async () => {
-    const screen = await renderIn("light", Options, {
-      options: "checkbox",
-      error: "Choose at least one.",
-    });
-    for (const name of ["Ground", "Tower"]) {
-      await expect
-        .element(screen.getByRole("checkbox", { name }))
-        .toHaveAttribute("aria-invalid", "true");
-    }
-  });
+  test.each(["checkbox", "switch"] as const)(
+    "with an error, marks its %ses invalid",
+    async (options) => {
+      const screen = await renderIn("light", Options, {
+        options,
+        error: "Choose at least one.",
+      });
+      for (const name of ["Ground", "Tower"]) {
+        await expect
+          .element(screen.getByRole(options, { name }))
+          .toHaveAttribute("aria-invalid", "true");
+      }
+    },
+  );
 
-  test("with no error, leaves its checkboxes valid", async () => {
-    const screen = await renderIn("light", Options, { options: "checkbox" });
-    await expect
-      .element(screen.getByRole("checkbox", { name: "Ground" }))
-      .not.toHaveAttribute("aria-invalid");
-  });
+  test.each(["checkbox", "switch"] as const)(
+    "with no error, leaves its %ses valid",
+    async (options) => {
+      const screen = await renderIn("light", Options, { options });
+      await expect
+        .element(screen.getByRole(options, { name: "Ground" }))
+        .not.toHaveAttribute("aria-invalid");
+    },
+  );
 
   test("when required, makes its radios required but not its checkboxes", async () => {
     const radios = await renderIn("light", Options, {
@@ -131,21 +139,11 @@ describe("Fieldset", () => {
       .toBeInTheDocument();
   });
 
-  // The guide's roles: `foreground-soft` legend (#334155 light, #D1D5DB
-  // dark), `muted-foreground` hint (#475569 light, #9CA3AF dark),
-  // `destructive` error (#B91C1C light, #F87171 dark).
-  test.each([
-    ["light", "rgb(51, 65, 85)", "rgb(71, 85, 105)", "rgb(185, 28, 28)"],
-    ["dark", "rgb(209, 213, 219)", "rgb(156, 163, 175)", "rgb(248, 113, 113)"],
-    [
-      "dark-header",
-      "rgb(209, 213, 219)",
-      "rgb(156, 163, 175)",
-      "rgb(248, 113, 113)",
-    ],
-  ] as const)(
+  // The guide's roles: `foreground-soft` legend, `muted-foreground` hint,
+  // `destructive` error.
+  test.each(SCHEMES)(
     "colours the legend, hint and error in %s",
-    async (scheme, legend, hint, error) => {
+    async (scheme) => {
       const screen = await renderIn(scheme, Fieldset, {
         legend: "Position",
         hint: "The one you'll train on first.",
@@ -154,13 +152,13 @@ describe("Fieldset", () => {
       });
       await expect
         .element(screen.container.querySelector("legend")!)
-        .toHaveStyle({ color: legend });
+        .toHaveStyle({ color: role("foreground-soft", scheme) });
       await expect
         .element(screen.getByText("The one you'll train on first."))
-        .toHaveStyle({ color: hint });
+        .toHaveStyle({ color: role("muted-foreground", scheme) });
       await expect
         .element(screen.getByText("Choose a position."))
-        .toHaveStyle({ color: error });
+        .toHaveStyle({ color: role("destructive", scheme) });
     },
   );
 

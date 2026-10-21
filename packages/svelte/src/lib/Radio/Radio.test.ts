@@ -1,6 +1,9 @@
 import { describe, expect, test } from "vitest";
 import { userEvent } from "vitest/browser";
+import { SCHEMES } from "../../../test/contrast.ts";
+import { role } from "../../../test/roles.ts";
 import { renderIn } from "../../../test/schemes.ts";
+import { text } from "../../../test/snippets.ts";
 import Radio from "./Radio.svelte";
 import RadioGroup from "./Radio.test.svelte";
 
@@ -27,6 +30,25 @@ describe("Radio", () => {
     await expect
       .element(screen.getByRole("radio", { name: "Tower" }))
       .not.toBeChecked();
+  });
+
+  test("is named by its label alone and described by its children", async () => {
+    const screen = await renderIn("light", Radio, {
+      label: "Tower",
+      name: "position",
+      value: "twr",
+      "aria-describedby": "tower-note",
+      children: text("Local control at a towered field"),
+    });
+    const radio = screen.getByRole("radio", { name: "Tower" });
+    // The caller's id comes first, then the children's.
+    const ids = radio.element().getAttribute("aria-describedby")!.split(" ");
+    expect(ids[0]).toBe("tower-note");
+    expect(document.getElementById(ids[1])).toHaveTextContent(
+      "Local control at a towered field",
+    );
+    await screen.getByText("Local control at a towered field").click();
+    await expect.element(radio).toBeChecked();
   });
 
   test("sets the group to its value when chosen", async () => {
@@ -155,14 +177,9 @@ describe("Radio", () => {
       .toBeInTheDocument();
   });
 
-  // The guide's roles: `primary` circle (#0369A1 in both), `foreground-soft`
-  // label (#334155 light, #D1D5DB dark). The circle is checked, so the
-  // browser paints its fill from `accent-color`.
-  test.each([
-    ["light", "rgb(51, 65, 85)"],
-    ["dark", "rgb(209, 213, 219)"],
-    ["dark-header", "rgb(209, 213, 219)"],
-  ] as const)("colours the circle and label in %s", async (scheme, label) => {
+  // The guide's roles: `primary` circle, `foreground-soft` label. The
+  // circle is checked, so the browser paints its fill from `accent-color`.
+  test.each(SCHEMES)("colours the circle and label in %s", async (scheme) => {
     const screen = await renderIn(scheme, Radio, {
       label: "Tower",
       name: "position",
@@ -173,20 +190,17 @@ describe("Radio", () => {
     await expect.element(radio).toBeChecked();
     await expect
       .element(radio)
-      .toHaveStyle({ accentColor: "rgb(3, 105, 161)" });
+      .toHaveStyle({ accentColor: role("primary", scheme) });
     await expect
       .element(screen.getByText("Tower"))
-      .toHaveStyle({ color: label });
+      .toHaveStyle({ color: role("foreground-soft", scheme) });
   });
 
-  // The guide's `ring` role: #0284C7 light, #0EA5E9 dark.
-  test.each([
-    ["light", "rgb(2, 132, 199)"],
-    ["dark", "rgb(14, 165, 233)"],
-    ["dark-header", "rgb(14, 165, 233)"],
-  ] as const)(
+  // The guide's `ring` role.
+  test.each(SCHEMES)(
     "shows a ring outline when tabbed to in %s",
-    async (scheme, colour) => {
+    async (scheme) => {
+      const colour = role("ring", scheme);
       const screen = await renderIn(scheme, Radio, {
         label: "Tower",
         name: "position",

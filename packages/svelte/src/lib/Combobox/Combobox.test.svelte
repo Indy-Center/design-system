@@ -18,6 +18,8 @@
     error?: string;
     /** Draws options with their CID when set. */
     withCid?: boolean;
+    /** Field's required. */
+    required?: boolean;
   };
 
   let {
@@ -30,13 +32,14 @@
     hint,
     error,
     withCid = false,
+    required = false,
   }: Props = $props();
 </script>
 
 <!-- In a row, so the open list doesn't cover the button. -->
 <div class="flex items-start gap-4">
   <form class="w-64" onsubmit={(event) => event.preventDefault()}>
-    <Field label="Controller" {hint} {error}>
+    <Field label="Controller" {hint} {error} {required}>
       {#snippet children(control)}
         <Combobox
           {...control}

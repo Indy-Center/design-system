@@ -1,34 +1,22 @@
 import { describe, expect, test } from "vitest";
 import { userEvent } from "vitest/browser";
-import { renderIn } from "../../../test/schemes.ts";
+import { SCHEMES } from "../../../test/contrast.ts";
+import { role } from "../../../test/roles.ts";
+import { renderIn, type Scheme } from "../../../test/schemes.ts";
 import ProseLesson from "../../../test/ProseLesson.svelte";
 
-// The guide's Roles table, light and dark.
-const light = {
-  foreground: "rgb(15, 23, 42)", // #0F172A
-  foregroundSoft: "rgb(51, 65, 85)", // #334155
-  mutedForeground: "rgb(71, 85, 105)", // #475569
-  link: "rgb(3, 105, 161)", // #0369A1
-  info: "rgb(3, 105, 161)", // #0369A1
-  muted: "rgb(226, 232, 240)", // #E2E8F0
-  border: "rgb(226, 232, 240)", // #E2E8F0
-  ring: "rgb(2, 132, 199)", // #0284C7
-};
-const dark = {
-  foreground: "rgb(255, 255, 255)", // #FFFFFF
-  foregroundSoft: "rgb(209, 213, 219)", // #D1D5DB
-  mutedForeground: "rgb(156, 163, 175)", // #9CA3AF
-  link: "rgb(56, 189, 248)", // #38BDF8
-  info: "rgb(56, 189, 248)", // #38BDF8
-  muted: "rgb(51, 65, 85)", // #334155
-  border: "rgb(51, 65, 85)", // #334155
-  ring: "rgb(14, 165, 233)", // #0EA5E9
-};
-const schemes = [
-  ["light", light],
-  ["dark", dark],
-  ["dark-header", dark],
-] as const;
+// The roles the theme uses, in a scheme.
+const roles = (scheme: Scheme) => ({
+  foreground: role("foreground", scheme),
+  foregroundSoft: role("foreground-soft", scheme),
+  mutedForeground: role("muted-foreground", scheme),
+  link: role("link", scheme),
+  info: role("info", scheme),
+  muted: role("muted", scheme),
+  border: role("border", scheme),
+  ring: role("ring", scheme),
+});
+const schemes = SCHEMES.map((scheme) => [scheme, roles(scheme)] as const);
 
 // The plugin puts backticks round inline code and marks round quotes, in
 // ::before and ::after; the theme takes them out.
@@ -59,7 +47,7 @@ describe("Prose", () => {
     const body = screen.container.querySelector("#body")!;
     expect(body.tagName).toBe("DIV");
     expect(getComputedStyle(body).marginTop).toBe("32px");
-    expect(getComputedStyle(body).color).toBe(light.foregroundSoft);
+    expect(getComputedStyle(body).color).toBe(role("foreground-soft", "light"));
   });
 
   test.each(schemes)(

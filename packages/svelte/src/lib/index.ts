@@ -11,16 +11,23 @@ export {
 } from "./Breadcrumbs/Breadcrumbs.svelte";
 export { default as Button } from "./Button/Button.svelte";
 export { default as Checkbox } from "./Checkbox/Checkbox.svelte";
+export { default as ChoiceCard } from "./ChoiceCard/ChoiceCard.svelte";
 export {
   default as Chip,
   CHIP_VARIANTS,
   type ChipVariant,
 } from "./Chip/Chip.svelte";
 export { default as Combobox } from "./Combobox/Combobox.svelte";
+export { default as CopyButton } from "./CopyButton/CopyButton.svelte";
 export { default as DescriptionList } from "./DescriptionList/DescriptionList.svelte";
 export { default as Disclosure } from "./Disclosure/Disclosure.svelte";
 export { default as Field, type FieldControl } from "./Field/Field.svelte";
 export { default as Fieldset } from "./Fieldset/Fieldset.svelte";
+export {
+  default as Footer,
+  type FooterColumn,
+  type FooterLink,
+} from "./Footer/Footer.svelte";
 export { default as Heading } from "./Heading/Heading.svelte";
 export { default as Icon } from "./Icon/Icon.svelte";
 export { default as Input } from "./Input/Input.svelte";
@@ -35,6 +42,7 @@ export { default as SkipLink } from "./SkipLink/SkipLink.svelte";
 export { default as Spinner } from "./Spinner/Spinner.svelte";
 export { default as StatCard } from "./StatCard/StatCard.svelte";
 export { default as Steps, type Step } from "./Steps/Steps.svelte";
+export { default as Switch } from "./Switch/Switch.svelte";
 export { default as Table } from "./Table/Table.svelte";
 export { default as Tabs, type Tab } from "./Tabs/Tabs.svelte";
 export { default as Text } from "./Text/Text.svelte";

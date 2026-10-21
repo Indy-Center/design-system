@@ -1,6 +1,8 @@
 import { tick } from "svelte";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { userEvent } from "vitest/browser";
+import { SCHEMES } from "../../../test/contrast.ts";
+import { role, type Role } from "../../../test/roles.ts";
 import { renderIn } from "../../../test/schemes.ts";
 import type { Severity } from "../severity/severity.ts";
 import Toaster from "./Toaster.svelte";
@@ -192,25 +194,13 @@ describe("Toast", () => {
 
   // The brand guide's Roles table: the level's role for the icon and the
   // rule, on a card, with body text.
-  describe.each([
-    ["light", "rgb(255, 255, 255)", "rgb(51, 65, 85)"],
-    ["dark", "rgb(30, 41, 59)", "rgb(209, 213, 219)"],
-    ["dark-header", "rgb(30, 41, 59)", "rgb(209, 213, 219)"],
-  ] as const)("in %s", (scheme, card, body) => {
-    const role: Record<Severity, string> =
-      scheme === "light"
-        ? {
-            info: "rgb(3, 105, 161)",
-            success: "rgb(21, 128, 61)",
-            caution: "rgb(161, 98, 7)",
-            danger: "rgb(185, 28, 28)",
-          }
-        : {
-            info: "rgb(56, 189, 248)",
-            success: "rgb(74, 222, 128)",
-            caution: "rgb(250, 204, 21)",
-            danger: "rgb(248, 113, 113)",
-          };
+  describe.each(SCHEMES)("in %s", (scheme) => {
+    const levelRole: Record<Severity, Role> = {
+      info: "info",
+      success: "success",
+      caution: "warning",
+      danger: "destructive",
+    };
 
     test.each(["info", "success", "caution", "danger"] as Severity[])(
       "%s is a card with its role's icon and rule",
@@ -218,17 +208,18 @@ describe("Toast", () => {
         const screen = await renderIn(scheme, Toaster, {});
         toast(level, "Roster saved.");
         const item = screen.getByRole("listitem");
+        const colour = role(levelRole[level], scheme);
         await expect.element(item).toHaveStyle({
-          backgroundColor: card,
-          borderLeftColor: role[level],
+          backgroundColor: role("card", scheme),
+          borderLeftColor: colour,
           borderLeftWidth: "4px",
         });
         await expect
           .element(item.element().querySelector<SVGElement>("svg path"))
-          .toHaveStyle({ fill: role[level] });
+          .toHaveStyle({ fill: colour });
         await expect
           .element(item.element().querySelector("p")!)
-          .toHaveStyle({ color: body });
+          .toHaveStyle({ color: role("foreground-soft", scheme) });
       },
     );
   });

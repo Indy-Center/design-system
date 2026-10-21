@@ -1,5 +1,7 @@
 import { describe, expect, test } from "vitest";
 import MemberDetails from "../../../test/MemberDetails.svelte";
+import { SCHEMES } from "../../../test/contrast.ts";
+import { role } from "../../../test/roles.ts";
 import { renderIn } from "../../../test/schemes.ts";
 
 /** Where a term and its value sit, relative to each other. */
@@ -63,40 +65,22 @@ describe("DescriptionList", () => {
   });
 
   // The guide's roles: `muted-foreground` the terms, `foreground` the
-  // values, `border` the lines between rows. A dark header takes the dark
-  // scheme's values.
-  const dark = {
-    term: "rgb(156, 163, 175)",
-    value: "rgb(255, 255, 255)",
-    line: "rgb(51, 65, 85)",
-  };
-  test.each([
-    {
-      scheme: "light",
-      term: "rgb(71, 85, 105)",
-      value: "rgb(15, 23, 42)",
-      line: "rgb(226, 232, 240)",
-    },
-    { scheme: "dark", ...dark },
-    { scheme: "dark-header", ...dark },
-  ] as const)(
-    "takes the roles' colours in $scheme",
-    async ({ scheme, term, value, line }) => {
-      const screen = await renderIn(scheme, MemberDetails, {});
-      await expect
-        .element(screen.getByText("CID"))
-        .toHaveStyle({ color: term });
-      await expect
-        .element(screen.getByText("1234567"))
-        .toHaveStyle({ color: value });
-      // Tailwind's divide-y draws each row's line along its bottom.
-      const first = screen.getByText("CID").element().parentElement!;
-      await expect.element(first).toHaveStyle({
-        borderBottomStyle: "solid",
-        borderBottomColor: line,
-      });
-    },
-  );
+  // values, `border` the lines between rows.
+  test.each(SCHEMES)("takes the roles' colours in %s", async (scheme) => {
+    const screen = await renderIn(scheme, MemberDetails, {});
+    await expect
+      .element(screen.getByText("CID"))
+      .toHaveStyle({ color: role("muted-foreground", scheme) });
+    await expect
+      .element(screen.getByText("1234567"))
+      .toHaveStyle({ color: role("foreground", scheme) });
+    // Tailwind's divide-y draws each row's line along its bottom.
+    const first = screen.getByText("CID").element().parentElement!;
+    await expect.element(first).toHaveStyle({
+      borderBottomStyle: "solid",
+      borderBottomColor: role("border", scheme),
+    });
+  });
 
   test("adds a caller's class and attributes to its own", async () => {
     const screen = await renderIn("light", MemberDetails, {
