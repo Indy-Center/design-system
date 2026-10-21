@@ -1,6 +1,12 @@
 import { afterEach, describe, expect, test } from "vitest";
 import { page } from "vitest/browser";
-import { expectReadable, translucent } from "../../../test/contrast.ts";
+import {
+  SCHEMES,
+  SURFACES,
+  contrastOn,
+  translucent,
+} from "../../../test/contrast.ts";
+import { role } from "../../../test/roles.ts";
 import { renderIn } from "../../../test/schemes.ts";
 import { text } from "../../../test/snippets.ts";
 import PageHero from "./PageHero.svelte";
@@ -47,51 +53,29 @@ describe("PageHero", () => {
     );
   });
 
-  // The guide's roles: a `card` (#FFFFFF light, #1E293B dark) to
-  // `background` (#F1F5F9, #111827) gradient; the title in `foreground`
-  // (#0F172A, #FFFFFF), the content in `foreground-soft` (#334155,
-  // #D1D5DB).
-  const dark = {
-    card: "rgb(30, 41, 59)",
-    background: "rgb(17, 24, 39)",
-    foreground: "rgb(255, 255, 255)",
-    soft: "rgb(209, 213, 219)",
-  };
-  test.each([
-    {
-      scheme: "light",
-      card: "rgb(255, 255, 255)",
-      background: "rgb(241, 245, 249)",
-      foreground: "rgb(15, 23, 42)",
-      soft: "rgb(51, 65, 85)",
-    },
-    { scheme: "dark", ...dark },
-    { scheme: "dark-header", ...dark },
-  ] as const)(
-    "follows the roles in $scheme, its content readable",
-    async ({ scheme, card, background, foreground, soft }) => {
-      const screen = await renderIn(scheme, PageHero, welcome);
-      const heading = screen.getByRole("heading", { level: 1 });
-      await expect.element(heading).toHaveStyle({ color: foreground });
-      const image = getComputedStyle(heroOf(heading.element())).backgroundImage;
-      expect(image).toMatch(/^linear-gradient\(/);
-      expect(image.indexOf(card)).toBeGreaterThan(-1);
-      expect(image.indexOf(background)).toBeGreaterThan(image.indexOf(card));
-      const content = screen.getByText(lead).element();
-      expect(getComputedStyle(content).color).toBe(soft);
-      expectReadable(content, scheme);
-    },
-  );
+  // A `card` to `background` gradient; the title in `foreground`, the
+  // content in `foreground-soft`.
+  test.each(SCHEMES)("follows the roles in %s", async (scheme) => {
+    const screen = await renderIn(scheme, PageHero, welcome);
+    const heading = screen.getByRole("heading", { level: 1 });
+    await expect
+      .element(heading)
+      .toHaveStyle({ color: role("foreground", scheme) });
+    const image = getComputedStyle(heroOf(heading.element())).backgroundImage;
+    expect(image).toMatch(/^linear-gradient\(/);
+    const card = image.indexOf(role("card", scheme));
+    expect(card).toBeGreaterThan(-1);
+    expect(image.indexOf(role("background", scheme))).toBeGreaterThan(card);
+    await expect
+      .element(screen.getByText(lead))
+      .toHaveStyle({ color: role("foreground-soft", scheme) });
+  });
 
   // The halftone chosen in ticket 10: 1px dots every 20px, in the
   // `foreground` role at 12%.
-  test.each([
-    ["light", "#0F172A"],
-    ["dark", "#FFFFFF"],
-    ["dark-header", "#FFFFFF"],
-  ] as const)(
+  test.each(SCHEMES)(
     "lays foreground dots at 12% over the gradient in %s",
-    async (scheme, foreground) => {
+    async (scheme) => {
       const screen = await renderIn(scheme, PageHero, welcome);
       const hero = heroOf(screen.getByRole("heading").element());
       const dots = hero.firstElementChild!;
@@ -99,7 +83,27 @@ describe("PageHero", () => {
       const style = getComputedStyle(dots);
       expect(style.backgroundImage).toMatch(/^radial-gradient\(/);
       expect(style.backgroundSize).toBe("20px 20px");
-      expect(style.color).toBe(translucent(foreground, 12));
+      expect(style.color).toBe(translucent(role("foreground", scheme), 12));
+    },
+  );
+
+  // Text can land on a dot, so the worst case is the gradient's either end
+  // with a dot under it.
+  test.each(SCHEMES)(
+    "keeps its title and content readable over the dots in %s",
+    async (scheme) => {
+      const screen = await renderIn(scheme, PageHero, welcome);
+      const hero = heroOf(screen.getByRole("heading").element());
+      const dot = getComputedStyle(hero.firstElementChild!).color;
+      for (const surface of Object.values(SURFACES[scheme])) {
+        for (const el of [
+          screen.getByRole("heading").element(),
+          screen.getByText(lead).element(),
+        ]) {
+          expect(contrastOn(el, surface)).toBeGreaterThanOrEqual(4.5);
+          expect(contrastOn(el, surface, dot)).toBeGreaterThanOrEqual(4.5);
+        }
+      }
     },
   );
 

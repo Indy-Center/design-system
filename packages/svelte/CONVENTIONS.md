@@ -16,7 +16,10 @@ src/routes/name/+page.svelte its playground page (lower-case folder)
 - The playground's index lists every `src/routes/*/+page.svelte` by
   itself; don't edit it. Wrap the specimen in `<Schemes>` from
   `src/playground/Schemes.svelte`, which shows it in light, in dark and in
-  a dark header on a light page.
+  a dark header on a light page. A full-width band (`Footer`, `PageHero`)
+  is squashed by its narrow columns, so its page shows it full width on a
+  light page and on a dark one instead; its tests still cover all three
+  schemes.
 - `index.ts` is the one shared file: one line each, alphabetical. When
   merging, keep both sides' lines.
 - Inside `src/lib`, import with relative paths (`../Link/Link.svelte`).

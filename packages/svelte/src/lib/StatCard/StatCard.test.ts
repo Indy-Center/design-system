@@ -1,5 +1,10 @@
 import { describe, expect, test } from "vitest";
-import { expectReadable, translucent } from "../../../test/contrast.ts";
+import {
+  SCHEMES,
+  expectReadable,
+  translucent,
+} from "../../../test/contrast.ts";
+import { role } from "../../../test/roles.ts";
 import { renderIn } from "../../../test/schemes.ts";
 import { icon } from "../../../test/snippets.ts";
 import StatCard from "./StatCard.svelte";
@@ -56,61 +61,39 @@ describe("StatCard", () => {
     expect(getComputedStyle(detail).fontSize).toBe("14px");
   });
 
-  // The guide's roles: `card` (#FFFFFF light, #1E293B dark) with a
-  // `border` edge (#E2E8F0, #334155); `foreground` (#0F172A, #FFFFFF) for
-  // the number; `muted-foreground` (#475569, #9CA3AF) for the label and
-  // sub-line.
-  const dark = {
-    card: "rgb(30, 41, 59)",
-    border: "rgb(51, 65, 85)",
-    foreground: "rgb(255, 255, 255)",
-    muted: "rgb(156, 163, 175)",
-  };
-  test.each([
-    {
-      scheme: "light",
-      card: "rgb(255, 255, 255)",
-      border: "rgb(226, 232, 240)",
-      foreground: "rgb(15, 23, 42)",
-      muted: "rgb(71, 85, 105)",
-    },
-    { scheme: "dark", ...dark },
-    { scheme: "dark-header", ...dark },
-  ] as const)(
-    "takes the roles' colours in $scheme, its sub-line readable",
-    async ({ scheme, card, border, foreground, muted }) => {
+  // `card` with a `border` edge; `foreground` for the number;
+  // `muted-foreground` for the label and sub-line.
+  test.each(SCHEMES)(
+    "takes the roles' colours in %s, its sub-line readable",
+    async (scheme) => {
       const screen = await renderIn(scheme, StatCard, users);
       const term = screen.getByRole("term");
       const box = term.element().closest("dl")!.parentElement!;
       expect(getComputedStyle(box)).toMatchObject({
-        backgroundColor: card,
-        borderTopColor: border,
+        backgroundColor: role("card", scheme),
+        borderTopColor: role("border", scheme),
         borderTopStyle: "solid",
       });
+      const muted = role("muted-foreground", scheme);
       await expect.element(term).toHaveStyle({ color: muted });
       const [number, detail] = screen.getByRole("definition").elements();
-      expect(getComputedStyle(number).color).toBe(foreground);
+      expect(getComputedStyle(number).color).toBe(role("foreground", scheme));
       expect(getComputedStyle(detail).color).toBe(muted);
       expectReadable(detail, scheme);
     },
   );
 
-  // The tile: `primary` (#0369A1 in both schemes) at 15%, the icon in
-  // `link` (#0369A1 light, #38BDF8 dark).
-  test.each([
-    ["light", "rgb(3, 105, 161)"],
-    ["dark", "rgb(56, 189, 248)"],
-    ["dark-header", "rgb(56, 189, 248)"],
-  ] as const)(
+  // The tile: `primary` at 15%, the icon in `link`.
+  test.each(SCHEMES)(
     "puts the icon in a primary tile, hidden from screen readers, in %s",
-    async (scheme, link) => {
+    async (scheme) => {
       const screen = await renderIn(scheme, StatCard, { ...users, icon });
       const svg = screen.getByTestId("icon").element();
       const tile = svg.parentElement!;
       expect(tile.getAttribute("aria-hidden")).toBe("true");
       expect(getComputedStyle(tile)).toMatchObject({
-        backgroundColor: translucent("#0369A1", 15),
-        color: link,
+        backgroundColor: translucent(role("primary", scheme), 15),
+        color: role("link", scheme),
       });
       // The tile comes after the list, so it's read after the numbers.
       expect(tile.previousElementSibling!.tagName).toBe("DL");

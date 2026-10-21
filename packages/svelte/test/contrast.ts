@@ -40,12 +40,13 @@ export function styleOfClasses(classes: string, element: Element) {
 }
 
 /**
- * `hex` at `percent` opacity, as the browser computes Tailwind's opacity
- * modifier (`bg-primary/15`: a mix in oklab with transparent).
+ * `colour` (any CSS colour) at `percent` opacity, as the browser computes
+ * Tailwind's opacity modifier (`bg-primary/15`: a mix in oklab with
+ * transparent).
  */
-export function translucent(hex: string, percent: number) {
+export function translucent(colour: string, percent: number) {
   const probe = document.createElement("div");
-  probe.style.color = `color-mix(in oklab, ${hex} ${percent}%, transparent)`;
+  probe.style.color = `color-mix(in oklab, ${colour} ${percent}%, transparent)`;
   document.body.append(probe);
   const { color } = getComputedStyle(probe);
   probe.remove();
@@ -73,11 +74,16 @@ function luminance(rgb: [number, number, number]) {
 
 /**
  * The contrast ratio of `element`'s text on its background, with that
- * background laid over `surface` (a hex).
+ * background laid over `surface` (a hex), and over any `layers` painted on
+ * the surface first (such as a pattern's dots).
  */
-export function contrastOn(element: Element, surface: string) {
+export function contrastOn(
+  element: Element,
+  surface: string,
+  ...layers: string[]
+) {
   const style = getComputedStyle(element);
-  const fill = paint(surface, style.backgroundColor);
+  const fill = paint(surface, ...layers, style.backgroundColor);
   const text = paint(`rgb(${fill.join(" ")})`, style.color);
   const [lighter, darker] = [luminance(text), luminance(fill)].sort(
     (a, b) => b - a,
