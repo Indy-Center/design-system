@@ -2,6 +2,7 @@
   import { mdiChevronDown } from "@mdi/js";
   import type { Snippet } from "svelte";
   import type { HTMLButtonAttributes } from "svelte/elements";
+  import { buttonClasses } from "../buttonClasses/buttonClasses.js";
   import { dismiss } from "../dismiss/dismiss.js";
   import Icon from "../Icon/Icon.svelte";
 
@@ -74,12 +75,6 @@
     if (!next || trigger?.contains(next) || panel?.contains(next)) return;
     close();
   }
-
-  // Button's looks, so the arrow matches the button it's attached to.
-  const variants = {
-    primary: "bg-primary text-primary-foreground hover:bg-primary-hover",
-    secondary: "border border-input text-foreground hover:bg-muted",
-  };
 </script>
 
 <button
@@ -96,7 +91,8 @@
     "inline-flex min-h-11 min-w-11 cursor-pointer items-center justify-center gap-1 text-base font-medium transition-colors",
     "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
     "disabled:cursor-not-allowed disabled:opacity-60",
-    variants[variant],
+    // Button's looks, so the arrow matches the button it's attached to.
+    buttonClasses[variant],
     attached
       ? [
           "self-stretch rounded-r-lg px-2",

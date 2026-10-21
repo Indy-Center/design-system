@@ -42,7 +42,8 @@ src/routes/name/+page.svelte its playground page (lower-case folder)
   Props table.
 - Parts that several components share, and that aren't exported, get a
   folder of their own with no doc page: `formControl` (the controls'
-  classes), `CloseButton` (Alert's and Toast's close button).
+  classes), `buttonClasses` (Button's variants, which DropdownMenu's arrow
+  shares), `CloseButton` (Alert's and Toast's close button).
 - Something an app raises with a function, rather than places, is named
   for what the member sees: `Toast/` holds `toast.svelte.ts` (the
   function and its state), `Toaster.svelte` (the one component that shows
