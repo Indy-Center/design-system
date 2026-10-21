@@ -54,10 +54,20 @@ const VNAS_NAMES: Record<string, string> = {
  * VATSIM's (`"Enroute Controller"`), in any case. Undefined when it is none.
  */
 export function findRating(value: number | string): RatingDetails | undefined {
-  if (typeof value === "number") return RATINGS.find((r) => r.id === value);
+  return findIn(RATINGS, value, (r) => VNAS_NAMES[r.short]);
+}
+
+// The rating in `table` with `value` as its id, or as its short code, long
+// name or `otherName`, in any case.
+function findIn(
+  table: readonly RatingDetails[],
+  value: number | string,
+  otherName: (r: RatingDetails) => string | undefined = () => undefined,
+) {
+  if (typeof value === "number") return table.find((r) => r.id === value);
   const wanted = value.toLowerCase();
-  return RATINGS.find((r) =>
-    [r.short, r.long, VNAS_NAMES[r.short]].some(
+  return table.find((r) =>
+    [r.short, r.long, otherName(r)].some(
       (name) => name?.toLowerCase() === wanted,
     ),
   );
@@ -85,10 +95,5 @@ export const PILOT_RATINGS: readonly RatingDetails[] = [
 export function findPilotRating(
   value: number | string,
 ): RatingDetails | undefined {
-  if (typeof value === "number")
-    return PILOT_RATINGS.find((r) => r.id === value);
-  const wanted = value.toLowerCase();
-  return PILOT_RATINGS.find((r) =>
-    [r.short, r.long].some((name) => name.toLowerCase() === wanted),
-  );
+  return findIn(PILOT_RATINGS, value);
 }
