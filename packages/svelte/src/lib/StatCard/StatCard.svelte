@@ -28,8 +28,7 @@
   );
 </script>
 
-<!-- The card is a box around the list: a tile in a dl would need a term.
-     Card's own padding (p-4) is the stat card's. -->
+<!-- The card is a box around the list: a tile in a dl would need a term. -->
 <Card class={["flex items-center justify-between gap-3", className]}>
   <dl {...rest} class="min-w-0">
     <dt class="text-sm text-muted-foreground">{label}</dt>
