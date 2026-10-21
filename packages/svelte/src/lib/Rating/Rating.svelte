@@ -39,12 +39,10 @@
     ]}
   >
     <!-- Focusable, so a keyboard user can read the long name too: it shows
-         beneath the chip on focus, and a mouse gets the title. -->
+         beneath the chip on focus. No title: some screen readers would say
+         the long name twice. -->
     <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-    <abbr
-      title={found.long}
-      tabindex="0"
-      class="group no-underline outline-none"
+    <abbr tabindex="0" class="group no-underline outline-none"
       >{found.short}<span
         class="sr-only group-focus-visible:not-sr-only group-focus-visible:absolute group-focus-visible:top-full group-focus-visible:left-0 group-focus-visible:z-10 group-focus-visible:mt-2 group-focus-visible:rounded-md group-focus-visible:bg-foreground group-focus-visible:px-2 group-focus-visible:py-1 group-focus-visible:font-sans group-focus-visible:font-normal group-focus-visible:whitespace-nowrap group-focus-visible:text-background"
       >
