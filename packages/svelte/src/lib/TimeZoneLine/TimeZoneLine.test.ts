@@ -15,6 +15,7 @@ import { renderIn, type Scheme } from "../../../test/schemes.ts";
 import { forgetTimeZone } from "../../playground/forgetTimeZone.ts";
 import { readTimeZone, type TimeZoneChoice } from "../timeZone/timeZone.ts";
 import Layout from "../timeZone/TimeZoneLayout.test.svelte";
+import TimeZoneLine from "./TimeZoneLine.svelte";
 
 // The device is in Indianapolis; 2300Z on 20 October 2026 is 7:00 PM EDT
 // there and 6:00 PM CDT in Chicago.
@@ -125,6 +126,16 @@ describe("TimeZoneLine", () => {
     await expect
       .element(offer.element().closest("p"))
       .toHaveStyle({ color: role("muted-foreground", scheme) });
+  });
+
+  test("adds a caller's class and attributes to the line", async () => {
+    const screen = await renderIn("light", TimeZoneLine, {
+      class: "ml-4",
+      id: "times",
+    });
+    const p = screen.container.querySelector("p");
+    await expect.element(p).toHaveAttribute("id", "times");
+    await expect.element(p).toHaveStyle({ marginLeft: "16px" });
   });
 
   describe("on the server", () => {

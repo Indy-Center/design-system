@@ -1,6 +1,6 @@
 ---
 title: Colour scheme
-description: The server hook that serves each member's light or dark choice, and the function that saves it.
+description: The server hook that serves each member's light or dark choice, and the functions that save and clear it.
 ---
 
 ## Checklist
@@ -9,8 +9,12 @@ description: The server hook that serves each member's light or dark choice, and
       `fallback: 'dark'` (phase 1: nobody changes unless they choose).
 - [ ] Add the device script's tag to `src/app.html` before
       `%sveltekit.head%`, so it is ready for `fallback: 'device'`.
-- [ ] Save a choice only from the user menu's colour-scheme item, with
-      `saveColorScheme`. Never save the device's setting.
+- [ ] Let the member choose with `ColorSchemeSetting` (in the user menu
+      and on Settings), which saves with `saveColorScheme` and goes back
+      to the device with `clearColorScheme`. Never save the device's
+      setting.
+- [ ] Wherever you call these yourself, put the note by the control:
+      "Saved on this browser for a year, across flyindycenter.com."
 - [ ] Don't set `data-theme` on `<html>` yourself. `Header` and `Footer` set
       it on their own root and stay dark in both schemes.
 
@@ -62,19 +66,22 @@ In a component, when the member picks light or dark:
   `Path=/` and sets `data-theme` on `<html>` at once. `domain` defaults to
   `flyindycenter.com`; on a page outside it (localhost, a preview host), the
   cookie is kept for that host alone. It runs in the browser only.
+- **`clearColorScheme({ domain })`** is "Use my device's setting": it
+  deletes the cookie and applies the device's setting at once (dark when
+  the device asks for it, else light). The next page follows the device
+  under `fallback: 'device'`; under `fallback: 'dark'` it is dark.
 - The member's identity account isn't read or written yet (phase 2).
 
 ## Options
 
-| Option                       | Type                 | Notes                                   |
-| ---------------------------- | -------------------- | --------------------------------------- |
-| `fallback` (hook)            | `'dark' \| 'device'` | Served when the cookie holds no choice. |
-| `domain` (`saveColorScheme`) | `string`             | Defaults to `flyindycenter.com`.        |
+| Option                                           | Type                 | Notes                                   |
+| ------------------------------------------------ | -------------------- | --------------------------------------- |
+| `fallback` (hook)                                | `'dark' \| 'device'` | Served when the cookie holds no choice. |
+| `domain` (`saveColorScheme`, `clearColorScheme`) | `string`             | Defaults to `flyindycenter.com`.        |
 
 ## Accessibility
 
-Show the scheme in use in the user menu's item (for example with
-`aria-pressed` on Light and Dark). In the browser,
+`ColorSchemeSetting` shows the choice with `aria-pressed`. In the browser,
 `document.documentElement.dataset.theme` holds it: `"light"`, `"dark"`, or
 nothing for light from the device. It is `"dark"` from the device script
 too, so it doesn't say whether the member chose it.

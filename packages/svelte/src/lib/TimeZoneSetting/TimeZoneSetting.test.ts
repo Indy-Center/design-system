@@ -6,6 +6,7 @@ import { renderIn, type Scheme } from "../../../test/schemes.ts";
 import { forgetTimeZone } from "../../playground/forgetTimeZone.ts";
 import { readTimeZone, type TimeZoneChoice } from "../timeZone/timeZone.ts";
 import Layout from "../timeZone/TimeZoneLayout.test.svelte";
+import TimeZoneSetting from "./TimeZoneSetting.svelte";
 
 // The device is in Indianapolis; 2300Z on 20 October 2026 is 7:00 PM EDT
 // there and 6:00 PM CDT in Chicago.
@@ -211,5 +212,15 @@ describe("TimeZoneSetting", () => {
         .getBoundingClientRect();
       expect(box.height).toBeGreaterThanOrEqual(44);
     }
+  });
+
+  test("adds a caller's class and attributes to the group", async () => {
+    const screen = await renderIn("light", TimeZoneSetting, {
+      class: "ml-4",
+      id: "zone",
+    });
+    const group = screen.getByRole("group", { name: "Time zone" });
+    await expect.element(group).toHaveAttribute("id", "zone");
+    await expect.element(group).toHaveStyle({ marginLeft: "16px" });
   });
 });

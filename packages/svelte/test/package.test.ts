@@ -144,7 +144,10 @@ describe("the packed package", () => {
       vi.unstubAllGlobals();
     });
     const server = await import("@indy-center/svelte/server");
-    expect(Object.keys(server)).toEqual(["fetchPositions"]);
+    expect(Object.keys(server).sort()).toEqual([
+      "fetchPositions",
+      "readTimeZone",
+    ]);
     expect(await server.fetchPositions("ZID")).toEqual([
       {
         id: "1",
@@ -156,6 +159,45 @@ describe("the packed package", () => {
         starred: true,
       },
     ]);
+  });
+
+  test("reads the time-zone cookie from /server, in Node", async () => {
+    const { readTimeZone } = await import("@indy-center/svelte/server");
+    const cookies = (value: string) => ({ get: () => value });
+    // A zone under either of its names, whichever this runtime lists.
+    expect(readTimeZone(cookies("device:Asia/Kolkata"))).toEqual({
+      kind: "device",
+      zone: "Asia/Kolkata",
+    });
+    expect(readTimeZone(cookies("America/Indiana/Indianapolis"))).toEqual({
+      kind: "zone",
+      zone: "America/Indiana/Indianapolis",
+    });
+    expect(readTimeZone(cookies("UTC"))).toEqual({ kind: "zone", zone: "UTC" });
+    expect(readTimeZone(cookies("Nowhere/Else"))).toBeUndefined();
+  });
+
+  test("exports the time-zone and colour-scheme choices from the package root, with types and docs", async () => {
+    const index = await readFile(new URL("dist/index.d.ts", root), "utf8");
+    for (const name of [
+      "ColorSchemeSetting",
+      "TimeZoneLine",
+      "TimeZoneSetting",
+      "clearColorScheme",
+      "setTimeZone",
+      "TimeZoneChoice",
+      "TimeZoneProfileSetting",
+    ]) {
+      expect(index).toMatch(new RegExp(`\\b${name}\\b`));
+    }
+    expect(files).toEqual(
+      expect.arrayContaining([
+        "dist/ColorSchemeSetting/ColorSchemeSetting.md",
+        "dist/TimeZoneLine/TimeZoneLine.md",
+        "dist/TimeZoneSetting/TimeZoneSetting.md",
+        "dist/timeZone/timeZone.md",
+      ]),
+    );
   });
 
   test("exports the positions context from the package root, with types", async () => {
