@@ -1,5 +1,7 @@
 import { describe, expect, test } from "vitest";
 import { userEvent } from "vitest/browser";
+import { SCHEMES } from "../../../test/contrast.ts";
+import { role } from "../../../test/roles.ts";
 import { renderIn } from "../../../test/schemes.ts";
 import Switch from "./Switch.svelte";
 
@@ -55,7 +57,8 @@ describe("Switch", () => {
   });
 
   // More than colour: the thumb moves across, and a tick shows when on.
-  test("moves its thumb and shows a tick when on", async () => {
+  // The tick is inside the thumb, so it slides with it.
+  test("moves its thumb and shows a tick on it when on", async () => {
     const screen = await renderIn("light", Switch, {
       label: "Email me about events",
     });
@@ -63,35 +66,23 @@ describe("Switch", () => {
     const thumb = screen.container.querySelector<HTMLElement>(
       'span[aria-hidden="true"]',
     )!;
-    const tick = screen.container.querySelector<SVGElement>(
-      'svg[aria-hidden="true"]',
-    )!;
+    const tick = thumb.querySelector("svg")!;
     const offLeft = thumb.getBoundingClientRect().left;
-    await expect.element(tick).not.toBeVisible();
+    // Drawn clear while off.
+    await expect.element(tick).toHaveStyle({ fill: "rgba(0, 0, 0, 0)" });
     await toggle.click();
-    await expect.element(tick).toBeVisible();
+    await expect.element(tick).toHaveStyle({ fill: role("primary", "light") });
     await expect
       .poll(() => thumb.getBoundingClientRect().left - offLeft)
       .toBe(20);
   });
 
-  // The guide's roles. Off: a `muted` track (#E2E8F0 light, #334155 dark)
-  // edged in `input` (#64748B in both), with a `muted-foreground` thumb
-  // (#475569 light, #9CA3AF dark). On: a `primary` track (#0369A1) with a
-  // `primary-foreground` thumb (#FFFFFF). The label in `foreground-soft`
-  // (#334155 light, #D1D5DB dark).
-  test.each([
-    ["light", "rgb(226, 232, 240)", "rgb(71, 85, 105)", "rgb(51, 65, 85)"],
-    ["dark", "rgb(51, 65, 85)", "rgb(156, 163, 175)", "rgb(209, 213, 219)"],
-    [
-      "dark-header",
-      "rgb(51, 65, 85)",
-      "rgb(156, 163, 175)",
-      "rgb(209, 213, 219)",
-    ],
-  ] as const)(
+  // Off: a `muted` track edged in `input`, with a `muted-foreground`
+  // thumb. On: a `primary` track with a `primary-foreground` thumb. The
+  // label in `foreground-soft`.
+  test.each(SCHEMES)(
     "colours the track, thumb and label in %s",
-    async (scheme, track, thumbOff, label) => {
+    async (scheme) => {
       const screen = await renderIn(scheme, Switch, {
         label: "Email me about events",
       });
@@ -100,40 +91,37 @@ describe("Switch", () => {
         'span[aria-hidden="true"]',
       )!;
       await expect.element(toggle).toHaveStyle({
-        backgroundColor: track,
-        borderColor: "rgb(100, 116, 139)",
+        backgroundColor: role("muted", scheme),
+        borderColor: role("input", scheme),
       });
-      await expect.element(thumb).toHaveStyle({ backgroundColor: thumbOff });
+      await expect.element(thumb).toHaveStyle({
+        backgroundColor: role("muted-foreground", scheme),
+      });
       await expect
         .element(screen.getByText("Email me about events"))
-        .toHaveStyle({ color: label });
+        .toHaveStyle({ color: role("foreground-soft", scheme) });
 
       await toggle.click();
       await expect.element(toggle).toHaveStyle({
-        backgroundColor: "rgb(3, 105, 161)",
-        borderColor: "rgb(3, 105, 161)",
+        backgroundColor: role("primary", scheme),
+        borderColor: role("primary", scheme),
       });
-      await expect
-        .element(thumb)
-        .toHaveStyle({ backgroundColor: "rgb(255, 255, 255)" });
+      await expect.element(thumb).toHaveStyle({
+        backgroundColor: role("primary-foreground", scheme),
+      });
     },
   );
 
-  // The guide's `ring` role: #0284C7 light, #0EA5E9 dark.
-  test.each([
-    ["light", "rgb(2, 132, 199)"],
-    ["dark", "rgb(14, 165, 233)"],
-    ["dark-header", "rgb(14, 165, 233)"],
-  ] as const)(
+  test.each(SCHEMES)(
     "shows a ring outline when tabbed to in %s",
-    async (scheme, colour) => {
+    async (scheme) => {
       const screen = await renderIn(scheme, Switch, {
         label: "Email me about events",
       });
       await userEvent.tab();
       await expect.element(screen.getByRole("switch")).toHaveStyle({
         outlineStyle: "solid",
-        outlineColor: colour,
+        outlineColor: role("ring", scheme),
       });
     },
   );

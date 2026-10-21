@@ -46,9 +46,9 @@ export const textControlClasses = [
   "disabled:cursor-not-allowed disabled:opacity-60",
 ];
 
-// The look Checkbox, Radio and Switch share: the native box in the primary
-// role, a ring outline, and a label row that's 44px tall and dims when
-// disabled.
+// Checkbox, Radio and Switch share the label row: 44px tall, dimmed when
+// disabled. Checkbox and Radio also share the native box in the primary
+// role with a ring outline; Switch draws its own.
 export const choiceRowClasses =
   "flex min-h-11 items-center gap-3 text-base text-foreground-soft has-disabled:cursor-not-allowed has-disabled:opacity-60";
 export const choiceInputClasses =

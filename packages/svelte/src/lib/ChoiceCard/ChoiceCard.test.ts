@@ -1,5 +1,7 @@
 import { describe, expect, test } from "vitest";
 import { userEvent, type Locator } from "vitest/browser";
+import { SCHEMES } from "../../../test/contrast.ts";
+import { role } from "../../../test/roles.ts";
 import { renderIn } from "../../../test/schemes.ts";
 import ChoiceCard from "./ChoiceCard.svelte";
 import Cards from "./ChoiceCard.test.svelte";
@@ -105,44 +107,79 @@ describe("ChoiceCard", () => {
     },
   );
 
-  // The guide's roles. Unchosen: edged in `border` (#E2E8F0 light, #334155
-  // dark). Chosen: edged in `primary` (#0369A1 in both) over a wash of it.
-  // The label in `foreground-soft` (#334155 light, #D1D5DB dark), the
-  // children in `muted-foreground` (#475569 light, #9CA3AF dark).
-  test.each([
-    ["light", "rgb(226, 232, 240)", "rgb(51, 65, 85)", "rgb(71, 85, 105)"],
-    ["dark", "rgb(51, 65, 85)", "rgb(209, 213, 219)", "rgb(156, 163, 175)"],
-    [
-      "dark-header",
-      "rgb(51, 65, 85)",
-      "rgb(209, 213, 219)",
-      "rgb(156, 163, 175)",
-    ],
-  ] as const)(
-    "colours the card, label and children in %s, and highlights it when chosen",
-    async (scheme, border, label, children) => {
-      const screen = await renderIn(scheme, Cards, { type: "radio" });
-      const card = cardOf(screen, "Tower");
-      await expect
-        .element(card)
-        .toHaveStyle({ borderTopColor: border, borderTopWidth: "1px" });
-      expect(getComputedStyle(card).backgroundColor).toBe("rgba(0, 0, 0, 0)");
-      await expect
-        .element(screen.getByText("Tower"))
-        .toHaveStyle({ color: label });
-      await expect
-        .element(screen.getByText("Local control at a towered field"))
-        .toHaveStyle({ color: children });
+  // Unchosen: edged in `border`. Chosen: edged in `primary` over a wash of
+  // it. The label in `foreground-soft`, the children in `muted-foreground`.
+  const cases = [
+    { type: "radio", name: "Tower", about: "Local control at a towered field" },
+    { type: "checkbox", name: "Events", about: "Group flights and fly-ins" },
+  ] as const;
+  describe.each(cases)("as $type", ({ type, name, about }) => {
+    test.each(SCHEMES)(
+      "colours the card, label and children in %s, and highlights it when chosen",
+      async (scheme) => {
+        const screen = await renderIn(scheme, Cards, { type });
+        const card = cardOf(screen, name);
+        await expect.element(card).toHaveStyle({
+          borderTopColor: role("border", scheme),
+          borderTopWidth: "1px",
+        });
+        // Transparent: the page shows through until it's chosen.
+        expect(getComputedStyle(card).backgroundColor).toBe("rgba(0, 0, 0, 0)");
+        await expect
+          .element(screen.getByText(name, { exact: true }))
+          .toHaveStyle({ color: role("foreground-soft", scheme) });
+        await expect
+          .element(screen.getByText(about))
+          .toHaveStyle({ color: role("muted-foreground", scheme) });
 
-      await screen.getByRole("radio", { name: "Tower" }).click();
+        const input = screen.getByRole(type, { name });
+        await input.click();
+        await expect
+          .element(card)
+          .toHaveStyle({ borderTopColor: role("primary", scheme) });
+        // A wash of primary, so the page shows through.
+        expect(getComputedStyle(card).backgroundColor).toMatch(/\/ 0\.1\)$/);
+        await expect
+          .element(input)
+          .toHaveStyle({ accentColor: role("primary", scheme) });
+      },
+    );
+  });
+
+  test.each(["radio", "checkbox"] as const)(
+    "as %s, passes disabled, aria-* and onchange to its input, and dims the whole card",
+    async (type) => {
+      let changes = 0;
+      const shared = {
+        label: "Events",
+        disabled: false,
+        "aria-describedby": "elsewhere",
+        onchange: () => changes++,
+      };
+      const screen = await renderIn(
+        "light",
+        ChoiceCard,
+        type === "radio"
+          ? { ...shared, type, name: "emails", value: "events" }
+          : { ...shared, type },
+      );
+      const input = screen.getByRole(type, { name: "Events" });
       await expect
-        .element(card)
-        .toHaveStyle({ borderTopColor: "rgb(3, 105, 161)" });
-      // A wash of primary, so the page shows through.
-      expect(getComputedStyle(card).backgroundColor).toMatch(/\/ 0\.1\)$/);
+        .element(input)
+        .toHaveAttribute(
+          "aria-describedby",
+          expect.stringContaining("elsewhere"),
+        );
+      await input.click();
+      expect(changes).toBe(1);
+
+      await screen.rerender({ disabled: true });
+      await expect.element(input).toBeDisabled();
+      const card = screen.container.firstElementChild as HTMLElement;
+      await expect.element(card).toHaveStyle({ opacity: "0.6" });
       await expect
-        .element(screen.getByRole("radio", { name: "Tower" }))
-        .toHaveStyle({ accentColor: "rgb(3, 105, 161)" });
+        .element(card.querySelector("label")!)
+        .toHaveStyle({ opacity: "1" });
     },
   );
 

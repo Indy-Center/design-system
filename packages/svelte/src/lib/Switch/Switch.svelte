@@ -35,23 +35,25 @@
         "disabled:cursor-not-allowed",
       ]}
     />
-    <!-- The thumb: left and hollow-grey when off, right and white with a
-         tick when on, so the state isn't shown by colour alone. -->
+    <!-- The thumb: left and grey when off, right and white with a tick
+         when on, so the state isn't shown by colour alone. The tick is
+         inside it, so they slide together; its colour is the thumb's text
+         colour, clear while off. In forced colours (high contrast) the
+         thumb keeps system colours of its own, so it still shows. -->
     <span
       aria-hidden="true"
       class={[
-        "pointer-events-none absolute top-1 left-1 size-4 rounded-full bg-muted-foreground",
+        "pointer-events-none absolute top-1 left-1 flex size-4 items-center justify-center rounded-full bg-muted-foreground text-transparent",
         "motion-safe:transition-transform",
-        "peer-checked:translate-x-5 peer-checked:bg-primary-foreground",
+        "peer-checked:translate-x-5 peer-checked:bg-primary-foreground peer-checked:text-primary",
+        "forced-colors:bg-[CanvasText] forced-colors:forced-color-adjust-none",
+        "forced-colors:peer-checked:bg-[CanvasText] forced-colors:peer-checked:text-[Canvas]",
       ]}
-    ></span>
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 24 24"
-      class="pointer-events-none absolute top-1.5 left-6.5 hidden size-3 fill-primary peer-checked:block"
     >
-      <path d={mdiCheck} />
-    </svg>
+      <svg viewBox="0 0 24 24" class="size-3 fill-current">
+        <path d={mdiCheck} />
+      </svg>
+    </span>
   </span>
   <span>{label}</span>
 </label>

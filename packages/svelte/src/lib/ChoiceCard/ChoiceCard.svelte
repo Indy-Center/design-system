@@ -25,6 +25,7 @@
           value: T;
           /** The chosen card's value, bindable: `bind:group` on every card. */
           group?: T;
+          /** Not for radios: use `group`. */
           checked?: never;
         }
       | {
@@ -36,6 +37,7 @@
           value?: string;
           /** Whether it's ticked, bindable. */
           checked?: boolean;
+          /** Not for checkboxes: use `checked`. */
           group?: never;
         }
     );
@@ -61,6 +63,9 @@
     "rounded-lg border border-border not-has-checked:hover:border-input",
     "has-checked:border-primary has-checked:bg-primary/10",
     "motion-safe:transition-colors",
+    // Disabled, the whole card dims, its edge too, and the label inside
+    // doesn't dim a second time.
+    "has-disabled:opacity-60 [&_label]:has-disabled:opacity-100",
     // Stacked in a Fieldset, cards keep apart, as training's did.
     "not-last:mb-3",
     "[&_label]:px-4 [&_label]:py-3",
