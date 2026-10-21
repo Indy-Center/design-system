@@ -1,5 +1,8 @@
 // One line per component, in alphabetical order.
 export { default as Alert } from "./Alert/Alert.svelte";
+export { default as AppNav } from "./AppNav/AppNav.svelte";
+export { default as AppNavMenu } from "./AppNav/AppNavMenu.svelte";
+export { default as AppsMenu, type App } from "./AppsMenu/AppsMenu.svelte";
 export {
   default as Badge,
   BADGE_VARIANTS,
@@ -77,6 +80,11 @@ export {
   default as Tooltip,
   type TooltipTrigger,
 } from "./Tooltip/Tooltip.svelte";
+
+// Every Indy Center app, for AppsMenu; an app's pages, for AppNav and
+// AppNavMenu.
+export { INDY_CENTER_APPS } from "./AppsMenu/apps.js";
+export type { NavGroup, NavItem, NavLink } from "./AppNav/nav.js";
 
 // The severity scale, for Alert and Toast; and the functions that raise a
 // toast, in the browser and from the server.
