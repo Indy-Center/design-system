@@ -27,6 +27,7 @@
   import Button from "../Button/Button.svelte";
   import Heading, { labelClasses } from "../Heading/Heading.svelte";
   import Icon from "../Icon/Icon.svelte";
+  import IconTile from "../IconTile/IconTile.svelte";
 
   type Props = HTMLAttributes<HTMLDivElement> & {
     /** The HTTP status, such as `page.status`. */
@@ -89,12 +90,9 @@
     className,
   ]}
 >
-  <div
-    aria-hidden="true"
-    class="mb-6 flex size-20 items-center justify-center rounded-full bg-primary/15 text-link"
-  >
+  <IconTile tone="primary" shape="circle" class="mb-6 size-20">
     <Icon path={notFound ? mdiRadar : mdiAlertCircleOutline} size={40} />
-  </div>
+  </IconTile>
 
   <p
     class="bg-linear-to-b from-foreground to-muted-foreground bg-clip-text font-mono text-7xl font-bold text-transparent sm:text-8xl"

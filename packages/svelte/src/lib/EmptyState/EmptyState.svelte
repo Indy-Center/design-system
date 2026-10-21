@@ -2,6 +2,7 @@
   import type { Snippet } from "svelte";
   import type { HTMLAttributes } from "svelte/elements";
   import Heading from "../Heading/Heading.svelte";
+  import IconTile from "../IconTile/IconTile.svelte";
 
   type Large = HTMLAttributes<HTMLDivElement> & {
     /** `large` for a page or panel with nothing in it; `inline` for one line in a list or table. `large` by default. */
@@ -57,12 +58,9 @@
     class={["flex flex-col items-center px-4 py-12 text-center", className]}
   >
     {#if icon}
-      <div
-        aria-hidden="true"
-        class="mb-4 flex size-16 items-center justify-center rounded-full bg-muted text-3xl text-muted-foreground"
-      >
+      <IconTile tone="muted" shape="circle" class="mb-4 size-16 text-3xl">
         {@render icon()}
-      </div>
+      </IconTile>
     {/if}
     <!-- Heading's look 3, whatever the level: an empty state is no section title. -->
     <Heading level={level!} look={3}>{title}</Heading>
