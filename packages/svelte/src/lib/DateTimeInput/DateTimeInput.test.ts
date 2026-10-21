@@ -328,8 +328,10 @@ describe("DateTimeInput", () => {
         .element(screen.getByLabelText("Start"))
         .toHaveValue("2026-10-27T18:00");
       await expect
-        .element(screen.getByText(/^Local/))
-        .toHaveTextContent("Local: Tue 27 Oct, 6:00 PM CDT");
+        .element(screen.getByLabelText("Start"))
+        .toHaveAccessibleDescription(
+          "Local: Tue 27 Oct, 6:00 PM CDT Zulu: Tue 27 Oct, 2300Z",
+        );
     });
 
     test("turns the time typed in the saved zone into UTC", async () => {
@@ -356,6 +358,17 @@ describe("DateTimeInput", () => {
         );
     });
 
+    test("in Zulu, the read-out shows only Zulu", async () => {
+      const screen = await renderIn("light", EventStartField, {
+        choice: { kind: "zulu" },
+        value: "2026-10-27T23:00:00Z",
+      });
+      await expect
+        .element(screen.getByLabelText("Start"))
+        .toHaveAccessibleDescription("Zulu: Tue 27 Oct, 2300Z");
+      expect(screen.getByText(/^Local/).query()).toBeNull();
+    });
+
     test("in Zulu, the box is in Zulu too", async () => {
       const screen = await renderIn("light", EventStartField, {
         choice: { kind: "zulu" },
@@ -367,6 +380,9 @@ describe("DateTimeInput", () => {
       await expect
         .element(screen.getByTestId("bound"))
         .toHaveTextContent("2026-10-28T01:30:00.000Z");
+      await expect
+        .element(box)
+        .toHaveAccessibleDescription("Zulu: Wed 28 Oct, 0130Z");
     });
 
     test("following the device, it is the device's zone", async () => {

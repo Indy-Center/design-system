@@ -16,7 +16,8 @@ description: A date and time box that takes the member's local time and gives th
       hidden input, even when `value` was given with an offset. Give
       `min` and `max` in UTC too.
 - [ ] Don't write your own "in UTC" note or read-out: the one under the
-      box says the member's zone, then the value in local time and Zulu.
+      box says the member's zone, then the value in local time and Zulu
+      (Zulu alone for a member who chose Zulu).
 - [ ] Don't colour it. `class` is for layout only, on the wrapper round
       the box and its read-out.
 
@@ -71,6 +72,9 @@ Local: Tue 27 Oct, 7:00 PM EDT    Zulu: Tue 27 Oct, 2300Z
   that is the next day in Zulu says so (`Local: Tue 27 Oct, 9:00 PM EDT`,
   `Zulu: Wed 28 Oct, 0100Z`). Within the coming week, the days are
   "Today", "Tomorrow" or the weekday, as `Time` writes them.
+- When the member chose Zulu, the box takes Zulu and the read-out shows
+  only the Zulu line (`Zulu: Tue 27 Oct, 2300Z`): a "Local:" line would
+  repeat it.
 - A time the clocks skip (2:30 AM as summer time starts) is moved on by
   the gap, as browsers do; the box and read-out show where it landed
   (3:30 AM). A time the clocks pass twice (1:30 AM as summer time ends)
