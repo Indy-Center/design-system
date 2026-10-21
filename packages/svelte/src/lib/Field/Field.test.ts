@@ -35,6 +35,19 @@ describe("Field", () => {
       .toBeInTheDocument();
   });
 
+  test("keeps the control's name when the label is visually hidden", async () => {
+    const screen = await renderIn("light", Field, {
+      label: "Callsign",
+      hideLabel: true,
+      children: control(),
+    });
+    await expect
+      .element(screen.getByRole("textbox", { name: "Callsign" }))
+      .toBeVisible();
+    const label = screen.container.querySelector("label")!;
+    expect(label.getBoundingClientRect().width).toBeLessThanOrEqual(1);
+  });
+
   test("describes the control with its hint", async () => {
     const screen = await renderIn("light", Field, {
       label: "Callsign",

@@ -5,6 +5,7 @@
     HTMLButtonAttributes,
     MouseEventHandler,
   } from "svelte/elements";
+  import { buttonClasses } from "../buttonClasses/buttonClasses.js";
   import Spinner from "../Spinner/Spinner.svelte";
 
   type Own = {
@@ -55,12 +56,6 @@
     ...rest
   }: Props = $props();
 
-  const variants = {
-    primary: "bg-primary text-primary-foreground hover:bg-primary-hover",
-    secondary: "border border-input text-foreground hover:bg-muted",
-    danger: "bg-destructive text-card hover:bg-destructive/90",
-  };
-
   const sizes = {
     sm: "min-h-11 px-3 py-1.5 text-sm",
     md: "min-h-11 px-4 py-2 text-base",
@@ -74,7 +69,7 @@
     "inline-flex min-w-11 cursor-pointer items-center justify-center gap-2 rounded-lg font-medium transition-colors",
     "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
     "disabled:cursor-not-allowed disabled:opacity-60",
-    variants[variant],
+    buttonClasses[variant],
     sizes[size],
     // The toggle's mark, before the text: filled when on, hollow when off,
     // so the state is shown by shape, not colour.
