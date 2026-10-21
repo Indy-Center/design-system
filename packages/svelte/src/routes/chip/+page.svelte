@@ -20,6 +20,8 @@
       <li><Chip variant="training">TA</Chip></li>
       <li><Chip variant="team">WEB</Chip></li>
       <li><Chip variant="certification">IND_APP</Chip></li>
+      <li><Chip variant="endorsement">S-LC</Chip></li>
+      <li><Chip variant="solo">APP-SOLO</Chip></li>
     </ul>
     <p class="flex flex-wrap items-center gap-2 rounded-md bg-card p-3 text-sm">
       Jordan Sample <Chip variant="initials">JS</Chip>

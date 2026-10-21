@@ -1,4 +1,5 @@
 // One line per component, in alphabetical order.
+export { default as Airport } from "./Airport/Airport.svelte";
 export { default as Alert } from "./Alert/Alert.svelte";
 export { default as AppNav } from "./AppNav/AppNav.svelte";
 export { default as AppNavMenu } from "./AppNav/AppNavMenu.svelte";
@@ -25,6 +26,10 @@ export { default as ColorSchemeSetting } from "./ColorSchemeSetting/ColorSchemeS
 export { default as Combobox } from "./Combobox/Combobox.svelte";
 export { default as ConfirmDialog } from "./ConfirmDialog/ConfirmDialog.svelte";
 export { default as CopyButton } from "./CopyButton/CopyButton.svelte";
+export {
+  default as Credential,
+  type CredentialKind,
+} from "./Credential/Credential.svelte";
 export { default as DateTimeInput } from "./DateTimeInput/DateTimeInput.svelte";
 export { default as DescriptionList } from "./DescriptionList/DescriptionList.svelte";
 export { default as Disclosure } from "./Disclosure/Disclosure.svelte";
@@ -48,6 +53,7 @@ export { default as Heading } from "./Heading/Heading.svelte";
 export { default as Icon } from "./Icon/Icon.svelte";
 export { default as Input } from "./Input/Input.svelte";
 export { default as Link } from "./Link/Link.svelte";
+export { default as Member } from "./Member/Member.svelte";
 export { default as Modal } from "./Modal/Modal.svelte";
 export { default as PageHeader } from "./PageHeader/PageHeader.svelte";
 export { default as PageHero } from "./PageHero/PageHero.svelte";

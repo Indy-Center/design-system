@@ -6,14 +6,15 @@ description: A small mono label for a short code, such as operating initials, a 
 ## Checklist
 
 - [ ] Use it for a short code read as a code: operating initials, a
-      staff role, a certification. For a VATSIM rating, use `Rating`,
-      which looks up its long name. For a word or two of plain text
-      ("Draft", "Member perk"), use `Badge`. For a chip that turns a
-      filter on and off, use `FilterChip`.
+      staff role. For a VATSIM rating, use `Rating`, which looks up its
+      long name; for a certification, endorsement or solo, `Credential`,
+      which shows its long name and a solo's expiry. For a word or two of
+      plain text ("Draft", "Member perk"), use `Badge`. For a chip that
+      turns a filter on and off, use `FilterChip`.
 - [ ] Pick `variant` for what it shows: `initials` for operating
       initials; `senior`, `training` or `team` for a staff group;
-      `certification` for a certification; `muted` (the default) for
-      anything else.
+      `certification`, `endorsement` or `solo` for those credentials;
+      `muted` (the default) for anything else.
 - [ ] When the code needs explaining ("HY" is someone's initials), say so
       in text a screen reader reaches: a visually hidden suffix, or an
       `<abbr title>` around the code.
@@ -40,13 +41,13 @@ description: A small mono label for a short code, such as operating initials, a 
 
 ## Props
 
-| Prop       | Type                                                                           | Notes                                                 |
-| ---------- | ------------------------------------------------------------------------------ | ----------------------------------------------------- |
-| `variant`  | `"muted" \| "initials" \| "senior" \| "training" \| "team" \| "certification"` | `"muted"` by default. All six are in `CHIP_VARIANTS`. |
-| `icon`     | `Snippet`                                                                      | An icon before the code. Hidden from screen readers.  |
-| `children` | `Snippet`                                                                      | Required. The code.                                   |
-| `class`    | `string`                                                                       | Added after Chip's own classes. Layout only.          |
-| others     | `<span>` attributes                                                            | Passed to the `<span>`.                               |
+| Prop       | Type                                                                                                      | Notes                                                   |
+| ---------- | --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
+| `variant`  | `"muted" \| "initials" \| "senior" \| "training" \| "team" \| "certification" \| "endorsement" \| "solo"` | `"muted"` by default. All eight are in `CHIP_VARIANTS`. |
+| `icon`     | `Snippet`                                                                                                 | An icon before the code. Hidden from screen readers.    |
+| `children` | `Snippet`                                                                                                 | Required. The code.                                     |
+| `class`    | `string`                                                                                                  | Added after Chip's own classes. Layout only.            |
+| others     | `<span>` attributes                                                                                       | Passed to the `<span>`.                                 |
 
 ## Looks
 
@@ -60,10 +61,15 @@ Mono, 12px, semibold, with 6px corners.
 | `training`      | `rose-700`                                | white        |
 | `team`          | `slate-600`                               | white        |
 | `certification` | `emerald-700`                             | white        |
+| `endorsement`   | `info` at 20%                             | `foreground` |
+| `solo`          | `warning` at 20%                          | `foreground` |
 
-The roles have no hues for these, so the coloured variants use Tailwind's.
-Their fills are solid and the same in both schemes, and white text passes
-4.5:1 on each, on any surface.
+The roles have no hues for most of these, so those variants use
+Tailwind's. Their fills are solid and the same in both schemes, and white
+text passes 4.5:1 on each, on any surface. `endorsement` and `solo` are
+tints of roles, so they follow the scheme; their text is `foreground`,
+since `info` and `warning` text fall short of 4.5:1 on their own tint in
+light.
 
 ## Accessibility
 

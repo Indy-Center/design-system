@@ -7,6 +7,8 @@
     "training",
     "team",
     "certification",
+    "endorsement",
+    "solo",
   ] as const;
 
   /** What a chip shows, which sets its colour. */
@@ -19,7 +21,7 @@
   import DecorativeIcon from "../decorativeIcon/DecorativeIcon.svelte";
 
   type Props = HTMLAttributes<HTMLSpanElement> & {
-    /** What the chip shows: a rating (`muted`, the default), operating initials, a staff group or a certification. */
+    /** What the chip shows: a rating (`muted`, the default), operating initials, a staff group, or a certification, endorsement or solo. */
     variant?: ChipVariant;
     /** An icon before the code, such as `<Icon path={mdiSchool} />`. Hidden from screen readers. */
     icon?: Snippet;
@@ -44,6 +46,10 @@
     training: "bg-rose-700 text-white",
     team: "bg-slate-600 text-white",
     certification: "bg-emerald-700 text-white",
+    // Credential's other kinds: tints of roles, so they follow the scheme.
+    // Text in the role would fall short of 4.5:1 on its tint in light.
+    endorsement: "bg-info/20 text-foreground",
+    solo: "bg-warning/20 text-foreground",
   };
 </script>
 

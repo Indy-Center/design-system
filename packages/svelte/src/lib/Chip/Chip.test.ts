@@ -3,6 +3,7 @@ import {
   expectReadable,
   SCHEMES,
   styleOfClasses,
+  translucent,
 } from "../../../test/contrast.ts";
 import { role } from "../../../test/roles.ts";
 import { renderIn } from "../../../test/schemes.ts";
@@ -61,6 +62,29 @@ describe("Chip", () => {
         backgroundColor: styleOfClasses(fill, chip).backgroundColor,
       });
     }
+  });
+
+  // Credential's kinds that aren't certifications: a tint of the role, so
+  // they follow the scheme. The text is `foreground`: `info` and `warning`
+  // text fall short of 4.5:1 on their own tint in light.
+  describe.each([
+    ["endorsement", "info"],
+    ["solo", "warning"],
+  ] as const)("the %s variant", (variant, tint) => {
+    test.each(SCHEMES)(
+      `is foreground on a ${tint} tint in %s`,
+      async (scheme) => {
+        const screen = await renderIn(scheme, Chip, {
+          variant,
+          children: text("S-LC"),
+        });
+        const chip = chipOf(screen.getByText("S-LC").element());
+        await expect.element(chip).toHaveStyle({
+          color: role("foreground", scheme),
+          backgroundColor: translucent(role(tint, scheme), 20),
+        });
+      },
+    );
   });
 
   test("shows an icon before its code, hidden from screen readers", async () => {
