@@ -63,6 +63,7 @@ describe("Input", () => {
       placeholder: "Jane Doe",
     });
     const box = screen.getByRole("textbox").element();
+    // toHaveStyle can't read a pseudo-element, so this reads ::placeholder.
     expect(getComputedStyle(box, "::placeholder").color).toBe(
       role("placeholder", scheme),
     );

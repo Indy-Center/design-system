@@ -44,10 +44,12 @@ describe("Prose", () => {
       class: "mt-8",
     });
     await expect.element(screen.getByRole("article")).not.toBeInTheDocument();
-    const body = screen.container.querySelector("#body")!;
+    const body = screen.container.querySelector<HTMLElement>("#body")!;
     expect(body.tagName).toBe("DIV");
-    expect(getComputedStyle(body).marginTop).toBe("32px");
-    expect(getComputedStyle(body).color).toBe(role("foreground-soft", "light"));
+    await expect.element(body).toHaveStyle({
+      marginTop: "32px",
+      color: role("foreground-soft", "light"),
+    });
   });
 
   test.each(schemes)(
@@ -138,8 +140,9 @@ describe("Prose", () => {
       const head = screen.getByText("Mistake", { exact: true });
       await expect.element(head).toHaveStyle({ color: foreground });
       const thead = head.element().closest("thead")!;
-      expect(getComputedStyle(thead).backgroundColor).toBe(muted);
-      expect(getComputedStyle(thead).borderBottomColor).toBe(border);
+      await expect
+        .element(thead)
+        .toHaveStyle({ backgroundColor: muted, borderBottomColor: border });
     },
   );
 
@@ -165,7 +168,7 @@ describe("Prose", () => {
       const code = screen.getByText(/^N123AB, runway 27/);
       await expect.element(code).toHaveStyle({ color: foreground });
       const pre = code.element().closest("pre")!;
-      expect(getComputedStyle(pre).backgroundColor).toBe(muted);
+      await expect.element(pre).toHaveStyle({ backgroundColor: muted });
     },
   );
 
@@ -177,8 +180,9 @@ describe("Prose", () => {
       const text = screen.getByText(/^An aircraft must not cross/);
       await expect.element(text).toBeVisible();
       const quote = text.element().closest("blockquote")!;
-      expect(getComputedStyle(quote).borderInlineStartColor).toBe(info);
-      expect(getComputedStyle(quote).fontStyle).toBe("normal");
+      await expect
+        .element(quote)
+        .toHaveStyle({ borderInlineStartColor: info, fontStyle: "normal" });
       expectNoMarks(text.element());
     },
   );
@@ -189,6 +193,7 @@ describe("Prose", () => {
       const screen = await renderIn(scheme, ProseLesson, {});
       const numbered = screen.getByText("Call sign.").element();
       const bulleted = screen.getByText(/^Open the field diagram/).element();
+      // toHaveStyle can't read a pseudo-element, so these read ::marker.
       expect(getComputedStyle(numbered, "::marker").color).toBe(
         mutedForeground,
       );

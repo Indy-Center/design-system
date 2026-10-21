@@ -69,7 +69,7 @@ describe("StatCard", () => {
       const screen = await renderIn(scheme, StatCard, users);
       const term = screen.getByRole("term");
       const box = term.element().closest("dl")!.parentElement!;
-      expect(getComputedStyle(box)).toMatchObject({
+      await expect.element(box).toHaveStyle({
         backgroundColor: role("card", scheme),
         borderTopColor: role("border", scheme),
         borderTopStyle: "solid",
@@ -77,8 +77,10 @@ describe("StatCard", () => {
       const muted = role("muted-foreground", scheme);
       await expect.element(term).toHaveStyle({ color: muted });
       const [number, detail] = screen.getByRole("definition").elements();
-      expect(getComputedStyle(number).color).toBe(role("foreground", scheme));
-      expect(getComputedStyle(detail).color).toBe(muted);
+      await expect
+        .element(number)
+        .toHaveStyle({ color: role("foreground", scheme) });
+      await expect.element(detail).toHaveStyle({ color: muted });
       expectReadable(detail, scheme);
     },
   );
@@ -91,7 +93,7 @@ describe("StatCard", () => {
       const svg = screen.getByTestId("icon").element();
       const tile = svg.parentElement!;
       expect(tile.getAttribute("aria-hidden")).toBe("true");
-      expect(getComputedStyle(tile)).toMatchObject({
+      await expect.element(tile).toHaveStyle({
         backgroundColor: translucent(role("primary", scheme), 15),
         color: role("link", scheme),
       });
