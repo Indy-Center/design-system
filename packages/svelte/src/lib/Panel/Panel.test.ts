@@ -123,4 +123,14 @@ describe("Panel", () => {
     expect(region.id).toBe("online");
     expect(getComputedStyle(region).marginTop).toBe("24px");
   });
+
+  test("keeps its heading as its name over a caller's aria-labelledby", async () => {
+    const screen = await renderIn("light", Panel, {
+      ...online,
+      "aria-labelledby": "elsewhere",
+    });
+    await expect
+      .element(screen.getByRole("region", { name: "Controllers online" }))
+      .toBeInTheDocument();
+  });
 });

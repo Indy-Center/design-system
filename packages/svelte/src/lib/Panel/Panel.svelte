@@ -29,7 +29,8 @@
   const id = $props.id();
 </script>
 
-<Card as="section" flush aria-labelledby={id} {...rest}>
+<!-- Named by its own heading, which a caller's aria-labelledby can't undo. -->
+<Card {...rest} as="section" flush aria-labelledby={id}>
   <div class="flex items-center gap-2 border-b border-border px-4 py-3">
     {#if icon}
       <span

@@ -4,7 +4,7 @@
   import Schemes from "../../playground/Schemes.svelte";
 
   const controllers = [
-    ["IND_CTR", "Hayden Young", "124.875"],
+    ["IND_CTR", "Jordan Mills", "124.875"],
     ["IND_APP", "Sam Carter", "127.150"],
     ["CMH_TWR", "Alex Rivera", "132.700"],
   ];

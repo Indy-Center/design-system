@@ -48,9 +48,6 @@ description: A titled block on the card surface, a section with a heading at the
 | `class`    | `string`               | Added to the section. Layout only.                                   |
 | others     | `<section>` attributes | Passed to the section, such as `id`.                                 |
 
-All of them follow changes: a panel whose `title` or `level` changes
-shows the new one.
-
 ## Looks
 
 As chosen in the surfaces prototype (ticket 10):
