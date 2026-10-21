@@ -236,6 +236,23 @@ describe("Combobox", () => {
     await expect.element(input).toHaveAttribute("aria-invalid", "true");
   });
 
+  test("required, its form is invalid until an option is picked", async () => {
+    const screen = await renderIn("light", Picker, { required: true });
+    const input = screen.getByRole("combobox");
+    const form = input.element().closest("form")!;
+    expect(form.checkValidity()).toBe(false);
+    // Text that matches an option is still not a pick.
+    await input.fill("Ann Archer");
+    await userEvent.keyboard("{Escape}");
+    await expect.poll(() => form.checkValidity()).toBe(false);
+    expect((input.element() as HTMLInputElement).validationMessage).not.toBe(
+      "",
+    );
+    await userEvent.keyboard("{ArrowDown}{Enter}");
+    await expect.element(input).toHaveValue("Ann Archer");
+    await expect.poll(() => form.checkValidity()).toBe(true);
+  });
+
   // The guide's roles: `card` fill (#FFFFFF light, #1E293B dark), `muted`
   // on the active option (#E2E8F0 light, #334155 dark), and a `ring`
   // outline round it (#0284C7 light, #0EA5E9 dark).

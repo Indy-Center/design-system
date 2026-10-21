@@ -22,7 +22,8 @@ description: A text box that searches a list as you type, to pick one option fro
       (a CID in `font-mono`). Keep it to one or two lines, and no links or
       buttons inside.
 - [ ] Give `name` to send the pick's key with a form; the text in the box
-      is not sent.
+      is not sent. With `required` (on it or its `Field`), the form won't
+      send until an option is picked: typed text alone doesn't count.
 - [ ] Don't colour it or its list. `class` is for layout only, on the
       wrapper round the box and its list.
 

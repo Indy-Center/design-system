@@ -125,6 +125,13 @@
     query = value == null ? "" : getText(value);
   });
 
+  // The form sends the hidden input, so the box's own `required` only
+  // checks for text. Text with no pick fails the form's check too.
+  $effect(() => {
+    const unpicked = rest.required && value == null && query !== "";
+    input?.setCustomValidity(unpicked ? "Pick an option from the list." : "");
+  });
+
   /** Sets the pick, leaving the box's text as it is. */
   function pick(next: T | null) {
     shownKey = keyOf(next);
