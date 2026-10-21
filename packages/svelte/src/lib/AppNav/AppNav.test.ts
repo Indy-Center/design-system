@@ -199,6 +199,51 @@ describe("AppNav", () => {
         .toHaveAttribute("aria-expanded", "true");
     });
 
+    test("opening one group by keyboard closes another", async () => {
+      const screen = await renderIn("light", AppNav, {
+        items: [
+          { label: "One", children: [{ label: "A", href: "#a" }] },
+          { label: "Two", children: [{ label: "B", href: "#b" }] },
+        ],
+      });
+      await userEvent.tab();
+      await userEvent.keyboard("{Enter}");
+      await expect
+        .element(group(screen, "One"))
+        .toHaveAttribute("aria-expanded", "true");
+      await userEvent.tab(); // into One's panel
+      await userEvent.tab(); // on to Two
+      await expect.element(group(screen, "Two")).toHaveFocus();
+      await userEvent.keyboard("{Enter}");
+      await expect
+        .element(group(screen, "One"))
+        .toHaveAttribute("aria-expanded", "false");
+      await expect
+        .element(group(screen, "Two"))
+        .toHaveAttribute("aria-expanded", "true");
+    });
+
+    test("closes a group when focus Tabs out of it", async () => {
+      const screen = await renderIn("light", AppNav, {
+        items: [
+          { label: "About", children: [{ label: "Staff", href: "#s" }] },
+          { label: "Events", href: "#e" },
+        ],
+      });
+      await group(screen, "About").click();
+      await userEvent.tab();
+      await expect
+        .element(screen.getByRole("link", { name: "Staff" }))
+        .toHaveFocus();
+      await userEvent.tab();
+      await expect
+        .element(screen.getByRole("link", { name: "Events" }))
+        .toHaveFocus();
+      await expect
+        .element(group(screen, "About"))
+        .toHaveAttribute("aria-expanded", "false");
+    });
+
     test("closes a group when a link in it is followed", async () => {
       const screen = await renderIn("light", AppNav, {
         items: [{ label: "About", children: [{ label: "Staff", href: "#s" }] }],

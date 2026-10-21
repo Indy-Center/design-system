@@ -1,7 +1,8 @@
 <!-- A header disclosure: a button that shows and hides a panel under it.
      Shared by AppsMenu, AppNav's groups and UserMenu; not exported. Closes
-     on Escape and a press outside (the dismiss action), and when a link in
-     the panel is followed, so the menu doesn't stay open over the next page.
+     on Escape and a press outside (the dismiss action), when focus Tabs out
+     of it, and when a link in the panel is followed, so the menu doesn't
+     stay open over the next page.
      No menu roles: the panel is a list of links. -->
 <script lang="ts">
   import type { Snippet } from "svelte";
@@ -13,7 +14,7 @@
     trigger: Snippet<[open: boolean]>;
     /** The panel's content. */
     children: Snippet;
-    /** Names the button when its content has no text (an icon alone). */
+    /** Names the button when its content has no text, as UserMenu's initials (39). */
     label?: string;
     /** Which edge of the button the panel lines up with. */
     align?: "start" | "end";
@@ -24,7 +25,7 @@
   };
 
   let {
-    trigger: content,
+    trigger,
     children,
     label,
     align = "start",
@@ -41,9 +42,17 @@
   function onclick(event: MouseEvent) {
     if ((event.target as Element).closest("a[href]")) open = false;
   }
+
+  // Tabbing out of the button and panel closes it, so a keyboard user
+  // opening the next group doesn't leave this one showing. Focus going
+  // nowhere (a click on the panel's text) isn't leaving.
+  function onfocusout(event: FocusEvent) {
+    const to = event.relatedTarget as Node | null;
+    if (to && !(event.currentTarget as Element).contains(to)) open = false;
+  }
 </script>
 
-<div class="relative">
+<div class="relative" {onfocusout}>
   <button
     bind:this={button}
     type="button"
@@ -55,7 +64,7 @@
       "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
       buttonClass,
     ]}
-    onclick={() => (open = !open)}>{@render content(open)}</button
+    onclick={() => (open = !open)}>{@render trigger(open)}</button
   >
   <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions: the
        click only listens for a link being followed, which the keyboard does

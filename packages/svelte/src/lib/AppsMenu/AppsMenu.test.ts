@@ -73,6 +73,18 @@ describe("AppsMenu", () => {
       .toHaveAttribute("aria-expanded", "false");
   });
 
+  // Focus leaves the link for nowhere; that isn't Tabbing away.
+  test("stays open on a click on its panel's padding", async () => {
+    const screen = await renderIn("light", AppsMenu, props());
+    await button(screen).click();
+    await userEvent.tab();
+    const panel = screen.getByRole("list").element().parentElement!;
+    await userEvent.click(panel, { position: { x: 2, y: 2 } });
+    await expect
+      .element(button(screen))
+      .toHaveAttribute("aria-expanded", "true");
+  });
+
   // Following a link changes the page; the menu shouldn't stay open on it.
   test("closes when a link in it is followed", async () => {
     const screen = await renderIn("light", AppsMenu, {

@@ -80,8 +80,8 @@ description: An app's own navigation in the header, top-level links and one leve
 - Groups are disclosures, not menus: a `<button aria-expanded>` and the
   list it shows. Tab moves through the links; Enter follows one.
 - In the `bar`, Escape closes an open group and puts focus back on its
-  button; a press outside, opening another group, or following a link
-  closes it too. In the `menu`, groups stay as the member left them; the
+  button; a press outside, Tabbing out of it (so opening the next group
+  by keyboard closes it), or following a link closes it too. In the `menu`, groups stay as the member left them; the
   phone menu around them closes on Escape.
 - The current page's link has `aria-current="page"`.
 - Every link, group button and row is at least 44px tall and wide.
