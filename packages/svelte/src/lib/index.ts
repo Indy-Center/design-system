@@ -58,3 +58,7 @@ export {
   type ResolvePositionOptions,
   type VnasPosition,
 } from "./aviation/resolvePosition.js";
+
+// The page's positions, for Position and Frequency to look themselves up.
+// Fetching them is server code, in ./server.ts.
+export { getPositions, setPositions } from "./positions/positionsContext.js";

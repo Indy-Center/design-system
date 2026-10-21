@@ -15,8 +15,9 @@ description: Plain functions for frequencies, callsigns, positions, ratings and 
       id (`primaryPositionId` in the vNAS feed), not just the callsign.
 - [ ] Sort positions with `comparePositionTypes`, and members by the
       rating's `id`, never by its short code.
-- [ ] They format and look up only. None of them fetches; where the
-      positions come from is the app's business.
+- [ ] They format and look up only. None of them fetches; to get the
+      positions, use `fetchPositions` from `@indy-center/svelte/server`
+      (see the positions lookup's page).
 
 ## Use
 

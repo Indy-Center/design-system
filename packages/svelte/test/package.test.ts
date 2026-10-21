@@ -1,6 +1,6 @@
 import { execFileSync } from "node:child_process";
 import { readFile } from "node:fs/promises";
-import { describe, expect, test } from "vitest";
+import { describe, expect, onTestFinished, test, vi } from "vitest";
 
 // Run after `npm run build`, as the test script does.
 const root = new URL("..", import.meta.url);
@@ -74,6 +74,56 @@ describe("the packed package", () => {
     );
     const positions = [{ id: "1", callsign: "IND_GND" }];
     expect(resolvePosition("IND_1_GND", positions)?.position.id).toBe("1");
+  });
+
+  test("serves the positions fetcher from /server, in Node, with types", async () => {
+    const pkg = JSON.parse(
+      await readFile(new URL("package.json", root), "utf8"),
+    );
+    expect(files).toContain(pkg.exports["./server"].types.replace("./", ""));
+    expect(files).toContain("dist/positions/positions.md");
+
+    // Data Admin stubbed, so the test stays off the network.
+    vi.stubGlobal("fetch", async () =>
+      Response.json({
+        lastUpdatedAt: "2026-10-17T02:35:43.475Z",
+        facility: {
+          name: "Indianapolis ARTCC",
+          positions: [
+            {
+              id: "1",
+              callsign: "IND_GND",
+              name: "Ground",
+              radioName: "Indy  Ground",
+              frequency: 121900000,
+              starred: true,
+            },
+          ],
+        },
+      }),
+    );
+    onTestFinished(() => {
+      vi.unstubAllGlobals();
+    });
+    const server = await import("@indy-center/svelte/server");
+    expect(Object.keys(server)).toEqual(["fetchPositions"]);
+    expect(await server.fetchPositions("ZID")).toEqual([
+      {
+        id: "1",
+        callsign: "IND_GND",
+        name: "Ground",
+        radioName: "Indy Ground",
+        frequency: 121900000,
+        facility: "Indianapolis ARTCC",
+        starred: true,
+      },
+    ]);
+  });
+
+  test("exports the positions context from the package root, with types", async () => {
+    const index = await readFile(new URL("dist/index.d.ts", root), "utf8");
+    expect(index).toMatch(/\bsetPositions\b/);
+    expect(index).toMatch(/\bgetPositions\b/);
   });
 
   test("serves the colour-scheme hook from /hooks, in Node, with types", async () => {
