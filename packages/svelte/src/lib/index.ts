@@ -1,5 +1,6 @@
 // One line per component, in alphabetical order.
 export { default as Alert } from "./Alert/Alert.svelte";
+export { default as AppsMenu, type App } from "./AppsMenu/AppsMenu.svelte";
 export {
   default as Badge,
   BADGE_VARIANTS,
