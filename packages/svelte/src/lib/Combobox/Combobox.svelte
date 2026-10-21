@@ -78,17 +78,22 @@
     return options.filter((o) => getText(o).toLowerCase().includes(q));
   });
 
+  // The search function that found `found`.
+  let foundBy: ((query: string) => T[] | Promise<T[]>) | null = null;
+
   // Asks a search function for each new text while the list is open.
   // Reopened on text the list already answers, it doesn't ask again (a
-  // failed search is tried again).
+  // failed search, or a new search function, asks again).
   $effect(() => {
     if (Array.isArray(options) || !open) return;
     // Read outside `untrack`, so new text asks again.
     const text = query;
-    if (untrack(() => foundFor === text && !failed)) return;
+    const search = options;
+    if (untrack(() => foundFor === text && foundBy === search && !failed)) {
+      return;
+    }
     let current = true;
     searching = true;
-    const search = options;
     // A function that throws fails the same way as one that rejects.
     new Promise<T[]>((resolve) => resolve(search(text))).then(
       (answer) => settle(answer, false),
@@ -99,6 +104,7 @@
       if (!current) return;
       found = answer;
       foundFor = text;
+      foundBy = search;
       failed = error;
       searching = false;
       active = opening === null ? -1 : entry(opening, answer.length);

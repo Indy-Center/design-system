@@ -344,6 +344,19 @@ describe("Combobox", () => {
         .toBeVisible();
     });
 
+    test("a new search function searches the same text again", async () => {
+      const screen = await renderIn("light", Picker, { options: search });
+      await screen.getByRole("combobox").fill("Dan");
+      await expect
+        .element(screen.getByRole("option", { name: "Dan Andrews" }))
+        .toBeVisible();
+      const otherRoster = [{ cid: "1000009", name: "Dana Dunn" }];
+      await screen.rerender({ options: async () => otherRoster });
+      await expect
+        .element(screen.getByRole("option", { name: "Dana Dunn" }))
+        .toBeVisible();
+    });
+
     /** Searches the roster; "Ann" is slow, so "Dan"'s list stays a while. */
     const slowAnn = (query: string) =>
       new Promise<typeof roster>((resolve) =>
