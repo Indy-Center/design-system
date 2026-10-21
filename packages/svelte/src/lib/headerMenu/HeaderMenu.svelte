@@ -38,8 +38,11 @@
   const uid = $props.id();
   const id = `header-menu-${uid}`;
 
-  // Following a link in the panel closes it, as the page changes.
+  // Following a link in the panel closes it, as the page changes. A
+  // Ctrl-, Cmd- or Shift-click opens it elsewhere and leaves this page, so
+  // the panel stays.
   function onclick(event: MouseEvent) {
+    if (event.ctrlKey || event.metaKey || event.shiftKey) return;
     if ((event.target as Element).closest("a[href]")) open = false;
   }
 

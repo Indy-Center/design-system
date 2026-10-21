@@ -97,6 +97,33 @@ describe("AppsMenu", () => {
       .toHaveAttribute("aria-expanded", "false");
   });
 
+  // A Ctrl-, Cmd- or Shift-click opens the link elsewhere; this page stays.
+  test.each(["ctrlKey", "metaKey", "shiftKey"] as const)(
+    "stays open when a link is opened elsewhere (%s)",
+    async (key) => {
+      const screen = await renderIn("light", AppsMenu, {
+        apps: [{ href: "#library", name: "Library" }],
+      });
+      await button(screen).click();
+      // Keep the test's page from opening a tab or window.
+      const stop = (event: Event) => event.preventDefault();
+      window.addEventListener("click", stop);
+      try {
+        screen
+          .getByRole("link", { name: "Library" })
+          .element()
+          .dispatchEvent(
+            new MouseEvent("click", { bubbles: true, [key]: true }),
+          );
+      } finally {
+        window.removeEventListener("click", stop);
+      }
+      await expect
+        .element(button(screen))
+        .toHaveAttribute("aria-expanded", "true");
+    },
+  );
+
   test("gives the button and every row a 44px target", async () => {
     const screen = await renderIn("light", AppsMenu, {
       apps: [{ href: "/", name: "Hi" }],
