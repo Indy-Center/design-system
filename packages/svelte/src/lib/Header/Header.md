@@ -10,6 +10,9 @@ description: The page's header, with the skip link, the logo to the hub, the app
       landmark. It takes its own 64px at the top of the page and stays
       there as the page scrolls: don't lay it over the page or place
       content under it.
+- [ ] Give the page `scroll-padding-top: 4rem` (`scroll-pt-16` on
+      `<html>`), so a link to `#id`, or a control Tabbed to, scrolls into
+      view below the header, not under it.
 - [ ] Give the page's main content `id="main"`, normally on `<main>`. The
       header's skip link goes there; pass `skipTo` for another id.
 - [ ] Pass the app this page is in as `app`, from `INDY_CENTER_APPS`. On
