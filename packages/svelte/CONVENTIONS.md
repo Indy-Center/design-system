@@ -137,6 +137,14 @@ focus-visible:outline-ring`. Where a parent's `overflow-hidden` (or a
   where focus is (a tooltip in an open menu, then the menu). It is for
   menus, `Tooltip` and `Combobox`; it isn't exported.
   Its tests, `src/lib/dismiss/dismiss.test.ts`, show it in use.
+- A panel drawn above the page (so a table or a scrolling box can't clip
+  it) is a `popover="manual"` element with the `popover` action from
+  `../popover/popover.js`: `use:popover={{ open, anchor, area, fallbacks }}`.
+  It shows and hides the panel as `open` changes and places it against
+  `anchor` with CSS anchor positioning, `area` and `fallbacks` being
+  `position-area` and `position-try-fallbacks` (`"top"`, `"flip-block"`).
+  Pair it with `dismiss`. `DropdownMenu` and `Tooltip` use it; it isn't
+  exported.
 - Every control and menu row is at least 44px tall and wide (`min-h-11
 min-w-11`). A link inside a sentence is exempt.
 
