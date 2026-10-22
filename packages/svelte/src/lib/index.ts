@@ -44,6 +44,11 @@ export { default as Field, type FieldControl } from "./Field/Field.svelte";
 export { default as Fieldset } from "./Fieldset/Fieldset.svelte";
 export { default as FilterChip } from "./FilterChip/FilterChip.svelte";
 export {
+  default as FlightCategory,
+  FLIGHT_CATEGORIES,
+  type FlightCategoryCode,
+} from "./FlightCategory/FlightCategory.svelte";
+export {
   default as Footer,
   type FooterColumn,
   type FooterLink,
@@ -55,6 +60,10 @@ export { default as Input } from "./Input/Input.svelte";
 export { default as Link } from "./Link/Link.svelte";
 export { default as Member } from "./Member/Member.svelte";
 export { default as Modal } from "./Modal/Modal.svelte";
+export {
+  default as OnlineController,
+  type OnlineMember,
+} from "./OnlineController/OnlineController.svelte";
 export { default as PageHeader } from "./PageHeader/PageHeader.svelte";
 export { default as PageHero } from "./PageHero/PageHero.svelte";
 export { default as Pagination } from "./Pagination/Pagination.svelte";
@@ -151,6 +160,11 @@ export {
   spokenFrequency,
   type FrequencyOptions,
 } from "./aviation/frequency.js";
+export {
+  groupByPosition,
+  type PositionGroup,
+} from "./aviation/groupByPosition.js";
+export { logoffFromInfo } from "./aviation/logoff.js";
 export {
   findPilotRating,
   findRating,

@@ -17,8 +17,8 @@ description: A short description of a control that shows on hover and on focus.
       trigger, so its text becomes the trigger's description. It replaces
       any `aria-describedby` already there, so don't put it on a control
       in a `Field` that has a hint or an error.
-- [ ] `Rating`, `Credential` and `Airport` (with `nameAt="tooltip"`)
-      break both rules on purpose: their visually hidden text already
+- [ ] `Rating`, `Credential`, `FlightCategory` and `Airport` (with
+      `nameAt="tooltip"`) break both rules on purpose: their visually hidden text already
       reads the tooltip's words, so they leave the attributes off and
       pass `aria-hidden="true"`, and they take focus only when
       `focusable`. Don't copy that unless the trigger's own text says the
