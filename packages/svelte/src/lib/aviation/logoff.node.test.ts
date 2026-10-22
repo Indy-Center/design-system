@@ -25,6 +25,12 @@ describe("logoffFromInfo", () => {
     );
   });
 
+  test("takes the log-in's own minute as that minute, seconds after it", () => {
+    expect(
+      logoffFromInfo("Until 2051Z", "2026-10-20T20:51:30Z")?.toISOString(),
+    ).toBe("2026-10-20T20:51:00.000Z");
+  });
+
   test("takes the first time", () => {
     expect(
       logoffFromInfo("Until 2300Z, maybe 0000Z", loggedIn)?.toISOString(),

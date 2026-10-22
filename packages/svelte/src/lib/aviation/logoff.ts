@@ -19,8 +19,11 @@ export function logoffFromInfo(
   const after = new Date(loggedInAt);
   if (!found || Number.isNaN(after.getTime())) return undefined;
 
-  const at = new Date(after);
-  at.setUTCHours(Number(found[1]), Number(found[2]), 0, 0);
-  if (at < after) at.setUTCDate(at.getUTCDate() + 1);
+  // Compared to the minute: the info has no seconds.
+  const loginMinute = new Date(after);
+  loginMinute.setUTCSeconds(0, 0);
+  const at = new Date(loginMinute);
+  at.setUTCHours(Number(found[1]), Number(found[2]));
+  if (at < loginMinute) at.setUTCDate(at.getUTCDate() + 1);
   return at;
 }
