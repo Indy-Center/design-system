@@ -13,7 +13,7 @@
   <div class="space-y-4 text-foreground">
     <div class="flex flex-wrap gap-2">
       {#each FLIGHT_CATEGORIES as category (category)}
-        <FlightCategory {category} />
+        <FlightCategory {category} focusable />
       {/each}
     </div>
     <ul class="space-y-2 rounded-md bg-card p-3 text-sm">

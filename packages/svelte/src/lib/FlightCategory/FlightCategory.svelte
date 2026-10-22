@@ -9,13 +9,21 @@
 <script lang="ts">
   import { DEV } from "esm-env";
   import type { HTMLAttributes } from "svelte/elements";
+  import AbbrTooltip from "../AbbrTooltip/AbbrTooltip.svelte";
 
-  type Props = Omit<HTMLAttributes<HTMLElement>, "children" | "title"> & {
+  type Props = Omit<HTMLAttributes<HTMLSpanElement>, "children"> & {
     /** The category: `"VFR"`, `"MVFR"`, `"IFR"` or `"LIFR"`. */
     category: FlightCategoryCode;
+    /** Whether it is a tab stop, so a keyboard can show the long name. */
+    focusable?: boolean;
   };
 
-  let { category, class: className, ...rest }: Props = $props();
+  let {
+    category,
+    focusable = false,
+    class: className,
+    ...rest
+  }: Props = $props();
 
   // The FAA's colours on the roles; LIFR is IFR's red, filled. The tinted
   // text is the role a quarter of the way to `foreground`: in the role
@@ -52,14 +60,18 @@
   });
 </script>
 
+<!-- class is for layout, so it goes on the Tooltip box round the badge. -->
 {#if look}
-  <abbr
-    {...rest}
-    title={look.name}
-    class={[
-      "rounded-sm px-1.5 py-0.5 text-xs font-semibold no-underline",
-      look.colour,
-      className,
-    ]}>{category}</abbr
-  >
+  <AbbrTooltip code={category} name={look.name} {focusable} class={className}>
+    {#snippet frame(abbr, ring)}
+      <span
+        {...rest}
+        class={[
+          "rounded-sm px-1.5 py-0.5 text-xs font-semibold",
+          look.colour,
+          ring,
+        ]}>{@render abbr()}</span
+      >
+    {/snippet}
+  </AbbrTooltip>
 {/if}

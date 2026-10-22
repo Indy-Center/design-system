@@ -5,8 +5,8 @@
 
   // A code in an <abbr> with its long name: read by screen readers from
   // visually hidden text, shown in a Tooltip on hover, and on keyboard
-  // focus when focusable. Rating's and Credential's chips and Airport's
-  // tooltip mode share it, so they can't drift apart.
+  // focus when focusable. Rating's and Credential's chips, FlightCategory's
+  // badge and Airport's tooltip mode share it, so they can't drift apart.
   type Props = Omit<HTMLAttributes<HTMLElement>, "children"> & {
     /** The short code the abbr shows: `"C1"`, `"S-GC"`, `"KIND"`. */
     code: string;
