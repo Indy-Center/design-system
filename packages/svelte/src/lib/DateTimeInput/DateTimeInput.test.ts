@@ -82,13 +82,23 @@ describe("DateTimeInput", () => {
       .toHaveAccessibleDescription("In your time zone, Eastern Daylight Time.");
   });
 
-  // en-US has no name for some zones, only an offset ("GMT-03:00").
+  // en-US has no name for some zones, only an offset ("GMT-03:00"). Which
+  // ones depends on the browser's time-zone data (a newer Chromium names
+  // America/Punta_Arenas), so take the first this browser doesn't name.
   test("names a zone without a name by its ID", async () => {
-    await commands.emulateTimeZone("America/Punta_Arenas");
+    const unnamed = Intl.supportedValuesOf("timeZone").find((timeZone) =>
+      /^GMT[+-]/.test(
+        new Intl.DateTimeFormat("en-US", { timeZone, timeZoneName: "long" })
+          .formatToParts()
+          .find((part) => part.type === "timeZoneName")?.value ?? "",
+      ),
+    );
+    expect(unnamed).toBeDefined();
+    await commands.emulateTimeZone(unnamed!);
     const screen = await renderIn("light", EventStartField, {});
     await expect
       .element(screen.getByLabelText("Start"))
-      .toHaveAccessibleDescription("In your time zone, America/Punta_Arenas.");
+      .toHaveAccessibleDescription(`In your time zone, ${unnamed}.`);
   });
 
   test("is described by its read-out, then the field's hint and error, and marked invalid", async () => {
