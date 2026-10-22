@@ -8,6 +8,7 @@
   import type { Snippet } from "svelte";
   import type { ClassValue } from "svelte/elements";
   import { dismiss } from "../dismiss/dismiss.js";
+  import { closeOnFocusOut, closeOnLink } from "./headerMenu.js";
 
   type Props = {
     /** The button's content; given whether the panel is open. */
@@ -38,21 +39,10 @@
   const uid = $props.id();
   const id = `header-menu-${uid}`;
 
-  // Following a link in the panel closes it, as the page changes. A
-  // Ctrl-, Cmd- or Shift-click opens it elsewhere and leaves this page, so
-  // the panel stays.
-  function onclick(event: MouseEvent) {
-    if (event.ctrlKey || event.metaKey || event.shiftKey) return;
-    if ((event.target as Element).closest("a[href]")) open = false;
-  }
-
-  // Tabbing out of the button and panel closes it, so a keyboard user
-  // opening the next group doesn't leave this one showing. Focus going
-  // nowhere (a click on the panel's text) isn't leaving.
-  function onfocusout(event: FocusEvent) {
-    const to = event.relatedTarget as Node | null;
-    if (to && !(event.currentTarget as Element).contains(to)) open = false;
-  }
+  const close = () => (open = false);
+  // On the wrapper, which holds both the button and the panel.
+  const onfocusout = closeOnFocusOut(close);
+  const onclick = closeOnLink(close);
 </script>
 
 <div class="relative" {onfocusout}>
@@ -71,7 +61,7 @@
   <div
     {id}
     hidden={!open}
-    use:dismiss={{ open, trigger: button, onclose: () => (open = false) }}
+    use:dismiss={{ open, trigger: button, onclose: close }}
     {onclick}
     class={[
       "absolute top-full z-50 mt-2 rounded-lg border border-border bg-card p-2 shadow-xl",

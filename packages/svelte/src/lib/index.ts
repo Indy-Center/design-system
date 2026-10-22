@@ -54,6 +54,7 @@ export {
   type FooterLink,
 } from "./Footer/Footer.svelte";
 export { default as Frequency } from "./Frequency/Frequency.svelte";
+export { default as Header, type HeaderMember } from "./Header/Header.svelte";
 export { default as Heading } from "./Heading/Heading.svelte";
 export { default as Icon } from "./Icon/Icon.svelte";
 export { default as Input } from "./Input/Input.svelte";
