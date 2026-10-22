@@ -89,6 +89,7 @@ export {
   default as Tooltip,
   type TooltipTrigger,
 } from "./Tooltip/Tooltip.svelte";
+export { default as UserMenu } from "./UserMenu/UserMenu.svelte";
 
 // Every Indy Center app, for AppsMenu; an app's pages, for AppNav and
 // AppNavMenu.
