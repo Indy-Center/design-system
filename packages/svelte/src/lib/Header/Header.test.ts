@@ -81,10 +81,9 @@ describe("Header", () => {
     await page.viewport(390, 844);
     const screen = await renderHeader();
     const logo = screen.getByRole("link", { name: "Indy Center home" });
+    // The one not shown is display: none, so out of the accessibility tree.
     const shown = () =>
-      [...logo.element().querySelectorAll("svg")].filter(
-        (svg) => svg.getBoundingClientRect().width > 0,
-      );
+      logo.getByRole("img", { name: "Indy Center" }).elements();
     // The mark is about as wide as it is tall; the logo three times wider.
     expect(shown()).toHaveLength(1);
     const mark = shown()[0].getBoundingClientRect();
@@ -326,13 +325,14 @@ describe("Header", () => {
     await expect
       .element(screen.getByRole("link", { name: "Training", exact: true }))
       .toHaveStyle({ color: role("foreground", "dark") });
-    // The mark and the logo, whichever shows.
-    for (const svg of screen
-      .getByRole("link", { name: "Indy Center home" })
-      .element()
-      .querySelectorAll("svg")) {
-      expect(getComputedStyle(svg).color).toBe(role("foreground", "dark"));
-    }
+    // The mark or the logo, whichever shows.
+    await expect
+      .element(
+        screen
+          .getByRole("link", { name: "Indy Center home" })
+          .getByRole("img", { name: "Indy Center" }),
+      )
+      .toHaveStyle({ color: role("foreground", "dark") });
   });
 
   test("shows a ring outline on the logo link tabbed to", async () => {

@@ -1,15 +1,12 @@
 <script lang="ts" module>
-  /** The signed-in member, as the Header's UserMenu shows them. */
-  export type HeaderMember = {
-    /** Their name as the app shows it. */
-    name: string;
-    /** Their VATSIM CID. */
-    cid: number | string;
-    /** Their controller rating, as the data source spells it: `5`, `"C1"`. */
-    rating?: number | string;
-    /** Their pilot rating, as the data source spells it: `1`, `"PPL"`. */
-    pilotRating?: number | string;
-  };
+  import type { ComponentProps } from "svelte";
+  import UserMenu from "../UserMenu/UserMenu.svelte";
+
+  /** The signed-in member: UserMenu's props for who they are. */
+  export type HeaderMember = Pick<
+    ComponentProps<typeof UserMenu>,
+    "name" | "cid" | "rating" | "pilotRating"
+  >;
 </script>
 
 <script lang="ts">
@@ -24,7 +21,6 @@
   import Icon from "../Icon/Icon.svelte";
   import Logo from "../Logo/Logo.svelte";
   import SkipLink from "../SkipLink/SkipLink.svelte";
-  import UserMenu from "../UserMenu/UserMenu.svelte";
   import { dismiss } from "../dismiss/dismiss.js";
   import { headerButton } from "../headerMenu/headerMenu.js";
   import { INDY_CENTER_DOMAIN } from "../preferenceCookie/preferenceCookie.js";
@@ -164,8 +160,9 @@
 
   {#if nav.length}
     <!-- The phone menu: the app's navigation, below lg. It scrolls when
-         taller than the screen; its padding leaves room for the rows'
-         outset focus ring. -->
+         taller than the screen; its padding, and the same scroll padding
+         for a row Tabbed into view, leave room for the rows' outset focus
+         ring. -->
     <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions: the
          click only listens for a link being followed, which the keyboard
          does too. -->
@@ -175,7 +172,7 @@
       use:dismiss={{ open, trigger: menuButton, onclose: () => (open = false) }}
       {onclick}
       {onfocusout}
-      class="max-h-[calc(100dvh-4rem)] overflow-y-auto border-t border-border p-2 lg:hidden"
+      class="max-h-[calc(100dvh-4rem)] scroll-py-2 overflow-y-auto border-t border-border p-2 lg:hidden"
     >
       <AppNavMenu items={nav} {current} class="mx-auto max-w-7xl" />
     </div>

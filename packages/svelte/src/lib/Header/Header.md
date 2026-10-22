@@ -22,7 +22,7 @@ description: The page's header, with the skip link, the logo to the hub, the app
 - [ ] Don't add `SkipLink`, `AppNav`, `AppNavMenu`, `AppsMenu` or
       `UserMenu` yourself: the header places them.
 - [ ] Title each page `<Page> | <App> | Indy Center`, or `<Page> | Indy
-  Center` on the hub (see Page titles below).
+Center` on the hub (see Page titles below).
 - [ ] Don't colour it or change its sizes. It is dark in both schemes by
       itself. `class` is for layout only.
 
@@ -63,19 +63,19 @@ when nobody is signed in.
 
 ## Props
 
-| Prop          | Type                  | Notes                                                                                                                                 |
-| ------------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| `app`         | `App`                 | The app this page is in, as `INDY_CENTER_APPS` lists it: its `label` and `href` (its home). Left out on the hub.                      |
-| `nav`         | `NavItem[]`           | The app's pages and groups, as `AppNav` takes them. Left out or empty, there is no navigation and no Menu button.                     |
-| `current`     | `string`              | The page's path, such as `page.url.pathname`. Marks the current page in `nav`.                                                        |
-| `apps`        | `readonly App[]`      | The apps in the Apps menu. `INDY_CENTER_APPS` by default.                                                                             |
-| `member`      | `HeaderMember`        | The signed-in member: `{ name: string; cid: number \| string; rating?; pilotRating? }`, as `UserMenu` takes them.                     |
-| `signInHref`  | `string`              | Required. Where Sign in goes.                                                                                                         |
-| `signOutHref` | `string`              | Required. Where the user menu's Sign out goes.                                                                                        |
-| `hub`         | `string`              | The hub's address, where the logo goes and where the user menu's My profile and Settings are. `https://flyindycenter.com` by default. |
-| `skipTo`      | `string`              | The main content, as `#id`, for the skip link. `#main` by default.                                                                    |
-| `class`       | `string`              | Added to the `<header>`. Layout only.                                                                                                 |
-| others        | `<header>` attributes | Passed to the `<header>`: `id` and the rest.                                                                                          |
+| Prop          | Type                  | Notes                                                                                                                                                                                                  |
+| ------------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `app`         | `App`                 | The app this page is in, as `INDY_CENTER_APPS` lists it: its `label` and `href` (its home). Left out on the hub.                                                                                       |
+| `nav`         | `NavItem[]`           | The app's pages and groups, as `AppNav` takes them. Left out or empty, there is no navigation and no Menu button.                                                                                      |
+| `current`     | `string`              | The page's path, such as `page.url.pathname`. Marks the current page in `nav`.                                                                                                                         |
+| `apps`        | `readonly App[]`      | The apps in the Apps menu. `INDY_CENTER_APPS` by default.                                                                                                                                              |
+| `member`      | `HeaderMember`        | The signed-in member: `{ name: string; cid: number \| string; rating?; pilotRating? }`, as `UserMenu` takes them.                                                                                      |
+| `signInHref`  | `string`              | Required. Where Sign in goes.                                                                                                                                                                          |
+| `signOutHref` | `string`              | Required. Where the user menu's Sign out goes.                                                                                                                                                         |
+| `hub`         | `string`              | The hub's address, where the logo goes and where the user menu's My profile and Settings are. `https://flyindycenter.com` by default. With no `app`, the Apps menu marks the app whose `href` this is. |
+| `skipTo`      | `string`              | The main content, as `#id`, for the skip link. `#main` by default.                                                                                                                                     |
+| `class`       | `string`              | Added to the `<header>`. Layout only.                                                                                                                                                                  |
+| others        | `<header>` attributes | Passed to the `<header>`: `id` and the rest.                                                                                                                                                           |
 
 The type `HeaderMember` is exported beside it.
 
@@ -103,11 +103,9 @@ Left to right:
 
 Each page sets its own `<title>`, page first:
 
-- In an app: `<Page> | <App> | Indy Center`, such as `Sessions |
-Training | Indy Center`.
+- In an app: `<Page> | <App> | Indy Center`, such as
+  `Sessions | Training | Indy Center`.
 - On the hub: `<Page> | Indy Center`, such as `Events | Indy Center`.
-- An app's or the hub's home page: `<App> | Indy Center`, or `Indy
-Center` alone on the hub's home.
 
 ```svelte
 <svelte:head><title>Sessions | Training | Indy Center</title></svelte:head>
