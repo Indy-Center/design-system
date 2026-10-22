@@ -1,5 +1,35 @@
 // Class recipes shared by the header's menus (AppsMenu, AppNav,
-// AppNavMenu, UserMenu). Not exported from the package.
+// AppNavMenu, UserMenu), and the two ways HeaderMenu and Header's phone
+// menu close beyond `dismiss`. Not exported from the package.
+
+/**
+ * A menu panel's click handler: following one of its links closes it, as
+ * the page changes. A Ctrl-, Cmd- or Shift-click opens the link elsewhere
+ * and leaves this page, so the menu stays.
+ */
+export function closeOnLink(close: () => void) {
+  return (event: MouseEvent) => {
+    if (event.ctrlKey || event.metaKey || event.shiftKey) return;
+    if ((event.target as Element).closest("a[href]")) close();
+  };
+}
+
+/**
+ * A focusout handler on what holds a menu: Tabbing out of it closes the
+ * menu, so a keyboard user moving on doesn't leave it showing. Focus going
+ * nowhere (a click on a panel's text) isn't leaving, nor is focus going to
+ * `trigger`, the menu's button when it sits outside the holder.
+ */
+export function closeOnFocusOut(
+  close: () => void,
+  trigger?: () => Node | undefined,
+) {
+  return (event: FocusEvent) => {
+    const to = event.relatedTarget as Node | null;
+    if (!to || to === trigger?.()) return;
+    if (!(event.currentTarget as Element).contains(to)) close();
+  };
+}
 
 /** Every header control and menu row: 44px at least, small medium text. */
 const target = "min-h-11 min-w-11 rounded-lg px-3 text-sm font-medium";

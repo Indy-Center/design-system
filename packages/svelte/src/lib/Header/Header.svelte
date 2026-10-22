@@ -22,7 +22,11 @@
   import Logo from "../Logo/Logo.svelte";
   import SkipLink from "../SkipLink/SkipLink.svelte";
   import { dismiss } from "../dismiss/dismiss.js";
-  import { headerButton } from "../headerMenu/headerMenu.js";
+  import {
+    closeOnFocusOut,
+    closeOnLink,
+    headerButton,
+  } from "../headerMenu/headerMenu.js";
   import { INDY_CENTER_DOMAIN } from "../preferenceCookie/preferenceCookie.js";
 
   type Props = HTMLAttributes<HTMLElement> & {
@@ -68,21 +72,11 @@
   const uid = $props.id();
   const id = `phone-menu-${uid}`;
 
-  // Following a link in the phone menu closes it, as the page changes. A
-  // Ctrl-, Cmd- or Shift-click opens it elsewhere, so the menu stays.
-  function onclick(event: MouseEvent) {
-    if (event.ctrlKey || event.metaKey || event.shiftKey) return;
-    if ((event.target as Element).closest("a[href]")) open = false;
-  }
-
-  // Tabbing out of the phone menu closes it, as the header's other menus
-  // do; back to its button isn't leaving. Focus going nowhere (a click on
-  // the menu's padding) isn't either.
-  function onfocusout(event: FocusEvent) {
-    const to = event.relatedTarget as Node | null;
-    if (!to || to === menuButton) return;
-    if (!(event.currentTarget as Element).contains(to)) open = false;
-  }
+  // The phone menu closes as the header's other menus do: on a followed
+  // link, and on Tabbing out of it (back to its button isn't out).
+  const close = () => (open = false);
+  const onclick = closeOnLink(close);
+  const onfocusout = closeOnFocusOut(close, () => menuButton);
 
   const brandLink = [
     "inline-flex min-h-11 min-w-11 items-center rounded-lg px-1",
@@ -169,7 +163,7 @@
     <div
       {id}
       hidden={!open}
-      use:dismiss={{ open, trigger: menuButton, onclose: () => (open = false) }}
+      use:dismiss={{ open, trigger: menuButton, onclose: close }}
       {onclick}
       {onfocusout}
       class="max-h-[calc(100dvh-4rem)] scroll-py-2 overflow-y-auto border-t border-border p-2 lg:hidden"
