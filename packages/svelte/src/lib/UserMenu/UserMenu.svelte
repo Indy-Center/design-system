@@ -1,7 +1,6 @@
 <script lang="ts">
   import { mdiAccountCircle, mdiCog, mdiLogout } from "@mdi/js";
   import type { HTMLAttributes } from "svelte/elements";
-  import { INDY_CENTER_APPS } from "../AppsMenu/apps.js";
   import ColorSchemeSetting from "../ColorSchemeSetting/ColorSchemeSetting.svelte";
   import Icon from "../Icon/Icon.svelte";
   import Rating from "../Rating/Rating.svelte";
@@ -14,6 +13,7 @@
     signOutRow,
   } from "../headerMenu/headerMenu.js";
   import { withoutTrailingSlash } from "../headerMenu/withoutTrailingSlash.js";
+  import { INDY_CENTER_DOMAIN } from "../preferenceCookie/preferenceCookie.js";
   import { initials } from "./initials.js";
 
   type Props = HTMLAttributes<HTMLDivElement> & {
@@ -37,7 +37,7 @@
     rating,
     pilotRating,
     signOutHref,
-    hub = INDY_CENTER_APPS[0].href,
+    hub = `https://${INDY_CENTER_DOMAIN}`,
     class: className,
     ...rest
   }: Props = $props();
@@ -45,14 +45,25 @@
   const letters = $derived(initials(name));
   const hubHref = $derived(withoutTrailingSlash(hub));
   // VATSIM's pilot rating 0 is a member who has none yet.
-  const showPilot = $derived(
-    pilotRating !== undefined && findPilotRating(pilotRating)?.id !== 0,
+  const pilot = $derived(
+    pilotRating !== undefined && findPilotRating(pilotRating)?.id !== 0
+      ? pilotRating
+      : undefined,
   );
 
   const avatar =
     "flex shrink-0 items-center justify-center rounded-full bg-primary font-heading font-semibold text-primary-foreground";
   const section = "mt-2 border-t border-border pt-2";
 </script>
+
+<!-- What the round badge shows: the initials, or an account icon for a
+     name with no letters. -->
+{#snippet face(iconSize: number)}
+  {#if letters}{letters}{:else}<Icon
+      path={mdiAccountCircle}
+      size={iconSize}
+    />{/if}
+{/snippet}
 
 <!-- Dark in both schemes, as the header it sits in: data-theme after the
      caller's attributes so none can override it. -->
@@ -71,16 +82,13 @@
           open ? "ring-foreground-soft" : "ring-transparent",
         ]}
       >
-        {#if letters}{letters}{:else}<Icon
-            path={mdiAccountCircle}
-            size={20}
-          />{/if}
+        {@render face(20)}
       </span>
     {/snippet}
 
     <div class="flex items-center gap-3 px-3 py-2">
       <span aria-hidden="true" class={[avatar, "size-10 text-sm"]}
-        >{letters}</span
+        >{@render face(24)}</span
       >
       <div class="min-w-0">
         <p class="text-sm font-semibold break-words text-foreground">
@@ -89,7 +97,7 @@
         <p class="text-xs text-muted-foreground">
           CID <span class="font-mono">{cid}</span>
         </p>
-        {#if rating !== undefined || showPilot}
+        {#if rating !== undefined || pilot !== undefined}
           <p class="mt-1 flex flex-wrap gap-1">
             {#if rating !== undefined}
               <span
@@ -99,10 +107,10 @@
                 /></span
               >
             {/if}
-            {#if showPilot && pilotRating !== undefined}
+            {#if pilot !== undefined}
               <span
                 ><span class="sr-only">{"Pilot rating "}</span><Rating
-                  rating={pilotRating}
+                  rating={pilot}
                   kind="pilot"
                   focusable
                 /></span

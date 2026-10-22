@@ -9,14 +9,16 @@ const focusRing =
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring";
 
 /**
- * A link in the header or its menus: the link colour, underlined on hover
- * (the user's rule for header links).
+ * A link in the header or its menus, without its colour: underlined on
+ * hover (the user's rule for header links).
  */
-const link = [
-  target,
-  "text-link underline-offset-4 hover:underline",
-  focusRing,
-];
+const underlined = [target, "underline-offset-4 hover:underline", focusRing];
+
+/** A link in the header or its menus: the link colour, underlined on hover. */
+const link = [...underlined, "text-link"];
+
+/** A menu row's layout: full width, icon then text. */
+const row = "flex w-full items-center gap-3";
 
 /**
  * Added to a link that is the current page, or a group or app holding it:
@@ -31,18 +33,14 @@ export const barItem = [
 ];
 
 /** A row in a menu's panel or the phone menu: full width. */
-export const menuRow = [...link, "flex w-full items-center gap-3"];
+export const menuRow = [...link, row];
 
 /**
  * UserMenu's Sign out row: a menu row in the destructive colour, so it
- * stands apart from the links that stay in the app.
+ * stands apart from the links that stay in the app. Only UserMenu uses
+ * it, so its tests cover it; it lives here for the recipes it shares.
  */
-export const signOutRow = [
-  target,
-  "flex w-full items-center gap-3",
-  "text-destructive underline-offset-4 hover:underline",
-  focusRing,
-];
+export const signOutRow = [...underlined, row, "text-destructive"];
 
 /** A button in the header that isn't a link, such as Apps. */
 export const headerButton = [

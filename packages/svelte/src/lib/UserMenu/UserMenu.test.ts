@@ -120,6 +120,7 @@ describe("UserMenu", () => {
     const screen = await renderIn("light", UserMenu, { ...props(), name: "" });
     const button = screen.getByRole("button", { name: "Account:" });
     expect(button.element().textContent!.trim()).toBe("");
+    // The icon is decorative, so it has no role to find it by.
     expect(button.element().querySelector("svg")).not.toBeNull();
   });
 
