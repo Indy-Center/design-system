@@ -1,6 +1,6 @@
 ---
 title: Aviation helpers
-description: Plain functions for frequencies, callsigns, positions, ratings and durations, so every app follows the same rules.
+description: Plain functions for frequencies, callsigns, positions, ratings, durations and log-out times, so every app follows the same rules.
 ---
 
 ## Checklist
@@ -26,6 +26,7 @@ import {
   findRating,
   formatDuration,
   formatFrequency,
+  logoffFromInfo,
   resolvePosition,
   spokenFrequency,
   type VnasPosition,
@@ -40,6 +41,9 @@ resolvePosition("IND_831_CTR", positions);
 
 findRating("Controller1")?.long; // "Enroute Controller"
 formatDuration(83, "short"); // "1 h 23 m"
+
+// A 2051Z log-in with "Off at 0130Z" in the info: 0130Z the next day.
+logoffFromInfo("Off at 0130Z", "2026-10-20T20:51:00Z");
 ```
 
 ## Frequencies
@@ -109,6 +113,50 @@ slim shape the positions lookup supplies:
 | `frequency` | `number`  | Hertz.                                           |
 | `facility`  | `string`  | The facility's name: "Indianapolis ARTCC".       |
 | `starred`   | `boolean` | Starred in Data Admin.                           |
+
+## Grouping who's online by position
+
+`groupByPosition(logins, positions)` takes the feed's logins, each with a
+`callsign` and, from the vNAS feed, a `positionId`, and returns one
+`{ callsign, position, logins }` per position they resolve to, as
+`resolvePosition` resolves them. A relief login (`IND_831_CTR`) joins the
+person on `IND_83_CTR`, so `OnlineController` shows the position once with
+both names. `callsign` is the position's, or the login's own when it
+resolves to nothing; then `position` is undefined, and only logins with
+that same callsign share its group. Groups come in the order of their
+first login, and the logins in each in the order given.
+
+```ts
+groupByPosition(
+  [
+    { callsign: "IND_83_CTR", name: "Jordan Sample" },
+    { callsign: "IND_831_CTR", name: "Alex Example" },
+  ],
+  positions,
+);
+// [{ callsign: "IND_83_CTR", position: { … }, logins: [Jordan, Alex] }]
+```
+
+## Log-out times
+
+`logoffFromInfo(info, loggedInAt)` is when a controller said they'd log
+out, from their controller info: the first `2330z` or `2330Z` in it
+(24-hour Zulu, HH 00–23, MM 00–59), as its next occurrence at or after
+`loggedInAt`. `info` is the text, or VATSIM's lines of it (`text_atis`);
+`loggedInAt` is a `Date`, an ISO string or milliseconds.
+
+| Info, logged in at 2051Z on 20 Oct | Returns         |
+| ---------------------------------- | --------------- |
+| "Off at 2330z"                     | 2330Z on 20 Oct |
+| "Training session until 0130Z"     | 0130Z on 21 Oct |
+| "Not 2460Z but 2300Z"              | 2300Z on 20 Oct |
+| "Closing at 2460Z"                 | undefined       |
+| "Runway 23 in use, ATIS on 128.82" | undefined       |
+| "Until 2330", "Ref A2330Z"         | undefined       |
+
+A time that can't be one (`2460Z`) is passed over. Digits without a `Z`,
+or inside a longer word or number, aren't read. Once bookings run, a
+booking's end wins over this; `OnlineController` does that for you.
 
 ## Airports
 
