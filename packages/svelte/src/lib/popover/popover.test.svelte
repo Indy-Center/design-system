@@ -12,6 +12,8 @@
     fallbacks?: string;
     /** Puts the button at the window's top, with no room above it. */
     atTop?: boolean;
+    /** A `style` spread on the button and the panel, as a caller's can be. */
+    style?: string;
   };
 
   let {
@@ -19,12 +21,14 @@
     area = "bottom",
     fallbacks,
     atTop = false,
+    style,
   }: Props = $props();
   let anchor = $state<HTMLButtonElement>();
 </script>
 
 <div class={atTop ? "fixed top-0 left-24" : "p-24"}>
   <button
+    {...{ style }}
     bind:this={anchor}
     type="button"
     aria-expanded={open}
@@ -33,6 +37,7 @@
   >
 </div>
 <div
+  {...{ style }}
   id="panel"
   popover="manual"
   use:popover={{ open, anchor, area, fallbacks }}

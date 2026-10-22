@@ -35,32 +35,55 @@ export const popover: Action<HTMLElement, PopoverOptions> = (
   initial,
 ) => {
   const name = `--popover-${++made}`;
+  let options = initial;
   let anchor: HTMLElement | undefined;
 
-  // Tailwind has no utilities for these yet, and the area is the caller's.
-  panel.style.setProperty("inset", "auto");
-  panel.style.setProperty("position-anchor", name);
-
-  function apply(options: PopoverOptions) {
-    if (options.anchor !== anchor) {
-      anchor?.style.removeProperty("anchor-name");
-      anchor = options.anchor;
-      anchor?.style.setProperty("anchor-name", name);
-    }
+  // Inline, as Tailwind has no utilities for these yet and the area is the
+  // caller's.
+  function place() {
+    panel.style.setProperty("inset", "auto");
+    panel.style.setProperty("position-anchor", name);
     panel.style.setProperty("position-area", options.area);
     if (options.fallbacks)
       panel.style.setProperty("position-try-fallbacks", options.fallbacks);
     else panel.style.removeProperty("position-try-fallbacks");
+    anchor?.style.setProperty("anchor-name", name);
+  }
+
+  // A caller's `style` on the panel or the anchor replaces the whole
+  // attribute when it changes, so place them again after it. Taking the
+  // records place() made keeps it from waking itself.
+  const watcher = new MutationObserver(() => {
+    place();
+    watcher.takeRecords();
+  });
+
+  function watch() {
+    watcher.disconnect();
+    watcher.observe(panel, { attributeFilter: ["style"] });
+    if (anchor) watcher.observe(anchor, { attributeFilter: ["style"] });
+  }
+
+  function apply(next: PopoverOptions) {
+    options = next;
+    if (next.anchor !== anchor) {
+      anchor?.style.removeProperty("anchor-name");
+      anchor = next.anchor;
+      watch();
+    }
+    place();
 
     const showing = panel.matches(":popover-open");
     if (options.open && !showing) panel.showPopover();
     if (!options.open && showing) panel.hidePopover();
   }
 
+  watch();
   apply(initial);
   return {
     update: apply,
     destroy() {
+      watcher.disconnect();
       anchor?.style.removeProperty("anchor-name");
     },
   };
