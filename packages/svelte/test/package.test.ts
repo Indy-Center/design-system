@@ -155,6 +155,7 @@ describe("the packed package", () => {
       "TimeZoneSetting",
       "Toaster",
       "Tooltip",
+      "UserMenu",
       "clearColorScheme",
       "comparePositionTypes",
       "confirmAction",

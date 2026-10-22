@@ -33,6 +33,17 @@ export const barItem = [
 /** A row in a menu's panel or the phone menu: full width. */
 export const menuRow = [...link, "flex w-full items-center gap-3"];
 
+/**
+ * UserMenu's Sign out row: a menu row in the destructive colour, so it
+ * stands apart from the links that stay in the app.
+ */
+export const signOutRow = [
+  target,
+  "flex w-full items-center gap-3",
+  "text-destructive underline-offset-4 hover:underline",
+  focusRing,
+];
+
 /** A button in the header that isn't a link, such as Apps. */
 export const headerButton = [
   target,
