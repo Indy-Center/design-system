@@ -27,9 +27,15 @@ description: The header's round initials button and the menu it opens, with who 
 
 ```svelte
 <script>
+  import { page } from "$app/state";
   import { UserMenu } from "@indy-center/svelte";
 
   let { data } = $props();
+
+  // Identity signs out on a GET and needs the page to come back to.
+  const signOutHref = $derived(
+    `https://auth.flyindycenter.com/logout?return_url=${encodeURIComponent(page.url.href)}`,
+  );
 </script>
 
 <UserMenu
@@ -37,7 +43,7 @@ description: The header's round initials button and the menu it opens, with who 
   cid={data.member.cid}
   rating={data.member.rating}
   pilotRating={data.member.pilotRating}
-  signOutHref={logoutUrl(identityUrl, page.url.href)}
+  {signOutHref}
 />
 ```
 
