@@ -1,0 +1,41 @@
+name: Build and Deploy
+
+# Deploys the playground to centerline.flyindycenter.com. It follows the
+# Centerline feature branch while the packages are built there; drop that
+# branch from the list once it merges to main.
+on:
+  push:
+    branches: [main, centerline/packages]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  ci:
+    uses: ./.github/workflows/ci.yml
+
+  build-and-deploy:
+    needs: ci # skipped if any check fails
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build
+        run: npm run build:playground -w packages/svelte
+
+      - name: Deploy
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_WORKERS_API_KEY }}
+          workingDirectory: packages/svelte

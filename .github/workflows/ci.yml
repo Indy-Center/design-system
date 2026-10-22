@@ -1,12 +1,9 @@
 name: CI
 
-# workflow_call lets a later publish workflow (none yet) run these checks
-# first, as indy-larry's build-and-deploy.yml does. The push trigger covers
-# the Centerline feature branch while its tickets land on it.
+# No push trigger: on a push, build-and-deploy.yml runs these checks first
+# through workflow_call, so they still run once per commit.
 on:
   pull_request:
-  push:
-    branches: [centerline/packages]
   workflow_call:
 
 permissions:
@@ -33,6 +30,9 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      - name: Build the playground
+        run: npm run build:playground -w packages/svelte
 
       # The token tests render the built CSS in headless Chromium.
       - name: Install Chromium
