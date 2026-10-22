@@ -9,7 +9,7 @@ import Header from "./Header.svelte";
 
 type Props = ComponentProps<typeof Header>;
 
-const training = INDY_CENTER_APPS[1];
+const training = INDY_CENTER_APPS.find((app) => app.label === "Training")!;
 const member = { name: "Sam Rivera", cid: 1234567, rating: "S3" };
 
 const base: Props = {
@@ -156,13 +156,17 @@ describe("Header", () => {
     const text = link.element().firstElementChild as HTMLElement;
     expect(getComputedStyle(text).textOverflow).toBe("ellipsis");
     expect(text.scrollWidth).toBeGreaterThan(text.clientWidth);
-    const brand = link.element().parentElement!.getBoundingClientRect();
-    expect(brand.width).toBe(256);
-    // The nav starts right after it.
-    const nav = screen.getByRole("navigation", { name: "Main" }).element();
-    expect(nav.getBoundingClientRect().left).toBeGreaterThanOrEqual(
-      brand.right,
+    // The 16rem runs from the logo's left edge; the name ends inside it,
+    // and the nav starts after it and the bar's 8px gap.
+    const left = screen
+      .getByRole("link", { name: "Indy Center home" })
+      .element()
+      .getBoundingClientRect().left;
+    expect(link.element().getBoundingClientRect().right).toBeLessThanOrEqual(
+      left + 256,
     );
+    const nav = screen.getByRole("navigation", { name: "Main" }).element();
+    expect(nav.getBoundingClientRect().left).toBe(left + 256 + 8);
   });
 
   // The longest bar: the hub's nav and the Sign in button beside it.

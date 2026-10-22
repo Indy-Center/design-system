@@ -7,6 +7,7 @@
   import { Header, INDY_CENTER_APPS } from "../../lib/index.ts";
   import { hubNav } from "../../playground/chrome.ts";
 
+  const training = INDY_CENTER_APPS.find((app) => app.label === "Training");
   const signInHref = "#sign-in";
   const signOutHref = "#sign-out";
   const member = {
@@ -39,7 +40,7 @@
       <!-- Each in its own box, so it sticks only within it. -->
       <div class="mb-6">
         <Header
-          app={INDY_CENTER_APPS[1]}
+          app={training}
           nav={hubNav}
           current="/staff"
           {member}
