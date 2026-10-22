@@ -169,10 +169,18 @@ describe("Header", () => {
     expect(nav.getBoundingClientRect().left).toBe(left + 256 + 8);
   });
 
-  // The longest bar: the hub's nav and the Sign in button beside it.
+  // The longest bar: the hub's nav and the Sign in button beside it. Its
+  // width follows the system sans (`--font-sans`), so the test pins one
+  // close to Windows' and macOS's: Liberation Sans, which Playwright's
+  // Linux dependencies install. A wider one, such as DejaVu Sans, overruns
+  // by about 18px at 1024px.
   test.each([390, 768, 1024, 1280])(
     "fits the bar in the window at %ipx, signed out with the hub's nav",
     async (width) => {
+      const font = document.createElement("style");
+      font.textContent = `:root { --font-sans: "Liberation Sans", sans-serif; }`;
+      document.head.append(font);
+      onTestFinished(() => font.remove());
       await page.viewport(width, 800);
       const screen = await renderHeader({ app: training, nav: hubNav });
       const signIn = screen.getByRole("link", { name: "Sign in with VATSIM" });
