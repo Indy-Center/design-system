@@ -9,6 +9,7 @@
   import type { Snippet } from "svelte";
   import type { HTMLAttributes } from "svelte/elements";
   import { dismiss } from "../dismiss/dismiss.js";
+  import { popover } from "../popover/popover.js";
 
   type Props = Omit<
     HTMLAttributes<HTMLSpanElement>,
@@ -24,8 +25,6 @@
 
   const madeId = $props.id();
   const tooltipId = $derived(id ?? madeId);
-  // Ties the tooltip to its trigger for CSS anchor positioning.
-  const anchor = `--tooltip-${madeId}`;
 
   const trigger: TooltipTrigger = $derived({ "aria-describedby": tooltipId });
 
@@ -36,15 +35,6 @@
   const open = $derived((hovered || focused) && !dismissed);
 
   let box = $state<HTMLSpanElement>();
-  let tip = $state<HTMLSpanElement>();
-
-  // A manual popover: drawn above everything, so a table or a scrolling
-  // box can't clip it, and it doesn't close a menu it sits in.
-  $effect(() => {
-    if (!tip) return;
-    if (open && !tip.matches(":popover-open")) tip.showPopover();
-    if (!open && tip.matches(":popover-open")) tip.hidePopover();
-  });
 
   // Leaving waits a moment, so the pointer can cross the gap onto the
   // tooltip to read it (WCAG 1.4.13); the tooltip is inside the box.
@@ -88,30 +78,21 @@
   {onpointerleave}
   {onfocusin}
   {onfocusout}
-  style:anchor-name={anchor}
   class={["inline-flex", className]}
 >
   {@render children(trigger)}
+  <!-- `popover` shows it above everything (a table or a scrolling box
+       can't clip it, and it doesn't close a menu it sits in), above the
+       trigger and centred on it, below when there's no room above. -->
   <span
     {...rest}
     id={tooltipId}
     role="tooltip"
     popover="manual"
-    bind:this={tip}
+    use:popover={{ open, anchor: box, area: "top", fallbacks: "flip-block" }}
     use:dismiss={{ open, trigger: box, onclose: () => (dismissed = true) }}
-    style:position-anchor={anchor}
-    class="tooltip m-0 my-1 max-w-xs rounded-md border-0 bg-foreground px-2 py-1 text-sm text-background shadow-lg"
+    class="m-0 my-1 max-w-xs rounded-md border-0 bg-foreground px-2 py-1 text-sm text-background shadow-lg"
   >
     {text}
   </span>
 </span>
-
-<style>
-  /* Above the trigger, centred on it, but kept inside the window; below
-     when there's no room above. Tailwind has no utilities for these yet. */
-  .tooltip {
-    inset: auto;
-    position-area: top;
-    position-try-fallbacks: flip-block;
-  }
-</style>

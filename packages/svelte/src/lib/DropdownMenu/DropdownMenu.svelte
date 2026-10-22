@@ -5,6 +5,7 @@
   import { buttonClasses } from "../buttonClasses/buttonClasses.js";
   import { dismiss } from "../dismiss/dismiss.js";
   import Icon from "../Icon/Icon.svelte";
+  import { popover } from "../popover/popover.js";
 
   type Props = Omit<
     HTMLButtonAttributes,
@@ -42,20 +43,10 @@
   }: Props = $props();
 
   const id = $props.id();
-  // Ties the panel to the trigger for CSS anchor positioning.
-  const anchor = `--dropdown-${id}`;
 
   let open = $state(false);
   let trigger = $state<HTMLButtonElement>();
   let panel = $state<HTMLDivElement>();
-
-  // The panel is a manual popover: the browser draws it above everything
-  // (a table or a scrolling box can't clip it), and `dismiss` closes it.
-  $effect(() => {
-    if (!panel) return;
-    if (open && !panel.matches(":popover-open")) panel.showPopover();
-    if (!open && panel.matches(":popover-open")) panel.hidePopover();
-  });
 
   function close() {
     open = false;
@@ -89,7 +80,6 @@
   aria-controls={id}
   onclick={() => (open = !open)}
   {onfocusout}
-  style:anchor-name={anchor}
   class={[
     "inline-flex min-h-11 min-w-11 cursor-pointer items-center justify-center gap-1 text-base font-medium transition-colors",
     "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
@@ -114,27 +104,24 @@
   />
 </button>
 
-<!-- Always on the page, shown by the browser. -->
+<!-- Always on the page; `popover` shows it above everything (a table or a
+     scrolling box can't clip it) under the arrow, its right edge on the
+     arrow's, flipped to stay in the window. `dismiss` closes it. -->
 <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
 <div
   {id}
   popover="manual"
   bind:this={panel}
+  use:popover={{
+    open,
+    anchor: trigger,
+    area: "bottom span-left",
+    fallbacks: "flip-inline, flip-block",
+  }}
   use:dismiss={{ open, trigger, onclose: close }}
   onclick={onpanelclick}
   {onfocusout}
-  style:position-anchor={anchor}
-  class="dropdown-panel m-0 mt-1 w-56 max-w-[calc(100vw-2rem)] overflow-hidden rounded-lg border border-border bg-card p-1 text-foreground shadow-lg"
+  class="m-0 mt-1 w-56 max-w-[calc(100vw-2rem)] overflow-hidden rounded-lg border border-border bg-card p-1 text-foreground shadow-lg"
 >
   {@render children()}
 </div>
-
-<style>
-  /* Under the arrow, its right edge on the arrow's; flipped to stay in the
-     window. Tailwind has no utilities for these yet. */
-  .dropdown-panel {
-    inset: auto;
-    position-area: bottom span-left;
-    position-try-fallbacks: flip-inline, flip-block;
-  }
-</style>
