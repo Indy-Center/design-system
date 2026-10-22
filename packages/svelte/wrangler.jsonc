@@ -1,0 +1,16 @@
+// The playground, at centerline.flyindycenter.com.
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "centerline",
+  "account_id": "afd63515948c9b2188ce14ef1504b2c1",
+  "compatibility_date": "2026-09-17",
+  "main": ".svelte-kit/cloudflare/_worker.js",
+  "assets": {
+    "binding": "ASSETS",
+    "directory": ".svelte-kit/cloudflare",
+  },
+  "workers_dev": false,
+  "routes": [
+    { "pattern": "centerline.flyindycenter.com", "custom_domain": true },
+  ],
+}

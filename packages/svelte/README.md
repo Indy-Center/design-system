@@ -99,3 +99,20 @@ Each component's doc page ships beside it, as
 - `npm run check`, `npm run build`.
 
 Adding a component: follow [`CONVENTIONS.md`](CONVENTIONS.md).
+
+## Playground deploy
+
+The playground runs as the `centerline` Worker at
+[centerline.flyindycenter.com](https://centerline.flyindycenter.com), a
+Custom Domain set in `wrangler.jsonc`. `build-and-deploy.yml` runs CI,
+then deploys on every push to `main` and to `centerline/packages`. It
+needs one repository secret, `CLOUDFLARE_WORKERS_API_KEY`: a Cloudflare
+API token with Workers Scripts:Edit. The playground has no bindings or
+runtime secrets.
+
+- `npm run build:playground`: builds the tokens, then the playground as a
+  Worker, into `.svelte-kit/cloudflare`.
+- `npm run preview:playground`: builds it and serves it on the local
+  Workers runtime.
+- `npm run deploy`: builds and deploys it by hand (after
+  `npx wrangler login`).

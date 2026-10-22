@@ -1,3 +1,4 @@
+import adapter from "@sveltejs/adapter-cloudflare";
 import { sveltekit } from "@sveltejs/kit/vite";
 import tailwindcss from "@tailwindcss/vite";
 import { playwright } from "@vitest/browser-playwright";
@@ -11,7 +12,10 @@ import {
 } from "./test/commands.ts";
 
 export default defineConfig({
-  plugins: [tailwindcss(), await sveltekit()],
+  // The adapter builds the playground as a Worker (`npm run
+  // build:playground`); svelte-package, which builds the published
+  // components, ignores it.
+  plugins: [tailwindcss(), await sveltekit({ adapter: adapter() })],
   // The tokens package is linked from beside this one; its font is served
   // from there.
   server: { fs: { allow: ["../tokens"] } },
