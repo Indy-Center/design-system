@@ -21,8 +21,8 @@ description: The page's header, with the skip link, the logo to the hub, the app
       `signOutHref`, identity's addresses with the page to come back to.
 - [ ] Don't add `SkipLink`, `AppNav`, `AppNavMenu`, `AppsMenu` or
       `UserMenu` yourself: the header places them.
-- [ ] Title each page `<Page> | <App> | Indy Center`, or `<Page> | Indy
-Center` on the hub (see Page titles below).
+- [ ] Title each page page first, `<Page> | <App> | Indy Center`; on
+      the hub, `<Page> | Indy Center` (see Page titles below).
 - [ ] Don't colour it or change its sizes. It is dark in both schemes by
       itself. `class` is for layout only.
 
@@ -104,8 +104,10 @@ Left to right:
 Each page sets its own `<title>`, page first:
 
 - In an app: `<Page> | <App> | Indy Center`, such as
-  `Sessions | Training | Indy Center`.
+  `Sessions | Training | Indy Center`. The app's home is
+  `<App> | Indy Center`, such as `Training | Indy Center`.
 - On the hub: `<Page> | Indy Center`, such as `Events | Indy Center`.
+  The hub's home is `Indy Center`.
 
 ```svelte
 <svelte:head><title>Sessions | Training | Indy Center</title></svelte:head>
