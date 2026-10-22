@@ -155,15 +155,15 @@ export {
 } from "./aviation/callsign.js";
 export { formatDuration, type DurationStyle } from "./aviation/duration.js";
 export {
-  groupByPosition,
-  type PositionGroup,
-} from "./aviation/groupByPosition.js";
-export { logoffFromInfo } from "./aviation/logoff.js";
-export {
   formatFrequency,
   spokenFrequency,
   type FrequencyOptions,
 } from "./aviation/frequency.js";
+export {
+  groupByPosition,
+  type PositionGroup,
+} from "./aviation/groupByPosition.js";
+export { logoffFromInfo } from "./aviation/logoff.js";
 export {
   findPilotRating,
   findRating,
