@@ -16,15 +16,20 @@ The app needs `svelte` 5 and `tailwindcss` 4 already.
 In the app's stylesheet, import the tokens and add one `@source` line, so
 Tailwind writes the classes the components use (it skips `node_modules`
 unless told). The path is relative to the stylesheet; this one is for
-`src/app.css`:
+`src/app.css` (an app from `npx sv create` keeps it in
+`src/routes/layout.css`, so there it is `../../node_modules/…`):
 
 ```css
 @import "tailwindcss";
 @import "@indy-center/tokens/tokens.css";
 @import "@indy-center/tokens/theme.css";
+@import "@indy-center/tokens/base.css";
 @import "@indy-center/tokens/fonts.css";
 @source "../node_modules/@indy-center/svelte";
 ```
+
+`base.css` gives the page its background and text colours; without it the
+page behind the components keeps the browser's own.
 
 Then:
 
