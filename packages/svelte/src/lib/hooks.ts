@@ -1,5 +1,5 @@
 // Server hooks, for an app's src/hooks.server.ts:
-// import { colorSchemeHandle } from "@indy-center/svelte/hooks";
+// import { colorSchemeHandle } from "@indy-center/centerline-svelte/hooks";
 export {
   colorSchemeHandle,
   type ColorSchemeHandleOptions,

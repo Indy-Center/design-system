@@ -19,7 +19,7 @@ description: The member's time-zone choice, Zulu, their device's zone or another
 
 ```svelte
 <script>
-  import { TimeZoneSetting } from "@indy-center/svelte";
+  import { TimeZoneSetting } from "@indy-center/centerline-svelte";
 </script>
 
 <TimeZoneSetting />

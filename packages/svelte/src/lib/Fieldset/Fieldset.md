@@ -23,7 +23,7 @@ description: A group of radios or checkboxes with a legend, hint and error, wire
 
 ```svelte
 <script>
-  import { Fieldset, Radio } from "@indy-center/svelte";
+  import { Fieldset, Radio } from "@indy-center/centerline-svelte";
 
   let { form } = $props();
   let position = $state(form?.position);

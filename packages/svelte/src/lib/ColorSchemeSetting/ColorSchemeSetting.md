@@ -24,7 +24,7 @@ gives `colorSchemeHandle`:
 
 ```svelte
 <script>
-  import { setColorScheme } from "@indy-center/svelte";
+  import { setColorScheme } from "@indy-center/centerline-svelte";
 
   let { children } = $props();
   setColorScheme({ fallback: "dark" });
@@ -37,7 +37,7 @@ Then wherever the member chooses:
 
 ```svelte
 <script>
-  import { ColorSchemeSetting } from "@indy-center/svelte";
+  import { ColorSchemeSetting } from "@indy-center/centerline-svelte";
 </script>
 
 <ColorSchemeSetting />

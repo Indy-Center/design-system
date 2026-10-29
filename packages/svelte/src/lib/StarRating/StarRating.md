@@ -26,7 +26,7 @@ description: A rating out of five stars, to choose (StarRating) or to show (Star
 
 ```svelte
 <script>
-  import { StarDisplay, StarRating } from "@indy-center/svelte";
+  import { StarDisplay, StarRating } from "@indy-center/centerline-svelte";
 
   let rating = $state();
 </script>

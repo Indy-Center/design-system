@@ -29,7 +29,11 @@ description: A button with an arrow that opens a short list of actions or links;
 
 ```svelte
 <script>
-  import { Button, DropdownMenu, DropdownMenuItem } from "@indy-center/svelte";
+  import {
+    Button,
+    DropdownMenu,
+    DropdownMenuItem,
+  } from "@indy-center/centerline-svelte";
 </script>
 
 <div class="flex">

@@ -19,7 +19,7 @@ description: A labelled bar showing how much of something is done, with the amou
 
 ```svelte
 <script>
-  import { ProgressBar } from "@indy-center/svelte";
+  import { ProgressBar } from "@indy-center/centerline-svelte";
 </script>
 
 <ProgressBar label="Course progress" value={40} />

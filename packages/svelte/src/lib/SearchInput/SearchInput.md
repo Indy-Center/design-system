@@ -24,7 +24,7 @@ description: A labelled search box with a search icon, for filtering a list on t
 
 ```svelte
 <script>
-  import { SearchInput } from "@indy-center/svelte";
+  import { SearchInput } from "@indy-center/centerline-svelte";
 
   let query = $state("");
 </script>
@@ -41,7 +41,11 @@ for the sort. On a phone the parts wrap onto their own lines.
 
 ```svelte
 <script>
-  import { FilterChip, SearchInput, Select } from "@indy-center/svelte";
+  import {
+    FilterChip,
+    SearchInput,
+    Select,
+  } from "@indy-center/centerline-svelte";
 
   let query = $state("");
   let onlineOnly = $state(false);

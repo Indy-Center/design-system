@@ -26,7 +26,7 @@ description: The server hook that serves each member's light or dark choice, and
 `src/hooks.server.ts`:
 
 ```ts
-import { colorSchemeHandle } from "@indy-center/svelte/hooks";
+import { colorSchemeHandle } from "@indy-center/centerline-svelte/hooks";
 
 export const handle = colorSchemeHandle({ fallback: "dark" });
 ```
@@ -38,7 +38,7 @@ With other hooks, chain it with `sequence` from SvelteKit's hooks module.
 
 ```svelte
 <script>
-  import { setColorScheme } from "@indy-center/svelte";
+  import { setColorScheme } from "@indy-center/centerline-svelte";
 
   let { children } = $props();
   setColorScheme({ fallback: "dark" });
@@ -51,7 +51,7 @@ With other hooks, chain it with `sequence` from SvelteKit's hooks module.
 
 ```html
 <script nonce="%sveltekit.nonce%">
-  /* @indy-center/svelte color scheme */
+  /* @indy-center/centerline-svelte color scheme */
 </script>
 ```
 
@@ -59,7 +59,7 @@ In a component, when the member picks light or dark:
 
 ```svelte
 <script>
-  import { saveColorScheme } from "@indy-center/svelte";
+  import { saveColorScheme } from "@indy-center/centerline-svelte";
 </script>
 
 <button type="button" onclick={() => saveColorScheme("light")}>Light</button>

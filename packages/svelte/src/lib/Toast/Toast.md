@@ -25,7 +25,7 @@ description: A brief message after an action, raised with toast() or toastFromSe
 ```svelte
 <!-- src/routes/+layout.svelte -->
 <script>
-  import { Toaster } from "@indy-center/svelte";
+  import { Toaster } from "@indy-center/centerline-svelte";
   let { children } = $props();
 </script>
 
@@ -37,7 +37,7 @@ description: A brief message after an action, raised with toast() or toastFromSe
 In the browser, such as in an event handler or a `use:enhance` callback:
 
 ```ts
-import { toast } from "@indy-center/svelte";
+import { toast } from "@indy-center/centerline-svelte";
 
 toast("success", "Roster saved.");
 toast("danger", "We couldn't save the roster. Try again.");
@@ -48,7 +48,7 @@ On the server, such as in a form action that redirects:
 ```ts
 // src/routes/roster/+page.server.ts
 import { redirect } from "@sveltejs/kit";
-import { toastFromServer } from "@indy-center/svelte";
+import { toastFromServer } from "@indy-center/centerline-svelte";
 
 export const actions = {
   default: async ({ cookies }) => {

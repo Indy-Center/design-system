@@ -20,7 +20,7 @@ description: Label and value rows for one thing's details, stacked on phones.
 
 ```svelte
 <script>
-  import { DescriptionList } from "@indy-center/svelte";
+  import { DescriptionList } from "@indy-center/centerline-svelte";
 
   let { data } = $props();
 </script>

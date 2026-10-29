@@ -5,7 +5,7 @@ import type { ColorSchemeHandleOptions } from "./colorSchemeHandle.js";
 export type SetColorSchemeOptions = PreferenceCookieOptions &
   ColorSchemeHandleOptions;
 
-const key = Symbol("@indy-center/svelte colour scheme");
+const key = Symbol("@indy-center/centerline-svelte colour scheme");
 
 /**
  * Tells the colour-scheme controls below this one how the app's hook is set

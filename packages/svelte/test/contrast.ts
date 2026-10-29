@@ -2,7 +2,7 @@
 // surface it sits on. Runs in the browser: a canvas turns any CSS colour
 // (Tailwind's oklch included) into sRGB and blends see-through fills as the
 // page does.
-import tokens from "@indy-center/tokens/tokens.json" with { type: "json" };
+import tokens from "@indy-center/centerline-tokens/tokens.json" with { type: "json" };
 import { expect } from "vitest";
 import type { Scheme } from "./schemes.ts";
 

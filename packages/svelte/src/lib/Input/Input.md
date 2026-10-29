@@ -22,7 +22,7 @@ description: A one-line text, number, date or time box on the input roles.
 
 ```svelte
 <script>
-  import { Field, Input } from "@indy-center/svelte";
+  import { Field, Input } from "@indy-center/centerline-svelte";
 
   let callsign = $state("");
 </script>

@@ -17,7 +17,7 @@ description: A multi-line text box on the input roles.
 
 ```svelte
 <script>
-  import { Field, Textarea } from "@indy-center/svelte";
+  import { Field, Textarea } from "@indy-center/centerline-svelte";
 
   let comments = $state("");
 </script>

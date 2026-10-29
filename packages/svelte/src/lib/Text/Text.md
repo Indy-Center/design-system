@@ -23,7 +23,7 @@ description: Text that differs from body text, as a lead line, muted or small, i
 
 ```svelte
 <script>
-  import { Heading, Text } from "@indy-center/svelte";
+  import { Heading, Text } from "@indy-center/centerline-svelte";
 </script>
 
 <Heading level={1}>Events</Heading>

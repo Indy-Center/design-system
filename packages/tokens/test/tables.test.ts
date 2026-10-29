@@ -5,7 +5,7 @@ import { roles } from "./guide.ts";
 
 const require = createRequire(import.meta.url);
 const tables = await readFile(
-  require.resolve("@indy-center/tokens/tables.md"),
+  require.resolve("@indy-center/centerline-tokens/tables.md"),
   "utf8",
 );
 

@@ -24,7 +24,7 @@ description: A radio or checkbox drawn as a card, with room under its label to s
 
 ```svelte
 <script>
-  import { ChoiceCard, Fieldset } from "@indy-center/svelte";
+  import { ChoiceCard, Fieldset } from "@indy-center/centerline-svelte";
 
   let { data } = $props();
   let certification = $state(data.certification ?? "");

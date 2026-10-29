@@ -31,7 +31,7 @@ description: A data table with a caption, header cells that say what they head, 
 
 ```svelte
 <script>
-  import { Link, Table, Th } from "@indy-center/svelte";
+  import { Link, Table, Th } from "@indy-center/centerline-svelte";
 
   let { data } = $props();
 </script>

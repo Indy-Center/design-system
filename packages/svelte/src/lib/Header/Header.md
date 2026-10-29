@@ -35,7 +35,7 @@ description: The page's header, with the skip link, the logo to the hub, the app
 <!-- src/routes/+layout.svelte -->
 <script>
   import { page } from "$app/state";
-  import { Footer, Header, INDY_CENTER_APPS } from "@indy-center/svelte";
+  import { Footer, Header, INDY_CENTER_APPS } from "@indy-center/centerline-svelte";
   import { mdiCalendar, mdiHome } from "@mdi/js";
 
   let { data, children } = $props();

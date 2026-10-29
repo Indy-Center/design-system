@@ -23,7 +23,7 @@ description: The page's footer, a map of links beside the logo, FAA disclaimer a
 
 ```svelte
 <script>
-  import { Footer } from "@indy-center/svelte";
+  import { Footer } from "@indy-center/centerline-svelte";
 
   const columns = [
     {

@@ -23,7 +23,7 @@ description: A list of the stages in a process, each marked done, current or to 
 
 ```svelte
 <script>
-  import { Steps } from "@indy-center/svelte";
+  import { Steps } from "@indy-center/centerline-svelte";
 </script>
 
 <Steps

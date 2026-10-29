@@ -21,7 +21,7 @@ description: The header's Apps button and the list of Indy Center apps it opens,
 
 ```svelte
 <script>
-  import { AppsMenu, INDY_CENTER_APPS } from "@indy-center/svelte";
+  import { AppsMenu, INDY_CENTER_APPS } from "@indy-center/centerline-svelte";
 </script>
 
 <AppsMenu

@@ -31,7 +31,7 @@ description: A button for an action on the page, or a link that looks like one, 
 
 ```svelte
 <script>
-  import { Button } from "@indy-center/svelte";
+  import { Button } from "@indy-center/centerline-svelte";
 
   let saving = $state(false);
   let notify = $state(false);

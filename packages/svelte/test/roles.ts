@@ -1,6 +1,6 @@
 // The role colours a component test expects, read from the tokens' built
 // `tokens.json`. How to use it: CONVENTIONS.md, Tests.
-import tokens from "@indy-center/tokens/tokens.json" with { type: "json" };
+import tokens from "@indy-center/centerline-tokens/tokens.json" with { type: "json" };
 import type { Scheme } from "./schemes.ts";
 
 /** A role's name, as in `roles.tokens.json` and the `--color-*` variables. */

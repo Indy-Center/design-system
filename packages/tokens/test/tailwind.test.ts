@@ -7,8 +7,8 @@ afterAll(closeBrowser);
 
 const appCss = `
 @import "tailwindcss";
-@import "@indy-center/tokens/tokens.css";
-@import "@indy-center/tokens/theme.css";
+@import "@indy-center/centerline-tokens/tokens.css";
+@import "@indy-center/centerline-tokens/theme.css";
 `;
 
 /** A light page with a dark header, the guide's framed light. */

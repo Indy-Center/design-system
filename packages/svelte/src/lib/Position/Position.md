@@ -30,7 +30,7 @@ description: A controller position from its callsign alone, labelled by radio na
 
 ```svelte
 <script>
-  import { Position } from "@indy-center/svelte";
+  import { Position } from "@indy-center/centerline-svelte";
 </script>
 
 <!-- Indy Center              128.22

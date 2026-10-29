@@ -1,7 +1,12 @@
-# @indy-center/tokens
+# Indy Centerline tokens
 
-Indy Centerline's brand colours and colour roles, in light and dark, and
-its heading font, from the brand guide's Color and type page.
+`@indy-center/centerline-tokens`: Indy Centerline's brand colours and
+colour roles, in light and dark, and its heading font, from the brand
+guide's Color and type page.
+
+```sh
+npm install @indy-center/centerline-tokens
+```
 
 ## Use
 
@@ -9,10 +14,10 @@ In a Tailwind v4 app's stylesheet:
 
 ```css
 @import "tailwindcss";
-@import "@indy-center/tokens/tokens.css";
-@import "@indy-center/tokens/theme.css";
-@import "@indy-center/tokens/base.css";
-@import "@indy-center/tokens/fonts.css";
+@import "@indy-center/centerline-tokens/tokens.css";
+@import "@indy-center/centerline-tokens/theme.css";
+@import "@indy-center/centerline-tokens/base.css";
+@import "@indy-center/centerline-tokens/fonts.css";
 ```
 
 - `tokens.css`: every brand colour, role and font stack as a CSS custom
@@ -53,10 +58,10 @@ dependency; import this file after it:
 
 ```css
 @plugin "@tailwindcss/typography";
-@import "@indy-center/tokens/prose.css";
+@import "@indy-center/centerline-tokens/prose.css";
 ```
 
-Svelte apps use the `Prose` component from `@indy-center/svelte`, which
+Svelte apps use the `Prose` component from `@indy-center/centerline-svelte`, which
 adds both classes.
 
 ### Sass (Payload)
@@ -65,14 +70,14 @@ adds both classes.
 `tokens.css` as well:
 
 ```scss
-@use "pkg:@indy-center/tokens/_tokens.scss" as tokens;
+@use "pkg:@indy-center/centerline-tokens/_tokens.scss" as tokens;
 
 .panel {
   background: tokens.token("color.card"); // var(--color-card)
 }
 ```
 
-Name the file in full: `pkg:@indy-center/tokens/tokens` finds `tokens.css`.
+Name the file in full: `pkg:@indy-center/centerline-tokens/tokens` finds `tokens.css`.
 
 ### JSON
 
@@ -80,7 +85,7 @@ Name the file in full: `pkg:@indy-center/tokens/tokens` finds `tokens.css`.
 read custom properties, such as a canvas:
 
 ```js
-import tokens from "@indy-center/tokens/tokens.json" with { type: "json" };
+import tokens from "@indy-center/centerline-tokens/tokens.json" with { type: "json" };
 
 tokens.dark.color.card; // "#1E293B"
 tokens.light.font.heading; // '"Source Sans 3", ui-sans-serif, …'

@@ -22,7 +22,7 @@ description: One count on a dashboard, with its label, a sub-line and an icon ti
 
 ```svelte
 <script>
-  import { Icon, StatCard } from "@indy-center/svelte";
+  import { Icon, StatCard } from "@indy-center/centerline-svelte";
   import { mdiAccount, mdiCalendar } from "@mdi/js";
 </script>
 

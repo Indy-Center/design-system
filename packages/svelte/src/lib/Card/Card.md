@@ -27,7 +27,7 @@ description: The one card surface, a bordered box on the card role, for an item 
 
 ```svelte
 <script>
-  import { Card, Heading, Text } from "@indy-center/svelte";
+  import { Card, Heading, Text } from "@indy-center/centerline-svelte";
 </script>
 
 <ul class="grid gap-4 sm:grid-cols-2">

@@ -16,7 +16,7 @@ description: Plain functions for frequencies, callsigns, positions, ratings, dur
 - [ ] Sort positions with `comparePositionTypes`, and members by the
       rating's `id`, never by its short code.
 - [ ] They format and look up only. None of them fetches; to get the
-      positions, use `fetchPositions` from `@indy-center/svelte/server`
+      positions, use `fetchPositions` from `@indy-center/centerline-svelte/server`
       (see the positions lookup's page).
 
 ## Use
@@ -30,7 +30,7 @@ import {
   resolvePosition,
   spokenFrequency,
   type VnasPosition,
-} from "@indy-center/svelte";
+} from "@indy-center/centerline-svelte";
 
 formatFrequency(128225000); // "128.22"
 spokenFrequency(128225000); // "one two eight point two two"

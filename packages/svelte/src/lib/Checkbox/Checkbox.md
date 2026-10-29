@@ -21,7 +21,7 @@ description: A native checkbox with its label beside it, ticked in the primary r
 
 ```svelte
 <script>
-  import { Checkbox, Fieldset } from "@indy-center/svelte";
+  import { Checkbox, Fieldset } from "@indy-center/centerline-svelte";
 
   let { form } = $props();
   let onRoster = $state(true);

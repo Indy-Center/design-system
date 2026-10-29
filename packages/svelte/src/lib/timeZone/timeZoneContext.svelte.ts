@@ -118,7 +118,7 @@ export class TimeZoneState {
   }
 }
 
-const key = Symbol("@indy-center/svelte time zone");
+const key = Symbol("@indy-center/centerline-svelte time zone");
 
 /**
  * Gives every component below this one the member's time zone, so `Time`

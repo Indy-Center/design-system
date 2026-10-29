@@ -1,17 +1,16 @@
-# @indy-center/svelte
+# Indy Centerline for Svelte
 
-Indy Centerline's chrome and patterns as Svelte 5 components, styled with
-Tailwind v4 and the roles from `@indy-center/tokens`.
-
-## Use
-
-Install it beside its peers:
+`@indy-center/centerline-svelte`: Indy Centerline's chrome and patterns as
+Svelte 5 components, styled with Tailwind v4 and the roles from
+`@indy-center/centerline-tokens`. Install it beside its peers:
 
 ```sh
-npm install @indy-center/svelte @indy-center/tokens
+npm install @indy-center/centerline-svelte @indy-center/centerline-tokens
 ```
 
 The app needs `svelte` 5 and `tailwindcss` 4 already.
+
+## Use
 
 In the app's stylesheet, import the tokens and add one `@source` line, so
 Tailwind writes the classes the components use (it skips `node_modules`
@@ -21,11 +20,11 @@ unless told). The path is relative to the stylesheet; this one is for
 
 ```css
 @import "tailwindcss";
-@import "@indy-center/tokens/tokens.css";
-@import "@indy-center/tokens/theme.css";
-@import "@indy-center/tokens/base.css";
-@import "@indy-center/tokens/fonts.css";
-@source "../node_modules/@indy-center/svelte";
+@import "@indy-center/centerline-tokens/tokens.css";
+@import "@indy-center/centerline-tokens/theme.css";
+@import "@indy-center/centerline-tokens/base.css";
+@import "@indy-center/centerline-tokens/fonts.css";
+@source "../node_modules/@indy-center/centerline-svelte";
 ```
 
 `base.css` gives the page its background and text colours; without it the
@@ -35,7 +34,7 @@ Then:
 
 ```svelte
 <script>
-  import { Link } from "@indy-center/svelte";
+  import { Link } from "@indy-center/centerline-svelte";
 </script>
 
 <Link href="/events">Event schedule</Link>
@@ -50,7 +49,7 @@ member's choice from a cookie shared across the Indy Center sites:
 
 ```ts
 // src/hooks.server.ts
-import { colorSchemeHandle } from "@indy-center/svelte/hooks";
+import { colorSchemeHandle } from "@indy-center/centerline-svelte/hooks";
 
 export const handle = colorSchemeHandle({ fallback: "dark" });
 ```
@@ -60,7 +59,7 @@ The root layout hands the same fallback to the colour-scheme control:
 ```svelte
 <!-- src/routes/+layout.svelte -->
 <script>
-  import { setColorScheme } from "@indy-center/svelte";
+  import { setColorScheme } from "@indy-center/centerline-svelte";
 
   let { children } = $props();
   setColorScheme({ fallback: "dark" });
@@ -73,7 +72,7 @@ See [`src/lib/colorScheme/colorScheme.md`](src/lib/colorScheme/colorScheme.md)
 for the `app.html` script tag and saving a choice.
 
 `Prose`, for CMS rich text, also needs `@tailwindcss/typography` and
-`@indy-center/tokens/prose.css` in the stylesheet: see
+`@indy-center/centerline-tokens/prose.css` in the stylesheet: see
 [`src/lib/Prose/Prose.md`](src/lib/Prose/Prose.md).
 
 Aviation helpers (frequencies, callsigns, positions, ratings, durations)
@@ -82,7 +81,7 @@ see [`src/lib/aviation/aviation.md`](src/lib/aviation/aviation.md).
 
 `Position` and `Frequency` look callsigns up in the page's positions. The
 root layout's server `load` fetches them from vNAS with
-`@indy-center/svelte/server`, and the layout sets them once: see
+`@indy-center/centerline-svelte/server`, and the layout sets them once: see
 [`src/lib/positions/positions.md`](src/lib/positions/positions.md).
 
 ## Docs

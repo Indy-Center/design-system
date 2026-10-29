@@ -24,7 +24,7 @@ found")`): it becomes the title.
 <!-- src/routes/+error.svelte -->
 <script>
   import { page } from "$app/state";
-  import { ErrorPage } from "@indy-center/svelte";
+  import { ErrorPage } from "@indy-center/centerline-svelte";
   import { mdiAccountGroup, mdiCalendar } from "@mdi/js";
 </script>
 

@@ -18,7 +18,7 @@ description: A "Skip to content" link, first on the page and hidden until it has
 
 ```svelte
 <script>
-  import { SkipLink } from "@indy-center/svelte";
+  import { SkipLink } from "@indy-center/centerline-svelte";
 </script>
 
 <!-- First in the page, before the site's navigation. -->

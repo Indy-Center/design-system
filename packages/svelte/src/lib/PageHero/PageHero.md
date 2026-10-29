@@ -19,7 +19,7 @@ description: The band at the top of a home or landing page, with the page's h1 o
 
 ```svelte
 <script>
-  import { Button, PageHero, Text } from "@indy-center/svelte";
+  import { Button, PageHero, Text } from "@indy-center/centerline-svelte";
 </script>
 
 <PageHero title="Welcome to Indy Center">

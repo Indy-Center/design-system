@@ -22,7 +22,7 @@ description: An icon button that copies a frequency, CID or callsign to the clip
 
 ```svelte
 <script>
-  import { CopyButton } from "@indy-center/svelte";
+  import { CopyButton } from "@indy-center/centerline-svelte";
 </script>
 
 <span class="font-mono">134.000</span>

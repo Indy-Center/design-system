@@ -1,6 +1,7 @@
 name: Publish
 
-# Publishes @indy-center/tokens, then @indy-center/svelte, to npm when a
+# Publishes @indy-center/centerline-tokens, then
+# @indy-center/centerline-svelte, to npm when a
 # push to main names a version npm doesn't have yet. Merging without a
 # version bump publishes nothing.
 #

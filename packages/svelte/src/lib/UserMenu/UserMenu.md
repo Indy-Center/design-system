@@ -28,7 +28,7 @@ description: The header's round initials button and the menu it opens, with who 
 ```svelte
 <script>
   import { page } from "$app/state";
-  import { UserMenu } from "@indy-center/svelte";
+  import { UserMenu } from "@indy-center/centerline-svelte";
 
   let { data } = $props();
 

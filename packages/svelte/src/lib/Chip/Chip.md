@@ -25,7 +25,7 @@ description: A small mono label for a short code, such as operating initials, a 
 
 ```svelte
 <script>
-  import { Chip, Icon } from "@indy-center/svelte";
+  import { Chip, Icon } from "@indy-center/centerline-svelte";
   import { mdiSchool } from "@mdi/js";
 </script>
 

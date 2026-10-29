@@ -23,7 +23,7 @@ description: A member's certification, endorsement or solo as a short code in a 
 
 ```svelte
 <script>
-  import { Credential } from "@indy-center/svelte";
+  import { Credential } from "@indy-center/centerline-svelte";
 </script>
 
 <Credential code="S-GC" name="Simple Ground Control" kind="certification" />

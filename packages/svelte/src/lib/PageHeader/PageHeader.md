@@ -21,7 +21,7 @@ description: The top of an ordinary page, its h1 with a lead line under it and r
 
 ```svelte
 <script>
-  import { Button, PageHeader } from "@indy-center/svelte";
+  import { Button, PageHeader } from "@indy-center/centerline-svelte";
 </script>
 
 <PageHeader title="Events" class="mb-8">

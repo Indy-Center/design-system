@@ -6,7 +6,7 @@ import { brandColours, rgb, roles } from "./guide.ts";
 
 const require = createRequire(import.meta.url);
 const tokensCss = await readFile(
-  require.resolve("@indy-center/tokens/tokens.css"),
+  require.resolve("@indy-center/centerline-tokens/tokens.css"),
   "utf8",
 );
 

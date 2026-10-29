@@ -25,7 +25,7 @@ description: A member's name, then their CID muted in mono: "Jordan Sample · CI
 
 ```svelte
 <script>
-  import { Member } from "@indy-center/svelte";
+  import { Member } from "@indy-center/centerline-svelte";
 </script>
 
 <!-- Jordan Sample · CID 1000001 -->

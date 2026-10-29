@@ -26,7 +26,7 @@ description: What a page, panel or list shows when it has nothing in it, and wha
 
 ```svelte
 <script>
-  import { Button, EmptyState, Icon } from "@indy-center/svelte";
+  import { Button, EmptyState, Icon } from "@indy-center/centerline-svelte";
   import { mdiAccountGroup, mdiPlus } from "@mdi/js";
 </script>
 

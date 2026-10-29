@@ -40,7 +40,7 @@ description: A text box that searches a list as you type, to pick one option fro
 
 ```svelte
 <script>
-  import { Combobox, Field } from "@indy-center/svelte";
+  import { Combobox, Field } from "@indy-center/centerline-svelte";
 
   let { data } = $props();
   let controller = $state(null);

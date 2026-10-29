@@ -20,7 +20,7 @@ description: A busy indicator that says what is happening to screen readers and 
 
 ```svelte
 <script>
-  import { Spinner } from "@indy-center/svelte";
+  import { Spinner } from "@indy-center/centerline-svelte";
 </script>
 
 {#if saving}

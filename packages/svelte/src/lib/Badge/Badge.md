@@ -21,7 +21,7 @@ description: A short tinted label for a kind or a status, such as an event type 
 
 ```svelte
 <script>
-  import { Badge, Icon } from "@indy-center/svelte";
+  import { Badge, Icon } from "@indy-center/centerline-svelte";
   import { mdiStar } from "@mdi/js";
 </script>
 
