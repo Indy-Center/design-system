@@ -1,7 +1,8 @@
 name: CI
 
-# No push trigger: on a push, build-and-deploy.yml runs these checks first
-# through workflow_call, so they still run once per commit.
+# No push trigger: on a push to main, build-and-deploy.yml and publish.yml
+# each run these checks first through workflow_call, so neither deploys nor
+# publishes a commit that fails them.
 on:
   pull_request:
   workflow_call:

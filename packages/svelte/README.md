@@ -16,15 +16,20 @@ The app needs `svelte` 5 and `tailwindcss` 4 already.
 In the app's stylesheet, import the tokens and add one `@source` line, so
 Tailwind writes the classes the components use (it skips `node_modules`
 unless told). The path is relative to the stylesheet; this one is for
-`src/app.css`:
+`src/app.css` (an app from `npx sv create` keeps it in
+`src/routes/layout.css`, so there it is `../../node_modules/…`):
 
 ```css
 @import "tailwindcss";
 @import "@indy-center/tokens/tokens.css";
 @import "@indy-center/tokens/theme.css";
+@import "@indy-center/tokens/base.css";
 @import "@indy-center/tokens/fonts.css";
 @source "../node_modules/@indy-center/svelte";
 ```
+
+`base.css` gives the page its background and text colours; without it the
+page behind the components keeps the browser's own.
 
 Then:
 
@@ -105,7 +110,7 @@ Adding a component: follow [`CONVENTIONS.md`](CONVENTIONS.md).
 The playground runs as the `centerline` Worker at
 [centerline.flyindycenter.com](https://centerline.flyindycenter.com), a
 Custom Domain set in `wrangler.jsonc`. `build-and-deploy.yml` runs CI,
-then deploys on every push to `main` and to `centerline/packages`. It
+then deploys on every push to `main`. It
 needs one repository secret, `CLOUDFLARE_WORKERS_API_KEY`: a Cloudflare
 API token with Workers Scripts:Edit. The playground has no bindings or
 runtime secrets.
