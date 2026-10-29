@@ -1,10 +1,11 @@
-import { resolvePosition, type VnasPosition } from "./resolvePosition.js";
+import {
+  resolvePosition,
+  type MatchablePosition,
+  type PositionInfo,
+} from "./resolvePosition.js";
 
 /** The logins `groupByPosition` found on one position. */
-export type PositionGroup<
-  L,
-  P extends Pick<VnasPosition, "id" | "callsign"> = VnasPosition,
-> = {
+export type PositionGroup<L, P extends MatchablePosition = PositionInfo> = {
   /** The position's callsign, or the login's own when it is unknown. */
   callsign: string;
   /** The position the logins resolve to; undefined when unknown. */
@@ -22,7 +23,7 @@ export type PositionGroup<
  */
 export function groupByPosition<
   L extends { callsign: string; positionId?: string },
-  P extends Pick<VnasPosition, "id" | "callsign">,
+  P extends MatchablePosition,
 >(logins: readonly L[], positions: readonly P[]): PositionGroup<L, P>[] {
   const groups = new Map<string, PositionGroup<L, P>>();
   for (const login of logins) {

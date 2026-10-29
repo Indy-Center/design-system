@@ -175,11 +175,12 @@ export {
 } from "./aviation/ratings.js";
 export {
   resolvePosition,
+  type MatchablePosition,
+  type PositionInfo,
   type PositionMatch,
   type ResolvePositionOptions,
-  type VnasPosition,
 } from "./aviation/resolvePosition.js";
 
 // The page's positions, for Position and Frequency to look themselves up.
-// Fetching them is server code, in ./server.ts.
+// The app reads them from the CMS catalogue in its server load.
 export { getPositions, setPositions } from "./positions/positionsContext.js";

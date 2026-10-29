@@ -49,7 +49,7 @@ describe("OnlineController", () => {
   test("shows the position, then who's on and for how long, with no CID", async () => {
     const { root } = await show({ callsign: "IND_83_CTR", members: [jordan] });
     expect(onScreen(root)).toBe(
-      "Indy Center 128.22 IND_83_CTR · Falmouth 83 Jordan Sample · 1 h 23 m",
+      "Indy Center 128.22 FLM 83 · Falmouth 83 Jordan Sample · 1 h 23 m",
     );
   });
 
@@ -125,7 +125,7 @@ describe("OnlineController", () => {
       members: [{ ...jordan, info: "Off at 2330z" }, alex],
     });
     expect(onScreen(root.firstElementChild!)).toBe(
-      "Indy Center 128.22 IND_83_CTR · Falmouth 83",
+      "Indy Center 128.22 FLM 83 · Falmouth 83",
     );
     expect(linesAfterPosition(root)).toEqual([
       "Jordan Sample · 1 h 23 m",
@@ -141,7 +141,7 @@ describe("OnlineController", () => {
   test("shows a relief login as the position it covers", async () => {
     const { root } = await show({ callsign: "IND_831_CTR", members: [jordan] });
     expect(onScreen(root.firstElementChild!)).toBe(
-      "Indy Center 128.22 IND_83_CTR · Falmouth 83",
+      "Indy Center 128.22 FLM 83 · Falmouth 83",
     );
   });
 

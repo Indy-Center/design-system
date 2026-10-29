@@ -67,10 +67,11 @@ description: A controller position from its callsign alone, labelled by radio na
 
 ## What it shows
 
-- **The short name** is the position's callsign (`IND_83_CTR`, for the
-  relief login `IND_831_CTR` too), until vNAS publishes short names.
+- **The short name** is the one the CMS serves, as controllers say it
+  (`FLM 83`, for the relief login `IND_831_CTR` too). Where the CMS has
+  none (`ZID_TMU`), the position's callsign stands in, in mono.
 - **Stacked:** the radio name leads, the frequency on its right. Beneath,
-  the short name then the sector: `IND_83_CTR · Falmouth 83`. Without the
+  the short name then the sector: `FLM 83 · Falmouth 83`. Without the
   radio name, the sector leads and the short name goes beneath.
 - **`airportAt`:** `"right"` puts ` · KLEX` after the radio name, on its
   line and baseline. `"left"` puts it in a narrow column before the rest,
@@ -78,7 +79,9 @@ description: A controller position from its callsign alone, labelled by radio na
   puts the code and the airport's `name` on the second line.
 - **An unknown callsign** shows alone, in mono, whatever `show` asks for,
   unless `radioName` or `frequency` is passed: then those show with it.
-- With no positions set by the layout, every callsign is unknown.
+- With no positions set by the layout, every callsign is unknown. So is
+  the callsign of a retired position, one vNAS no longer lists; a
+  `positionId` still finds it.
 
 ## Looks
 
@@ -86,7 +89,8 @@ description: A controller position from its callsign alone, labelled by radio na
 - The frequency: `foreground`, mono (see `Frequency`).
 - The second line and the parts after the first in `"inline"`: `text-sm`,
   `muted-foreground`.
-- The short name and airport codes: `font-mono`. The code at `"right"`:
+- A callsign standing in for the short name, and airport codes:
+  `font-mono`. A short name is in the text face. The code at `"right"`:
   `text-sm`, `muted-foreground`; in the `"left"` column: `text-sm`,
   `foreground-soft`.
 - Stacked, it is a block (`flex`) as wide as its container, so the

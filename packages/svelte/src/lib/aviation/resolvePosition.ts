@@ -1,25 +1,31 @@
 import { parseCallsign } from "./callsign.js";
 
 /**
- * A position from vNAS Data Admin, slimmed to what a page shows: about
- * 26 KB for ZID's 157, against Data Admin's 1 MB.
+ * What centerline reads of a position: the fields of the CMS catalogue's
+ * positions that `Position`, `Frequency` and `resolvePosition` use. Pass
+ * the catalogue's positions as they are; their other fields (`facility`,
+ * `requiredCredentials`) are kept, not read.
  */
-export type VnasPosition = {
-  /** Data Admin's id, which the vNAS feed gives as `primaryPositionId`. */
+export type PositionInfo = {
+  /** The vNAS id, which the vNAS feed gives as `primaryPositionId`. */
   id: string;
   /** The default callsign: `IND_83_CTR`. */
   callsign: string;
   /** The sector or position name: "Falmouth 83". */
   name: string;
-  /** What pilots call it, spaces collapsed: "Indy Center". */
+  /** As controllers say it: `FLM 83`, `LEX LC`; null where there is none. */
+  shortName: string | null;
+  /** What pilots call it: "Indy Center". */
   radioName: string;
   /** In hertz: `128225000`. */
   frequency: number;
-  /** The facility's name: "Indianapolis ARTCC". */
-  facility: string;
-  /** Starred in Data Admin. */
-  starred: boolean;
+  /** vNAS no longer lists it. A callsign never resolves to it. */
+  retired: boolean;
 };
+
+/** What `resolvePosition` reads: an id and callsign, and whether it's retired. */
+export type MatchablePosition = Pick<PositionInfo, "id" | "callsign"> &
+  Partial<Pick<PositionInfo, "retired">>;
 
 /** How `resolvePosition` found the position. */
 export type PositionMatch = "id" | "exact" | "relief";
@@ -40,10 +46,11 @@ export type ResolvePositionOptions = {
  * dropped from the middle part (`IND_831_CTR` is `IND_83_CTR`); else with an
  * all-digit middle part dropped (`IND_1_GND` is `IND_GND`). No rule lands on
  * a different one of ZID's positions.
+ *
+ * A retired position is found by its id only: no callsign resolves to a
+ * position vNAS no longer lists.
  */
-export function resolvePosition<
-  P extends Pick<VnasPosition, "id" | "callsign">,
->(
+export function resolvePosition<P extends MatchablePosition>(
   callsign: string,
   positions: readonly P[],
   { positionId }: ResolvePositionOptions = {},
@@ -53,7 +60,8 @@ export function resolvePosition<
     return position && { match: "id", position };
   }
 
-  const find = (wanted: string) => positions.find((p) => p.callsign === wanted);
+  const find = (wanted: string) =>
+    positions.find((p) => p.callsign === wanted && !p.retired);
 
   const exact = find(callsign);
   if (exact) return { match: "exact", position: exact };

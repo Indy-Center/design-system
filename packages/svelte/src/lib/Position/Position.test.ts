@@ -2,7 +2,7 @@ import type { ComponentProps } from "svelte";
 import { describe, expect, test } from "vitest";
 import { page } from "vitest/browser";
 import type { AirportInfo } from "../aviation/airport.ts";
-import type { VnasPosition } from "../aviation/resolvePosition.ts";
+import type { PositionInfo } from "../aviation/resolvePosition.ts";
 import {
   indyCenter,
   lexingtonApproach,
@@ -22,7 +22,7 @@ const KLEX: AirportInfo = { code: "KLEX", name: "Blue Grass" };
 /** Renders Position below a layout that set `positions`. */
 async function show(
   props: ComponentProps<typeof Position>,
-  { positions = samplePositions }: { positions?: VnasPosition[] } = {},
+  { positions = samplePositions }: { positions?: PositionInfo[] } = {},
 ) {
   const screen = await renderIn("light", WithPositions, {
     positions,
@@ -53,13 +53,11 @@ describe("Position", () => {
   describe("stacked, as controllers see it (the default)", () => {
     test("leads with the radio name, the frequency on its right; beneath, the short name then the sector", async () => {
       const { root } = await show({ callsign: "IND_83_CTR" });
-      expect(onScreen(root)).toBe(
-        "Indy Center 128.22 IND_83_CTR · Falmouth 83",
-      );
+      expect(onScreen(root)).toBe("Indy Center 128.22 FLM 83 · Falmouth 83");
 
       const radio = part(root, "Indy Center");
       const frequency = part(root, "128.22");
-      const second = part(root, "IND_83_CTR · Falmouth 83");
+      const second = part(root, "FLM 83 · Falmouth 83");
       expect(top(frequency)).toBeCloseTo(top(radio), -1);
       expect(left(frequency)).toBeGreaterThan(left(radio));
       expect(top(second)).toBeGreaterThan(top(radio) + 10);
@@ -70,8 +68,8 @@ describe("Position", () => {
         callsign: "IND_83_CTR",
         show: ["shortName", "name"],
       });
-      expect(onScreen(root)).toBe("Falmouth 83 IND_83_CTR");
-      expect(top(part(root, "IND_83_CTR"))).toBeGreaterThan(
+      expect(onScreen(root)).toBe("Falmouth 83 FLM 83");
+      expect(top(part(root, "FLM 83"))).toBeGreaterThan(
         top(part(root, "Falmouth 83")) + 10,
       );
     });
@@ -79,7 +77,7 @@ describe("Position", () => {
     test("reads out the radio name, the frequency spoken, the short name and the sector", async () => {
       const { root } = await show({ callsign: "IND_83_CTR" });
       expect(readOut(root)).toBe(
-        "Indy Center one two eight point two two IND_83_CTR Falmouth 83",
+        "Indy Center one two eight point two two FLM 83 Falmouth 83",
       );
     });
 
@@ -92,17 +90,25 @@ describe("Position", () => {
         .element(partLocator(root, "128.22"))
         .toHaveStyle({ color: role("foreground", "light") });
       await expect
-        .element(partLocator(root, "IND_83_CTR · Falmouth 83"))
+        .element(partLocator(root, "FLM 83 · Falmouth 83"))
         .toHaveStyle({ color: role("muted-foreground", "light") });
     });
 
     // The frequency's mono is Frequency's.
-    test("the radio name is semibold, the short name mono", async () => {
+    test("the radio name is semibold, the short name in the text face", async () => {
       const { root } = await show({ callsign: "IND_83_CTR" });
       expect(getComputedStyle(part(root, "Indy Center")).fontWeight).toBe(
         "600",
       );
-      expect(getComputedStyle(part(root, "IND_83_CTR")).fontFamily).toMatch(
+      expect(getComputedStyle(part(root, "FLM 83")).fontFamily).not.toMatch(
+        /mono/i,
+      );
+    });
+
+    test("with no short name, shows the callsign in its place, in mono", async () => {
+      const { root } = await show({ callsign: "ZID_TMU" });
+      expect(onScreen(root)).toBe("ZID TMU 123.45 ZID_TMU · ZID TMU");
+      expect(getComputedStyle(part(root, "ZID_TMU")).fontFamily).toMatch(
         /mono/i,
       );
     });
@@ -141,7 +147,7 @@ describe("Position", () => {
         layout: "inline",
       });
       expect(onScreen(root)).toBe(
-        "Indy Center · IND_83_CTR · Falmouth 83 · 128.22",
+        "Indy Center · FLM 83 · Falmouth 83 · 128.22",
       );
       const line = top(part(root, "Indy Center"));
       expect(top(part(root, "Falmouth 83"))).toBeCloseTo(line, -1);
@@ -149,7 +155,7 @@ describe("Position", () => {
     });
 
     test.each([
-      ["shortName", "IND_83_CTR"],
+      ["shortName", "FLM 83"],
       ["radioName", "Indy Center"],
       ["name", "Falmouth 83"],
       ["frequency", "128.22"],
@@ -168,7 +174,7 @@ describe("Position", () => {
         layout: "inline",
       });
       expect(readOut(root)).toBe(
-        "Indy Center IND_83_CTR Falmouth 83 one two eight point two two",
+        "Indy Center FLM 83 Falmouth 83 one two eight point two two",
       );
     });
 
@@ -295,9 +301,7 @@ describe("Position", () => {
   describe("looking itself up", () => {
     test("a relief login shows as the position it resolves to, with no note", async () => {
       const { root } = await show({ callsign: "IND_831_CTR" });
-      expect(onScreen(root)).toBe(
-        "Indy Center 128.22 IND_83_CTR · Falmouth 83",
-      );
+      expect(onScreen(root)).toBe("Indy Center 128.22 FLM 83 · Falmouth 83");
     });
 
     test("an unknown callsign shows alone, in mono, whatever show asks for", async () => {
@@ -322,7 +326,7 @@ describe("Position", () => {
         positions: [indyCenter, lexingtonApproach],
       });
       expect(onScreen(screen.container)).toBe(
-        "Lexington Approach 120.15 LEX_E_APP · Radar East",
+        "Lexington Approach 120.15 LEX E · Radar East",
       );
     });
 
@@ -331,9 +335,7 @@ describe("Position", () => {
         callsign: "LEX_TWR",
         positionId: indyCenter.id,
       });
-      expect(onScreen(root)).toBe(
-        "Indy Center 128.22 IND_83_CTR · Falmouth 83",
-      );
+      expect(onScreen(root)).toBe("Indy Center 128.22 FLM 83 · Falmouth 83");
     });
   });
 
@@ -344,9 +346,7 @@ describe("Position", () => {
         radioName: "Indy Approach",
         frequency: 133400000,
       });
-      expect(onScreen(root)).toBe(
-        "Indy Approach 133.40 IND_83_CTR · Falmouth 83",
-      );
+      expect(onScreen(root)).toBe("Indy Approach 133.40 FLM 83 · Falmouth 83");
     });
 
     test("a frequency as written", async () => {

@@ -2,7 +2,7 @@ import { execFileSync } from "node:child_process";
 import { readdirSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import ts from "typescript";
-import { describe, expect, onTestFinished, test, vi } from "vitest";
+import { describe, expect, test } from "vitest";
 
 // Run after `npm run build`, as the test script does.
 const root = new URL("..", import.meta.url);
@@ -199,12 +199,14 @@ describe("the packed package", () => {
       "FooterLink",
       "FrequencyOptions",
       "HeaderMember",
+      "MatchablePosition",
       "NavGroup",
       "NavItem",
       "NavLink",
       "OnlineMember",
       "PositionField",
       "PositionGroup",
+      "PositionInfo",
       "PositionMatch",
       "PositionType",
       "RatingDetails",
@@ -221,7 +223,6 @@ describe("the packed package", () => {
       "TimeZoneProfileSetting",
       "ToastCookies",
       "TooltipTrigger",
-      "VnasPosition",
     ].sort();
     expect(await exportsOf("dist/index.d.ts")).toEqual({ values, types });
     expect(await exportsOf("dist/index.js")).toEqual({ values, types: [] });
@@ -240,50 +241,14 @@ describe("the packed package", () => {
     expect(resolvePosition("IND_1_GND", positions)?.position.id).toBe("1");
   });
 
-  test("serves the positions fetcher and the time-zone reader from /server, in Node, with types", async () => {
+  test("serves the time-zone reader, and nothing else, from /server, in Node, with types", async () => {
     const pkg = JSON.parse(
       await readFile(new URL("package.json", root), "utf8"),
     );
     expect(files).toContain(pkg.exports["./server"].types.replace("./", ""));
 
-    // Data Admin stubbed, so the test stays off the network.
-    vi.stubGlobal("fetch", async () =>
-      Response.json({
-        lastUpdatedAt: "2026-10-17T02:35:43.475Z",
-        facility: {
-          name: "Indianapolis ARTCC",
-          positions: [
-            {
-              id: "1",
-              callsign: "IND_GND",
-              name: "Ground",
-              radioName: "Indy  Ground",
-              frequency: 121900000,
-              starred: true,
-            },
-          ],
-        },
-      }),
-    );
-    onTestFinished(() => {
-      vi.unstubAllGlobals();
-    });
     const server = await import("@indy-center/centerline-svelte/server");
-    expect(Object.keys(server).sort()).toEqual([
-      "fetchPositions",
-      "readTimeZone",
-    ]);
-    expect(await server.fetchPositions("ZID")).toEqual([
-      {
-        id: "1",
-        callsign: "IND_GND",
-        name: "Ground",
-        radioName: "Indy Ground",
-        frequency: 121900000,
-        facility: "Indianapolis ARTCC",
-        starred: true,
-      },
-    ]);
+    expect(Object.keys(server)).toEqual(["readTimeZone"]);
 
     const cookies = (value: string) => ({ get: () => value });
     // A zone under either of its names, whichever this runtime lists.

@@ -1,11 +1,15 @@
 import { describe, expect, test } from "vitest";
 import zid from "../../../test/zid-positions.json";
-import { resolvePosition, type VnasPosition } from "./resolvePosition.ts";
+import { resolvePosition, type PositionInfo } from "./resolvePosition.ts";
 
-// ZID's 157 positions from vNAS Data Admin, slimmed, read 2026-10-20.
-const positions: VnasPosition[] = zid;
+type Snapshot = Pick<PositionInfo, "id" | "callsign">;
 
-function byCallsign(callsign: string): VnasPosition {
+// ZID's 157 positions from vNAS Data Admin, read 2026-10-20: the callsigns
+// the relief rule is checked against. It has no `retired` field, so every
+// one counts as live.
+const positions: Snapshot[] = zid;
+
+function byCallsign(callsign: string): Snapshot {
   const position = positions.find((p) => p.callsign === callsign);
   if (!position) throw new Error(`${callsign} isn't in the snapshot`);
   return position;
@@ -46,6 +50,28 @@ describe("resolvePosition", () => {
     expect(
       resolvePosition("IND_83_CTR", positions, { positionId: "not-zid" }),
     ).toBeUndefined();
+  });
+});
+
+describe("a retired position", () => {
+  // vNAS dropped them; the CMS keeps them, retired.
+  const tower = { id: "pkb-twr", callsign: "PKB_TWR", retired: true };
+  const ground = { id: "ind-gnd", callsign: "IND_GND", retired: true };
+  const center = { id: "ind-83", callsign: "IND_83_CTR", retired: true };
+  const retired = [tower, ground, center];
+
+  test.each([
+    ["PKB_TWR", "its exact callsign"],
+    ["IND_831_CTR", "a digit added to the middle"],
+    ["IND_1_GND", "a numbered relief"],
+  ])("isn't found by %j, %s", (callsign) => {
+    expect(resolvePosition(callsign, retired)).toBeUndefined();
+  });
+
+  test("is still found by its vNAS position id", () => {
+    expect(
+      resolvePosition("PKB_TWR", retired, { positionId: tower.id }),
+    ).toEqual({ match: "id", position: tower });
   });
 });
 
