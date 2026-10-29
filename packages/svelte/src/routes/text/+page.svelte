@@ -3,10 +3,6 @@
   import Schemes from "../../playground/Schemes.svelte";
 </script>
 
-<svelte:head><title>Text · Centerline playground</title></svelte:head>
-
-<h1 class="mb-4 font-heading text-3xl font-semibold text-foreground">Text</h1>
-
 <Schemes>
   <div class="space-y-3">
     <Text lead>

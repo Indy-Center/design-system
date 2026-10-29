@@ -19,10 +19,6 @@
   ];
 </script>
 
-<svelte:head><title>Steps · Centerline playground</title></svelte:head>
-
-<h1 class="mb-4 font-heading text-3xl font-semibold text-foreground">Steps</h1>
-
 <Schemes>
   <Steps {steps} aria-label="Your training request" />
 </Schemes>

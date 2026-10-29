@@ -12,10 +12,6 @@
   ];
 </script>
 
-<svelte:head><title>Tabs · Centerline playground</title></svelte:head>
-
-<h1 class="mb-4 font-heading text-3xl font-semibold text-foreground">Tabs</h1>
-
 <Schemes>
   <Tabs label="Admin" {items} current="#users" />
 </Schemes>

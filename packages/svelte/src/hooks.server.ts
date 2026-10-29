@@ -12,10 +12,11 @@ const device = colorSchemeHandle({ fallback: "device" });
 
 export const handle: Handle = (input) => {
   const { url } = input.event;
+  // Checked first: a prerendered route (llms.txt) can't read the query.
+  if (!url.pathname.startsWith("/color-scheme"))
+    return input.resolve(input.event);
   const fallback = url.searchParams.get("fallback");
   if (url.pathname.startsWith("/color-scheme-setting"))
     return fallback === "dark" ? dark(input) : device(input);
-  if (!url.pathname.startsWith("/color-scheme"))
-    return input.resolve(input.event);
   return fallback === "device" ? device(input) : dark(input);
 };

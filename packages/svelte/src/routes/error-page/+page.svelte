@@ -10,12 +10,6 @@
   ];
 </script>
 
-<svelte:head><title>ErrorPage · Centerline playground</title></svelte:head>
-
-<h1 class="mb-4 font-heading text-3xl font-semibold text-foreground">
-  ErrorPage
-</h1>
-
 <!-- Each specimen has its own h1, as it would on its own page. -->
 <Schemes>
   <ErrorPage

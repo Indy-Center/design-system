@@ -18,12 +18,6 @@
   ];
 </script>
 
-<svelte:head><title>Time-zone line · Centerline playground</title></svelte:head>
-
-<h1 class="mb-4 font-heading text-3xl font-semibold text-foreground">
-  Time-zone line
-</h1>
-
 <div class="mb-6 max-w-prose">
   <TimeZoneReadout {profile} />
 </div>

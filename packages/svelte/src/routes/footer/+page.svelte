@@ -35,10 +35,6 @@
     "mb-3 text-xs font-semibold tracking-wider text-muted-foreground uppercase";
 </script>
 
-<svelte:head><title>Footer · Centerline playground</title></svelte:head>
-
-<h1 class="mb-4 font-heading text-3xl font-semibold text-foreground">Footer</h1>
-
 <div class="grid gap-4">
   <section class="rounded-lg border border-border bg-background p-4">
     <h2 class={label}>Light page</h2>

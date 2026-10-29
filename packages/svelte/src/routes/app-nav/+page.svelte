@@ -12,10 +12,6 @@
   const band = "rounded-md bg-background p-2";
 </script>
 
-<svelte:head><title>AppNav · Centerline playground</title></svelte:head>
-
-<h1 class="mb-4 font-heading text-3xl font-semibold text-foreground">AppNav</h1>
-
 <div class="grid gap-4">
   {#each ["Light page", "Dark page"] as name}
     <section

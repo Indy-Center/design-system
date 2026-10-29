@@ -3,12 +3,6 @@
   import Schemes from "../../playground/Schemes.svelte";
 </script>
 
-<svelte:head><title>Credential · Centerline playground</title></svelte:head>
-
-<h1 class="mb-4 font-heading text-3xl font-semibold text-foreground">
-  Credential
-</h1>
-
 <Schemes>
   <div class="space-y-4 pb-8">
     <ul class="flex flex-wrap items-center gap-2">

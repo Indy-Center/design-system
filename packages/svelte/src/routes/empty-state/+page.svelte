@@ -4,12 +4,6 @@
   import Schemes from "../../playground/Schemes.svelte";
 </script>
 
-<svelte:head><title>EmptyState · Centerline playground</title></svelte:head>
-
-<h1 class="mb-4 font-heading text-3xl font-semibold text-foreground">
-  EmptyState
-</h1>
-
 <Schemes>
   <EmptyState title="No events scheduled" level={2}>
     {#snippet icon()}<Icon path={mdiCalendar} />{/snippet}

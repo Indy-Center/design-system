@@ -4,12 +4,6 @@
   import Schemes from "../../playground/Schemes.svelte";
 </script>
 
-<svelte:head><title>Tooltip · Centerline playground</title></svelte:head>
-
-<h1 class="mb-4 font-heading text-3xl font-semibold text-foreground">
-  Tooltip
-</h1>
-
 <Schemes>
   <div class="flex flex-wrap items-center gap-6 pt-10">
     <Tooltip text="Copies the CID to the clipboard">

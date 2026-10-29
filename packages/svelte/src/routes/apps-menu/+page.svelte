@@ -9,12 +9,6 @@
     "mb-3 text-xs font-semibold tracking-wider text-muted-foreground uppercase";
 </script>
 
-<svelte:head><title>AppsMenu · Centerline playground</title></svelte:head>
-
-<h1 class="mb-4 font-heading text-3xl font-semibold text-foreground">
-  AppsMenu
-</h1>
-
 <div class="grid gap-4 lg:grid-cols-2">
   {#each ["Light page", "Dark page"] as name}
     <!-- Room under each, for the open list. -->

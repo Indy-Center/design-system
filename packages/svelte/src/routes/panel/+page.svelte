@@ -10,10 +10,6 @@
   ];
 </script>
 
-<svelte:head><title>Panel · Centerline playground</title></svelte:head>
-
-<h1 class="mb-4 font-heading text-3xl font-semibold text-foreground">Panel</h1>
-
 <p class="mb-4">
   Each panel's title is an <code>h3</code>, under the scheme's
   <code>h2</code>; it looks the same at any level.

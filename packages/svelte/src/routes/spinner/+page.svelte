@@ -3,12 +3,6 @@
   import Schemes from "../../playground/Schemes.svelte";
 </script>
 
-<svelte:head><title>Spinner · Centerline playground</title></svelte:head>
-
-<h1 class="mb-4 font-heading text-3xl font-semibold text-foreground">
-  Spinner
-</h1>
-
 <p class="mb-4">
   Turn on "reduce motion" in the device's settings and the spinners hold still.
 </p>

@@ -41,12 +41,6 @@
     "min-h-11 min-w-11 rounded-md border border-border bg-card px-4 font-semibold text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring";
 </script>
 
-<svelte:head><title>Colour scheme · Centerline playground</title></svelte:head>
-
-<h1 class="mb-4 font-heading text-3xl font-semibold text-foreground">
-  Colour scheme
-</h1>
-
 <div class="max-w-prose space-y-4">
   <p>
     Served with <code class="font-mono">fallback: '{fallback}'</code>. Try

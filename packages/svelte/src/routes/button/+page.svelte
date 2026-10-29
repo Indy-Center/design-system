@@ -11,10 +11,6 @@
   }
 </script>
 
-<svelte:head><title>Button · Centerline playground</title></svelte:head>
-
-<h1 class="mb-4 font-heading text-3xl font-semibold text-foreground">Button</h1>
-
 <Schemes>
   <div class="space-y-4">
     <div class="flex flex-wrap items-center gap-2">

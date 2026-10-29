@@ -14,8 +14,13 @@ src/lib/index.ts             add: export { default as Name } from "./Name/Name.s
 src/routes/name/+page.svelte its playground page (lower-case folder)
 ```
 
-- The playground's index lists every `src/routes/*/+page.svelte` by
-  itself; don't edit it. Wrap the specimen in `<Schemes>` from
+- The reference site's sidebar, `llms.txt` and `llms-full.txt` list
+  every `src/routes/*/+page.svelte` by themselves (`src/playground/site.ts`);
+  don't edit them. The root layout gives the page its title and `h1` and
+  draws `Name.md` above it, so the page holds only the demo: no
+  `<svelte:head>` title and no heading of its own. A doc with no page of
+  its own (`aviation`) gets one under `/helpers/`, with no demo. Wrap the
+  specimen in `<Schemes>` from
   `src/playground/Schemes.svelte`, which shows it in light, in dark and in
   a dark header on a light page. A full-width band (`Footer`, `PageHero`)
   is squashed by its narrow columns, so its page shows it full width on a
@@ -202,7 +207,9 @@ Run one file while working:
 
 ## Doc page
 
-`Name.md`, which becomes a page in the tech docs:
+`Name.md`, which ships in the package and heads the component's page on
+centerline.flyindycenter.com, above its demo. Links to another doc
+(`../Toast/Toast.md`) become links to its page there:
 
 ```md
 ---

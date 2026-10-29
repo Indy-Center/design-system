@@ -6,3 +6,42 @@
 @import "@indy-center/centerline-tokens/fonts.css";
 @plugin "@tailwindcss/typography";
 @import "@indy-center/centerline-tokens/prose.css";
+
+/* The site's own, for the docs drawn by markdown.ts. */
+
+/* A link to #id lands below the sticky header. */
+html {
+  scroll-padding-top: 5rem;
+}
+
+/* Code in both of Shiki's themes at once (`defaultColor: false`): the
+ * light one's colours, and the dark one's in data-theme="dark". */
+.doc pre.shiki {
+  border: 1px solid var(--color-border);
+  background-color: var(--shiki-light-bg);
+  color: var(--shiki-light);
+  & span {
+    color: var(--shiki-light);
+  }
+}
+[data-theme="dark"] .doc pre.shiki,
+.doc [data-theme="dark"] pre.shiki {
+  background-color: var(--shiki-dark-bg);
+  color: var(--shiki-dark);
+  & span {
+    color: var(--shiki-dark);
+  }
+}
+
+/* A wide table scrolls in its own box, not the page. */
+.doc .doc-table {
+  overflow-x: auto;
+}
+
+/* A checklist's boxes stand in for its bullets. */
+.doc li:has(> input[type="checkbox"]) {
+  list-style: none;
+  & > input {
+    margin-inline: -1.5em 0.5em;
+  }
+}

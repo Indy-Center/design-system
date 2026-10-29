@@ -10,12 +10,14 @@ import {
   serverRender,
   storedCookies,
 } from "./test/commands.ts";
+import { markdown } from "./src/playground/markdown.ts";
 
 export default defineConfig({
   // The adapter builds the playground as a Worker (`npm run
   // build:playground`); svelte-package, which builds the published
-  // components, ignores it.
-  plugins: [tailwindcss(), await sveltekit({ adapter: adapter() })],
+  // components, ignores it. `markdown` draws the docs for the playground,
+  // at build: nothing it uses reaches the Worker or the package.
+  plugins: [markdown(), tailwindcss(), await sveltekit({ adapter: adapter() })],
   // The tokens package is linked from beside this one; its font is served
   // from there.
   server: { fs: { allow: ["../tokens"] } },
@@ -45,8 +47,12 @@ export default defineConfig({
         extends: true,
         test: {
           name: "components",
-          include: ["src/lib/**/*.test.ts", "test/**/*.browser.test.ts"],
-          exclude: [...configDefaults.exclude, "src/lib/**/*.node.test.ts"],
+          include: [
+            "src/lib/**/*.test.ts",
+            "src/playground/**/*.test.ts",
+            "test/**/*.browser.test.ts",
+          ],
+          exclude: [...configDefaults.exclude, "src/**/*.node.test.ts"],
           setupFiles: ["test/setup.ts"],
           browser: {
             enabled: true,
@@ -71,11 +77,12 @@ export default defineConfig({
       },
       {
         // Tests that need no browser, in Node: pure modules
-        // (`*.node.test.ts`, beside them) and the built package.
+        // (`*.node.test.ts`, beside them; the site's llms files) and the
+        // built package.
         extends: true,
         test: {
           name: "node",
-          include: ["src/lib/**/*.node.test.ts", "test/**/*.test.ts"],
+          include: ["src/**/*.node.test.ts", "test/**/*.test.ts"],
           exclude: [...configDefaults.exclude, "test/**/*.browser.test.ts"],
           environment: "node",
         },

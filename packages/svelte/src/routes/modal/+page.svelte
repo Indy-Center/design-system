@@ -6,10 +6,6 @@
   let tall = $state(false);
 </script>
 
-<svelte:head><title>Modal · Centerline playground</title></svelte:head>
-
-<h1 class="mb-4 font-heading text-3xl font-semibold text-foreground">Modal</h1>
-
 <p class="mb-4">
   Each scheme's button opens a modal in that scheme. Close it with Escape, the
   close button, Cancel or a click outside; focus comes back to the button.

@@ -88,12 +88,15 @@ root layout's server `load` fetches them from vNAS with
 
 Each component's doc page ships beside it, as
 `dist/<Component>/<Component>.md`, with Starlight front matter (`title`,
-`description`).
+`description`). The same docs, each above its component's live demo, are
+at [centerline.flyindycenter.com](https://centerline.flyindycenter.com).
 
 ## Developing
 
-- `npm run dev`: the playground, which shows each component in light, in
-  dark and in a dark header on a light page.
+- `npm run dev`: the playground (the reference site), which draws each
+  component's doc above its demo, in light, in dark and in a dark header
+  on a light page. Its Markdown is drawn at build by a Vite plugin,
+  `src/playground/markdown.ts`, so the renderer stays a dev dependency.
 - `npm test`: builds the tokens and this package, then runs each
   component's tests (and `test/*.browser.test.ts`) in headless
   Chromium, and the pure modules' tests
