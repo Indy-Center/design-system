@@ -1,0 +1,110 @@
+/* prose-centerline: @tailwindcss/typography's prose on the colour roles,
+ * so rich text follows data-theme and needs no prose-invert. Import after
+ * tokens.css, theme.css and @plugin "@tailwindcss/typography", and use it
+ * beside prose: class="prose prose-centerline".
+ *
+ * The variables below and the plugin's defaults on .prose have the same
+ * specificity; Tailwind sorts this utility after prose, whatever the
+ * import order (the Prose component's tests check the colours). */
+@utility prose-centerline {
+  --tw-prose-body: var(--color-foreground-soft);
+  --tw-prose-headings: var(--color-foreground);
+  --tw-prose-lead: var(--color-muted-foreground);
+  --tw-prose-links: var(--color-link);
+  --tw-prose-bold: var(--color-foreground);
+  /* List numbers and bullets alike: marks beside the text, like captions. */
+  --tw-prose-counters: var(--color-muted-foreground);
+  --tw-prose-bullets: var(--color-muted-foreground);
+  --tw-prose-hr: var(--color-border);
+  --tw-prose-quotes: var(--color-foreground-soft);
+  /* A quote is set apart from the text, as a notice is: the info role,
+   * which is the sky. */
+  --tw-prose-quote-borders: var(--color-info);
+  --tw-prose-captions: var(--color-muted-foreground);
+  --tw-prose-kbd: var(--color-foreground);
+  --tw-prose-kbd-shadows: color-mix(
+    in srgb,
+    var(--color-foreground) 10%,
+    transparent
+  );
+  --tw-prose-code: var(--color-foreground);
+  --tw-prose-pre-code: var(--color-foreground);
+  --tw-prose-pre-bg: var(--color-muted);
+  /* The line under the head is the rows' line, not a heavier one. */
+  --tw-prose-th-borders: var(--color-border);
+  --tw-prose-td-borders: var(--color-border);
+
+  /* Every element inside, except within not-prose, as the plugin's own
+   * rules skip it. The element names below outrank the plugin's rules,
+   * and so its prose-a:, prose-headings: and prose-lg modifiers too. */
+  & :not(:where([class~="not-prose"], [class~="not-prose"] *)) {
+    /* Links as the Link component draws them. Keep in step with the
+     * classes in packages/svelte/src/lib/Link/Link.svelte. */
+    &:is(a) {
+      border-radius: 0.125rem;
+      font-weight: inherit;
+      text-underline-offset: 4px;
+    }
+    &:is(a):hover {
+      text-decoration-thickness: 2px;
+    }
+    &:is(a):focus-visible {
+      outline: 2px solid var(--color-ring);
+      outline-offset: 2px;
+    }
+
+    /* Headings at the Heading component's sizes, semibold in the heading
+     * font. Keep in step with the looks map in
+     * packages/svelte/src/lib/Heading/Heading.svelte. */
+    &:is(h1, h2, h3, h4, h5, h6) {
+      font-family: var(--font-heading);
+      font-weight: 600;
+    }
+    &:is(h1) {
+      font-size: var(--text-3xl);
+      line-height: var(--text-3xl--line-height);
+    }
+    &:is(h2) {
+      font-size: var(--text-xl);
+      line-height: var(--text-xl--line-height);
+    }
+    &:is(h3) {
+      font-size: var(--text-lg);
+      line-height: var(--text-lg--line-height);
+    }
+    &:is(h4, h5, h6) {
+      font-size: var(--text-base);
+      line-height: var(--text-base--line-height);
+    }
+
+    /* Inline code as a muted chip, with no backticks. */
+    &:is(:not(pre) > code) {
+      background-color: var(--color-muted);
+      border-radius: 0.25rem;
+      padding: 0.125rem 0.375rem;
+      font-weight: 500;
+    }
+    &:is(:not(pre) > code)::before,
+    &:is(:not(pre) > code)::after {
+      content: none;
+    }
+
+    /* Quotes upright, with the sky rule and no quote marks. */
+    &:is(blockquote) {
+      font-style: normal;
+      font-weight: inherit;
+    }
+    &:is(blockquote p)::before,
+    &:is(blockquote p)::after {
+      content: none;
+    }
+
+    /* A muted table head, its first column clear of the edge. */
+    &:is(thead) {
+      background-color: var(--color-muted);
+    }
+    &:is(thead th, tbody td):first-child {
+      padding-inline-start: 0.75rem;
+    }
+  }
+}

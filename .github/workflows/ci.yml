@@ -1,0 +1,48 @@
+name: CI
+
+# No push trigger: on a push to main, build-and-deploy.yml and publish.yml
+# each run these checks first through workflow_call, so neither deploys nor
+# publishes a commit that fails them.
+on:
+  pull_request:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - run: npm ci
+
+      - name: Format
+        run: npm run format:check
+
+      - name: Check
+        run: npm run check
+
+      - name: Build
+        run: npm run build
+
+      - name: Build the playground
+        run: npm run build:playground -w packages/svelte
+
+      # The token tests render the built CSS in headless Chromium.
+      - name: Install Chromium
+        run: npx playwright-core install --with-deps --only-shell chromium
+
+      - name: Test
+        run: npm test
+
+      # Lists what npm would publish for each package, so a broken package
+      # fails here rather than at npm publish.
+      - name: Pack
+        run: npm run pack:dry-run

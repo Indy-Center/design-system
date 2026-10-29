@@ -1,0 +1,70 @@
+{
+  "color": {
+    "$type": "color",
+    "night": {
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [0.0275, 0.0588, 0.0745],
+        "hex": "#070F13"
+      },
+      "$description": "The \"black\" of the black logo and mark; avatar and link-preview backgrounds"
+    },
+    "sky": {
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [0.0118, 0.4118, 0.6314],
+        "hex": "#0369A1"
+      },
+      "$description": "The accent: main buttons, the current page number, links on light backgrounds"
+    },
+    "white": {
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [1, 1, 1],
+        "hex": "#FFFFFF"
+      },
+      "$description": "The white logo and mark; text on Sky"
+    }
+  },
+  "font": {
+    "$type": "fontFamily",
+    "heading": {
+      "$value": [
+        "Source Sans 3",
+        "ui-sans-serif",
+        "system-ui",
+        "sans-serif",
+        "Apple Color Emoji",
+        "Segoe UI Emoji",
+        "Segoe UI Symbol",
+        "Noto Color Emoji"
+      ],
+      "$description": "Headings, including panel and card titles"
+    },
+    "sans": {
+      "$value": [
+        "ui-sans-serif",
+        "system-ui",
+        "sans-serif",
+        "Apple Color Emoji",
+        "Segoe UI Emoji",
+        "Segoe UI Symbol",
+        "Noto Color Emoji"
+      ],
+      "$description": "Everything else: body text, buttons, forms, tables"
+    },
+    "mono": {
+      "$value": [
+        "ui-monospace",
+        "SFMono-Regular",
+        "Menlo",
+        "Monaco",
+        "Consolas",
+        "Liberation Mono",
+        "Courier New",
+        "monospace"
+      ],
+      "$description": "VATSIM IDs (CIDs) and ratings"
+    }
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "version": "2025.10",
+  "sets": {
+    "brand": {
+      "description": "Brand colours and font stacks, the same in both schemes",
+      "sources": [{ "$ref": "brand.tokens.json" }]
+    }
+  },
+  "modifiers": {
+    "theme": {
+      "description": "The colour scheme",
+      "contexts": {
+        "light": [{ "$ref": "roles.tokens.json#/light" }],
+        "dark": [{ "$ref": "roles.tokens.json#/dark" }]
+      },
+      "default": "light"
+    }
+  },
+  "resolutionOrder": [
+    { "$ref": "#/sets/brand" },
+    { "$ref": "#/modifiers/theme" }
+  ]
+}

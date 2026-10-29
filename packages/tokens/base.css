@@ -1,0 +1,45 @@
+/* Page defaults from the colour roles, so a <p> with no class is right.
+ * Import after tokens.css and theme.css. */
+@layer base {
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+  }
+
+  /* Text inherits body's colour as a value, so a dark header on a light
+   * page sets its own from the dark roles (decision 0001). */
+  [data-theme] {
+    color: var(--color-foreground);
+  }
+
+  /* Sizes stay with the Heading component. */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-heading);
+  }
+
+  /* So border and divide-y need no colour (Tailwind's upgrade guide). */
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-border, currentcolor);
+  }
+
+  ::placeholder {
+    color: var(--color-placeholder);
+  }
+
+  /* Tailwind v4 dropped this from its reset (upgrade guide). :disabled
+   * never matches a role button, so it is disabled by aria-disabled. */
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]) {
+    cursor: pointer;
+  }
+}

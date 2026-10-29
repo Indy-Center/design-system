@@ -1,0 +1,31 @@
+<script lang="ts">
+  // A table as a page writes one, for Table's tests: column headers, a row
+  // header, and a link in a cell for a row that goes somewhere.
+  import type { ComponentProps } from "svelte";
+  import Link from "../Link/Link.svelte";
+  import Table from "./Table.svelte";
+  import Th from "./Th.svelte";
+
+  let props: Omit<
+    ComponentProps<typeof Table>,
+    "caption" | "children"
+  > = $props();
+</script>
+
+<Table {...props}>
+  {#snippet caption()}Online controllers{/snippet}
+  <thead>
+    <tr>
+      <Th scope="col">Callsign</Th>
+      <Th scope="col">Frequency</Th>
+      <Th scope="col">Controller</Th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <Th scope="row">IND_83_CTR</Th>
+      <td>128.225</td>
+      <td><Link href="/roster/1234567">Jane Doe</Link></td>
+    </tr>
+  </tbody>
+</Table>

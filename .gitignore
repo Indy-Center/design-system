@@ -1,0 +1,24 @@
+# Dependencies
+node_modules/
+
+# Build output (svelte-package, Terrazzo) and SvelteKit's generated files
+dist/
+.svelte-kit/
+*.tgz
+
+# Tests
+coverage/
+test-results/
+.vitest/
+playwright-report/
+
+# Local environment
+.env
+.env.*
+!.env.example
+
+# Logs and editor/OS clutter
+*.log
+.DS_Store
+.vscode/
+.idea/

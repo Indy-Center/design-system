@@ -1,0 +1,7 @@
+/* What an app's stylesheet holds, so component tests see real styles. */
+@import "tailwindcss";
+@import "@indy-center/centerline-tokens/tokens.css";
+@import "@indy-center/centerline-tokens/theme.css";
+@plugin "@tailwindcss/typography";
+@import "@indy-center/centerline-tokens/prose.css";
+@source "../src/lib";

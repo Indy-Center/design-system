@@ -1,0 +1,68 @@
+{
+  "name": "@indy-center/centerline-tokens",
+  "version": "0.1.0",
+  "description": "Indy Centerline's brand colours, roles and heading font: CSS custom properties, a Tailwind v4 theme, Sass, JSON and Source Sans 3.",
+  "keywords": [
+    "indy-center",
+    "centerline",
+    "design-system",
+    "design-tokens",
+    "css",
+    "tailwindcss"
+  ],
+  "homepage": "https://centerline.flyindycenter.com",
+  "bugs": "https://github.com/Indy-Center/design-system/issues",
+  "license": "MIT AND OFL-1.1",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Indy-Center/design-system.git",
+    "directory": "packages/tokens"
+  },
+  "files": [
+    "dist",
+    "fonts",
+    "base.css",
+    "prose.css"
+  ],
+  "exports": {
+    "./tokens.css": "./dist/tokens.css",
+    "./theme.css": "./dist/theme.css",
+    "./_tokens.scss": "./dist/_tokens.scss",
+    "./tokens.json": "./dist/tokens.json",
+    "./tables.md": "./dist/tables.md",
+    "./fonts.css": "./fonts/fonts.css",
+    "./base.css": "./base.css",
+    "./prose.css": "./prose.css",
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tz build",
+    "check": "tz check && tsc -p .",
+    "test": "tz build && vitest run",
+    "prepublishOnly": "npm run build"
+  },
+  "peerDependencies": {
+    "@tailwindcss/typography": "^0.5.0"
+  },
+  "peerDependenciesMeta": {
+    "@tailwindcss/typography": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@terrazzo/cli": "^2.9.0",
+    "@terrazzo/plugin-css": "^2.9.0",
+    "@terrazzo/plugin-sass": "^2.9.0",
+    "@terrazzo/plugin-tailwind": "^2.9.0",
+    "@types/node": "^22.20.5",
+    "playwright-core": "^1.64.1",
+    "sass": "^1.105.2",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.5"
+  }
+}

@@ -1,0 +1,72 @@
+name: Publish
+
+# Publishes @indy-center/centerline-tokens, then
+# @indy-center/centerline-svelte, to npm when a
+# push to main names a version npm doesn't have yet. Merging without a
+# version bump publishes nothing.
+#
+# No token: npm trusts this workflow directly ("trusted publishing"). On
+# npmjs.com, each package's settings name this repository and this file,
+# publish.yml, with no environment. Renaming the file or moving the publish
+# job to another workflow breaks publishing until those settings change.
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish
+  cancel-in-progress: false
+
+jobs:
+  ci:
+    uses: ./.github/workflows/ci.yml
+
+  publish:
+    needs: ci # skipped if any check fails
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # what npm checks to know the publish came from this workflow
+    steps:
+      - uses: actions/checkout@v4
+
+      # No npm cache: npm advises against caching in release builds.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          registry-url: https://registry.npmjs.org
+
+      # Trusted publishing needs npm 11.5.1 or later; Node 22 ships with
+      # npm 10. Held at 11 so a new major can't change publishing unseen.
+      - run: npm install -g npm@11
+
+      - run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      # In order: the Svelte package's peer range names the tokens' version.
+      # A version npm has already is skipped; any error other than "not
+      # found" fails the job rather than guessing.
+      - name: Publish
+        run: |
+          for dir in packages/tokens packages/svelte; do
+            name=$(node -p "require('./$dir/package.json').name")
+            version=$(node -p "require('./$dir/package.json').version")
+            if found=$(npm view "$name@$version" version 2>&1); then
+              if [ "$found" = "$version" ]; then
+                echo "$name@$version is already on npm; skipping."
+                continue
+              fi
+              echo "npm view $name@$version printed '$found'; expected '$version'."
+              exit 1
+            elif ! grep -q E404 <<<"$found"; then
+              echo "$found"
+              exit 1
+            fi
+            echo "Publishing $name@$version."
+            npm publish --provenance --access public --workspace "$dir"
+          done
