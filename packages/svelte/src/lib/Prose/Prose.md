@@ -9,7 +9,7 @@ description: Rich text from the CMS, such as a lesson plan's body, in the roles'
       Markdown. For text you write in Svelte, use `Heading`, `Text` and
       `Link`.
 - [ ] The app's stylesheet needs `@tailwindcss/typography` and
-      `@indy-center/tokens/prose.css` (see Use). Without them the text is
+      `@indy-center/centerline-tokens/prose.css` (see Use). Without them the text is
       unstyled.
 - [ ] Don't add `prose-invert`, `prose-lg` or `prose-a:*`,
       `prose-headings:*` and the other modifiers: the colours follow
@@ -30,10 +30,10 @@ The app's stylesheet, after the tokens:
 
 ```css
 @import "tailwindcss";
-@import "@indy-center/tokens/tokens.css";
-@import "@indy-center/tokens/theme.css";
+@import "@indy-center/centerline-tokens/tokens.css";
+@import "@indy-center/centerline-tokens/theme.css";
 @plugin "@tailwindcss/typography";
-@import "@indy-center/tokens/prose.css";
+@import "@indy-center/centerline-tokens/prose.css";
 ```
 
 The plugin is the app's own dependency:
@@ -41,7 +41,7 @@ The plugin is the app's own dependency:
 
 ```svelte
 <script>
-  import { Prose } from "@indy-center/svelte";
+  import { Prose } from "@indy-center/centerline-svelte";
 
   let { data } = $props();
 </script>

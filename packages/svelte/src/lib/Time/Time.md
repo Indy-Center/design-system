@@ -23,7 +23,7 @@ description: A time, date, range or relative time as a <time datetime>, in the m
 
 ```svelte
 <script>
-  import { Time } from "@indy-center/svelte";
+  import { Time } from "@indy-center/centerline-svelte";
 </script>
 
 <!-- 7:00 PM EDT -->

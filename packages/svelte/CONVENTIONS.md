@@ -218,7 +218,7 @@ description: One sentence: what it is.
 
 ## Use
 
-A short example importing from "@indy-center/svelte".
+A short example importing from "@indy-center/centerline-svelte".
 
 ## Props
 

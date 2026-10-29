@@ -25,7 +25,7 @@ description: A dialog over the page, on the native dialog element, named by its 
 
 ```svelte
 <script>
-  import { Button, Modal } from "@indy-center/svelte";
+  import { Button, Modal } from "@indy-center/centerline-svelte";
   let open = $state(false);
 </script>
 

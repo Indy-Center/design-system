@@ -20,7 +20,7 @@ description: Buttons to move between the pages of a long list, the current page 
 
 ```svelte
 <script>
-  import { Pagination } from "@indy-center/svelte";
+  import { Pagination } from "@indy-center/centerline-svelte";
 
   let { data } = $props();
   let page = $state(1);

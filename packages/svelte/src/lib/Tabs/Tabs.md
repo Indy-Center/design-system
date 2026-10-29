@@ -25,7 +25,7 @@ description: Links between the pages of one section, the current one marked.
 ```svelte
 <script>
   import { page } from "$app/state";
-  import { Tabs } from "@indy-center/svelte";
+  import { Tabs } from "@indy-center/centerline-svelte";
 
   const sections = [
     { href: "/admin", label: "Overview" },

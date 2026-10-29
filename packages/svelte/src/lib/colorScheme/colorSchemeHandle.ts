@@ -34,14 +34,16 @@ export type ColorSchemeHandle = <
  * Where the app's template asks for the device script, inside a
  * `<script nonce="%sveltekit.nonce%">` of its own, so it runs under a CSP.
  */
-const SCRIPT_MARKER = /\/\*\s*@indy-center\/svelte color scheme\s*\*\//;
+const SCRIPT_MARKER =
+  /\/\*\s*@indy-center\/centerline-svelte color scheme\s*\*\//;
 
 const HTML_TAG = /<html(?=[\s>])/i;
 
 const MISSING_MARKER =
-  "@indy-center/svelte: app.html has no colour-scheme script tag, so the " +
-  "hook adds one without a nonce, which a Content Security Policy blocks. " +
-  'Add <script nonce="%sveltekit.nonce%">/* @indy-center/svelte color scheme */</script> ' +
+  "@indy-center/centerline-svelte: app.html has no colour-scheme script " +
+  "tag, so the hook adds one without a nonce, which a Content Security " +
+  "Policy blocks. Add " +
+  '<script nonce="%sveltekit.nonce%">/* @indy-center/centerline-svelte color scheme */</script> ' +
   "to <head> in src/app.html.";
 
 /** Sets dark from the device's setting when the server set nothing. */

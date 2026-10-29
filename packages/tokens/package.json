@@ -1,5 +1,5 @@
 {
-  "name": "@indy-center/tokens",
+  "name": "@indy-center/centerline-tokens",
   "version": "0.1.0",
   "description": "Indy Centerline's brand colours, roles and heading font: CSS custom properties, a Tailwind v4 theme, Sass, JSON and Source Sans 3.",
   "license": "MIT AND OFL-1.1",

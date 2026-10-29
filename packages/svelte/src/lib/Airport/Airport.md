@@ -24,7 +24,7 @@ description: An airport's code in mono with its name muted beside it, or the cod
 
 ```svelte
 <script>
-  import { Airport } from "@indy-center/svelte";
+  import { Airport } from "@indy-center/centerline-svelte";
 </script>
 
 <!-- KIND Indianapolis International -->

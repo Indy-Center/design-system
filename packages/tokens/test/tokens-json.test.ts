@@ -5,7 +5,10 @@ import { brandColours, roles } from "./guide.ts";
 
 const require = createRequire(import.meta.url);
 const tokens = JSON.parse(
-  await readFile(require.resolve("@indy-center/tokens/tokens.json"), "utf8"),
+  await readFile(
+    require.resolve("@indy-center/centerline-tokens/tokens.json"),
+    "utf8",
+  ),
 );
 
 function expected(scheme: "light" | "dark") {

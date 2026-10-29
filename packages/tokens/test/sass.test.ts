@@ -11,7 +11,7 @@ function compile(scss: string): string {
 describe("_tokens.scss", () => {
   test("compiles, and token() gives each role as its tokens.css variable", () => {
     const css = compile(`
-      @use "pkg:@indy-center/tokens/_tokens.scss" as tokens;
+      @use "pkg:@indy-center/centerline-tokens/_tokens.scss" as tokens;
       .card {
         background: tokens.token("color.card");
         color: tokens.token("color.foreground");
@@ -26,7 +26,7 @@ describe("_tokens.scss", () => {
   test("an unknown token is a compile error", () => {
     expect(() =>
       compile(`
-        @use "pkg:@indy-center/tokens/_tokens.scss" as tokens;
+        @use "pkg:@indy-center/centerline-tokens/_tokens.scss" as tokens;
         a { color: tokens.token("color.nope"); }
       `),
     ).toThrow(/No token named "color.nope"/);

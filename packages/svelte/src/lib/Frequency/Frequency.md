@@ -22,7 +22,7 @@ description: A radio frequency in mono with two decimals, read out to screen rea
 
 ```svelte
 <script>
-  import { Frequency } from "@indy-center/svelte";
+  import { Frequency } from "@indy-center/centerline-svelte";
 </script>
 
 <!-- 128.22, from the page's positions -->

@@ -19,7 +19,7 @@ description: The pages above this one, as a trail of links back up.
 
 ```svelte
 <script>
-  import { Breadcrumbs } from "@indy-center/svelte";
+  import { Breadcrumbs } from "@indy-center/centerline-svelte";
 </script>
 
 <Breadcrumbs

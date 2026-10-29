@@ -25,7 +25,7 @@ description: A date and time box that takes the member's local time and gives th
 
 ```svelte
 <script>
-  import { DateTimeInput, Field } from "@indy-center/svelte";
+  import { DateTimeInput, Field } from "@indy-center/centerline-svelte";
 
   let { data } = $props();
   let start = $state(data.event.start); // "2026-10-27T23:00:00.000Z"

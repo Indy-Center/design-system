@@ -27,7 +27,7 @@ description: A titled block on the card surface, a section with a heading at the
 
 ```svelte
 <script>
-  import { Icon, Panel } from "@indy-center/svelte";
+  import { Icon, Panel } from "@indy-center/centerline-svelte";
   import { mdiRadar } from "@mdi/js";
 </script>
 

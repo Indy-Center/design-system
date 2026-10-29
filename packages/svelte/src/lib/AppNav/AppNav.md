@@ -28,7 +28,7 @@ description: An app's own navigation in the header, top-level links and one leve
 <script>
   import { mdiCalendar, mdiHeadset, mdiHome } from "@mdi/js";
   import { page } from "$app/state";
-  import { AppNav, AppNavMenu } from "@indy-center/svelte";
+  import { AppNav, AppNavMenu } from "@indy-center/centerline-svelte";
 
   const items = [
     { label: "Home", href: "/", icon: mdiHome },

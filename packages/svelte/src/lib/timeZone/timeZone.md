@@ -7,7 +7,7 @@ description: The time-zone cookie and profile setting, read on the server so eve
 
 - [ ] Read the choice once, in the root `+layout.server.ts`, with
       `readTimeZone(cookies, { profile })` from
-      `@indy-center/svelte/server`. Pass the signed-in member's profile
+      `@indy-center/centerline-svelte/server`. Pass the signed-in member's profile
       setting as `profile`, or leave it out.
 - [ ] Hand it on once, in the root `+layout.svelte`, with
       `setTimeZone(() => data.timeZone, { saveToProfile })`. Pass a
@@ -26,7 +26,7 @@ private`), or one member's times could be served to another.
 `src/routes/+layout.server.ts`:
 
 ```ts
-import { readTimeZone } from "@indy-center/svelte/server";
+import { readTimeZone } from "@indy-center/centerline-svelte/server";
 
 export const load = ({ cookies, locals }) => ({
   timeZone: readTimeZone(cookies, { profile: locals.member?.timeZone }),
@@ -37,7 +37,7 @@ export const load = ({ cookies, locals }) => ({
 
 ```svelte
 <script lang="ts">
-  import { setTimeZone } from "@indy-center/svelte";
+  import { setTimeZone } from "@indy-center/centerline-svelte";
 
   let { data, children } = $props();
   setTimeZone(() => data.timeZone, {

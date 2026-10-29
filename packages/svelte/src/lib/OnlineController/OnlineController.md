@@ -24,7 +24,10 @@ description: The "who's on" row: a position, who is on it and for how long, and 
 
 ```svelte
 <script>
-  import { groupByPosition, OnlineController } from "@indy-center/svelte";
+  import {
+    groupByPosition,
+    OnlineController,
+  } from "@indy-center/centerline-svelte";
 
   let { data } = $props();
   // data.online: [{ callsign, positionId, name, cid, loggedInAt, info }]

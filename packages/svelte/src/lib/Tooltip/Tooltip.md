@@ -35,7 +35,7 @@ description: A short description of a control that shows on hover and on focus.
 ```svelte
 <script>
   import { mdiContentCopy } from "@mdi/js";
-  import { Button, Icon, Tooltip } from "@indy-center/svelte";
+  import { Button, Icon, Tooltip } from "@indy-center/centerline-svelte";
 </script>
 
 <Tooltip text="Copies the CID to the clipboard">

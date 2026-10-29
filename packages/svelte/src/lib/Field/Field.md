@@ -27,7 +27,7 @@ description: A form control's label, hint and error, wired to the control so scr
 
 ```svelte
 <script>
-  import { Field, Input } from "@indy-center/svelte";
+  import { Field, Input } from "@indy-center/centerline-svelte";
 
   let { form } = $props();
 </script>

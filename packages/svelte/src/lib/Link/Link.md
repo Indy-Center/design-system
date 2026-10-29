@@ -19,7 +19,7 @@ description: A text link to another page or site, in the link colour and underli
 
 ```svelte
 <script>
-  import { Link } from "@indy-center/svelte";
+  import { Link } from "@indy-center/centerline-svelte";
 </script>
 
 <p>

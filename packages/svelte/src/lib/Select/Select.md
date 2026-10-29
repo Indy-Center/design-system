@@ -19,7 +19,7 @@ description: A native drop-down list of options on the input roles.
 
 ```svelte
 <script>
-  import { Field, Select } from "@indy-center/svelte";
+  import { Field, Select } from "@indy-center/centerline-svelte";
 
   let rating = $state("");
 </script>

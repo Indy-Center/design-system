@@ -16,8 +16,9 @@ const origin = "http://app.test";
  */
 async function appPage(body: string) {
   const exports = {
-    "/tokens.css": require.resolve("@indy-center/tokens/tokens.css"),
-    "/fonts/fonts.css": require.resolve("@indy-center/tokens/fonts.css"),
+    "/tokens.css": require.resolve("@indy-center/centerline-tokens/tokens.css"),
+    "/fonts/fonts.css":
+      require.resolve("@indy-center/centerline-tokens/fonts.css"),
   };
   const page = await pageWith("");
   await page.route(`${origin}/**`, async (route) => {

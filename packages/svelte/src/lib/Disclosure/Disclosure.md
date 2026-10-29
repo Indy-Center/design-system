@@ -24,7 +24,7 @@ description: A line that opens to show more, built on the native details element
 
 ```svelte
 <script>
-  import { Disclosure } from "@indy-center/svelte";
+  import { Disclosure } from "@indy-center/centerline-svelte";
 </script>
 
 <Disclosure>

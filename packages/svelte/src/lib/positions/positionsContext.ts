@@ -4,7 +4,7 @@ import type { VnasPosition } from "../aviation/resolvePosition.js";
 /** Gives the page's positions when called. */
 type PositionsGetter = () => readonly VnasPosition[];
 
-const key = Symbol("@indy-center/svelte positions");
+const key = Symbol("@indy-center/centerline-svelte positions");
 
 /** No layout set any: every lookup is unknown. */
 const none: PositionsGetter = () => [];

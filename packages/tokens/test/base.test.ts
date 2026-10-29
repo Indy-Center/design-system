@@ -8,9 +8,9 @@ afterAll(closeBrowser);
 const css = await tailwind(
   `
 @import "tailwindcss";
-@import "@indy-center/tokens/tokens.css";
-@import "@indy-center/tokens/theme.css";
-@import "@indy-center/tokens/base.css";
+@import "@indy-center/centerline-tokens/tokens.css";
+@import "@indy-center/centerline-tokens/theme.css";
+@import "@indy-center/centerline-tokens/base.css";
 `,
   ["border"],
 );

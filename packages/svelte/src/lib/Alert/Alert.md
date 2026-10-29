@@ -24,7 +24,7 @@ description: A tinted box that tells the member something about the page, at one
 
 ```svelte
 <script>
-  import { Alert } from "@indy-center/svelte";
+  import { Alert } from "@indy-center/centerline-svelte";
 </script>
 
 <Alert level="danger" title="Not saved">

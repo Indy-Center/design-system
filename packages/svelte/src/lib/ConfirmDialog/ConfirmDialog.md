@@ -27,7 +27,7 @@ With the function, in an event handler or a `use:enhance` callback:
 ```svelte
 <script>
   import { enhance } from "$app/forms";
-  import { Button, confirmAction } from "@indy-center/svelte";
+  import { Button, confirmAction } from "@indy-center/centerline-svelte";
 </script>
 
 <form
@@ -53,7 +53,7 @@ submit, ask, and send it again if confirmed.
 
 ```svelte
 <script>
-  import { confirmAction } from "@indy-center/svelte";
+  import { confirmAction } from "@indy-center/centerline-svelte";
 
   let confirmed = false;
 
@@ -79,7 +79,7 @@ Placed in the page, for a message with markup:
 
 ```svelte
 <script>
-  import { Button, ConfirmDialog } from "@indy-center/svelte";
+  import { Button, ConfirmDialog } from "@indy-center/centerline-svelte";
   let open = $state(false);
 </script>
 

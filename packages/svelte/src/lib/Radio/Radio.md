@@ -25,7 +25,7 @@ description: A native radio button with its label beside it, chosen in the prima
 
 ```svelte
 <script>
-  import { Fieldset, Radio } from "@indy-center/svelte";
+  import { Fieldset, Radio } from "@indy-center/centerline-svelte";
 
   let position = $state("gnd");
   let seats = $state(1);

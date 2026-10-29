@@ -21,7 +21,7 @@ description: A real h1 to h6 at the level you give it, with its size set apart, 
 
 ```svelte
 <script>
-  import { Heading } from "@indy-center/svelte";
+  import { Heading } from "@indy-center/centerline-svelte";
 </script>
 
 <Heading level={1}>Events</Heading>

@@ -14,7 +14,7 @@ description: The four levels Alert and Toast share, each with a colour role, an 
 ## Use
 
 ```ts
-import { SEVERITIES, type Severity } from "@indy-center/svelte";
+import { SEVERITIES, type Severity } from "@indy-center/centerline-svelte";
 
 const level: Severity = "caution";
 SEVERITIES[level].label; // "Caution"

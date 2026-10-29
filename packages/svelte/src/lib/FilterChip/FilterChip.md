@@ -26,7 +26,7 @@ description: A filter that is on or off, shown as a chip that says which it is.
 
 ```svelte
 <script>
-  import { FilterChip } from "@indy-center/svelte";
+  import { FilterChip } from "@indy-center/centerline-svelte";
 
   // Most filters start on; withdrawn trainees start hidden.
   let waiting = $state(true);

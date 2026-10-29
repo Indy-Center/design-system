@@ -22,7 +22,7 @@ description: An MDI icon in the text colour, hidden from screen readers unless i
 ```svelte
 <script>
   import { mdiAirplane, mdiAlert } from "@mdi/js";
-  import { Icon } from "@indy-center/svelte";
+  import { Icon } from "@indy-center/centerline-svelte";
 </script>
 
 <p><Icon path={mdiAirplane} /> Departures</p>

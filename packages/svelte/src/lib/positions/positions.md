@@ -6,7 +6,7 @@ description: Fetches an ARTCC's positions from vNAS on the server, and hands the
 ## Checklist
 
 - [ ] Fetch the positions once, in the root `+layout.server.ts`, with
-      `fetchPositions("ZID")` from `@indy-center/svelte/server`. Never in a
+      `fetchPositions("ZID")` from `@indy-center/centerline-svelte/server`. Never in a
       component or the browser: Data Admin sends no CORS header.
 - [ ] Set them once, in the root `+layout.svelte`, with
       `setPositions(() => data.positions)`. Pass a function, not the array,
@@ -25,7 +25,7 @@ description: Fetches an ARTCC's positions from vNAS on the server, and hands the
 `src/routes/+layout.server.ts`:
 
 ```ts
-import { fetchPositions } from "@indy-center/svelte/server";
+import { fetchPositions } from "@indy-center/centerline-svelte/server";
 
 export const load = async () => ({
   positions: await fetchPositions("ZID"),
@@ -36,7 +36,7 @@ export const load = async () => ({
 
 ```svelte
 <script lang="ts">
-  import { setPositions } from "@indy-center/svelte";
+  import { setPositions } from "@indy-center/centerline-svelte";
 
   let { data, children } = $props();
   setPositions(() => data.positions);
@@ -59,7 +59,10 @@ function, and call it where you use them:
 
 ```svelte
 <script lang="ts">
-  import { getPositions, resolvePosition } from "@indy-center/svelte";
+  import {
+    getPositions,
+    resolvePosition,
+  } from "@indy-center/centerline-svelte";
 
   let { callsign }: { callsign: string } = $props();
   const positions = getPositions();
@@ -75,7 +78,7 @@ function, and call it where you use them:
 | `setPositions(() => positions)` | package root | In the root layout's `<script>`, once.                                                              |
 | `getPositions()`                | package root | `() => readonly VnasPosition[]`; no positions when no layout set them.                              |
 
-`@indy-center/svelte/server` throws if it is loaded in the browser, so a
+`@indy-center/centerline-svelte/server` throws if it is loaded in the browser, so a
 stray import from a component fails at once rather than at the fetch.
 
 ## How it fetches

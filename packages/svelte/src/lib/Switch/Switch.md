@@ -25,7 +25,7 @@ description: An on-or-off setting, a native checkbox read as a switch, with its 
 
 ```svelte
 <script>
-  import { Fieldset, Switch, toast } from "@indy-center/svelte";
+  import { Fieldset, Switch, toast } from "@indy-center/centerline-svelte";
 
   let events = $state(true);
 </script>

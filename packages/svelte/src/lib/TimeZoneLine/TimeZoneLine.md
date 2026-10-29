@@ -16,7 +16,7 @@ description: The line above a list of times, naming their zone, with a way to Zu
 
 ```svelte
 <script>
-  import { Time, TimeZoneLine } from "@indy-center/svelte";
+  import { Time, TimeZoneLine } from "@indy-center/centerline-svelte";
 </script>
 
 <TimeZoneLine class="mb-2" />

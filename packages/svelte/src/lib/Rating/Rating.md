@@ -24,7 +24,7 @@ description: A member's VATSIM rating as a short code in a soft chip, with the l
 
 ```svelte
 <script>
-  import { Rating } from "@indy-center/svelte";
+  import { Rating } from "@indy-center/centerline-svelte";
 </script>
 
 <Rating rating={user.rating} />

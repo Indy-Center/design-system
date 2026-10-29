@@ -21,7 +21,7 @@ description: A flight category, VFR, MVFR, IFR or LIFR, as a small badge in the 
 
 ```svelte
 <script>
-  import { FlightCategory } from "@indy-center/svelte";
+  import { FlightCategory } from "@indy-center/centerline-svelte";
 </script>
 
 <!-- category: worked out from the METAR by the app -->

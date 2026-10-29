@@ -268,7 +268,7 @@ describe("the packed package", () => {
     onTestFinished(() => {
       vi.unstubAllGlobals();
     });
-    const server = await import("@indy-center/svelte/server");
+    const server = await import("@indy-center/centerline-svelte/server");
     expect(Object.keys(server).sort()).toEqual([
       "fetchPositions",
       "readTimeZone",
@@ -306,7 +306,8 @@ describe("the packed package", () => {
       await readFile(new URL("package.json", root), "utf8"),
     );
     expect(files).toContain(pkg.exports["./hooks"].types.replace("./", ""));
-    const { colorSchemeHandle } = await import("@indy-center/svelte/hooks");
+    const { colorSchemeHandle } =
+      await import("@indy-center/centerline-svelte/hooks");
     expect(colorSchemeHandle({ fallback: "dark" })).toBeTypeOf("function");
   });
 });

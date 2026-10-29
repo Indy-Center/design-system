@@ -83,7 +83,7 @@ describe("with no cookie and fallback 'device'", () => {
     const html = template.replace(
       "</head>",
       `<meta http-equiv="Content-Security-Policy" content="script-src 'nonce-abc123'" />
-    <script nonce="abc123">/* @indy-center/svelte color scheme */</script>
+    <script nonce="abc123">/* @indy-center/centerline-svelte color scheme */</script>
   </head>`,
     );
     await commands.emulateColorScheme("dark");
@@ -92,7 +92,7 @@ describe("with no cookie and fallback 'device'", () => {
 });
 
 describe("the script tag in app.html, in dev", () => {
-  const marker = "/* @indy-center/svelte color scheme */";
+  const marker = "/* @indy-center/centerline-svelte color scheme */";
   const withMarker = template.replace(
     "</head>",
     `<script nonce="abc123">${marker}</script></head>`,
