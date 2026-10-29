@@ -3,12 +3,6 @@
   import Schemes from "../../playground/Schemes.svelte";
 </script>
 
-<svelte:head><title>SkipLink · Centerline playground</title></svelte:head>
-
-<h1 class="mb-4 font-heading text-3xl font-semibold text-foreground">
-  SkipLink
-</h1>
-
 <p class="mb-4">
   Each box holds a hidden skip link before a row of links. Press Tab: each skip
   link shows at the top left in its box's scheme, and Enter moves focus to the

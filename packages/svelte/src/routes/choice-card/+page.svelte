@@ -5,12 +5,6 @@
   let certification = $state("app");
 </script>
 
-<svelte:head><title>ChoiceCard · Centerline playground</title></svelte:head>
-
-<h1 class="mb-4 font-heading text-3xl font-semibold text-foreground">
-  ChoiceCard
-</h1>
-
 <!-- Each copy is its own form, so its radios are their own group. -->
 <Schemes>
   <form class="flex flex-col gap-6">

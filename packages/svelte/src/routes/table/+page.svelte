@@ -24,10 +24,6 @@
   ];
 </script>
 
-<svelte:head><title>Table · Centerline playground</title></svelte:head>
-
-<h1 class="mb-4 font-heading text-3xl font-semibold text-foreground">Table</h1>
-
 <Schemes>
   <div class="space-y-6">
     <Table>

@@ -5,12 +5,6 @@
   let last = $state("nothing yet");
 </script>
 
-<svelte:head><title>DropdownMenu · Centerline playground</title></svelte:head>
-
-<h1 class="mb-4 font-heading text-3xl font-semibold text-foreground">
-  DropdownMenu
-</h1>
-
 <p class="mb-4 text-foreground-soft">Last chosen: {last}</p>
 
 <Schemes>

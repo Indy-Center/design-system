@@ -5,10 +5,6 @@
   let events = $state(true);
 </script>
 
-<svelte:head><title>Switch · Centerline playground</title></svelte:head>
-
-<h1 class="mb-4 font-heading text-3xl font-semibold text-foreground">Switch</h1>
-
 <Schemes>
   <Fieldset legend="Emails">
     <Switch label="Email me about events" bind:checked={events} />

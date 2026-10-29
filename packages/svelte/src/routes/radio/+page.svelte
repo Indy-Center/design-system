@@ -5,10 +5,6 @@
   let position = $state("twr");
 </script>
 
-<svelte:head><title>Radio · Centerline playground</title></svelte:head>
-
-<h1 class="mb-4 font-heading text-3xl font-semibold text-foreground">Radio</h1>
-
 <!-- Each copy is its own form, so its radios are their own group. -->
 <Schemes>
   <form>

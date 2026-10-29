@@ -1,20 +1,9 @@
 <script lang="ts">
-  // Lists every component's page, src/routes/<name>/+page.svelte, so adding
-  // a component never means editing this file.
-  import { Link } from "../lib/index.ts";
-
-  const pages = Object.keys(import.meta.glob("./*/+page.svelte"))
-    .map((path) => path.split("/")[1])
-    .sort();
+  // The home page: src/playground/home.md, which llms-full.txt opens with.
+  import { PageHeader, Prose } from "../lib/index.ts";
+  import home from "../playground/home.md?html";
 </script>
 
-<svelte:head><title>Centerline playground</title></svelte:head>
+<PageHeader title={home.title} />
 
-<h1 class="mb-4 font-heading text-3xl font-semibold text-foreground">
-  Components
-</h1>
-<ul class="space-y-2">
-  {#each pages as name (name)}
-    <li><Link href="/{name}">{name}</Link></li>
-  {/each}
-</ul>
+<Prose as="div" class="doc mt-6">{@html home.html}</Prose>

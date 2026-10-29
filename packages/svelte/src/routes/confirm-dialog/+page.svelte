@@ -13,12 +13,6 @@
   }
 </script>
 
-<svelte:head><title>ConfirmDialog · Centerline playground</title></svelte:head>
-
-<h1 class="mb-4 font-heading text-3xl font-semibold text-foreground">
-  ConfirmDialog
-</h1>
-
 <p class="mb-4">
   Placed in each scheme, with <code>danger</code>: focus starts on Cancel. A
   toast says which way it went.

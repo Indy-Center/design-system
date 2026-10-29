@@ -3,12 +3,6 @@
   import Schemes from "../../playground/Schemes.svelte";
 </script>
 
-<svelte:head><title>Heading · Centerline playground</title></svelte:head>
-
-<h1 class="mb-4 font-heading text-3xl font-semibold text-foreground">
-  Heading
-</h1>
-
 <p class="mb-4">
   Every specimen is an <code>h3</code>, so the page's outline stays in order;
   only <code>look</code> changes.

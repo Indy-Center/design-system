@@ -10,12 +10,6 @@
   const klex = { code: "KLEX", name: "Blue Grass" };
 </script>
 
-<svelte:head><title>Airport · Centerline playground</title></svelte:head>
-
-<h1 class="mb-4 font-heading text-3xl font-semibold text-foreground">
-  Airport
-</h1>
-
 <Schemes>
   <div class="space-y-4 pb-8 text-foreground">
     <ul class="space-y-1">

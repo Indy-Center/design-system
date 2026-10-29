@@ -3,10 +3,6 @@
   import Schemes from "../../playground/Schemes.svelte";
 </script>
 
-<svelte:head><title>Input · Centerline playground</title></svelte:head>
-
-<h1 class="mb-4 font-heading text-3xl font-semibold text-foreground">Input</h1>
-
 <Schemes>
   <div class="space-y-3">
     <Input aria-label="Name" placeholder="Jane Doe" />

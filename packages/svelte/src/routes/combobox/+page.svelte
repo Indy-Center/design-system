@@ -28,12 +28,6 @@
   const positions = ["IND_CTR", "IND_APP", "IND_TWR", "IND_GND", "SDF_APP"];
 </script>
 
-<svelte:head><title>Combobox · Centerline playground</title></svelte:head>
-
-<h1 class="mb-4 font-heading text-3xl font-semibold text-foreground">
-  Combobox
-</h1>
-
 <Schemes>
   <form class="space-y-4" onsubmit={(event) => event.preventDefault()}>
     <Field label="Controller" hint="Start typing a name.">

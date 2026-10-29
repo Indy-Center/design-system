@@ -12,10 +12,6 @@
   );
 </script>
 
-<svelte:head><title>Time · Centerline playground</title></svelte:head>
-
-<h1 class="mb-4 font-heading text-3xl font-semibold text-foreground">Time</h1>
-
 <p class="mb-4">
   The server draws these in Zulu; they switch to this browser's zone once the
   page loads. Reload to see it.

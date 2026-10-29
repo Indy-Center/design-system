@@ -21,10 +21,6 @@
     "mb-3 text-xs font-semibold tracking-wider text-muted-foreground uppercase";
 </script>
 
-<svelte:head><title>Header · Centerline playground</title></svelte:head>
-
-<h1 class="mb-4 font-heading text-3xl font-semibold text-foreground">Header</h1>
-
 <div class="grid gap-4">
   {#each ["Light page", "Dark page"] as name}
     <!-- Room under each, for an open menu. -->

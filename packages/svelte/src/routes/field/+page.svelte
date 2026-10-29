@@ -3,10 +3,6 @@
   import Schemes from "../../playground/Schemes.svelte";
 </script>
 
-<svelte:head><title>Field · Centerline playground</title></svelte:head>
-
-<h1 class="mb-4 font-heading text-3xl font-semibold text-foreground">Field</h1>
-
 <Schemes>
   <form class="space-y-4" onsubmit={(event) => event.preventDefault()}>
     <Field label="Callsign" hint="As you log on to VATSIM." required>

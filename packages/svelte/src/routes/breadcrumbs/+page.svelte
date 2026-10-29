@@ -10,12 +10,6 @@
   ];
 </script>
 
-<svelte:head><title>Breadcrumbs · Centerline playground</title></svelte:head>
-
-<h1 class="mb-4 font-heading text-3xl font-semibold text-foreground">
-  Breadcrumbs
-</h1>
-
 <Schemes>
   <Breadcrumbs {items} />
 </Schemes>

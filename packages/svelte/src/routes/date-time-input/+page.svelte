@@ -8,12 +8,6 @@
   let start = $state<string | undefined>("2026-10-27T23:00:00.000Z");
 </script>
 
-<svelte:head><title>DateTimeInput · Centerline playground</title></svelte:head>
-
-<h1 class="mb-4 font-heading text-3xl font-semibold text-foreground">
-  DateTimeInput
-</h1>
-
 <p class="mb-6 max-w-prose">
   The box is in the time zone saved on
   <Link href="/time-zone-setting">the time-zone setting</Link>, as every

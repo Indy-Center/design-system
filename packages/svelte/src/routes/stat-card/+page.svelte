@@ -9,12 +9,6 @@
   import Schemes from "../../playground/Schemes.svelte";
 </script>
 
-<svelte:head><title>StatCard · Centerline playground</title></svelte:head>
-
-<h1 class="mb-4 font-heading text-3xl font-semibold text-foreground">
-  StatCard
-</h1>
-
 <Schemes>
   <div class="grid gap-3">
     <StatCard label="Total users" value={412} detail="287 controllers">
