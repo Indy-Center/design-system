@@ -110,7 +110,7 @@ Adding a component: follow [`CONVENTIONS.md`](CONVENTIONS.md).
 The playground runs as the `centerline` Worker at
 [centerline.flyindycenter.com](https://centerline.flyindycenter.com), a
 Custom Domain set in `wrangler.jsonc`. `build-and-deploy.yml` runs CI,
-then deploys on every push to `main` and to `centerline/packages`. It
+then deploys on every push to `main`. It
 needs one repository secret, `CLOUDFLARE_WORKERS_API_KEY`: a Cloudflare
 API token with Workers Scripts:Edit. The playground has no bindings or
 runtime secrets.

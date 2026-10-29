@@ -1,11 +1,9 @@
 name: Build and Deploy
 
-# Deploys the playground to centerline.flyindycenter.com. It follows the
-# Centerline feature branch while the packages are built there; drop that
-# branch from the list once it merges to main.
+# Deploys the playground to centerline.flyindycenter.com.
 on:
   push:
-    branches: [main, centerline/packages]
+    branches: [main]
 
 permissions:
   contents: read
