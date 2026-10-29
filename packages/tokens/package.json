@@ -2,6 +2,16 @@
   "name": "@indy-center/centerline-tokens",
   "version": "0.1.0",
   "description": "Indy Centerline's brand colours, roles and heading font: CSS custom properties, a Tailwind v4 theme, Sass, JSON and Source Sans 3.",
+  "keywords": [
+    "indy-center",
+    "centerline",
+    "design-system",
+    "design-tokens",
+    "css",
+    "tailwindcss"
+  ],
+  "homepage": "https://centerline.flyindycenter.com",
+  "bugs": "https://github.com/Indy-Center/design-system/issues",
   "license": "MIT AND OFL-1.1",
   "type": "module",
   "repository": {

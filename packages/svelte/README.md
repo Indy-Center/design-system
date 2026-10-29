@@ -1,17 +1,16 @@
-# @indy-center/centerline-svelte
+# Indy Centerline for Svelte
 
-Indy Centerline's chrome and patterns as Svelte 5 components, styled with
-Tailwind v4 and the roles from `@indy-center/centerline-tokens`.
-
-## Use
-
-Install it beside its peers:
+`@indy-center/centerline-svelte`: Indy Centerline's chrome and patterns as
+Svelte 5 components, styled with Tailwind v4 and the roles from
+`@indy-center/centerline-tokens`. Install it beside its peers:
 
 ```sh
 npm install @indy-center/centerline-svelte @indy-center/centerline-tokens
 ```
 
 The app needs `svelte` 5 and `tailwindcss` 4 already.
+
+## Use
 
 In the app's stylesheet, import the tokens and add one `@source` line, so
 Tailwind writes the classes the components use (it skips `node_modules`

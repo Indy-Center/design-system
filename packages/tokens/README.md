@@ -1,7 +1,12 @@
-# @indy-center/centerline-tokens
+# Indy Centerline tokens
 
-Indy Centerline's brand colours and colour roles, in light and dark, and
-its heading font, from the brand guide's Color and type page.
+`@indy-center/centerline-tokens`: Indy Centerline's brand colours and
+colour roles, in light and dark, and its heading font, from the brand
+guide's Color and type page.
+
+```sh
+npm install @indy-center/centerline-tokens
+```
 
 ## Use
 
