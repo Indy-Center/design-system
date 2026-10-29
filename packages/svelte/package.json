@@ -1,6 +1,6 @@
 {
   "name": "@indy-center/centerline-svelte",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Indy Centerline's chrome and patterns as Svelte 5 components, styled with Tailwind v4 and @indy-center/centerline-tokens.",
   "keywords": [
     "indy-center",
