@@ -3,12 +3,6 @@
   import Schemes from "../../playground/Schemes.svelte";
 </script>
 
-<svelte:head><title>Disclosure · Centerline playground</title></svelte:head>
-
-<h1 class="mb-4 font-heading text-3xl font-semibold text-foreground">
-  Disclosure
-</h1>
-
 <Schemes>
   <Disclosure>
     {#snippet summary()}Why do I need a rating?{/snippet}

@@ -12,14 +12,6 @@
   });
 </script>
 
-<svelte:head
-  ><title>Time-zone setting · Centerline playground</title></svelte:head
->
-
-<h1 class="mb-4 font-heading text-3xl font-semibold text-foreground">
-  Time-zone setting
-</h1>
-
 <div class="mb-6 max-w-prose space-y-4">
   <p>
     A choice applies at once and is saved to the cookie; reload, and the server

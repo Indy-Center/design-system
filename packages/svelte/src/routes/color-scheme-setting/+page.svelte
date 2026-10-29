@@ -13,14 +13,6 @@
   setColorScheme({ fallback });
 </script>
 
-<svelte:head
-  ><title>Colour-scheme setting · Centerline playground</title></svelte:head
->
-
-<h1 class="mb-4 font-heading text-3xl font-semibold text-foreground">
-  Colour-scheme setting
-</h1>
-
 <div class="mb-6 max-w-prose space-y-4">
   <p>
     A choice applies to the whole page at once, so Light and Dark turn the light

@@ -3,10 +3,6 @@
   import Schemes from "../../playground/Schemes.svelte";
 </script>
 
-<svelte:head><title>Card · Centerline playground</title></svelte:head>
-
-<h1 class="mb-4 font-heading text-3xl font-semibold text-foreground">Card</h1>
-
 <Schemes>
   <ul class="grid gap-3">
     <Card as="li">

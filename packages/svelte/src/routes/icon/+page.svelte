@@ -10,10 +10,6 @@
   const alert = "M13,14H11V10H13M13,18H11V16H13M1,21H23L12,2L1,21Z";
 </script>
 
-<svelte:head><title>Icon · Centerline playground</title></svelte:head>
-
-<h1 class="mb-4 font-heading text-3xl font-semibold text-foreground">Icon</h1>
-
 <Schemes>
   <ul class="space-y-3">
     <li class="flex items-center gap-2">

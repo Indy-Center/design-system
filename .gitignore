@@ -6,6 +6,9 @@ dist/
 .svelte-kit/
 *.tgz
 
+# Wrangler's local dev state (Miniflare's SQLite files)
+.wrangler/
+
 # Tests
 coverage/
 test-results/

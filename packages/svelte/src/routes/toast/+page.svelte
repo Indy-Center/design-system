@@ -20,10 +20,6 @@
     "inline-flex min-h-11 items-center gap-2 rounded-md border border-border bg-card px-4 text-sm font-semibold text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring";
 </script>
 
-<svelte:head><title>Toast · Centerline playground</title></svelte:head>
-
-<h1 class="mb-4 font-heading text-3xl font-semibold text-foreground">Toast</h1>
-
 <p class="mb-4">
   Raise toasts; they show below the playground's header. "Raise and reload"
   shows one surviving a full-page load. The two form buttons post to a form

@@ -3,12 +3,6 @@
   import Schemes from "../../playground/Schemes.svelte";
 </script>
 
-<svelte:head><title>ProgressBar · Centerline playground</title></svelte:head>
-
-<h1 class="mb-4 font-heading text-3xl font-semibold text-foreground">
-  ProgressBar
-</h1>
-
 <Schemes>
   <div class="space-y-5">
     <ProgressBar label="Course progress" value={40} />

@@ -19,8 +19,10 @@ two npm packages.
   npm install @indy-center/centerline-svelte @indy-center/centerline-tokens
   ```
 
-Every component is in the playground, at
-[centerline.flyindycenter.com](https://centerline.flyindycenter.com). The
+Every component's doc and live demo is in the component reference, at
+[centerline.flyindycenter.com](https://centerline.flyindycenter.com)
+(for agents, its `/llms-full.txt`). The rules, such as when to use what,
+are in the tech docs' [Design section](https://tech.flyindycenter.com/design/). The
 colours and type come from the brand guide, at
 [brand.flyindycenter.com](https://brand.flyindycenter.com).
 

@@ -3,10 +3,6 @@
   import Schemes from "../../playground/Schemes.svelte";
 </script>
 
-<svelte:head><title>Member · Centerline playground</title></svelte:head>
-
-<h1 class="mb-4 font-heading text-3xl font-semibold text-foreground">Member</h1>
-
 <Schemes>
   <ul class="space-y-2 pb-8 text-foreground">
     <li><Member name="Jordan Sample" cid={1000001} /></li>

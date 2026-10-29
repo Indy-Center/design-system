@@ -7,10 +7,6 @@
     "M12,17.27L18.18,21L16.54,13.64L22,8.24L14.81,7.62L12,1L9.19,7.62L2,8.24L7.45,13.64L5.82,21L12,17.27Z";
 </script>
 
-<svelte:head><title>Badge · Centerline playground</title></svelte:head>
-
-<h1 class="mb-4 font-heading text-3xl font-semibold text-foreground">Badge</h1>
-
 <Schemes>
   <div class="space-y-4">
     <div class="flex flex-wrap gap-2">

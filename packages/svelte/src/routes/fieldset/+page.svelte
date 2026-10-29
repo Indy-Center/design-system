@@ -3,12 +3,6 @@
   import Schemes from "../../playground/Schemes.svelte";
 </script>
 
-<svelte:head><title>Fieldset · Centerline playground</title></svelte:head>
-
-<h1 class="mb-4 font-heading text-3xl font-semibold text-foreground">
-  Fieldset
-</h1>
-
 <!-- Each copy is its own form, so its radios are their own group. -->
 <Schemes>
   <form class="space-y-6" onsubmit={(event) => event.preventDefault()}>

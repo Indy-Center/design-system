@@ -2,14 +2,6 @@
   import { Button, Heading, PageHero, Text } from "../../lib/index.ts";
 </script>
 
-<svelte:head><title>PageHero · Centerline playground</title></svelte:head>
-
-<!-- The playground's own title is a plain h2 here: each specimen below
-     renders an h1 of its own. -->
-<h2 class="mb-4 font-heading text-3xl font-semibold text-foreground">
-  PageHero
-</h2>
-
 <p class="mb-4">
   Shown full width, as on a page, in each scheme. Each specimen renders an
   <code>h1</code>.

@@ -3,12 +3,6 @@
   import Schemes from "../../playground/Schemes.svelte";
 </script>
 
-<svelte:head><title>FlightCategory · Centerline playground</title></svelte:head>
-
-<h1 class="mb-4 font-heading text-3xl font-semibold text-foreground">
-  FlightCategory
-</h1>
-
 <Schemes>
   <div class="space-y-4 text-foreground">
     <div class="flex flex-wrap gap-2">
