@@ -131,14 +131,14 @@ describe("AppsMenu", () => {
     const library = screen.getByRole("link", { name: /Library/ });
     const training = screen.getByRole("link", { name: /Training/ });
     await expect.element(library).toHaveStyle({
-      color: role("link", "dark"),
+      color: role("foreground-soft", "dark"),
       backgroundColor: "rgba(0, 0, 0, 0)", // no fill
       textDecorationLine: "none",
     });
     await expect.element(training).toHaveStyle({
-      color: role("link", "dark"),
+      color: role("foreground", "dark"),
       backgroundColor: translucent(role("foreground", "dark"), 10),
-      textDecorationLine: "underline",
+      textDecorationLine: "none",
     });
     // On the panel's card.
     for (const el of [

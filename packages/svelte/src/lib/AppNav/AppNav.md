@@ -77,9 +77,10 @@ description: An app's own navigation in the header, top-level links and one leve
 
 - Dark in both schemes: each puts itself in the dark scope
   (`data-theme="dark"`), as the header around it.
-- Links and group buttons are in the `link` colour, underlined on hover.
-  The current page, and a group holding it, are on the soft fill
-  (`foreground` at 10%) and underlined.
+- Links and group buttons are in `foreground-soft`, turning `foreground`
+  on the soft fill (`foreground` at 10%) on hover, never underlined. The
+  current page, and a group holding it, are in `foreground` on the soft
+  fill.
 - `AppNav`: a row. A group's button has a chevron and opens its pages on a
   `card` panel with a `border` line, under the button.
 - `AppNavMenu`: one row each, full width. A group opens its pages in

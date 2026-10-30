@@ -112,7 +112,7 @@
           title={app.label}
           class={[
             brandLink,
-            "min-w-0 text-lg font-semibold whitespace-nowrap text-foreground underline-offset-4 hover:underline",
+            "min-w-0 text-lg font-semibold whitespace-nowrap text-foreground",
           ]}><span class="truncate">{app.label}</span></a
         >
       {/if}

@@ -157,7 +157,9 @@ describe("UserMenu", () => {
       .element(cid)
       .toHaveStyle({ color: role("muted-foreground", "dark") });
     const profile = screen.getByRole("link", { name: "My profile" });
-    await expect.element(profile).toHaveStyle({ color: role("link", "dark") });
+    await expect
+      .element(profile)
+      .toHaveStyle({ color: role("foreground-soft", "dark") });
     const signOut = screen.getByRole("link", { name: "Sign out" });
     await expect.element(signOut).toHaveStyle({
       color: role("destructive", "dark"),
@@ -166,9 +168,7 @@ describe("UserMenu", () => {
     for (const el of [cid, profile, signOut])
       expectReadable(el.element(), "dark");
     await signOut.hover();
-    await expect
-      .element(signOut)
-      .toHaveStyle({ textDecorationLine: "underline" });
+    await expect.element(signOut).toHaveStyle({ textDecorationLine: "none" });
   });
 
   test("gives Sign out a 44px target and a ring outline", async () => {

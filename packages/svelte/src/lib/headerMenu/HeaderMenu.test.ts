@@ -157,12 +157,12 @@ describe("HeaderMenu", () => {
     });
   });
 
-  test("draws links in the link colour, the current one on the soft fill and underlined", async () => {
+  test("draws links in soft text, never underlined, the current one in full text on the soft fill", async () => {
     const screen = await open();
     for (const name of ["One", "After"]) {
       const link = screen.getByRole("link", { name });
       await expect.element(link).toHaveStyle({
-        color: role("link", "light"),
+        color: role("foreground-soft", "light"),
         backgroundColor: "rgba(0, 0, 0, 0)", // no fill
         textDecorationLine: "none",
       });
@@ -170,10 +170,18 @@ describe("HeaderMenu", () => {
     }
     for (const name of ["Two", "Here"]) {
       await expect.element(screen.getByRole("link", { name })).toHaveStyle({
-        color: role("link", "light"),
+        color: role("foreground", "light"),
         backgroundColor: translucent(role("foreground", "light"), 10),
-        textDecorationLine: "underline",
+        textDecorationLine: "none",
       });
     }
+    // Hovered: full text on the soft fill, still not underlined.
+    const one = screen.getByRole("link", { name: "One" });
+    await one.hover();
+    await expect.element(one).toHaveStyle({
+      color: role("foreground", "light"),
+      backgroundColor: translucent(role("foreground", "light"), 10),
+      textDecorationLine: "none",
+    });
   });
 });

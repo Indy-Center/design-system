@@ -142,23 +142,23 @@ describe("AppNav and AppNavMenu", () => {
     });
 
     // Dark in both schemes: once, on a light page, in the dark roles.
-    test("draws in the dark roles: links in the link colour, the current page and its group on the soft fill", async () => {
+    test("draws in the dark roles: links in soft text, the current page and its group in full text on the soft fill", async () => {
       const screen = await renderIn("light", AppNav, {
         items: hubNav,
         current: "/staff",
       });
       const home = screen.getByRole("link", { name: "Home" });
       await expect.element(home).toHaveStyle({
-        color: role("link", "dark"),
+        color: role("foreground-soft", "dark"),
         backgroundColor: "rgba(0, 0, 0, 0)", // no fill
         textDecorationLine: "none",
       });
       expectReadable(home.element(), "dark");
       const about = group(screen, "About");
       await expect.element(about).toHaveStyle({
-        color: role("link", "dark"),
+        color: role("foreground", "dark"),
         backgroundColor: SOFT_FILL(),
-        textDecorationLine: "underline",
+        textDecorationLine: "none",
       });
       await about.click();
       const panel = document.getElementById(
@@ -170,7 +170,7 @@ describe("AppNav and AppNavMenu", () => {
       });
       const staff = screen.getByRole("link", { name: "Staff" });
       await expect.element(staff).toHaveStyle({
-        color: role("link", "dark"),
+        color: role("foreground", "dark"),
         backgroundColor: SOFT_FILL(),
       });
       // On the panel's card.
@@ -228,29 +228,29 @@ describe("AppNav and AppNavMenu", () => {
     });
 
     // Dark in both schemes: once, on a light page, in the dark roles.
-    test("draws in the dark roles: rows in the link colour, the current page and its group on the soft fill", async () => {
+    test("draws in the dark roles: rows in soft text, the current page and its group in full text on the soft fill", async () => {
       const screen = await renderIn("light", AppNavMenu, {
         items: hubNav,
         current: "/staff",
       });
       const home = screen.getByRole("link", { name: "Home" });
       await expect.element(home).toHaveStyle({
-        color: role("link", "dark"),
+        color: role("foreground-soft", "dark"),
         backgroundColor: "rgba(0, 0, 0, 0)", // no fill
         textDecorationLine: "none",
       });
       expectReadable(home.element(), "dark");
       await expect.element(group(screen, "About")).toHaveStyle({
-        color: role("link", "dark"),
+        color: role("foreground", "dark"),
         backgroundColor: SOFT_FILL(),
-        textDecorationLine: "underline",
+        textDecorationLine: "none",
       });
       await expect
         .element(screen.getByRole("link", { name: "Staff" }))
         .toHaveStyle({
-          color: role("link", "dark"),
+          color: role("foreground", "dark"),
           backgroundColor: SOFT_FILL(),
-          textDecorationLine: "underline",
+          textDecorationLine: "none",
         });
     });
   });

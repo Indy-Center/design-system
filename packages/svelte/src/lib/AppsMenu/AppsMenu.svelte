@@ -63,7 +63,6 @@
             <span class="flex-1">
               <span class="block">{app.label}</span>
               {#if app.description}
-                <!-- inline-block, so the name's underline doesn't reach it -->
                 <span
                   class="inline-block text-xs font-normal text-muted-foreground"
                   >{app.description}</span

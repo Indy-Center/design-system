@@ -54,9 +54,10 @@ Library and Charts, each with a description and an icon.
   shows.
 - The list opens on a `card` panel with a `border` line, lined up with the
   button's right edge. Below `sm` it spans the screen under a 64px header.
-- Each app's name is in the `link` colour, underlined on hover, with its
-  description in small `muted-foreground` text under it.
-- The current app is on the soft fill and underlined.
+- Each app's name is in `foreground-soft`, turning `foreground` on the
+  soft fill on hover, never underlined, with its description in small
+  `muted-foreground` text under it.
+- The current app is in `foreground` on the soft fill.
 - A `ring` outline on whatever is reached by keyboard.
 
 ## Accessibility

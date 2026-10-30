@@ -39,22 +39,25 @@ const focusRing =
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring";
 
 /**
- * A link in the header or its menus, without its colour: underlined on
- * hover (the user's rule for header links).
+ * A link in the header or its menus: soft text that turns full on hover,
+ * over the soft fill, never underlined, like the community site's header
+ * and like `headerButton`.
  */
-const underlined = [target, "underline-offset-4 hover:underline", focusRing];
-
-/** A link in the header or its menus: the link colour, underlined on hover. */
-const link = [...underlined, "text-link"];
+const link = [
+  target,
+  "text-foreground-soft hover:bg-foreground/10 hover:text-foreground",
+  focusRing,
+];
 
 /** A menu row's layout: full width, icon then text. */
 const row = "flex w-full items-center gap-3";
 
 /**
  * Added to a link that is the current page, or a group or app holding it:
- * the soft fill, and underlined.
+ * the soft fill and full text. Important, so it beats `link`'s soft text
+ * whatever order the stylesheet puts them in.
  */
-export const currentClass = "bg-foreground/10 underline";
+export const currentClass = "bg-foreground/10 text-foreground!";
 
 /** A link or group button in the header bar: inline, content centred. */
 export const barItem = [
@@ -70,7 +73,12 @@ export const menuRow = [...link, row];
  * stands apart from the links that stay in the app. Only UserMenu uses
  * it, so its tests cover it; it lives here for the recipes it shares.
  */
-export const signOutRow = [...underlined, row, "text-destructive"];
+export const signOutRow = [
+  target,
+  row,
+  "text-destructive hover:bg-destructive/10",
+  focusRing,
+];
 
 /** A button in the header that isn't a link, such as Apps. */
 export const headerButton = [

@@ -125,7 +125,7 @@ Each page sets its own `<title>`, page first:
   window as the page scrolls. It has no blur behind it: the Apps and user
   menus' panels on phones are pinned 64px from the top.
 - The logo, divider and app name: `foreground`, the divider `border`. The
-  name is semibold and underlined on hover.
+  name is semibold and never underlined.
 - Sign in is a small primary `Button`.
 - The phone menu opens under the bar, with a `border` line above it, and
   scrolls when taller than the screen.
