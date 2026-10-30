@@ -88,12 +88,8 @@
         </a>
         <span aria-hidden="true" class="mx-1 h-6 w-px shrink-0 bg-border"
         ></span>
-        <a
-          href="/"
-          class={[
-            brandLink,
-            "text-lg font-semibold text-foreground underline-offset-4 hover:underline",
-          ]}>Centerline</a
+        <a href="/" class={[brandLink, "text-lg font-semibold text-foreground"]}
+          >Centerline</a
         >
       </div>
       <div class="ml-auto flex items-center gap-1">
