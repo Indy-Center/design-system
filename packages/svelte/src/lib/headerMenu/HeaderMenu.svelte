@@ -19,7 +19,7 @@
     label?: string;
     /** Which edge of the button the panel lines up with. */
     align?: "start" | "end";
-    /** The button's classes, focus ring included: `barItem` or `headerButton`. */
+    /** The button's classes, focus ring included: `barItem`. */
     buttonClass?: ClassValue;
     /** The panel's classes, for its width and placement. */
     panelClass?: ClassValue;

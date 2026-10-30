@@ -39,9 +39,9 @@ const focusRing =
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring";
 
 /**
- * A link in the header or its menus: soft text that turns full on hover,
- * over the soft fill, never underlined, like the community site's header
- * and like `headerButton`.
+ * A link or button in the header or its menus: soft text that turns full
+ * on hover, over the soft fill, never underlined, like the community
+ * site's header.
  */
 const link = [
   target,
@@ -59,7 +59,10 @@ const row = "flex w-full items-center gap-3";
  */
 export const currentClass = "bg-foreground/10 text-foreground!";
 
-/** A link or group button in the header bar: inline, content centred. */
+/**
+ * A link or button in the header bar, such as a nav link, a group's
+ * button or Apps: inline, content centred.
+ */
 export const barItem = [
   ...link,
   "inline-flex items-center justify-center gap-2",
@@ -77,13 +80,5 @@ export const signOutRow = [
   target,
   row,
   "text-destructive hover:bg-destructive/10",
-  focusRing,
-];
-
-/** A button in the header that isn't a link, such as Apps. */
-export const headerButton = [
-  target,
-  "inline-flex items-center justify-center gap-2",
-  "text-foreground-soft hover:bg-foreground/10 hover:text-foreground",
   focusRing,
 ];

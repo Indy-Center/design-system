@@ -17,11 +17,7 @@
   import type { HTMLAttributes } from "svelte/elements";
   import Icon from "../Icon/Icon.svelte";
   import HeaderMenu from "../headerMenu/HeaderMenu.svelte";
-  import {
-    currentClass,
-    headerButton,
-    menuRow,
-  } from "../headerMenu/headerMenu.js";
+  import { barItem, currentClass, menuRow } from "../headerMenu/headerMenu.js";
   import { withoutTrailingSlash } from "../headerMenu/withoutTrailingSlash.js";
 
   type Props = HTMLAttributes<HTMLDivElement> & {
@@ -42,7 +38,7 @@
 <div {...rest} data-theme="dark" class={className}>
   <HeaderMenu
     align="end"
-    buttonClass={headerButton}
+    buttonClass={barItem}
     panelClass="w-80 max-sm:fixed max-sm:inset-x-2 max-sm:top-16 max-sm:w-auto"
   >
     {#snippet trigger()}

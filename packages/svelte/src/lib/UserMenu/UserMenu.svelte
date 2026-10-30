@@ -7,11 +7,7 @@
   import TimeZoneSetting from "../TimeZoneSetting/TimeZoneSetting.svelte";
   import { findPilotRating } from "../aviation/ratings.js";
   import HeaderMenu from "../headerMenu/HeaderMenu.svelte";
-  import {
-    headerButton,
-    menuRow,
-    signOutRow,
-  } from "../headerMenu/headerMenu.js";
+  import { barItem, menuRow, signOutRow } from "../headerMenu/headerMenu.js";
   import { withoutTrailingSlash } from "../headerMenu/withoutTrailingSlash.js";
   import { INDY_CENTER_DOMAIN } from "../preferenceCookie/preferenceCookie.js";
   import { initials } from "./initials.js";
@@ -71,7 +67,7 @@
   <HeaderMenu
     label="Account: {name}"
     align="end"
-    buttonClass={headerButton}
+    buttonClass={barItem}
     panelClass="max-h-[calc(100dvh-5rem)] w-80 overflow-y-auto max-sm:fixed max-sm:inset-x-2 max-sm:top-16 max-sm:w-auto"
   >
     {#snippet trigger(open)}

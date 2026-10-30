@@ -13,7 +13,7 @@
   import { Footer, Icon, SkipLink } from "../lib/index.ts";
   import Logo from "../lib/Logo/Logo.svelte";
   import { dismiss } from "../lib/dismiss/dismiss.ts";
-  import { headerButton } from "../lib/headerMenu/headerMenu.ts";
+  import { barItem } from "../lib/headerMenu/headerMenu.ts";
   import DocPage from "../playground/DocPage.svelte";
   import Sidebar from "../playground/Sidebar.svelte";
   import { sections, titleOf } from "../playground/site.ts";
@@ -99,18 +99,18 @@
       <div class="ml-auto flex items-center gap-1">
         <a
           href="https://tech.flyindycenter.com/design/"
-          class={[headerButton, "max-sm:hidden"]}>Rules</a
+          class={[barItem, "max-sm:hidden"]}>Rules</a
         >
         <a
           href="https://brand.flyindycenter.com"
-          class={[headerButton, "max-sm:hidden"]}>Brand guide</a
+          class={[barItem, "max-sm:hidden"]}>Brand guide</a
         >
         <button
           bind:this={button}
           type="button"
           aria-expanded={open}
           aria-controls="site-nav"
-          class={[headerButton, "cursor-pointer lg:hidden"]}
+          class={[barItem, "cursor-pointer lg:hidden"]}
           onclick={() => (open = !open)}
           ><Icon
             path={open ? mdiClose : mdiFormatListBulleted}
