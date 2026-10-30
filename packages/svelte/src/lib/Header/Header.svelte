@@ -23,9 +23,9 @@
   import SkipLink from "../SkipLink/SkipLink.svelte";
   import { dismiss } from "../dismiss/dismiss.js";
   import {
+    barItem,
     closeOnFocusOut,
     closeOnLink,
-    headerButton,
   } from "../headerMenu/headerMenu.js";
   import { INDY_CENTER_DOMAIN } from "../preferenceCookie/preferenceCookie.js";
 
@@ -112,7 +112,7 @@
           title={app.label}
           class={[
             brandLink,
-            "min-w-0 text-lg font-semibold whitespace-nowrap text-foreground underline-offset-4 hover:underline",
+            "min-w-0 text-lg font-semibold whitespace-nowrap text-foreground",
           ]}><span class="truncate">{app.label}</span></a
         >
       {/if}
@@ -144,7 +144,7 @@
           aria-expanded={open}
           aria-controls={id}
           aria-label="Menu"
-          class={["cursor-pointer lg:hidden", headerButton]}
+          class={["cursor-pointer lg:hidden", barItem]}
           onclick={() => (open = !open)}
           ><Icon path={open ? mdiClose : mdiMenu} size={24} /></button
         >

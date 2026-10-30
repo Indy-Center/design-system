@@ -328,15 +328,21 @@ describe("Header", () => {
   });
 
   // Dark in both schemes: once, on a light page, in the dark roles.
-  test("draws in the dark roles: the background lined below, the logo and name white", async () => {
+  test("draws in the dark roles: the background lined below, the logo and name white, the name never underlined", async () => {
     const screen = await renderHeader({ app: training });
     await expect.element(screen.getByRole("banner")).toHaveStyle({
       backgroundColor: role("background", "dark"),
       borderBottomColor: role("border", "dark"),
     });
+    const name = screen.getByRole("link", { name: "Training", exact: true });
     await expect
-      .element(screen.getByRole("link", { name: "Training", exact: true }))
+      .element(name)
       .toHaveStyle({ color: role("foreground", "dark") });
+    await name.hover();
+    await expect.element(name).toHaveStyle({
+      color: role("foreground", "dark"),
+      textDecorationLine: "none",
+    });
     // The mark or the logo, whichever shows.
     await expect
       .element(

@@ -91,8 +91,9 @@ scrolls when taller than the screen.
   the button's right edge, its sections split by `border` lines.
 - The name in `foreground`, semibold; the CID in `muted-foreground`, the
   number in mono.
-- My profile and Settings in the `link` colour, underlined on hover.
-  Sign out in `destructive`, underlined on hover.
+- My profile and Settings in `foreground-soft`, turning `foreground` on
+  the soft fill on hover. Sign out in `destructive`, on `destructive` at
+  10% on hover. None is underlined.
 - A `ring` outline on whatever is reached by keyboard. The button and
   every row are at least 44px tall.
 

@@ -114,8 +114,10 @@ describe("AppsMenu", () => {
     expect(root.getAttribute("data-theme")).toBe("dark");
   });
 
-  // Dark in both schemes: once, on a light page, in the dark roles.
-  test("draws in the dark roles: the button soft, the panel a card, apps in the link colour, the current one on the soft fill", async () => {
+  // Dark in both schemes: once, on a light page, in the dark roles. How an
+  // app's row and the current one look is headerMenu's; this checks the
+  // menu uses its classes and marks the current app.
+  test("draws in the dark roles: the button soft, the panel a card, the current app marked", async () => {
     const screen = await renderIn("light", AppsMenu, props());
     await expect
       .element(button(screen))
@@ -130,15 +132,11 @@ describe("AppsMenu", () => {
     });
     const library = screen.getByRole("link", { name: /Library/ });
     const training = screen.getByRole("link", { name: /Training/ });
-    await expect.element(library).toHaveStyle({
-      color: role("link", "dark"),
-      backgroundColor: "rgba(0, 0, 0, 0)", // no fill
-      textDecorationLine: "none",
-    });
+    await expect
+      .element(library)
+      .toHaveStyle({ color: role("foreground-soft", "dark") });
     await expect.element(training).toHaveStyle({
-      color: role("link", "dark"),
       backgroundColor: translucent(role("foreground", "dark"), 10),
-      textDecorationLine: "underline",
     });
     // On the panel's card.
     for (const el of [
