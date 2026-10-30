@@ -141,25 +141,21 @@ describe("AppNav and AppNavMenu", () => {
         .toHaveAttribute("aria-expanded", "true");
     });
 
-    // Dark in both schemes: once, on a light page, in the dark roles.
-    test("draws in the dark roles: links in soft text, the current page and its group in full text on the soft fill", async () => {
+    // Dark in both schemes: once, on a light page, in the dark roles. How a
+    // link and the current one look is headerMenu's; this checks the bar
+    // uses its classes and marks the current page and its group.
+    test("draws in the dark roles, with the header's link classes, the current page and its group marked", async () => {
       const screen = await renderIn("light", AppNav, {
         items: hubNav,
         current: "/staff",
       });
       const home = screen.getByRole("link", { name: "Home" });
-      await expect.element(home).toHaveStyle({
-        color: role("foreground-soft", "dark"),
-        backgroundColor: "rgba(0, 0, 0, 0)", // no fill
-        textDecorationLine: "none",
-      });
+      await expect
+        .element(home)
+        .toHaveStyle({ color: role("foreground-soft", "dark") });
       expectReadable(home.element(), "dark");
       const about = group(screen, "About");
-      await expect.element(about).toHaveStyle({
-        color: role("foreground", "dark"),
-        backgroundColor: SOFT_FILL(),
-        textDecorationLine: "none",
-      });
+      await expect.element(about).toHaveStyle({ backgroundColor: SOFT_FILL() });
       await about.click();
       const panel = document.getElementById(
         about.element().getAttribute("aria-controls")!,
@@ -169,10 +165,7 @@ describe("AppNav and AppNavMenu", () => {
         borderTopColor: role("border", "dark"),
       });
       const staff = screen.getByRole("link", { name: "Staff" });
-      await expect.element(staff).toHaveStyle({
-        color: role("foreground", "dark"),
-        backgroundColor: SOFT_FILL(),
-      });
+      await expect.element(staff).toHaveStyle({ backgroundColor: SOFT_FILL() });
       // On the panel's card.
       expectReadable(staff.element(), "dark");
       expectReadable(
@@ -227,31 +220,27 @@ describe("AppNav and AppNavMenu", () => {
       }
     });
 
-    // Dark in both schemes: once, on a light page, in the dark roles.
-    test("draws in the dark roles: rows in soft text, the current page and its group in full text on the soft fill", async () => {
+    // Dark in both schemes: once, on a light page, in the dark roles. How a
+    // row and the current one look is headerMenu's; this checks the phone
+    // menu uses its classes and marks the current page and its group.
+    test("draws in the dark roles, with the header's row classes, the current page and its group marked", async () => {
       const screen = await renderIn("light", AppNavMenu, {
         items: hubNav,
         current: "/staff",
       });
       const home = screen.getByRole("link", { name: "Home" });
-      await expect.element(home).toHaveStyle({
-        color: role("foreground-soft", "dark"),
-        backgroundColor: "rgba(0, 0, 0, 0)", // no fill
-        textDecorationLine: "none",
-      });
-      expectReadable(home.element(), "dark");
-      await expect.element(group(screen, "About")).toHaveStyle({
-        color: role("foreground", "dark"),
-        backgroundColor: SOFT_FILL(),
-        textDecorationLine: "none",
-      });
       await expect
-        .element(screen.getByRole("link", { name: "Staff" }))
-        .toHaveStyle({
-          color: role("foreground", "dark"),
-          backgroundColor: SOFT_FILL(),
-          textDecorationLine: "none",
-        });
+        .element(home)
+        .toHaveStyle({ color: role("foreground-soft", "dark") });
+      expectReadable(home.element(), "dark");
+      for (const current of [
+        group(screen, "About"),
+        screen.getByRole("link", { name: "Staff" }),
+      ]) {
+        await expect
+          .element(current)
+          .toHaveStyle({ backgroundColor: SOFT_FILL() });
+      }
     });
   });
 });

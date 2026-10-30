@@ -3,7 +3,7 @@
 // and time-zone choices are ColorSchemeSetting's and TimeZoneSetting's.
 import { afterEach, describe, expect, test } from "vitest";
 import { userEvent } from "vitest/browser";
-import { expectReadable } from "../../../test/contrast.ts";
+import { expectReadable, translucent } from "../../../test/contrast.ts";
 import { savedColorScheme } from "../../../test/cookies.ts";
 import { role } from "../../../test/roles.ts";
 import { renderIn } from "../../../test/schemes.ts";
@@ -137,7 +137,7 @@ describe("UserMenu", () => {
   });
 
   // Dark in both schemes: once, on a light page, in the dark roles.
-  test("draws in the dark roles: initials on primary, the panel a card, links in the link colour, Sign out destructive", async () => {
+  test("draws in the dark roles: initials on primary, the panel a card, links soft, Sign out destructive on a destructive tint on hover", async () => {
     const screen = await renderIn("light", UserMenu, props());
     const circle = screen.getByText("SR", { exact: true }).first();
     await expect.element(circle).toHaveStyle({
@@ -167,8 +167,14 @@ describe("UserMenu", () => {
     });
     for (const el of [cid, profile, signOut])
       expectReadable(el.element(), "dark");
+    // Sign out's recipe is only UserMenu's, so its hover is tested here.
     await signOut.hover();
-    await expect.element(signOut).toHaveStyle({ textDecorationLine: "none" });
+    await expect.element(signOut).toHaveStyle({
+      color: role("destructive", "dark"),
+      backgroundColor: translucent(role("destructive", "dark"), 10),
+      textDecorationLine: "none",
+    });
+    expectReadable(signOut.element(), "dark");
   });
 
   test("gives Sign out a 44px target and a ring outline", async () => {
