@@ -1,34 +1,34 @@
 ---
 title: Positions lookup
-description: Fetches an ARTCC's positions from vNAS on the server, and hands them to every Position and Frequency on the page.
+description: Hands the CMS catalogue's positions to every Position and Frequency on the page.
 ---
 
 ## Checklist
 
-- [ ] Fetch the positions once, in the root `+layout.server.ts`, with
-      `fetchPositions("ZID")` from `@indy-center/centerline-svelte/server`. Never in a
-      component or the browser: Data Admin sends no CORS header.
+- [ ] Read the positions once, in the root `+layout.server.ts`, from the
+      CMS catalogue's `positions`, with your app's own server-side CMS
+      read. Centerline doesn't fetch them, and no app calls vNAS: the CMS
+      copies Data Admin once a day.
+- [ ] Return only the catalogue's `positions` from the load, never the
+      whole catalogue: the catalogue is for servers, the positions are
+      fine for the page.
 - [ ] Set them once, in the root `+layout.svelte`, with
       `setPositions(() => data.positions)`. Pass a function, not the array,
-      so lookups follow when the layout's data reloads.
+      so lookups follow when the layout's data reloads. Pass the
+      catalogue's positions as they are; there is nothing to map.
 - [ ] Then write `<Position callsign="IND_83_CTR" />` with the callsign
       alone, as many times as the page needs. A `radioName` or `frequency`
       prop still wins over the lookup.
-- [ ] Don't fetch Data Admin yourself, and don't add your own cache:
-      `fetchPositions` already shares one copy per server process.
-- [ ] Don't wrap it in `try`: it never rejects. When vNAS is down it gives
-      the copy it has, or no positions, and components show the callsign
-      alone.
+- [ ] When the CMS can't be read, give no positions (`[]`): components
+      show the callsign alone.
 
 ## Use
 
-`src/routes/+layout.server.ts`:
+`src/routes/+layout.server.ts`, where `cms` is your app's CMS client:
 
 ```ts
-import { fetchPositions } from "@indy-center/centerline-svelte/server";
-
-export const load = async () => ({
-  positions: await fetchPositions("ZID"),
+export const load = async ({ locals }) => ({
+  positions: (await locals.cms.catalogue()).positions,
 });
 ```
 
@@ -52,10 +52,12 @@ Any page below:
 ```
 
 `Position` finds `IND_83_CTR` by the relief rule (see the aviation
-helpers' `resolvePosition`) and shows "Indy Center" and its frequency.
+helpers' `resolvePosition`) and shows "Indy Center", its frequency, and
+`FLM 83 · Falmouth 83`.
 
 In your own component, read them with `getPositions()`, which returns a
-function, and call it where you use them:
+function, and call it where you use them. Name your own position type to
+read the fields centerline doesn't, such as `requiredCredentials`:
 
 ```svelte
 <script lang="ts">
@@ -63,46 +65,36 @@ function, and call it where you use them:
     getPositions,
     resolvePosition,
   } from "@indy-center/centerline-svelte";
+  import type { CataloguePosition } from "$lib/server/cms/types";
 
   let { callsign }: { callsign: string } = $props();
-  const positions = getPositions();
+  const positions = getPositions<CataloguePosition>();
   const found = $derived(resolvePosition(callsign, positions()));
 </script>
 ```
 
 ## Functions
 
-| Function                        | Where        | Notes                                                                                               |
-| ------------------------------- | ------------ | --------------------------------------------------------------------------------------------------- |
-| `fetchPositions(artcc)`         | `/server`    | `Promise<VnasPosition[]>`: the ARTCC's positions, its TRACONs' and towers' included. Never rejects. |
-| `setPositions(() => positions)` | package root | In the root layout's `<script>`, once.                                                              |
-| `getPositions()`                | package root | `() => readonly VnasPosition[]`; no positions when no layout set them.                              |
+| Function                        | Where        | Notes                                                                                                    |
+| ------------------------------- | ------------ | -------------------------------------------------------------------------------------------------------- |
+| `setPositions(() => positions)` | package root | In the root layout's `<script>`, once. Takes any positions with `PositionInfo`'s fields.                 |
+| `getPositions<P>()`             | package root | `() => readonly P[]`, `PositionInfo` by default; no positions when no layout set them. `P` is unchecked. |
 
-`@indy-center/centerline-svelte/server` throws if it is loaded in the browser, so a
-stray import from a component fails at once rather than at the fetch.
+## PositionInfo
 
-## How it fetches
+The fields centerline reads of the catalogue's positions. Any other field
+the catalogue serves (`facility`, `starred`, `requiredCredentials`) is
+kept on the objects and never read.
 
-- One `GET https://data-api.vnas.vatsim.net/api/artccs/ZID`: about 1 MB,
-  slimmed to `VnasPosition` (about 26 KB for ZID's 157 positions), the
-  rest dropped. `facility` is the name of the ARTCC, TRACON or tower the
-  position belongs to; `radioName` has its spaces collapsed.
-- The copy is kept in memory, per server process (per Worker isolate on
-  Cloudflare), and shared by every request and every caller. Callers at
-  the same moment share one request.
-- After an hour it asks again. If Data Admin's `lastUpdatedAt` is
-  unchanged, it keeps the same array. Data Admin sends no `ETag` or
-  caching headers, so a check costs the full 1 MB; it changes every few
-  days.
-- When the request fails, answers with an error, or isn't an ARTCC, it
-  logs the error with `console.error`, gives the copy it has (or `[]`),
-  and asks again after a minute.
-
-## Planned
-
-The fetch will move to identity, as `getFacilityPositions()` over RPC, so
-apps stop each pulling the 1 MB. When it does, only the
-`+layout.server.ts` line changes; `setPositions` and the components stay.
+| Field       | Type             | Notes                                                                   |
+| ----------- | ---------------- | ----------------------------------------------------------------------- |
+| `id`        | `string`         | The vNAS id; the feed's `primaryPositionId`.                            |
+| `callsign`  | `string`         | `IND_83_CTR`.                                                           |
+| `name`      | `string`         | The sector or position name: "Falmouth 83".                             |
+| `shortName` | `string \| null` | As controllers say it: `FLM 83`, `LEX LC`; null where the CMS has none. |
+| `radioName` | `string`         | "Indy Center".                                                          |
+| `frequency` | `number`         | In hertz: `128225000`.                                                  |
+| `retired`   | `boolean`        | vNAS no longer lists it: a callsign never resolves to it.               |
 
 ## Accessibility
 

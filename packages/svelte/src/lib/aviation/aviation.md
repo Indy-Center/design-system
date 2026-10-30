@@ -15,9 +15,9 @@ description: Plain functions for frequencies, callsigns, positions, ratings, dur
       id (`primaryPositionId` in the vNAS feed), not just the callsign.
 - [ ] Sort positions with `comparePositionTypes`, and members by the
       rating's `id`, never by its short code.
-- [ ] They format and look up only. None of them fetches; to get the
-      positions, use `fetchPositions` from `@indy-center/centerline-svelte/server`
-      (see the positions lookup's page).
+- [ ] They format and look up only. None of them fetches; the positions
+      are the CMS catalogue's, read in your app's server load (see the
+      positions lookup's page).
 
 ## Use
 
@@ -29,13 +29,12 @@ import {
   logoffFromInfo,
   resolvePosition,
   spokenFrequency,
-  type VnasPosition,
 } from "@indy-center/centerline-svelte";
 
 formatFrequency(128225000); // "128.22"
 spokenFrequency(128225000); // "one two eight point two two"
 
-// positions: VnasPosition[], from the app's server load.
+// positions: the CMS catalogue's, from the app's server load.
 resolvePosition("IND_831_CTR", positions);
 // { match: "relief", position: { callsign: "IND_83_CTR", … } }
 
@@ -97,22 +96,17 @@ callsign alone, with no radio name or frequency.
    (`IND_831_CTR` is `IND_83_CTR`, `IND_E1_APP` is `IND_E_APP`); else an
    all-digit middle dropped (`IND_1_GND` is `IND_GND`).
 
+Exact and relief skip a retired position, one vNAS no longer lists, so a
+login never resolves to it; a `positionId` still finds it.
+
 Checked against all 157 of ZID's positions: none of them, missing from the
 list, resolves to another one. A login whose prefix changed (`DCA_J1_APP`
 for `PCT_APP`) stays unknown.
 
-`positions` is any array with `id` and `callsign`; `VnasPosition` is the
-slim shape the positions lookup supplies:
-
-| Field       | Type      | Notes                                            |
-| ----------- | --------- | ------------------------------------------------ |
-| `id`        | `string`  | Data Admin's id; the feed's `primaryPositionId`. |
-| `callsign`  | `string`  | `IND_83_CTR`.                                    |
-| `name`      | `string`  | The sector: "Falmouth 83".                       |
-| `radioName` | `string`  | "Indy Center", spaces collapsed.                 |
-| `frequency` | `number`  | Hertz.                                           |
-| `facility`  | `string`  | The facility's name: "Indianapolis ARTCC".       |
-| `starred`   | `boolean` | Starred in Data Admin.                           |
+`positions` is any array with `id`, `callsign` and, where it has one,
+`retired`, such as the CMS catalogue's positions; the position comes back
+as the type you passed. `PositionInfo` lists the fields the components
+read (see the positions lookup's page).
 
 ## Grouping who's online by position
 

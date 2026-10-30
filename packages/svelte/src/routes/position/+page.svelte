@@ -3,7 +3,7 @@
   import { samplePositions } from "../../playground/positions.ts";
   import Schemes from "../../playground/Schemes.svelte";
 
-  // An app's layout sets them from fetchPositions("ZID").
+  // An app's layout sets them from the CMS catalogue's positions.
   setPositions(() => samplePositions);
 
   const pilots = ["airport", "radioName", "frequency"] as const;
@@ -19,6 +19,10 @@
         <Position callsign="LEX_E_APP" />
         <Position callsign="IND_GND" />
       </dd>
+    </div>
+    <div>
+      <dt>No short name</dt>
+      <dd><Position callsign="ZID_TMU" /></dd>
     </div>
     <div>
       <dt>Relief login</dt>
@@ -75,7 +79,11 @@
     </div>
     <div>
       <dt>Unknown</dt>
-      <dd><Position callsign="IND_X_CTR" /></dd>
+      <dd class="space-y-3">
+        <Position callsign="IND_X_CTR" />
+        <!-- Retired: vNAS no longer lists it. -->
+        <Position callsign="PKB_TWR" />
+      </dd>
     </div>
   </DescriptionList>
 </Schemes>

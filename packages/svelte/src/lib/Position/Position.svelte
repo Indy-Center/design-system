@@ -67,12 +67,12 @@
   /** A text part of the label, in mono for a callsign. */
   type Part = { text: string; mono?: boolean };
 
-  const shortName = $derived<Part | undefined>(
-    has("shortName")
-      ? // vNAS has no short name yet: the position's own callsign.
-        { text: found?.callsign ?? callsign, mono: true }
-      : undefined,
-  );
+  // The CMS's short name, or with none, the position's own callsign.
+  const shortName = $derived.by<Part | undefined>(() => {
+    if (!has("shortName")) return undefined;
+    if (found?.shortName) return { text: found.shortName };
+    return { text: found?.callsign ?? callsign, mono: true };
+  });
   const radio = $derived<Part | undefined>(
     has("radioName") && radioText ? { text: radioText } : undefined,
   );

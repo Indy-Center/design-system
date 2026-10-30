@@ -3,7 +3,7 @@
   import { samplePositions } from "../../playground/positions.ts";
   import Schemes from "../../playground/Schemes.svelte";
 
-  // An app's layout sets them from fetchPositions("ZID").
+  // An app's layout sets them from the CMS catalogue's positions.
   setPositions(() => samplePositions);
 </script>
 
