@@ -112,6 +112,8 @@ describe("Alert", () => {
         .toHaveStyle({
           backgroundColor: translucent(colour, 10),
           borderTopColor: translucent(colour, 40),
+          // A width needs its style: WebKit reads a width alone as 0px.
+          borderTopStyle: "solid",
           borderTopWidth: "1px",
         });
     },

@@ -9,10 +9,15 @@ type Screen = RenderResult<typeof Disclosure>;
 const trigger = (screen: Screen) =>
   screen.getByRole("button", { name: "Apps" });
 
-/** Opens the test disclosure and puts focus inside its panel. */
+/**
+ * Opens the test disclosure and puts focus inside its panel. Not by a
+ * click: Safari doesn't focus a clicked button.
+ */
 async function openWithFocusInside(screen: Screen) {
   await trigger(screen).click();
-  await screen.getByRole("button", { name: "Inside" }).click();
+  const inside = screen.getByRole("button", { name: "Inside" });
+  (inside.element() as HTMLButtonElement).focus();
+  await expect.element(inside).toHaveFocus();
   return screen;
 }
 
@@ -30,7 +35,9 @@ describe("dismiss", () => {
     await expect.element(trigger(screen)).toHaveFocus();
   });
 
-  test("a click outside closes the panel and leaves focus where it went", async () => {
+  // Focus goes where the browser puts it on a click (Chromium: the button
+  // clicked; Safari: nowhere), not back to the trigger.
+  test("a click outside closes the panel and leaves focus off the trigger", async () => {
     const screen = await openWithFocusInside(
       await renderIn("light", Disclosure, {}),
     );
@@ -41,7 +48,7 @@ describe("dismiss", () => {
     await expect
       .element(trigger(screen))
       .toHaveAttribute("aria-expanded", "false");
-    await expect.element(elsewhere).toHaveFocus();
+    await expect.element(trigger(screen)).not.toHaveFocus();
   });
 
   // A press on the trigger isn't outside: the trigger's own click closes
@@ -97,8 +104,8 @@ describe("dismiss", () => {
   test("does nothing while the panel is closed", async () => {
     const screen = await renderIn("light", Disclosure, {});
     const elsewhere = screen.getByRole("button", { name: "Elsewhere" });
+    (elsewhere.element() as HTMLButtonElement).focus();
 
-    await elsewhere.click();
     await userEvent.keyboard("{Escape}");
 
     await expect.element(elsewhere).toHaveFocus();

@@ -16,8 +16,15 @@ const props = () => ({
 describe("Disclosure", () => {
   test("starts closed, its summary showing and its content hidden", async () => {
     const screen = await renderIn("light", Disclosure, props());
+    // The <summary> itself: in WebKit, Vitest counts nothing inside a
+    // closed <details> as showing, the summary's own text included.
     await expect
-      .element(screen.getByText("Why do I need a rating?"))
+      .element(
+        screen
+          .getByText("Why do I need a rating?")
+          .element()
+          .closest("summary")!,
+      )
       .toBeVisible();
     await expect
       .element(screen.getByText("Each position needs its own rating."))

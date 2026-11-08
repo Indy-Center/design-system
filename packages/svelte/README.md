@@ -102,7 +102,9 @@ at [centerline.flyindycenter.com](https://centerline.flyindycenter.com).
   Chromium, and the pure modules' tests
   (`*.node.test.ts`) and the packed files' checks in Node. Where
   Playwright's own Chromium isn't installed, point `CHROMIUM_PATH` at
-  another Chromium build.
+  another Chromium build. `CENTERLINE_BROWSER=webkit` runs the
+  component tests in Playwright's WebKit instead, as CI's macOS `webkit`
+  job does (after `npx playwright install webkit`).
 - `npm run check`, `npm run build`.
 
 Adding a component: follow [`CONVENTIONS.md`](CONVENTIONS.md).

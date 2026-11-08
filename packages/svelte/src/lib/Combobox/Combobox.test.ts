@@ -95,23 +95,26 @@ describe("Combobox", () => {
       expect(new FormData(form).get("controller")).toBe("1000002");
     });
 
-    test.each([
-      ["{Home}", 0],
-      ["{ArrowRight}", 2],
-    ])(
-      "%s moves the caret in the box and leaves the list",
-      async (key, caret) => {
+    // Where the caret goes is the browser's: on a Mac, Home doesn't move it.
+    test.each(["Home", "End", "ArrowLeft", "ArrowRight"])(
+      "{%s} is left to the box, and leaves the list",
+      async (key) => {
         const screen = await renderIn("light", Picker, {});
         const input = screen.getByRole("combobox");
         await input.fill("an");
-        // Put the caret mid-text so each key has somewhere to go.
-        (input.element() as HTMLInputElement).setSelectionRange(1, 1);
-        await userEvent.keyboard(`{ArrowDown}${key}`);
+        await userEvent.keyboard("{ArrowDown}");
+        let prevented: boolean | undefined;
+        const listen = (event: KeyboardEvent) => {
+          if (event.key === key) prevented = event.defaultPrevented;
+        };
+        window.addEventListener("keydown", listen);
+        onTestFinished(() => window.removeEventListener("keydown", listen));
+
+        await userEvent.keyboard(`{${key}}`);
+
+        expect(prevented).toBe(false);
         await expect.element(input).toHaveAttribute("aria-expanded", "true");
         expect(input).not.toHaveAttribute("aria-activedescendant");
-        expect((input.element() as HTMLInputElement).selectionStart).toBe(
-          caret,
-        );
       },
     );
 
