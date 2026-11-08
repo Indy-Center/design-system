@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { userEvent } from "vitest/browser";
 import type { RenderResult } from "vitest-browser-svelte";
+import { expectAbove, expectAt } from "../../../test/edges.ts";
 import { role } from "../../../test/roles.ts";
 import { renderIn } from "../../../test/schemes.ts";
 import Described from "./Tooltip.test.svelte";
@@ -58,8 +59,9 @@ describe("Tooltip", () => {
     await expect.element(tooltip(screen)).not.toBeVisible();
   });
 
-  // A click focuses the button, but not visibly: once the pointer leaves,
-  // the tooltip goes, rather than staying until focus moves.
+  // It shows on hover and on focus a keyboard gives, not on a click. A
+  // click focuses the button in Chromium, not visibly, and not at all in
+  // Safari: either way, once the pointer leaves, the tooltip goes.
   test("hides when the pointer leaves a trigger it clicked", async () => {
     const screen = await renderIn("light", Described, {});
 
@@ -68,7 +70,6 @@ describe("Tooltip", () => {
     await trigger(screen).unhover();
     vi.advanceTimersByTime(LEAVE_DELAY);
 
-    await expect.element(trigger(screen)).toHaveFocus();
     await expect.element(tooltip(screen)).not.toBeVisible();
   });
 
@@ -123,14 +124,32 @@ describe("Tooltip", () => {
     await expect.element(tooltip(screen)).toBeVisible();
   });
 
-  test("shows above the trigger", async () => {
-    const screen = await renderIn("light", Described, {});
+  /** The trigger's box and the tooltip's, once it shows. */
+  async function shownBoxes(screen: Screen) {
     await userEvent.tab();
     await expect.element(tooltip(screen)).toBeVisible();
+    return {
+      button: trigger(screen).element().getBoundingClientRect(),
+      tip: tooltip(screen).element().getBoundingClientRect(),
+    };
+  }
+  const middle = (box: DOMRect) => box.left + box.width / 2;
 
-    const button = trigger(screen).element().getBoundingClientRect();
-    const tip = tooltip(screen).element().getBoundingClientRect();
-    expect(tip.bottom).toBeLessThanOrEqual(button.top);
+  test("shows above its 44px Button, centred on it", async () => {
+    const screen = await renderIn("light", Described, {});
+    const { button, tip } = await shownBoxes(screen);
+
+    expect(button.height).toBe(44);
+    expectAbove(tip, button);
+    expectAt(middle(tip), middle(button));
+  });
+
+  test("with no room above the trigger, shows below it", async () => {
+    const screen = await renderIn("light", Described, { top: true });
+    const { button, tip } = await shownBoxes(screen);
+
+    expectAbove(button, tip);
+    expectAt(middle(tip), middle(button));
   });
 
   test("is drawn in the page's text colour, its words in the background's", async () => {
