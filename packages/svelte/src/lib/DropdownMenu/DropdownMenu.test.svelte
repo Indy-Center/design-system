@@ -15,6 +15,8 @@
     variant?: "primary" | "secondary";
     /** Moves the menu in from the window's left edge, so it has room. */
     inset?: boolean;
+    /** Puts the menu at the window's bottom right, with no room below. */
+    low?: boolean;
     /** The arrow's disabled. */
     disabled?: boolean;
     /** DropdownMenu's class, for the arrow. */
@@ -30,6 +32,7 @@
     attached = false,
     variant = "secondary",
     inset = false,
+    low = false,
     disabled,
     class: className,
     tooltip = false,
@@ -38,7 +41,13 @@
   let withdrawn = $state(false);
 </script>
 
-<div class={["flex items-start gap-4", inset && "pl-80"]}>
+<div
+  class={[
+    "flex items-start gap-4",
+    inset && "pl-80",
+    low && "fixed right-4 bottom-4",
+  ]}
+>
   <div class="flex">
     {#if attached}
       <Button {variant} class="rounded-r-none">Approve</Button>

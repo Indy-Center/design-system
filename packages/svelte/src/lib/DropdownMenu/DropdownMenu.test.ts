@@ -2,6 +2,7 @@
 import { describe, expect, onTestFinished, test } from "vitest";
 import { userEvent } from "vitest/browser";
 import type { RenderResult } from "vitest-browser-svelte";
+import { expectAbove, expectAt } from "../../../test/edges.ts";
 import { role } from "../../../test/roles.ts";
 import { renderIn } from "../../../test/schemes.ts";
 import Menu from "./DropdownMenu.test.svelte";
@@ -183,8 +184,8 @@ describe("DropdownMenu", () => {
     await arrow(screen).click();
 
     const { button, panel } = boxes(screen);
-    expect(panel.top).toBeGreaterThanOrEqual(button.bottom);
-    expect(Math.round(panel.right)).toBe(Math.round(button.right));
+    expectAbove(button, panel);
+    expectAt(panel.right, button.right);
   });
 
   test("at the window's left edge, opens rightwards to stay in it", async () => {
@@ -192,8 +193,17 @@ describe("DropdownMenu", () => {
     await arrow(screen).click();
 
     const { button, panel } = boxes(screen);
-    expect(panel.top).toBeGreaterThanOrEqual(button.bottom);
-    expect(Math.round(panel.left)).toBe(Math.round(button.left));
+    expectAbove(button, panel);
+    expectAt(panel.left, button.left);
+  });
+
+  test("near the window's bottom, opens above the arrow instead", async () => {
+    const screen = await renderIn("light", Menu, { low: true });
+    await arrow(screen).click();
+
+    const { button, panel } = boxes(screen);
+    expectAbove(panel, button);
+    expectAt(panel.right, button.right);
   });
 
   test("every row is at least 44px tall", async () => {
