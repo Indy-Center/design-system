@@ -6,9 +6,6 @@ name: CI
 on:
   pull_request:
   workflow_call:
-  # Temporary, to run the checks on this branch before its PR.
-  push:
-    branches: [centerline/webkit-ci]
 
 permissions:
   contents: read
