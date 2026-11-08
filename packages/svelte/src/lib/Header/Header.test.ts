@@ -2,6 +2,7 @@ import type { ComponentProps } from "svelte";
 import { afterEach, describe, expect, onTestFinished, test } from "vitest";
 import { page, userEvent } from "vitest/browser";
 import { render } from "vitest-browser-svelte";
+import { expectAbove, expectInWindow } from "../../../test/edges.ts";
 import { role } from "../../../test/roles.ts";
 import { hubNav } from "../../playground/chrome.ts";
 import { INDY_CENTER_APPS } from "../AppsMenu/apps.ts";
@@ -198,6 +199,54 @@ describe("Header", () => {
     expect(
       screen.getByRole("banner").element().getBoundingClientRect().height,
     ).toBe(65);
+  });
+
+  // With real pointer clicks: Safari doesn't focus a clicked button, so
+  // closing mustn't wait on focus leaving.
+  describe.each([
+    { menu: "Apps", link: /Library/ },
+    { menu: "Account: Sam Rivera", link: "My profile" },
+  ])("the $menu menu", ({ menu, link }) => {
+    async function open(width: number) {
+      await page.viewport(width, 800);
+      const screen = await renderHeader({ app: training, nav: hubNav, member });
+      const button = screen.getByRole("button", { name: menu });
+      await button.click();
+      await expect.element(button).toHaveAttribute("aria-expanded", "true");
+      return { screen, button };
+    }
+
+    test.each([390, 1280])(
+      "at %ipx, opens below its button, inside the window",
+      async (width) => {
+        const { button } = await open(width);
+        const id = button.element().getAttribute("aria-controls")!;
+        const panel = document.getElementById(id)!.getBoundingClientRect();
+
+        expectAbove(button.element().getBoundingClientRect(), panel);
+        expectInWindow(panel);
+      },
+    );
+
+    test("closes when a link in it is followed", async () => {
+      const { screen, button } = await open(1280);
+      // Keep the test's page where it is.
+      const stop = (event: Event) => event.preventDefault();
+      window.addEventListener("click", stop);
+      onTestFinished(() => window.removeEventListener("click", stop));
+
+      await screen.getByRole("link", { name: link }).click();
+
+      await expect.element(button).toHaveAttribute("aria-expanded", "false");
+    });
+
+    test("closes on a click outside", async () => {
+      const { button } = await open(1280);
+
+      await userEvent.click(document.body, { position: { x: 600, y: 700 } });
+
+      await expect.element(button).toHaveAttribute("aria-expanded", "false");
+    });
   });
 
   describe("below lg, the phone menu", () => {
