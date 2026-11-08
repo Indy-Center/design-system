@@ -46,3 +46,30 @@ jobs:
       # fails here rather than at npm publish.
       - name: Pack
         run: npm run pack:dry-run
+
+  # The component tests in Playwright's WebKit, Safari's engine, on macOS,
+  # where it behaves as Safari does there (a click doesn't focus a button).
+  # The token tests and svelte-check run in `check` only.
+  webkit:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build
+        run: npm run build -w packages/tokens && npm run build -w packages/svelte
+
+      - name: Install WebKit
+        run: npx playwright install webkit
+
+      - name: Test in WebKit
+        working-directory: packages/svelte
+        run: npx vitest run --project components
+        env:
+          CENTERLINE_BROWSER: webkit
