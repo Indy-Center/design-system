@@ -95,6 +95,8 @@ describe("ChoiceCard", () => {
     const card = cardOf(screen, "Tower");
     await expect.element(card).toHaveStyle({
       borderTopColor: role("border", "light"),
+      // A width needs its style: WebKit reads a width alone as 0px.
+      borderTopStyle: "solid",
       borderTopWidth: "1px",
       backgroundColor: "rgba(0, 0, 0, 0)",
     });

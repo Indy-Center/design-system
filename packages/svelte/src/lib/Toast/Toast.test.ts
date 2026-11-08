@@ -236,6 +236,8 @@ describe("Toast", () => {
       await expect.element(item).toHaveStyle({
         backgroundColor: role("card", "light"),
         borderLeftColor: role(SEVERITIES[level].role, "light"),
+        // A width needs its style: WebKit reads a width alone as 0px.
+        borderLeftStyle: "solid",
         borderLeftWidth: "4px",
       });
       expect(item.element().querySelector("svg path")?.getAttribute("d")).toBe(
