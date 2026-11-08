@@ -67,6 +67,7 @@ describe("Tooltip", () => {
 
     await trigger(screen).click();
     await expect.element(tooltip(screen)).toBeVisible();
+    expect(trigger(screen).element().matches(":focus-visible")).toBe(false);
     await trigger(screen).unhover();
     vi.advanceTimersByTime(LEAVE_DELAY);
 
