@@ -12,6 +12,13 @@ import {
 } from "./test/commands.ts";
 import { markdown } from "./src/playground/markdown.ts";
 
+// The browser the component tests run in: Chromium unless
+// `CENTERLINE_BROWSER=webkit`, which CI's macOS job sets.
+const browser = process.env.CENTERLINE_BROWSER || "chromium";
+if (browser !== "chromium" && browser !== "webkit") {
+  throw new Error(`CENTERLINE_BROWSER is chromium or webkit, not ${browser}`);
+}
+
 export default defineConfig({
   // The adapter builds the playground as a Worker (`npm run
   // build:playground`); svelte-package, which builds the published
@@ -42,8 +49,9 @@ export default defineConfig({
     testTimeout: 10_000,
     projects: [
       {
-        // Component tests, beside each component, in headless Chromium,
-        // and the test helpers' checks that need a page.
+        // Component tests, beside each component, in headless Chromium
+        // (or `CENTERLINE_BROWSER`), and the test helpers' checks that
+        // need a page.
         extends: true,
         test: {
           name: "components",
@@ -58,13 +66,15 @@ export default defineConfig({
             enabled: true,
             headless: true,
             provider: playwright({
-              // A browser already on the machine, when Playwright's own
+              // A Chromium already on the machine, when Playwright's own
               // revision isn't installed (see the README).
               launchOptions: {
-                executablePath: process.env.CHROMIUM_PATH || undefined,
+                executablePath:
+                  (browser === "chromium" && process.env.CHROMIUM_PATH) ||
+                  undefined,
               },
             }),
-            instances: [{ browser: "chromium" }],
+            instances: [{ browser }],
             commands: {
               emulateColorScheme,
               emulateReducedMotion,
