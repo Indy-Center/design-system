@@ -32,6 +32,35 @@ export const emulateReducedMotion: BrowserCommand<
   });
 };
 
+type EmulatedFormat = Intl.DateTimeFormatConstructor & {
+  /** The zone a format takes when it names none; null for the browser's. */
+  zone?: string | null;
+};
+
+/**
+ * Run in the test's frame: makes `zone` the one an `Intl.DateTimeFormat`
+ * takes when its options name none, null putting the browser's back. The
+ * first call puts a wrapper in place of the constructor.
+ */
+function defaultIntlZone(zone: string | null) {
+  let format = Intl.DateTimeFormat as EmulatedFormat;
+  if (!("zone" in format)) {
+    const native = Intl.DateTimeFormat;
+    const emulated = function (
+      locales?: Intl.LocalesArgument,
+      options?: Intl.DateTimeFormatOptions,
+    ) {
+      const timeZone = options?.timeZone ?? emulated.zone ?? undefined;
+      return new native(locales, { ...options, timeZone });
+    } as EmulatedFormat;
+    // So a format made here is still `instanceof Intl.DateTimeFormat`.
+    Object.defineProperty(emulated, "prototype", { value: native.prototype });
+    emulated.supportedLocalesOf = native.supportedLocalesOf;
+    Intl.DateTimeFormat = format = emulated;
+  }
+  format.zone = zone;
+}
+
 // One DevTools session per page, kept for the next override.
 const sessions = new WeakMap<Page, CDPSession>();
 
@@ -41,6 +70,14 @@ export const emulateTimeZone: BrowserCommand<[string | null]> = async (
   timeZone,
 ) => {
   const page = playwrightPage(context, "emulateTimeZone");
+  // The DevTools protocol is Chromium's. Playwright sets WebKit's zone
+  // only as the page opens, once for the whole run, so there the test's
+  // frame gets it through Intl instead: the components read the device's
+  // zone only from `Intl.DateTimeFormat`.
+  if (page.context().browser()?.browserType().name() !== "chromium") {
+    await (await context.frame()).evaluate(defaultIntlZone, timeZone);
+    return;
+  }
   let cdp = sessions.get(page);
   if (!cdp) {
     cdp = await page.context().newCDPSession(page);
