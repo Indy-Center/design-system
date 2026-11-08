@@ -9,8 +9,11 @@ import {
 const NAME = "indy-test-preference";
 const YEAR = 365 * 24 * 60 * 60;
 
+// Both cookies a test may leave: the host's own, and the one across the
+// host's domain, which WebKit keeps apart from it (Chrome doesn't).
 afterEach(() => {
   document.cookie = `${NAME}=; Path=/; Max-Age=0`;
+  document.cookie = `${NAME}=; Path=/; Max-Age=0; Domain=${location.hostname}`;
 });
 
 /** What the page writes to `document.cookie` while `run` runs. */
