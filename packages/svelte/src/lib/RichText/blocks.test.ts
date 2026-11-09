@@ -14,9 +14,11 @@ import {
   BLOCKS,
   type BlockFieldTypes,
   type CalloutBlock,
+  type CitationBlock,
   type DisclosureBlock,
 } from "../blocks.ts";
 import Callout from "../Callout/Callout.svelte";
+import Citation from "../Citation/Citation.svelte";
 import Disclosure from "../Disclosure/Disclosure.svelte";
 import Link from "../Link/Link.svelte";
 import type { BlockProps, BlockSnippets } from "./blockSnippets.ts";
@@ -35,6 +37,9 @@ describe("each block's fields fit its component's props", () => {
     // One line per block, alphabetical (see the top of this file).
     expectTypeOf<AsProps<CalloutBlock>>().toExtend<
       ComponentProps<typeof Callout>
+    >();
+    expectTypeOf<AsProps<CitationBlock>>().toExtend<
+      ComponentProps<typeof Citation>
     >();
     // Disclosure's summary is a snippet; the block's is text, which its
     // snippet draws as the summary's line.

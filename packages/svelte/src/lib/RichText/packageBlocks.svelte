@@ -8,9 +8,11 @@
     BlockFieldTypes,
     BlockSlug,
     CalloutBlock,
+    CitationBlock,
     DisclosureBlock,
   } from "../blocks.js";
   import Callout from "../Callout/Callout.svelte";
+  import Citation from "../Citation/Citation.svelte";
   import Disclosure from "../Disclosure/Disclosure.svelte";
   import type { BlockProps } from "./blockSnippets.js";
 
@@ -19,6 +21,7 @@
   } = {
     // One line per block, alphabetical: `callout,`
     callout,
+    citation,
     disclosure,
   };
 </script>
@@ -33,6 +36,10 @@
 <!-- my-5: a paragraph's gap, kept between two callouts in a row. -->
 {#snippet callout({ content, ...fields }: BlockProps<CalloutBlock>)}
   <Callout {...fields} class="my-5">{@render content()}</Callout>
+{/snippet}
+
+{#snippet citation(fields: BlockProps<CitationBlock>)}
+  <Citation {...fields} />
 {/snippet}
 
 <!-- The content's own margins stay between its parts, not at its edges. -->

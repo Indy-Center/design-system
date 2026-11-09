@@ -447,6 +447,24 @@ describe("RichText", () => {
         .toBeVisible();
     });
 
+    test("a citation in a callout's text is a Citation: the source, then the place as a link", async () => {
+      const screen = await renderIn("light", RichText, {
+        content: doc(block("callout")),
+      });
+      const aside = screen.getByRole("complementary", {
+        name: "Wake turbulence",
+      });
+      await expect
+        .element(aside.getByText("JO 7110.65 AA"))
+        .toHaveProperty("tagName", "CITE");
+      await expect
+        .element(aside.getByRole("link", { name: "3-9-6" }))
+        .toHaveAttribute(
+          "href",
+          "https://www.faa.gov/air_traffic/publications/atpubs/atc_html/",
+        );
+    });
+
     test("a callout with no label reads its level's own", async () => {
       const callout = block("callout");
       Object.assign(callout.fields as object, { label: null, level: "danger" });

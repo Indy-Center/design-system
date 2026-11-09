@@ -24,6 +24,21 @@ export type CalloutBlock = {
   content: RichTextState;
 };
 
+/** Where a citation points: a source record as Payload populates it. */
+export type CitationBlock = {
+  /** The source: its name and edition, and where it is read. */
+  source: {
+    id: string;
+    name: string;
+    edition?: string | null;
+    url?: string | null;
+    /** The file attached to the source, read when there is no `url`. */
+    file?: { url?: string | null } | null;
+  };
+  /** The place in the source, as it numbers itself: "3-7-2", "Chapter 4". */
+  at: string;
+};
+
 /** A "show more" section, drawn by `Disclosure`. */
 export type DisclosureBlock = {
   /** The line that is always shown: plain text. */
@@ -40,6 +55,7 @@ export type DisclosureBlock = {
 export interface BlockFieldTypes {
   // One line per block, alphabetical: `callout: CalloutBlock;`
   callout: CalloutBlock;
+  citation: CitationBlock;
   disclosure: DisclosureBlock;
 }
 
@@ -53,6 +69,7 @@ export type BlockSlug = keyof BlockFieldTypes;
 export const BLOCKS = {
   // One line per block, alphabetical: `callout: "block",`
   callout: "block",
+  citation: "inline",
   disclosure: "block",
 } as const satisfies { [Slug in BlockSlug]: BlockKind };
 

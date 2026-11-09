@@ -126,10 +126,11 @@ import {
 } from "@indy-center/centerline-svelte/blocks";
 ```
 
-| Slug         | Kind  | Fields                                                                              | Component                                   | Needs |
-| ------------ | ----- | ----------------------------------------------------------------------------------- | ------------------------------------------- | ----- |
-| `callout`    | block | `level` (select, `CALLOUT_LEVELS`), `label` (text, optional), `content` (rich text) | [`Callout`](../Callout/Callout.md)          |       |
-| `disclosure` | block | `summary` (text), `content` (rich text)                                             | [`Disclosure`](../Disclosure/Disclosure.md) |       |
+| Slug         | Kind   | Fields                                                                                                               | Component                                   | Needs |
+| ------------ | ------ | -------------------------------------------------------------------------------------------------------------------- | ------------------------------------------- | ----- |
+| `callout`    | block  | `level` (select, `CALLOUT_LEVELS`), `label` (text, optional), `content` (rich text)                                  | [`Callout`](../Callout/Callout.md)          |       |
+| `citation`   | inline | `source` (relationship to a source, populated with `id`, `name`, `edition`, `url` and the file's `url`), `at` (text) | [`Citation`](../Citation/Citation.md)       |       |
+| `disclosure` | block  | `summary` (text), `content` (rich text)                                                                              | [`Disclosure`](../Disclosure/Disclosure.md) |       |
 
 An app's snippet for one of these slugs replaces the package's; an app
 gives its own slugs a snippet. A snippet types its argument with

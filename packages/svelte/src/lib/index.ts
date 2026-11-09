@@ -26,6 +26,10 @@ export {
   CHIP_VARIANTS,
   type ChipVariant,
 } from "./Chip/Chip.svelte";
+export {
+  default as Citation,
+  type CitationSource,
+} from "./Citation/Citation.svelte";
 export { default as ColorSchemeSetting } from "./ColorSchemeSetting/ColorSchemeSetting.svelte";
 export { default as Combobox } from "./Combobox/Combobox.svelte";
 export { default as ConfirmDialog } from "./ConfirmDialog/ConfirmDialog.svelte";
