@@ -47,6 +47,14 @@ followed by a nested list of the `h3` headings after it. Deeper headings
 are left out. An `h3` before any `h2` stands at the top. Headings inside
 blocks' content are counted, as `RichText` counts them.
 
+## Looks
+
+- Small text (`text-sm`); each entry is a [Link](../Link/Link.md), so the
+  `link` role (Sky in light, `#38BDF8` in dark), underlined, with a
+  `ring` outline when reached by keyboard.
+- The `h3` entries are indented under their `h2`.
+- No frame or colour of its own.
+
 ## Accessibility
 
 - A `<nav aria-label="Contents">` landmark, so it can be found among the
