@@ -414,11 +414,63 @@ describe("RichText", () => {
     });
 
     test("a block with no snippet draws nothing, and warns", async () => {
+      // An app's own slug, which the package doesn't draw.
+      const block = find("block");
+      Object.assign(block.fields as object, { blockType: "phraseology" });
       const screen = await renderIn("light", RichText, {
-        content: doc(find("block")),
+        content: doc(block),
       });
       expectNothingDrawn(screen.getByRole("article").element());
-      expect(warn).toHaveBeenCalledWith(expect.stringContaining('"callout"'));
+      expect(warn).toHaveBeenCalledWith(
+        expect.stringContaining('"phraseology"'),
+      );
+    });
+  });
+
+  // The package's own blocks; their looks are their components'.
+  describe("the package's blocks", () => {
+    const block = (slug: string) =>
+      find(
+        "block",
+        (n) => (n.fields as { blockType: string }).blockType === slug,
+      );
+
+    test("a callout is a Callout named by its label, its content drawn inside", async () => {
+      const screen = await renderIn("light", RichText, {
+        content: doc(block("callout")),
+      });
+      const aside = screen.getByRole("complementary", {
+        name: "Wake turbulence",
+      });
+      await expect
+        .element(aside.getByText(/^Hold departures behind a heavy/))
+        .toBeVisible();
+    });
+
+    test("a callout with no label reads its level's own", async () => {
+      const callout = block("callout");
+      Object.assign(callout.fields as object, { label: null, level: "danger" });
+      const screen = await renderIn("light", RichText, {
+        content: doc(callout),
+      });
+      await expect
+        .element(screen.getByRole("complementary", { name: "Warning" }))
+        .toBeVisible();
+    });
+
+    test("a disclosure is a Disclosure showing its summary, its content drawn inside", async () => {
+      const screen = await renderIn("light", RichText, {
+        content: doc(block("disclosure")),
+      });
+      const summary = screen.getByText("Why two minutes?");
+      await expect.element(summary).toBeVisible();
+      const content = screen.getByText(/^The vortex sinks/);
+      await expect.element(content).not.toBeVisible();
+      await summary.click();
+      await expect.element(content).toBeVisible();
+      await expect
+        .element(screen.getByRole("group"))
+        .toContainElement(content.element() as HTMLElement);
     });
   });
 

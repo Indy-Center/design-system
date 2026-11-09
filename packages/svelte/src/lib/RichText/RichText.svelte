@@ -32,7 +32,9 @@
   }: Props = $props();
 
   const drawing: Drawing = $derived({
-    blocks: { ...PACKAGE_BLOCKS, ...blocks } as Drawing["blocks"],
+    // Each snippet's own field type is checked where it is written; here
+    // they are looked up by slug, so the map is read loosely.
+    blocks: { ...PACKAGE_BLOCKS, ...blocks } as unknown as Drawing["blocks"],
     linkHref,
     ids: new Map(
       documentHeadings(content, headingId).map(({ node, id }) => [node, id]),

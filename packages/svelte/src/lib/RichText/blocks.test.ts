@@ -10,7 +10,14 @@
 // snippet for a text field) maps that field in its line, and says why.
 import type { ComponentProps, Snippet } from "svelte";
 import { describe, expectTypeOf, test } from "vitest";
-import { BLOCKS, type BlockFieldTypes } from "../blocks.ts";
+import {
+  BLOCKS,
+  type BlockFieldTypes,
+  type CalloutBlock,
+  type DisclosureBlock,
+} from "../blocks.ts";
+import Callout from "../Callout/Callout.svelte";
+import Disclosure from "../Disclosure/Disclosure.svelte";
 import Link from "../Link/Link.svelte";
 import type { BlockProps, BlockSnippets } from "./blockSnippets.ts";
 import type { RichTextState } from "./nodes.ts";
@@ -26,6 +33,15 @@ type AsProps<F> = Omit<BlockProps<F>, "content"> &
 describe("each block's fields fit its component's props", () => {
   test("the package's blocks", () => {
     // One line per block, alphabetical (see the top of this file).
+    expectTypeOf<AsProps<CalloutBlock>>().toExtend<
+      ComponentProps<typeof Callout>
+    >();
+    // Disclosure's summary is a snippet; the block's is text, which its
+    // snippet draws as the summary's line.
+    expectTypeOf<DisclosureBlock["summary"]>().toEqualTypeOf<string>();
+    expectTypeOf<
+      Omit<AsProps<DisclosureBlock>, "summary"> & { summary: Snippet }
+    >().toExtend<ComponentProps<typeof Disclosure>>();
     expectTypeOf(BLOCKS).toExtend<
       Record<keyof BlockFieldTypes, "block" | "inline">
     >();

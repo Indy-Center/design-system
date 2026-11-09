@@ -95,6 +95,7 @@ describe("the packed package", () => {
       "Breadcrumbs",
       "Button",
       "CHIP_VARIANTS",
+      "Callout",
       "Card",
       "Checkbox",
       "Chip",
@@ -190,6 +191,7 @@ describe("the packed package", () => {
       "BadgeVariant",
       "BlockProps",
       "BlockSnippets",
+      "CalloutLevel",
       "CallsignParts",
       "ChipVariant",
       "ColorScheme",
@@ -256,7 +258,7 @@ describe("the packed package", () => {
     expect(files).toEqual(expect.arrayContaining([types, code]));
 
     const blocks = await import("@indy-center/centerline-svelte/blocks");
-    expect(Object.keys(blocks)).toEqual(["BLOCKS"]);
+    expect(Object.keys(blocks)).toEqual(["BLOCKS", "CALLOUT_LEVELS"]);
 
     // Every file the entry reaches through relative imports.
     const seen = new Set<string>();

@@ -126,11 +126,14 @@ import {
 } from "@indy-center/centerline-svelte/blocks";
 ```
 
-| Slug | Kind | Fields | Component | Needs |
-| ---- | ---- | ------ | --------- | ----- |
+| Slug         | Kind  | Fields                                                                              | Component                                   | Needs |
+| ------------ | ----- | ----------------------------------------------------------------------------------- | ------------------------------------------- | ----- |
+| `callout`    | block | `level` (select, `CALLOUT_LEVELS`), `label` (text, optional), `content` (rich text) | [`Callout`](../Callout/Callout.md)          |       |
+| `disclosure` | block | `summary` (text), `content` (rich text)                                             | [`Disclosure`](../Disclosure/Disclosure.md) |       |
 
-The package draws no blocks of its own yet: an app gives every slug a
-snippet. A snippet types its argument with `BlockProps<Fields>`.
+An app's snippet for one of these slugs replaces the package's; an app
+gives its own slugs a snippet. A snippet types its argument with
+`BlockProps<Fields>`.
 
 ## Accessibility
 
