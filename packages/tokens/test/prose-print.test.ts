@@ -25,7 +25,7 @@ const page = `
   <header data-theme="dark" id="header"><a class="sr-only" id="skip" href="#main">Skip</a><nav data-theme="dark" id="appnav">Nav</nav></header>
   <main id="main">
     <article class="prose prose-centerline" id="prose">
-      <h2 id="h">Title <a href="#h" id="anchor">#</a></h2>
+      <h2 id="h">Title <a href="#h" id="anchor" data-heading-anchor>#</a> <a href="#other" id="inbody">see</a></h2>
       <p id="p">See <a id="ext" href="https://example.com/x" target="_blank">the order</a> and <a id="int" href="/a">a page</a>.</p>
       <div data-callout id="callout"><p>Notice</p></div>
       <figure id="figure"><pre>code</pre></figure>
@@ -120,5 +120,7 @@ describe("prose.css in print", () => {
   test("hides a heading's anchor link", async () => {
     await p.emulateMedia({ media: "print" });
     expect(await style("#anchor", "display")).toBe("none");
+    // An author's own link to a #id in a heading stays.
+    expect(await style("#inbody", "display")).toBe("inline");
   });
 });

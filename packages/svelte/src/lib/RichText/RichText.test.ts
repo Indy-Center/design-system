@@ -70,8 +70,11 @@ describe("RichText", () => {
       [3, "Hold short", "hold-short"],
       [4, "Notes", "notes"],
     ] as const) {
+      // The heading's name ends with its anchor link's text.
       await expect
-        .element(article.getByRole("heading", { level, name }))
+        .element(
+          article.getByRole("heading", { level, name: new RegExp(`^${name}`) }),
+        )
         .toHaveAttribute("id", id);
     }
   });
@@ -103,7 +106,7 @@ describe("RichText", () => {
       headingId: (words) => `section-${words.length}`,
     });
     const [first, second] = screen
-      .getByRole("heading", { name: "Runways" })
+      .getByRole("heading", { name: /^Runways/ })
       .elements();
     expect([first.id, second.id]).toEqual(["section-7", "section-7-2"]);
   });

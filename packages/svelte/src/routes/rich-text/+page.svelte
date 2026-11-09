@@ -1,5 +1,9 @@
 <script lang="ts">
-  import { RichText, type LinkHrefFunction } from "../../lib/index.ts";
+  import {
+    RichText,
+    TableOfContents,
+    type LinkHrefFunction,
+  } from "../../lib/index.ts";
   import Schemes from "../../playground/Schemes.svelte";
   import {
     lessonPlanBody,
@@ -14,6 +18,14 @@
 </script>
 
 <Schemes>
+  <RichText content={lessonPlanBody} {linkHref} />
+</Schemes>
+
+<h2 class="mt-8 mb-4 font-heading text-xl font-semibold text-foreground">
+  Contents and heading anchors
+</h2>
+<Schemes>
+  <TableOfContents content={lessonPlanBody} class="mb-4" />
   <RichText content={lessonPlanBody} {linkHref} />
 </Schemes>
 

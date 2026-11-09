@@ -277,11 +277,12 @@
     display: none;
   }
 
-  /* SEAM SELECTORS: these two name elements that components not yet on
-   * this branch draw. A later change points each at the real element.
-   * Anchor link: a link to a #id inside a heading. Callout: any element
-   * carrying data-callout. */
-  .prose-centerline :is(h1, h2, h3, h4, h5, h6) > a[href^="#"] {
+  /* SEAM SELECTORS: these two name elements that components draw. Keep
+   * each in step with its component. Anchor link: the "link to this
+   * section" RichText draws inside a heading (data-heading-anchor, in
+   * RichText/DrawNodes.svelte). Callout: any element carrying
+   * data-callout. */
+  .prose-centerline :is(h1, h2, h3, h4, h5, h6) > a[data-heading-anchor] {
     display: none;
   }
   .prose-centerline [data-callout] {
