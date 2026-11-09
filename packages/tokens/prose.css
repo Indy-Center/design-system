@@ -5,7 +5,9 @@
  *
  * The variables below and the plugin's defaults on .prose have the same
  * specificity; Tailwind sorts this utility after prose, whatever the
- * import order (the Prose component's tests check the colours). */
+ * import order (the Prose component's tests check the colours). That
+ * holds only while the utility sets few properties: more declarations can
+ * sort it before .prose, so the rules after it are plain rules below. */
 @utility prose-centerline {
   --tw-prose-body: var(--color-foreground-soft);
   --tw-prose-headings: var(--color-foreground);
@@ -231,9 +233,15 @@
     &:is(h1, h2, h3, h4, h5, h6) {
       break-after: avoid;
     }
+    /* A table fits the page, every column kept: long words break, so the
+     * table can be as narrow as the page. */
     &:is(table) {
       display: table;
       overflow: visible;
+      max-inline-size: 100%;
+    }
+    &:is(th, td) {
+      overflow-wrap: anywhere;
     }
   }
 }

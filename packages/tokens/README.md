@@ -117,8 +117,8 @@ values of its own.
 `prose.css` is hand-written: every colour in it is a role's variable,
 or, for the shadow under `<kbd>`, `foreground` mixed with transparent.
 The exception is its print block, which sets the roles the prose reads to
-black, white and a mid grey (`#555` for lines), so a printed page is black
-on white in either scheme.
+black, white and a mid grey (`#555` for lines), so any page that holds
+prose prints black on white in either scheme.
 
 `fonts/` is not generated: Fontsource's file
 (`@fontsource-variable/source-sans-3` 5.3.1), unchanged, and `fonts.css`.

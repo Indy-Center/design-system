@@ -35,6 +35,7 @@ const page = `
   </main>
   <header data-theme="dark" id="panel"><div class="prose prose-centerline"><p id="inpanel">Inside a panel</p></div></header>
   <footer data-theme="dark" id="footer">Footer</footer>
+  <div id="narrow" style="width: 300px"><div class="prose prose-centerline"><table id="wide"><thead><tr><th>Runway</th><th>Length</th><th>Surface</th><th>Lighting</th><th>Approach</th><th>Remarks</th></tr></thead><tbody><tr><td>Runway nine</td><td>Ten thousand</td><td>Asphalt</td><td>High intensity</td><td>Precision</td><td>Made-up remarks</td></tr></tbody></table></div></div>
 </div>
 `;
 
@@ -62,7 +63,7 @@ describe("prose.css on screen, for contrast", () => {
 });
 
 describe("prose.css in print", () => {
-  test("is black on white whatever the scheme", async () => {
+  test("sets the roles to black and white, whatever the scheme", async () => {
     await p.emulateMedia({ media: "print" });
     // This compile doesn't order the plugin's .prose before the
     // prose-centerline utility as the app's build does, so the roles the
@@ -104,7 +105,18 @@ describe("prose.css in print", () => {
     }
   });
 
-  // The seam: #110's anchor link and #111's callout name their own elements.
+  test("fits a wide table to the page, so no column is cut off", async () => {
+    await p.emulateMedia({ media: "print" });
+    expect(await style("#wide", "display")).toBe("table");
+    const box = await p.$eval("#wide", (el) => el.getBoundingClientRect());
+    expect(box.width).toBeLessThanOrEqual(300);
+    // On screen the same table scrolls in its own box instead.
+    await p.emulateMedia({ media: "screen" });
+    expect(await style("#wide", "overflow-x")).toBe("auto");
+  });
+
+  // This selector, and the callout's above, point at elements other
+  // components draw; update them with the real markup.
   test("hides a heading's anchor link", async () => {
     await p.emulateMedia({ media: "print" });
     expect(await style("#anchor", "display")).toBe("none");
