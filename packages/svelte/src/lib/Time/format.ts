@@ -7,7 +7,37 @@ export type TimeZoneShown = "local" | "zulu" | "both";
 export type TimeShown = "time" | "datetime" | "relative";
 
 /** A run of `Time`'s text; `at` is the instant it shows, if any. */
-export type Piece = { text: string; at?: Date };
+export type Piece = {
+  text: string;
+  at?: Date;
+  /** A `datetime` that isn't an instant: a daily time's `23:00`. Wins over `at`. */
+  datetime?: string;
+};
+
+/** `"2300"` as four digits, or undefined when it isn't a time of day. */
+const timeOfDay = /^([01]\d|2[0-3])([0-5]\d)$/;
+
+/**
+ * A daily Zulu time of day: `2300Z`, or a range `2300Z–0300Z` (an end
+ * before the start is after midnight, and reads the same). Each value is
+ * four digits. An invalid `value` gives no pieces, and an invalid `end` is
+ * left off.
+ */
+export function dailyText(value: string, end?: string): Piece[] {
+  const one = (v: string | undefined): Piece | undefined => {
+    const m = v === undefined ? null : timeOfDay.exec(v);
+    return m ? { text: `${v}Z`, datetime: `${m[1]}:${m[2]}` } : undefined;
+  };
+  const start = one(value);
+  if (!start) return [];
+  const finish = one(end);
+  return finish ? [start, { text: "–" }, finish] : [start];
+}
+
+/** Whether `value` is a daily time: four digits, `0000` to `2359`. */
+export function isTimeOfDay(value: unknown): boolean {
+  return typeof value === "string" && timeOfDay.test(value);
+}
 
 /**
  * `Time`'s text, in pieces: `Today, 7:00 PM–10:00 PM EDT · 2300Z–0200Z`.
