@@ -508,6 +508,19 @@ describe("RichText", () => {
       .toHaveAttribute("href", "/api/media/file/sop.pdf");
   });
 
+  test("an upload whose file address isn't relative or http is its name, plain", async () => {
+    const upload = find("upload");
+    upload.value = {
+      id: "<media-id>",
+      url: "javascript:alert(1)",
+      filename: "sop.pdf",
+      mimeType: "application/pdf",
+    };
+    const screen = await renderIn("light", RichText, { content: doc(upload) });
+    await expect.element(screen.getByText("sop.pdf")).toBeVisible();
+    await expect.element(screen.getByRole("link")).not.toBeInTheDocument();
+  });
+
   describe("links", () => {
     const sentence = () => paragraphWith("Tower ");
 

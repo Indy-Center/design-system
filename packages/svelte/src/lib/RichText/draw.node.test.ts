@@ -245,6 +245,18 @@ describe("uploadDrawing", () => {
     });
   });
 
+  test("a file whose address isn't trusted has no href", () => {
+    expect(
+      uploadDrawing(
+        upload({
+          url: "javascript:x",
+          filename: "sop.pdf",
+          mimeType: "application/pdf",
+        }),
+      ),
+    ).toEqual({ kind: "file", href: undefined, name: "sop.pdf" });
+  });
+
   test("an upload Payload didn't fill in draws nothing", () => {
     expect(uploadDrawing(upload("<media-id>"))).toEqual({ kind: "none" });
     expect(uploadDrawing(upload(null))).toEqual({ kind: "none" });

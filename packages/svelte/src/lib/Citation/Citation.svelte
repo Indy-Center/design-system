@@ -15,6 +15,7 @@
 <script lang="ts">
   import type { HTMLAttributes } from "svelte/elements";
   import Link from "../Link/Link.svelte";
+  import { isTrustedUrl } from "../RichText/draw.ts";
 
   type Props = Omit<HTMLAttributes<HTMLSpanElement>, "children"> & {
     /** The source: `{ name: "JO 7110.65", edition: "BB", url: "https://…" }`. */
@@ -26,8 +27,10 @@
   // `class` and `...rest` go on the outer `<span>`.
   let { source, at, class: className, ...rest }: Props = $props();
 
-  // The source's page, or else its file; with neither, `at` is plain text.
-  const href = $derived(source.url || source.file?.url || undefined);
+  // The source's page, or else its file; with neither, or one that isn't
+  // relative or http, https, mailto or tel, `at` is plain text.
+  const address = $derived(source.url || source.file?.url || undefined);
+  const href = $derived(address && isTrustedUrl(address) ? address : undefined);
 </script>
 
 <span {...rest} class={className}

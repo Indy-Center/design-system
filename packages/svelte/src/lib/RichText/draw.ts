@@ -187,7 +187,7 @@ export type UploadDrawing =
       height?: number;
       alt: string;
     }
-  | { kind: "file"; href: string; name: string }
+  | { kind: "file"; href: string | undefined; name: string }
   | { kind: "none" };
 
 /**
@@ -202,7 +202,7 @@ export function uploadDrawing(node: UploadNode): UploadDrawing {
   if (!isImage(file)) {
     return {
       kind: "file",
-      href: file.url,
+      href: isTrustedUrl(file.url) ? file.url : undefined,
       name: file.filename || file.url.split("/").at(-1) || file.url,
     };
   }

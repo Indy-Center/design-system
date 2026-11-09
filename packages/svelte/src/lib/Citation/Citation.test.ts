@@ -65,6 +65,28 @@ describe("Citation", () => {
     await expect.element(screen.getByRole("link")).not.toBeInTheDocument();
   });
 
+  test("an address that isn't relative or http leaves the place plain", async () => {
+    for (const url of [
+      "javascript:alert(1)",
+      " JavaScript:x",
+      "data:text/html,x",
+    ]) {
+      const screen = await renderIn("light", Citation, {
+        source: { name: "Controller notes", url },
+        at: "Appendix B",
+      });
+      await expect
+        .element(screen.getByText(/Appendix B/))
+        .toHaveTextContent("Controller notes Appendix B");
+      await expect.element(screen.getByRole("link")).not.toBeInTheDocument();
+    }
+    const screen = await renderIn("light", Citation, {
+      source: { name: "Notes", file: { url: "javascript:x" } },
+      at: "Chapter 4",
+    });
+    await expect.element(screen.getByRole("link")).not.toBeInTheDocument();
+  });
+
   test("with no place, only the source, and no link", async () => {
     const screen = await renderIn("light", Citation, { source: order });
     await expect.element(screen.getByText("JO 7110.65 BB")).toBeVisible();

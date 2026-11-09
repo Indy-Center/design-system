@@ -236,7 +236,8 @@
         alt={upload.alt}
       />
     {:else if upload.kind === "file"}
-      <a href={upload.href}>{upload.name}</a>
+      {#if upload.href}<a href={upload.href}>{upload.name}</a
+        >{:else}{upload.name}{/if}
     {/if}
   {:else if node.type === "block" || node.type === "inlineBlock"}
     {@const block = as<BlockNode>(node)}

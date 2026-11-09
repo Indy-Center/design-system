@@ -93,16 +93,18 @@ Each of Lexical's own nodes as the element that fits it (decision 0010):
 | block, inline block    | the snippet for its slug (below)                                                                                                                                                                                                                                                     |
 | anything else          | its children, or nothing when it has none                                                                                                                                                                                                                                            |
 
-- A link or autolink whose URL comes from the document is drawn as a
-  link only when the URL is relative or uses `http:`, `https:`,
-  `mailto:` or `tel:`. Any other (`javascript:`, `data:`, `vbscript:`,
-  `file:`) draws the link's text plain, with no `<a>`. The scheme is
+- A link or autolink whose URL comes from the document, a citation's
+  source address or file, and a non-image upload's file address are
+  drawn as a link only when the URL is relative or uses `http:`,
+  `https:`, `mailto:` or `tel:`. Any other (`javascript:`, `data:`,
+  `vbscript:`, `file:`) draws the text (or the file name) plain, with no
+  `<a>`. The scheme is
   read as a browser reads it: spaces and control characters trimmed
   from the ends, tabs and newlines dropped anywhere, in any case, so
   `" JavaScript:"`, and `java` and `script:` split by a tab, are caught.
   A URL with no scheme before its first `/`, `?` or `#` is relative. An
   internal link's address is `linkHref`'s and isn't checked: it is the
-  app's own.
+  app's own. An image's `src` isn't checked.
 - Alignment is `data-align="center"`, `"end"` or `"justify"`; left and
   start write nothing. Indent and Lexical's inline `style` are never
   written.
