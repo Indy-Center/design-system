@@ -1,9 +1,7 @@
 <script lang="ts" module>
-  /** The flight categories, best weather first. */
-  export const FLIGHT_CATEGORIES = ["VFR", "MVFR", "IFR", "LIFR"] as const;
-
-  /** A flight category, as a METAR's ceiling and visibility give it. */
-  export type FlightCategoryCode = (typeof FLIGHT_CATEGORIES)[number];
+  // The list lives in a .ts file so the `blocks` entry can share it.
+  import { FLIGHT_CATEGORIES, type FlightCategoryCode } from "./categories.js";
+  export { FLIGHT_CATEGORIES, type FlightCategoryCode };
 </script>
 
 <script lang="ts">

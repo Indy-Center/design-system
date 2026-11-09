@@ -1,0 +1,945 @@
+import { createRawSnippet } from "svelte";
+import { beforeEach, describe, expect, test, vi } from "vitest";
+import { page, userEvent } from "vitest/browser";
+import { renderIn } from "../../../test/schemes.ts";
+import Prose from "../Prose/Prose.svelte";
+import WithPositions from "../../../test/WithPositions.svelte";
+import body from "../../playground/lesson-plan-body.json" with { type: "json" };
+import {
+  indyCenter,
+  indyGround,
+  lexingtonTower,
+} from "../../playground/positions.ts";
+import type { RichTextState, SerializedNode } from "./nodes.ts";
+import RichText from "./RichText.svelte";
+import RichTextWithBlocks from "./RichText.test.svelte";
+
+// The fixture is JSON saved from Payload's editor; each case starts from
+// it. The slug rule, the list nesting, the table's parts and an upload's
+// srcset are draw.node.test.ts's and headings.node.test.ts's tables.
+// RichText draws no colour of its own: its looks are Prose's.
+
+const fixture = body as RichTextState;
+const nodes = fixture.root.children;
+
+/** A document of `children`. */
+const doc = (...children: SerializedNode[]): RichTextState => ({
+  root: { type: "root", children },
+});
+
+/** The fixture's first node of `type` that `match` picks. */
+function find(
+  type: string,
+  match: (node: SerializedNode) => boolean = () => true,
+): SerializedNode {
+  const node = nodes.find((n) => n.type === type && match(n));
+  if (!node) throw new Error(`The fixture has no ${type}`);
+  return structuredClone(node);
+}
+
+const text = (s: string, format = 0): SerializedNode => ({
+  type: "text",
+  text: s,
+  format,
+});
+const paragraph = (...children: SerializedNode[]): SerializedNode => ({
+  type: "paragraph",
+  children,
+});
+
+/** RichText drew nothing inside its Prose: no element and no text. */
+function expectNothingDrawn(article: Element) {
+  expect(article.children).toHaveLength(0);
+  expect(article.textContent?.trim()).toBe("");
+}
+
+let warn: ReturnType<typeof vi.spyOn>;
+beforeEach(() => {
+  warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+  return () => warn.mockRestore();
+});
+
+/** The fixture's paragraph holding `words`. */
+const paragraphWith = (words: string) =>
+  find(
+    "paragraph",
+    (n) =>
+      JSON.stringify(n).includes(words) &&
+      !JSON.stringify(n).includes("tablecell"),
+  );
+
+describe("RichText", () => {
+  test("is an article, Prose's, holding the document's h2–h4 with slug ids", async () => {
+    const screen = await renderIn("light", RichText, { content: fixture });
+    const article = screen.getByRole("article");
+    await expect.element(article).toHaveClass("prose");
+    for (const [level, name, id] of [
+      [2, "Runways", "runways"],
+      [3, "Hold short", "hold-short"],
+      [4, "Notes", "notes"],
+    ] as const) {
+      await expect
+        .element(article.getByRole("heading", { level, name, exact: true }))
+        .toHaveAttribute("id", id);
+    }
+  });
+
+  test("passes Prose's props on, and keeps a caller's class and attributes", async () => {
+    const screen = await renderIn("light", RichText, {
+      content: fixture,
+      as: "div",
+      id: "body",
+      class: "mt-8",
+    });
+    await expect.element(screen.getByRole("article")).not.toBeInTheDocument();
+    const body = page.elementLocator(screen.container.querySelector("#body")!);
+    await expect.element(body).toHaveClass("prose");
+    await expect.element(body).toHaveStyle({ marginTop: "32px" });
+  });
+
+  test("draws nothing for no content", async () => {
+    const screen = await renderIn("light", RichText, { content: null });
+    expectNothingDrawn(screen.getByRole("article").element());
+  });
+
+  test("an app's headingId gives the ids, -2 on a repeat", async () => {
+    const screen = await renderIn("light", RichText, {
+      content: doc(
+        { type: "heading", tag: "h2", children: [text("Runways")] },
+        { type: "heading", tag: "h2", children: [text("Runways")] },
+      ),
+      headingId: (words) => `section-${words.length}`,
+    });
+    const [first, second] = screen
+      .getByRole("heading", { name: "Runways", exact: true })
+      .elements();
+    expect([first.id, second.id]).toEqual(["section-7", "section-7-2"]);
+  });
+
+  describe("headings", () => {
+    const heading = (tag: string, words: string): SerializedNode => ({
+      type: "heading",
+      tag,
+      children: [text(words)],
+    });
+    const words = "Taxi via Alpha, hold short of the runway.";
+
+    test("the anchor link follows the heading, outside it, with no space between", async () => {
+      const screen = await renderIn("light", RichText, {
+        content: doc({ ...heading("h2", "Runways"), format: "center" }),
+      });
+      const h2 = screen.getByRole("heading", { name: "Runways", exact: true });
+      const link = screen.getByRole("link", {
+        name: "Link to section: Runways",
+        exact: true,
+      });
+      await expect.element(h2).toHaveAttribute("id", "runways");
+      expect(h2.element().nextElementSibling).toBe(link.element());
+      expect(h2.element().contains(link.element())).toBe(false);
+      // Only Svelte's markers between them: no text, so no space to break at.
+      let between = h2.element().nextSibling;
+      while (between && between !== link.element()) {
+        expect(between.nodeType).toBe(Node.COMMENT_NODE);
+        between = between.nextSibling;
+      }
+      // The two in a wrapper, which takes the heading's alignment.
+      const wrapper = h2.element().parentElement!;
+      expect(wrapper.dataset.heading).toBe("h2");
+      expect(wrapper.dataset.align).toBe("center");
+      expect(wrapper.parentElement).toBe(screen.getByRole("article").element());
+      expect(h2.element()).not.toHaveAttribute("data-align");
+    });
+
+    test("the anchor sits on the heading's line, after its last word", async () => {
+      const screen = await renderIn("light", RichText, {
+        content: doc(heading("h2", "Runways")),
+      });
+      const h2 = screen.getByRole("heading", { name: "Runways" }).element();
+      const hash = screen.container.querySelector("[data-heading-anchor]")!;
+      const text = h2.getBoundingClientRect();
+      const mark = hash.getBoundingClientRect();
+      expect(mark.left).toBeGreaterThan(text.right);
+      expect(mark.top).toBeLessThan(text.bottom);
+      expect(mark.bottom).toBeGreaterThan(text.top);
+    });
+
+    // A document with headings in every place the typography plugin's
+    // spacing rules reach: first, after a paragraph, after a heading, after
+    // a rule, before a list, last. Drawn by RichText with its wrappers, and
+    // by Prose from the same plain HTML, each part sits at the same place.
+    test("each heading looks and spaces as a plain heading in Prose does", async () => {
+      const parts: [string, string][] = [
+        ["h2", "Runways"],
+        ["p", words],
+        ["h3", "Hold short"],
+        ["p", words],
+        ["h4", "Notes"],
+        ["p", words],
+        ["h2", "Taxi"],
+        ["h3", "Ground"],
+        ["h4", "Ramp"],
+        ["p", words],
+        ["hr", ""],
+        ["h3", "After a rule"],
+        ["ul", words],
+        ["h2", "Last"],
+      ];
+      const node = ([tag, s]: [string, string]): SerializedNode =>
+        tag === "p"
+          ? paragraph(text(s))
+          : tag === "hr"
+            ? { type: "horizontalrule" }
+            : tag === "ul"
+              ? {
+                  type: "list",
+                  listType: "bullet",
+                  children: [{ type: "listitem", children: [text(s)] }],
+                }
+              : heading(tag, s);
+      const html = parts
+        .map(([tag, s]) =>
+          tag === "hr"
+            ? "<hr>"
+            : tag === "ul"
+              ? `<ul><li>${s}</li></ul>`
+              : `<${tag}>${s}</${tag}>`,
+        )
+        .join("");
+      const drawn = await renderIn("light", RichText, {
+        content: doc(...parts.map(node)),
+        class: "w-96",
+      });
+      const plain = await renderIn("light", Prose, {
+        class: "w-96",
+        children: createRawSnippet(() => ({
+          render: () => `<div>${html}</div>`,
+        })),
+      });
+      const [richArticle, plainArticle] = [drawn, plain].map((screen) =>
+        screen.container.querySelector("article")!,
+      );
+      // Prose's children went in one div, for the raw snippet: lift them out.
+      plainArticle.replaceChildren(
+        ...plainArticle.firstElementChild!.childNodes,
+      );
+      const boxes = (article: Element) => {
+        const top = article.getBoundingClientRect().top;
+        return [...article.children].map((child) => {
+          const box = child.getBoundingClientRect();
+          // A wrapper stands for its heading.
+          const tag =
+            (child as HTMLElement).dataset.heading ??
+            child.tagName.toLowerCase();
+          return [tag, box.top - top, box.height];
+        });
+      };
+      expect(boxes(richArticle)).toEqual(boxes(plainArticle));
+      expect(richArticle.getBoundingClientRect().height).toBe(
+        plainArticle.getBoundingClientRect().height,
+      );
+      // The heading's own looks: its font, and where its text starts.
+      const richHeadings = [...richArticle.querySelectorAll("h2, h3, h4")];
+      const plainHeadings = [...plainArticle.querySelectorAll("h2, h3, h4")];
+      expect(richHeadings).toHaveLength(plainHeadings.length);
+      richHeadings.forEach((h, i) => {
+        const [a, b] = [h, plainHeadings[i]].map((el) => getComputedStyle(el));
+        expect(a.fontSize).not.toBe("");
+        for (const property of [
+          "fontFamily",
+          "fontSize",
+          "fontWeight",
+          "lineHeight",
+          "color",
+        ] as const) {
+          expect(a[property], `${h.textContent} ${property}`).toBe(b[property]);
+        }
+        expect(h.getBoundingClientRect().left).toBe(
+          plainHeadings[i].getBoundingClientRect().left,
+        );
+      });
+    });
+
+    test("a heading first or last in a callout's content has no margin outside it, as a paragraph there has none", async () => {
+      const callout = (label: string, ...children: SerializedNode[]) => ({
+        type: "block",
+        fields: {
+          blockType: "callout",
+          level: "info",
+          label,
+          content: { root: { type: "root", children } },
+        },
+      });
+      const screen = await renderIn("light", RichText, {
+        content: doc(
+          callout(
+            "Headings",
+            heading("h3", "Before you start"),
+            paragraph(text(words)),
+            heading("h4", "Then"),
+          ),
+          callout(
+            "Paragraphs",
+            paragraph(text(words)),
+            paragraph(text(words)),
+            paragraph(text(words)),
+          ),
+        ),
+      });
+      // How far the content's first part sits below the callout's top, and
+      // its last part above the callout's bottom.
+      const insets = (name: string) => {
+        const aside = screen.getByRole("complementary", { name }).element();
+        const content = aside.querySelector("p[id]")!.nextElementSibling!;
+        const box = aside.getBoundingClientRect();
+        return [
+          content.firstElementChild!.getBoundingClientRect().top - box.top,
+          box.bottom - content.lastElementChild!.getBoundingClientRect().bottom,
+        ];
+      };
+      expect(insets("Note: Headings")).toEqual(insets("Note: Paragraphs"));
+    });
+  });
+
+  describe("text", () => {
+    // <u> and <s> have no role, so these are found by tag.
+    test("each format is its element, and the sentence keeps its spaces", async () => {
+      const screen = await renderIn("light", RichText, {
+        content: doc(paragraphWith("Tower ")),
+      });
+      const p = screen.getByText(/^Tower/);
+      await expect.element(p).toBeVisible();
+      expect(p.element().textContent).toBe(
+        "Tower controls every runway. Read back each landing clearance.",
+      );
+      const el = (selector: string) =>
+        screen.container.querySelector(selector)?.textContent;
+      expect(el("em")).toBe("controls");
+      expect(el("strong")).toBe("every");
+      expect(el("u")).toBe("Read back");
+      expect(el("s")).toBe("landing");
+    });
+
+    // The editor's toolbar has these, but the fixture's author didn't use
+    // them: the same paragraph, its formats changed.
+    test("code, sub and superscript, formats together, and a line break", async () => {
+      const screen = await renderIn("light", RichText, {
+        content: doc(
+          paragraph(
+            text("Squawk "),
+            text("7600", 16),
+            text(", CO"),
+            text("2", 32),
+            text(", 10"),
+            text("3", 64),
+            { type: "linebreak" },
+            text("Bold italic", 1 | 2),
+          ),
+        ),
+      });
+      const el = (selector: string) =>
+        screen.container.querySelector(selector)?.textContent;
+      expect(el("code")).toBe("7600");
+      expect(el("sub")).toBe("2");
+      expect(el("sup")).toBe("3");
+      expect(el("strong > em")).toBe("Bold italic");
+      expect(screen.container.querySelector("br")).not.toBeNull();
+    });
+
+    test("an empty paragraph draws nothing", async () => {
+      const empty = find("paragraph", (n) => (n.children as []).length === 0);
+      const screen = await renderIn("light", RichText, {
+        content: doc(empty, empty),
+      });
+      expectNothingDrawn(screen.getByRole("article").element());
+    });
+
+    test("alignment is data-align, and no inline style is written", async () => {
+      const centred = find("paragraph", (n) => n.format === "center");
+      const right = { ...paragraph(text("Right.")), format: "right" };
+      const justified = { ...paragraph(text("Justified.")), format: "justify" };
+      const left = { ...paragraph(text("Left.")), format: "left" };
+      const screen = await renderIn("light", RichText, {
+        content: doc(centred, right, justified, left),
+      });
+      for (const [name, value] of [
+        ["Centred.", "center"],
+        ["Right.", "end"],
+        ["Justified.", "justify"],
+      ]) {
+        await expect
+          .element(screen.getByText(name))
+          .toHaveAttribute("data-align", value);
+      }
+      await expect
+        .element(screen.getByText("Left."))
+        .not.toHaveAttribute("data-align");
+    });
+  });
+
+  test("lists, a quote and a rule", async () => {
+    const screen = await renderIn("light", RichText, {
+      content: doc(
+        find("list", (n) => n.listType === "bullet"),
+        find("list", (n) => n.listType === "number"),
+        find("quote"),
+        find("horizontalrule"),
+      ),
+    });
+    const [bullets, numbers] = screen.getByRole("list").elements();
+    expect(bullets.tagName).toBe("UL");
+    expect(numbers.tagName).toBe("OL");
+    expect(
+      screen
+        .getByRole("listitem")
+        .elements()
+        .map((li) => li.textContent?.trim()),
+    ).toEqual(["Wind", "Altimeter", "Listen", "Read back"]);
+    await expect
+      .element(screen.getByRole("blockquote"))
+      .toHaveTextContent("Cleared to land.");
+    await expect.element(screen.getByRole("separator")).toBeInTheDocument();
+  });
+
+  // Payload's editor has indent off, so it can't nest a list: this is the
+  // fixture's bullet list with lists nested by hand, as Lexical saves them
+  // (each nested list in an item of its own, after its parent).
+  test("a deep nested list sits inside the item above it", async () => {
+    const bullets = find("list", (n) => n.listType === "bullet");
+    const nest = (list: SerializedNode, inner: SerializedNode) => ({
+      ...list,
+      children: [
+        ...(list.children as SerializedNode[]).slice(0, 1),
+        { type: "listitem", children: [inner] },
+        ...(list.children as SerializedNode[]).slice(1),
+      ],
+    });
+    const numbers = find("list", (n) => n.listType === "number");
+    const deep = nest(bullets, nest(numbers, structuredClone(bullets)));
+    const screen = await renderIn("light", RichText, { content: doc(deep) });
+
+    // ul > li "Wind" > ol > li "Listen" > ul > li "Wind".
+    const outer = screen.getByRole("list").first();
+    const wind = outer.getByRole("listitem").first();
+    const middle = wind.getByRole("list").first();
+    const listen = middle.getByRole("listitem").first();
+    const inner = listen.getByRole("list");
+    expect(middle.element().tagName).toBe("OL");
+    await expect.element(inner).toHaveTextContent("WindAltimeter");
+    // Each level's own items: no empty item where Lexical kept the nesting.
+    const own = (list: Element) =>
+      [...list.children].map((li) => li.textContent?.slice(0, 6));
+    expect(own(outer.element())).toEqual(["WindLi", "Altime"]);
+    expect(own(middle.element())).toEqual(["Listen", "Read b"]);
+  });
+
+  test("a checklist is a list of checkboxes named by their text, all unticked, that readers tick", async () => {
+    const screen = await renderIn("light", RichText, {
+      content: doc(find("list", (n) => n.listType === "check")),
+    });
+    const list = screen.getByRole("list");
+    // The author left "ATIS current" ticked.
+    const atis = list.getByRole("checkbox", { name: "ATIS current" });
+    const wind = list.getByRole("checkbox", { name: "Wind checked" });
+    await expect.element(atis).not.toBeChecked();
+    await expect.element(wind).not.toBeChecked();
+    await userEvent.click(screen.getByText("Wind checked"));
+    await expect.element(wind).toBeChecked();
+  });
+
+  test("a table has its header row as head, header column as row headers, and its merged cell", async () => {
+    const screen = await renderIn("light", RichText, {
+      content: doc(find("table")),
+    });
+    const table = screen.getByRole("table");
+    for (const name of ["Runway", "Length", "Use"]) {
+      const header = table.getByRole("columnheader", { name });
+      await expect.element(header).toHaveAttribute("scope", "col");
+      expect(header.element().closest("thead")).not.toBeNull();
+    }
+    for (const name of ["5L", "23R"]) {
+      const header = table.getByRole("rowheader", { name });
+      await expect.element(header).toHaveAttribute("scope", "row");
+      expect(header.element().closest("tbody")).not.toBeNull();
+    }
+    await expect
+      .element(table.getByRole("cell", { name: "Closed for resurfacing" }))
+      .toHaveAttribute("colspan", "2");
+    await expect
+      .element(table.getByRole("cell", { name: "11,200 ft" }))
+      .not.toHaveAttribute("colspan");
+    // Lexical's widths and colours are dropped, and a cell's lone
+    // paragraph is its text.
+    const el = table.element();
+    expect(el.querySelector("[style], [width], colgroup, p")).toBeNull();
+  });
+
+  test("an image is one img with its sizes in srcset, the column's sizes, the original's size and alt", async () => {
+    const screen = await renderIn("light", RichText, {
+      content: doc(find("upload")),
+    });
+    const img = screen.getByRole("img", { name: "Runway 23 at KIND" });
+    await expect
+      .element(img)
+      .toHaveAttribute("src", "/api/media/file/runway.png");
+    await expect
+      .element(img)
+      .toHaveAttribute(
+        "srcset",
+        "/api/media/file/runway-400x300.png 400w, /api/media/file/runway.png 800w",
+      );
+    await expect
+      .element(img)
+      .toHaveAttribute("sizes", "(min-width: 65ch) 65ch, 100vw");
+    await expect.element(img).toHaveAttribute("width", "800");
+    await expect.element(img).toHaveAttribute("height", "600");
+  });
+
+  test("an upload that isn't an image is a link named by its file", async () => {
+    const upload = find("upload");
+    upload.value = {
+      id: "<media-id>",
+      url: "/api/media/file/sop.pdf",
+      filename: "sop.pdf",
+      mimeType: "application/pdf",
+    };
+    const screen = await renderIn("light", RichText, { content: doc(upload) });
+    await expect
+      .element(screen.getByRole("link", { name: "sop.pdf" }))
+      .toHaveAttribute("href", "/api/media/file/sop.pdf");
+  });
+
+  test("an upload whose file address isn't relative or http is its name, plain", async () => {
+    const upload = find("upload");
+    upload.value = {
+      id: "<media-id>",
+      url: "javascript:alert(1)",
+      filename: "sop.pdf",
+      mimeType: "application/pdf",
+    };
+    const screen = await renderIn("light", RichText, { content: doc(upload) });
+    await expect.element(screen.getByText("sop.pdf")).toBeVisible();
+    await expect.element(screen.getByRole("link")).not.toBeInTheDocument();
+  });
+
+  describe("links", () => {
+    const sentence = () => paragraphWith("Tower ");
+
+    test("a new-tab link opens in a new tab, with no opener", async () => {
+      const screen = await renderIn("light", RichText, {
+        content: doc(sentence()),
+      });
+      // Prose's mark after a new-tab link adds "opens in a new tab" to its name.
+      const link = screen.getByRole("link", { name: /^clearance/ });
+      await expect
+        .element(link)
+        .toHaveAttribute(
+          "href",
+          "https://www.faa.gov/air_traffic/publications/atpubs/atc_html/chap3_section10.html",
+        );
+      await expect.element(link).toHaveAttribute("target", "_blank");
+      await expect.element(link).toHaveAttribute("rel", "noopener noreferrer");
+    });
+
+    test("an internal link goes where linkHref says, given the filled-in document", async () => {
+      const linkHref = vi.fn(({ value }) =>
+        value && typeof value === "object"
+          ? `/lesson-plans/${value.code}`
+          : undefined,
+      );
+      const screen = await renderIn("light", RichText, {
+        content: doc(sentence()),
+        linkHref,
+      });
+      const link = screen.getByRole("link", { name: "runway" });
+      await expect
+        .element(link)
+        .toHaveAttribute("href", "/lesson-plans/X-TWR-0");
+      await expect.element(link).not.toHaveAttribute("target");
+      expect(linkHref).toHaveBeenCalledWith({
+        label: "X-TWR-0",
+        relationTo: "lesson-plans",
+        value: { id: "<plan-id>", code: "X-TWR-0", title: "Before" },
+      });
+    });
+
+    test("with no linkHref, an internal link is its text, never href=#", async () => {
+      const screen = await renderIn("light", RichText, {
+        content: doc(sentence()),
+      });
+      await expect
+        .element(screen.getByRole("link", { name: "runway" }))
+        .not.toBeInTheDocument();
+      await expect.element(screen.getByText(/every runway\./)).toBeVisible();
+      expect(screen.container.querySelector('a[href="#"]')).toBeNull();
+    });
+
+    test.each(["link", "autolink"])(
+      "a javascript: URL in a %s node is its text, with no link",
+      async (type) => {
+        const screen = await renderIn("light", RichText, {
+          content: doc(
+            paragraph(
+              text("Read the "),
+              {
+                type,
+                fields: { linkType: "custom", url: " JavaScript:alert(1)" },
+                children: [text("briefing")],
+              },
+              text(" first."),
+            ),
+          ),
+        });
+        await expect
+          .element(screen.getByText("Read the briefing first."))
+          .toBeVisible();
+        await expect.element(screen.getByRole("link")).not.toBeInTheDocument();
+        expect(screen.container.querySelector("a")).toBeNull();
+      },
+    );
+
+    test("a link to a deleted document, null, is its text when linkHref gives undefined", async () => {
+      const p = sentence();
+      const link = (p.children as SerializedNode[]).find(
+        (n) => n.type === "link" && JSON.stringify(n).includes("internal"),
+      )!;
+      (link.fields as { doc: { value: unknown } }).doc.value = null;
+      const linkHref = vi.fn(({ value }) => (value ? "/somewhere" : undefined));
+      const screen = await renderIn("light", RichText, {
+        content: doc(p),
+        linkHref,
+      });
+      expect(linkHref).toHaveBeenCalledWith(
+        expect.objectContaining({ value: null }),
+      );
+      await expect
+        .element(screen.getByRole("link", { name: "runway" }))
+        .not.toBeInTheDocument();
+      await expect.element(screen.getByText(/every runway\./)).toBeVisible();
+    });
+  });
+
+  describe("unknown nodes", () => {
+    // A relationship node: Payload's feature is off, but an old body may
+    // still hold one.
+    test("one with children draws them, and warns", async () => {
+      const screen = await renderIn("light", RichText, {
+        content: doc({
+          type: "mystery",
+          children: [paragraph(text("Still here."))],
+        }),
+      });
+      await expect.element(screen.getByText("Still here.")).toBeVisible();
+      expect(warn).toHaveBeenCalledWith(expect.stringContaining('"mystery"'));
+    });
+
+    test("one without draws nothing, and warns", async () => {
+      const screen = await renderIn("light", RichText, {
+        content: doc({ type: "relationship", value: { id: "<plan-id>" } }),
+      });
+      expectNothingDrawn(screen.getByRole("article").element());
+      expect(warn).toHaveBeenCalledWith(
+        expect.stringContaining('"relationship"'),
+      );
+    });
+
+    test("a block with no snippet draws nothing, and warns", async () => {
+      // An app's own slug, which the package doesn't draw.
+      const block = find("block");
+      Object.assign(block.fields as object, { blockType: "phraseology" });
+      const screen = await renderIn("light", RichText, {
+        content: doc(block),
+      });
+      expectNothingDrawn(screen.getByRole("article").element());
+      expect(warn).toHaveBeenCalledWith(
+        expect.stringContaining('"phraseology"'),
+      );
+    });
+  });
+
+  // The package's own blocks; their looks are their components'.
+  describe("the package's blocks", () => {
+    const block = (slug: string) =>
+      find(
+        "block",
+        (n) => (n.fields as { blockType: string }).blockType === slug,
+      );
+
+    test("a callout is a Callout named by its level and label, its content drawn inside", async () => {
+      const screen = await renderIn("light", RichText, {
+        content: doc(block("callout")),
+      });
+      const aside = screen.getByRole("complementary", {
+        name: "Caution: Wake turbulence",
+      });
+      await expect
+        .element(aside.getByText(/^Hold departures behind a heavy/))
+        .toBeVisible();
+    });
+
+    test("a citation in a callout's text is a Citation: the source, then the place as a link", async () => {
+      const screen = await renderIn("light", RichText, {
+        content: doc(block("callout")),
+      });
+      const aside = screen.getByRole("complementary", {
+        name: "Caution: Wake turbulence",
+      });
+      await expect
+        .element(aside.getByText("JO 7110.65 AA"))
+        .toHaveProperty("tagName", "CITE");
+      await expect
+        .element(aside.getByRole("link", { name: "3-9-6" }))
+        .toHaveAttribute(
+          "href",
+          "https://www.faa.gov/air_traffic/publications/atpubs/atc_html/",
+        );
+    });
+
+    test("a callout with no label reads its level's own", async () => {
+      const callout = block("callout");
+      Object.assign(callout.fields as object, { label: null, level: "danger" });
+      const screen = await renderIn("light", RichText, {
+        content: doc(callout),
+      });
+      await expect
+        .element(screen.getByRole("complementary", { name: "Warning" }))
+        .toBeVisible();
+    });
+
+    test("a disclosure is a Disclosure showing its summary, its content drawn inside", async () => {
+      const screen = await renderIn("light", RichText, {
+        content: doc(block("disclosure")),
+      });
+      const summary = screen.getByText("Why two minutes?");
+      // The <summary> itself: in WebKit, Vitest counts nothing inside a
+      // closed <details> as showing, the summary's own text included.
+      await expect.element(summary.element().closest("summary")!).toBeVisible();
+      const content = screen.getByText(/^The vortex sinks/);
+      await expect.element(content).not.toBeVisible();
+      await summary.click();
+      await expect.element(content).toBeVisible();
+      await expect
+        .element(screen.getByRole("group"))
+        .toContainElement(content.element() as HTMLElement);
+    });
+  });
+
+  describe("blocks", () => {
+    const callout = () =>
+      find(
+        "block",
+        (n) => (n.fields as { blockType: string }).blockType === "callout",
+      );
+
+    test("a block's snippet gets its fields, without id, blockName or blockType, and its content drawn", async () => {
+      const screen = await renderIn("light", RichTextWithBlocks, {
+        content: doc(callout()),
+      });
+      const block = screen.getByRole("complementary", { name: "Block" });
+      await expect
+        .element(block.getByRole("code"))
+        .toHaveTextContent('label: "Wake turbulence"; level: "caution"');
+      // The content, with the citation in it drawn by its own snippet.
+      await expect
+        .element(block.getByText(/^Hold departures behind a heavy/))
+        .toBeVisible();
+      await expect
+        .element(block.getByText(/^at: "3-9-6"; source: /))
+        .toBeVisible();
+    });
+
+    test("null fields reach the snippet as undefined", async () => {
+      const block = callout();
+      Object.assign(block.fields as object, { label: null });
+      const position = structuredClone(
+        (paragraphWith("Contact tower").children as SerializedNode[]).find(
+          (n) => JSON.stringify(n).includes("IND_TWR"),
+        )!,
+      );
+      Object.assign(position.fields as object, {
+        airportAt: null,
+        airport: { code: null, name: null },
+      });
+      const screen = await renderIn("light", RichTextWithBlocks, {
+        content: doc(block, paragraph(position)),
+      });
+      await expect
+        .element(screen.getByRole("code"))
+        .toHaveTextContent('label: undefined; level: "caution"');
+      // Nested too: JSON leaves undefined out.
+      await expect
+        .element(screen.getByText(/^show: /))
+        .toHaveTextContent(
+          'show: ["airport"]; airport: {}; callsign: "IND_TWR"; airportAt: undefined',
+        );
+    });
+
+    test("an inline block sits in its paragraph", async () => {
+      const screen = await renderIn("light", RichTextWithBlocks, {
+        content: doc(paragraphWith("Contact tower")),
+      });
+      const p = screen.getByText(/^Contact tower on/);
+      await expect.element(p.getByText(/^value: "120.900"$/)).toBeVisible();
+      await expect.element(p.getByText(/^category: "MVFR"$/)).toBeVisible();
+      expect(warn).not.toHaveBeenCalled();
+    });
+  });
+
+  // The package's own inline blocks, drawn by their components.
+  describe("inline blocks", () => {
+    const inline = (blockType: string, fields: object): SerializedNode => ({
+      type: "inlineBlock",
+      fields: { id: "<block-id>", blockType, ...fields },
+    });
+    /** A sentence holding `block` between two words, under an app's positions. */
+    const sentence = (block: SerializedNode, positions = [indyGround]) =>
+      renderIn("light", WithPositions, {
+        positions,
+        component: RichText,
+        props: {
+          content: doc(paragraph(text("See "), block, text(" here."))),
+        },
+      });
+
+    test("the fixture's sentence draws each block inside its paragraph, with no warning", async () => {
+      const screen = await renderIn("light", WithPositions, {
+        positions: [lexingtonTower],
+        component: RichText,
+        props: { content: doc(paragraphWith("Contact tower")) },
+      });
+      const p = screen.getByRole("article").element().querySelector("p")!;
+      // Frequency, position (no airport: its callsign), rating, flight
+      // category, time and citation all sit in the one paragraph.
+      expect(p.querySelector("span.font-mono")?.textContent).toContain(
+        "120.90",
+      );
+      expect(p.textContent).toContain("IND_TWR");
+      expect(p.querySelector("abbr")).not.toBeNull();
+      expect(p.querySelectorAll("time")).toHaveLength(2);
+      expect(p.textContent).toContain("2300Z");
+      expect(p.textContent).toContain("0300Z");
+      expect(p.querySelector("cite")?.textContent).toContain("JO 7110.65");
+      expect(p.parentElement?.tagName).toBe("ARTICLE");
+      expect(p.querySelectorAll("p, div")).toHaveLength(0);
+      expect(warn).not.toHaveBeenCalled();
+    });
+
+    test("a position is inline, and a callsign the app doesn't know is drawn as the callsign", async () => {
+      const screen = await sentence(
+        inline("position", { callsign: "IND_83_CTR", show: null }),
+        [indyCenter],
+      );
+      await expect.element(screen.getByText("Indy Center")).toBeVisible();
+      await expect.element(screen.getByText("128.22")).toBeVisible();
+      screen.unmount();
+      const unknown = await sentence(
+        inline("position", { callsign: "XYZ_APP" }),
+      );
+      const p = unknown.getByRole("article").element().querySelector("p")!;
+      expect(p.textContent).toBe("See XYZ_APP here.");
+    });
+
+    test("a position with airport {} or a null code has no airport", async () => {
+      for (const airport of [{}, { code: null, name: null }, null]) {
+        const screen = await sentence(
+          inline("position", {
+            callsign: "IND_1_GND",
+            show: ["radioName", "airport"],
+            airportAt: "under",
+            airport,
+          }),
+        );
+        const p = screen.getByRole("article").element().querySelector("p")!;
+        expect(p.textContent).toContain("Indianapolis Ground");
+        expect(p.querySelector(".font-mono")).toBeNull();
+        screen.unmount();
+      }
+    });
+
+    test("a position's airport shows with its code", async () => {
+      const screen = await sentence(
+        inline("position", {
+          callsign: "IND_1_GND",
+          show: ["radioName", "airport"],
+          airport: { code: "KIND", name: null },
+        }),
+      );
+      await expect.element(screen.getByText("KIND")).toBeVisible();
+    });
+
+    test("a frequency by value, by callsign, and the value wins", async () => {
+      const byValue = await sentence(inline("frequency", { value: "121.9" }));
+      await expect.element(byValue.getByText("121.90")).toBeVisible();
+      byValue.unmount();
+      const byCallsign = await sentence(
+        inline("frequency", { callsign: "IND_83_CTR" }),
+        [indyCenter],
+      );
+      await expect.element(byCallsign.getByText("128.22")).toBeVisible();
+      byCallsign.unmount();
+      const both = await sentence(
+        inline("frequency", { value: "133.4", callsign: "IND_83_CTR" }),
+        [indyCenter],
+      );
+      await expect.element(both.getByText("133.40")).toBeVisible();
+      both.unmount();
+      // A blank value is no value: the callsign is used.
+      const blank = await sentence(
+        inline("frequency", { value: "", callsign: "IND_83_CTR" }),
+        [indyCenter],
+      );
+      await expect.element(blank.getByText("128.22")).toBeVisible();
+    });
+
+    test("an airport, a rating and a flight category", async () => {
+      const airport = await sentence(
+        inline("airport", {
+          airport: { code: "KIND", name: "Indianapolis International" },
+          nameAt: null,
+          focusable: null,
+        }),
+      );
+      await expect
+        .element(airport.getByText("Indianapolis International"))
+        .toBeVisible();
+      airport.unmount();
+      const rating = await sentence(
+        inline("rating", { rating: "IR", kind: "pilot" }),
+      );
+      expect(
+        rating.getByRole("article").element().querySelector("abbr")
+          ?.textContent,
+      ).toMatch(/^IR\b/);
+      rating.unmount();
+      const category = await sentence(
+        inline("flightCategory", { category: "IFR" }),
+      );
+      expect(
+        category.getByRole("article").element().querySelector("abbr")
+          ?.textContent,
+      ).toMatch(/^IFR\b/);
+      expect(warn).not.toHaveBeenCalled();
+    });
+
+    test("a time range across midnight", async () => {
+      const screen = await sentence(
+        inline("time", { value: "2300", end: "0300" }),
+      );
+      const p = screen.getByRole("article").element().querySelector("p")!;
+      expect(p.textContent?.replace(/\s+/g, " ")).toBe("See 2300Z–0300Z here.");
+      const times = [...p.querySelectorAll("time")];
+      expect(times.map((t) => t.getAttribute("datetime"))).toEqual([
+        "23:00",
+        "03:00",
+      ]);
+    });
+
+    test("a time with a null end is one time", async () => {
+      const screen = await sentence(
+        inline("time", { value: "1400", end: null }),
+      );
+      expect(
+        screen.getByRole("article").element().querySelectorAll("time"),
+      ).toHaveLength(1);
+    });
+  });
+});

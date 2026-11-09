@@ -3,6 +3,7 @@ import { userEvent } from "vitest/browser";
 import { role } from "../../../test/roles.ts";
 import { renderIn } from "../../../test/schemes.ts";
 import { lessonHtml } from "../../playground/lesson.ts";
+import { richHtml } from "../../playground/proseMarkup.ts";
 import ProseLesson from "./Prose.test.svelte";
 
 // The plugin puts backticks round inline code and marks round quotes, in
@@ -168,5 +169,108 @@ describe("Prose", () => {
         color: role("foreground-soft", "light"),
         textDecorationLine: "none",
       });
+  });
+});
+
+// What RichText writes beyond the lesson (playground/proseMarkup.ts).
+describe("Prose, rich text", () => {
+  test("underline is in the text colour, not the link's; strike is struck", async () => {
+    const screen = await renderIn("light", ProseLesson, { html: richHtml });
+    const underlined = screen.getByText("underlined", { exact: true });
+    await expect.element(underlined).toHaveStyle({
+      color: role("foreground-soft", "light"),
+      textDecorationLine: "underline",
+    });
+    await expect
+      .element(screen.getByText("struck through", { exact: true }))
+      .toHaveStyle({ textDecorationLine: "line-through" });
+  });
+
+  test.each([
+    ["A centred paragraph", "center"],
+    ["A paragraph aligned to the end", "end"],
+    ["A justified paragraph", "justify"],
+  ])("%s is aligned %s", async (start, align) => {
+    const screen = await renderIn("light", ProseLesson, { html: richHtml });
+    await expect
+      .element(screen.getByText(new RegExp(`^${start}`)))
+      .toHaveStyle({ textAlign: align });
+  });
+
+  test("a checklist has no bullet, and the box sits beside its label's first line", async () => {
+    const screen = await renderIn("light", ProseLesson, { html: richHtml });
+    const box = screen.getByRole("checkbox", { name: /^Load the sector file/ });
+    const item = box.element().closest("li")!;
+    await expect.element(item).toHaveStyle({ listStyleType: "none" });
+    expect(getComputedStyle(item.parentElement!).paddingInlineStart).toBe(
+      "0px",
+    );
+    const label = box.element().closest("label")!;
+    const boxRect = box.element().getBoundingClientRect();
+    const labelRect = label.getBoundingClientRect();
+    // At the label's start, and level with the first line of its text.
+    expect(boxRect.left).toBe(labelRect.left);
+    expect(boxRect.top - labelRect.top).toBeLessThan(20);
+    const range = document.createRange();
+    range.selectNodeContents(label.lastChild!);
+    expect(range.getClientRects()[0].left).toBeGreaterThan(boxRect.right);
+    expect(labelRect.height).toBeGreaterThanOrEqual(44);
+  });
+
+  test("a checkbox ticks from its label", async () => {
+    const screen = await renderIn("light", ProseLesson, { html: richHtml });
+    const box = screen.getByRole("checkbox", { name: /^Join the voice/ });
+    await expect.element(box).not.toBeChecked();
+    await userEvent.click(screen.getByText("Join the voice channel"));
+    await expect.element(box).toBeChecked();
+  });
+
+  test("tables: role borders, a head in foreground, a side head", async () => {
+    const screen = await renderIn("light", ProseLesson, { html: richHtml });
+    const side = screen.getByRole("rowheader", { name: "Ground" });
+    await expect.element(side).toHaveStyle({
+      color: role("foreground", "light"),
+      fontWeight: "600",
+      textAlign: "start",
+    });
+    const row = side.element().closest("tr")!;
+    expect(getComputedStyle(row).borderBottomColor).toBe(
+      role("border", "light"),
+    );
+    await expect
+      .element(screen.getByRole("columnheader", { name: "Frequency" }))
+      .toHaveStyle({ color: role("foreground", "light") });
+    // The merged cell spans two columns.
+    const merged = screen.getByRole("cell", { name: /^Combined with Ground/ });
+    expect(merged.element().getAttribute("colspan")).toBe("2");
+  });
+
+  test("a wide table scrolls in its own box", async () => {
+    const screen = await renderIn("light", ProseLesson, {
+      html: richHtml,
+      class: "w-64",
+    });
+    const table = screen
+      .getByRole("columnheader", { name: "Closed hours" })
+      .element()
+      .closest("table")!;
+    expect(getComputedStyle(table).overflowX).toBe("auto");
+    expect(table.scrollWidth).toBeGreaterThan(table.clientWidth);
+    expect(table.clientWidth).toBeLessThanOrEqual(256);
+    expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(
+      document.documentElement.clientWidth,
+    );
+  });
+
+  test("a new-tab link has a mark after its text, with alternative text", async () => {
+    const screen = await renderIn("light", ProseLesson, { html: richHtml });
+    const link = screen.getByText("to a new tab", { exact: true }).element();
+    const after = getComputedStyle(link, "::after");
+    expect(after.content).toContain("opens in a new tab");
+    expect(after.display).toBe("inline-block");
+    expect(after.backgroundColor).toBe(role("link", "light"));
+    // Other links have none.
+    const inside = screen.getByRole("link", { name: "inside the site" });
+    expect(getComputedStyle(inside.element(), "::after").content).toBe("none");
   });
 });

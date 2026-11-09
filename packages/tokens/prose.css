@@ -5,7 +5,9 @@
  *
  * The variables below and the plugin's defaults on .prose have the same
  * specificity; Tailwind sorts this utility after prose, whatever the
- * import order (the Prose component's tests check the colours). */
+ * import order (the Prose component's tests check the colours). That
+ * holds only while the utility sets few properties: more declarations can
+ * sort it before .prose, so the rules after it are plain rules below. */
 @utility prose-centerline {
   --tw-prose-body: var(--color-foreground-soft);
   --tw-prose-headings: var(--color-foreground);
@@ -103,8 +105,252 @@
     &:is(thead) {
       background-color: var(--color-muted);
     }
-    &:is(thead th, tbody td):first-child {
+    &:is(thead th, tbody td, tbody th):first-child {
       padding-inline-start: 0.75rem;
     }
+    /* A header cell down the side reads as a head: foreground, semibold,
+     * the cell's own padding. */
+    &:is(tbody th) {
+      color: var(--color-foreground);
+      font-weight: 600;
+      text-align: start;
+      vertical-align: baseline;
+      padding: 0.5714286em;
+    }
+    /* A wide table scrolls in its own box, not the page. RichText writes
+     * the bare <table>, so the table is the box. */
+    &:is(table) {
+      display: block;
+      max-inline-size: 100%;
+      overflow-x: auto;
+    }
+
+    /* <u> in the text colour with a thin line, so it isn't taken for a
+     * link (links are the link colour, with a thicker line on hover). */
+    &:is(u) {
+      color: inherit;
+      text-decoration-line: underline;
+      text-decoration-color: currentcolor;
+      text-decoration-thickness: 1px;
+      text-underline-offset: 2px;
+    }
+    &:is(s) {
+      text-decoration-line: line-through;
+    }
+
+    /* Alignment, as RichText writes it. */
+    &[data-align="center"] {
+      text-align: center;
+    }
+    &[data-align="end"] {
+      text-align: end;
+    }
+    &[data-align="justify"] {
+      text-align: justify;
+      hyphens: auto;
+    }
+  }
+}
+
+/* The rest is plain rules, not inside the utility: Tailwind sorts a
+ * utility among the plugin's by the properties it sets, and with these
+ * added prose-centerline would sort before .prose, whose literal colours
+ * would then win over the roles above. These are outside Tailwind's
+ * layers, so they win over the plugin's rules whatever the order, and
+ * skip not-prose as the utility does. */
+.prose-centerline :not(:where([class~="not-prose"], [class~="not-prose"] *)) {
+  /* A checklist: <ul> of <li><label><input type="checkbox"> text</label>.
+     * The box beside the label's first line, no bullet, and the whole row
+     * (at least 44px) ticks it. The box is Checkbox's: size-5, primary. */
+  &:is(ul):has(> li > label > input[type="checkbox"]) {
+    padding-inline-start: 0;
+  }
+  &:is(li):has(> label > input[type="checkbox"]) {
+    list-style: none;
+    margin-block: 0;
+    padding-inline-start: 0;
+  }
+  &:is(li > label:has(> input[type="checkbox"])) {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    min-block-size: 2.75rem;
+    padding-block: 0.625rem;
+    cursor: pointer;
+  }
+  &:is(label > input[type="checkbox"]) {
+    flex-shrink: 0;
+    inline-size: 1.25rem;
+    block-size: 1.25rem;
+    margin: 0.25rem 0 0;
+    accent-color: var(--color-primary);
+  }
+  &:is(label > input[type="checkbox"]):focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 2px;
+  }
+
+  /* A new-tab link: a mark after the text, in the text's colour, with
+     * alternative text for screen readers. The first content line is for
+     * browsers that don't read the alternative. */
+  &:is(a)[target="_blank"]::after {
+    content: "";
+    content: "" / "opens in a new tab";
+    display: inline-block;
+    inline-size: 0.75em;
+    block-size: 0.75em;
+    margin-inline-start: 0.25em;
+    background-color: currentcolor;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7zm5 16H5V5h7V3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7h-2v7z'/%3E%3C/svg%3E")
+      center / contain no-repeat;
+  }
+
+  @media print {
+    /* The URL after an external link, in place of the new-tab mark. */
+    &:is(a[href^="http://"], a[href^="https://"], a[href^="//"])::after {
+      content: " (" attr(href) ")";
+      display: inline;
+      inline-size: auto;
+      block-size: auto;
+      margin: 0;
+      background: none;
+      mask: none;
+      overflow-wrap: anywhere;
+    }
+    /* Checkboxes print empty, ticked or not. */
+    &:is(label > input[type="checkbox"]) {
+      appearance: none;
+      border: 1px solid currentcolor;
+      background: none;
+    }
+    &:is(pre) {
+      white-space: pre-wrap;
+      border: 1px solid var(--color-border);
+    }
+    &:is(figure, tr) {
+      break-inside: avoid;
+    }
+    /* RichText's heading is inline in its wrapper, so the wrapper keeps
+     * with the text after it. */
+    &:is(h1, h2, h3, h4, h5, h6, [data-heading]) {
+      break-after: avoid;
+    }
+    /* A table fits the page, every column kept: long words break, so the
+     * table can be as narrow as the page. */
+    &:is(table) {
+      display: table;
+      overflow: visible;
+      max-inline-size: 100%;
+    }
+    &:is(th, td) {
+      overflow-wrap: anywhere;
+    }
+  }
+}
+
+/* A heading RichText draws with its "link to this section" beside it, so
+ * the heading's name is its text alone (RichText/DrawNodes.svelte):
+ *   <div data-heading="h2"><h2 id="…">…</h2><a data-heading-anchor>…</a></div>
+ * The heading is inline, so the link follows its last word, and the
+ * wrapper takes the heading's place: its size, line height and font, and
+ * the margins the typography plugin gives that heading at prose's base
+ * size (keep in step with the plugin's styles.js). These sit in the
+ * components layer, under the plugin's own rules and Tailwind's
+ * utilities, so the rules that trim an edge child's margin (prose's first
+ * and last child, hr + *, a callout's content) still win over them, as
+ * they did over the heading's. */
+@layer components {
+  .prose-centerline
+    :where([data-heading]):not(
+      :where([class~="not-prose"], [class~="not-prose"] *)
+    ) {
+    font-family: var(--font-heading);
+    font-weight: 600;
+    &:where([data-heading="h1"]) {
+      font-size: var(--text-3xl);
+      line-height: var(--text-3xl--line-height);
+      margin-block: 0 calc(32em / 36);
+    }
+    &:where([data-heading="h2"]) {
+      font-size: var(--text-xl);
+      line-height: var(--text-xl--line-height);
+      margin-block: 2em 1em;
+    }
+    &:where([data-heading="h3"]) {
+      font-size: var(--text-lg);
+      line-height: var(--text-lg--line-height);
+      margin-block: 1.6em 0.6em;
+    }
+    &:where([data-heading="h4"]) {
+      font-size: var(--text-base);
+      line-height: var(--text-base--line-height);
+      margin-block: 1.5em 0.5em;
+    }
+    &:where([data-heading="h5"], [data-heading="h6"]) {
+      font-size: var(--text-base);
+      line-height: var(--text-base--line-height);
+    }
+    & > :where(h1, h2, h3, h4, h5, h6) {
+      display: inline;
+    }
+  }
+}
+
+/* As the plugin's h2 + *, h3 + * and h4 + *: nothing above what follows
+ * one of those headings. In the utilities layer, after the plugin's rules
+ * and as specific, so it wins over a paragraph's or a list's top margin
+ * (and a callout's my-5) as the plugin's does. */
+@layer utilities {
+  .prose-centerline
+    :where(
+      :is([data-heading="h2"], [data-heading="h3"], [data-heading="h4"]) + *
+    ):not(:where([class~="not-prose"], [class~="not-prose"] *)) {
+    margin-top: 0;
+  }
+}
+
+/* Print: black on white whatever the scheme. The roles the prose draws
+ * with are set to print values on it and on the elements around it that
+ * carry data-theme (a dark page, a dark panel), so the same rules
+ * serve both schemes. */
+@media print {
+  :root:has(.prose-centerline),
+  [data-theme]:has(.prose-centerline),
+  .prose-centerline {
+    color-scheme: light;
+    --color-background: #fff;
+    --color-card: #fff;
+    --color-foreground: #000;
+    --color-foreground-soft: #000;
+    --color-muted-foreground: #000;
+    --color-muted: #fff;
+    --color-link: #000;
+    --color-info: #000;
+    --color-primary: #000;
+    --color-border: #555;
+  }
+
+  /* The chrome: Header, Footer and AppNav draw data-theme="dark" on their
+   * root (a header around prose is a dark panel, not chrome); SkipLink is
+   * the sr-only link to a #id. */
+  header[data-theme="dark"]:not(:has(.prose-centerline)),
+  footer[data-theme="dark"]:not(:has(.prose-centerline)),
+  nav[data-theme="dark"]:not(:has(.prose-centerline)),
+  a.sr-only[href^="#"] {
+    display: none;
+  }
+
+  /* Selectors for markup other components draw; keep each in step with
+   * its component. This one is the "link to this section" RichText draws
+   * after a heading, in the heading's wrapper (data-heading and
+   * data-heading-anchor, in RichText/DrawNodes.svelte). The next is
+   * Callout's <aside>, the only one rich text has. */
+  .prose-centerline [data-heading] > a[data-heading-anchor] {
+    display: none;
+  }
+
+  /* A callout kept whole. */
+  .prose-centerline aside {
+    break-inside: avoid;
   }
 }

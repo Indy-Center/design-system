@@ -25,6 +25,12 @@ export async function tailwind(
         content: await readFile(path, "utf8"),
       };
     },
+    // A plugin the stylesheet names (@plugin "@tailwindcss/typography").
+    async loadModule(id, base) {
+      const require = createRequire(join(base, "app.css"));
+      const path = require.resolve(id);
+      return { path, base: dirname(path), module: require(path) };
+    },
   });
   return compiler.build(candidates);
 }

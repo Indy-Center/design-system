@@ -1,5 +1,10 @@
 import { describe, expect, test } from "vitest";
-import { timeText, type TimeShown, type TimeZoneShown } from "./format.ts";
+import {
+  dailyText,
+  timeText,
+  type TimeShown,
+  type TimeZoneShown,
+} from "./format.ts";
 
 // 2100Z on Tuesday 20 October 2026: 5:00 PM in Indianapolis (EDT, UTC−4).
 const NOW = new Date("2026-10-20T21:00:00Z");
@@ -206,5 +211,31 @@ describe("timeText", () => {
         end: new Date("later"),
       }).map((p) => p.text),
     ).toEqual(["7:00 PM EDT"]);
+  });
+});
+
+describe("dailyText", () => {
+  test.each<[string, string, string | undefined, string[]]>([
+    ["a time", "2300", undefined, ["2300Z"]],
+    ["midnight", "0000", undefined, ["0000Z"]],
+    ["the last minute", "2359", undefined, ["2359Z"]],
+    ["a range", "1400", "1800", ["1400Z", "–", "1800Z"]],
+    ["a range across midnight", "2300", "0300", ["2300Z", "–", "0300Z"]],
+    ["not a time of day", "2400", undefined, []],
+    ["minutes past 59", "2360", undefined, []],
+    ["too short", "230", undefined, []],
+    ["with a colon", "23:00", undefined, []],
+    ["blank", "", undefined, []],
+    ["a bad end, left off", "2300", "later", ["2300Z"]],
+  ])("%s", (_name, value, end, texts) => {
+    expect(dailyText(value, end).map((p) => p.text)).toEqual(texts);
+  });
+
+  test("gives each time its datetime as hours and minutes", () => {
+    expect(dailyText("2300", "0300").map((p) => p.datetime)).toEqual([
+      "23:00",
+      undefined,
+      "03:00",
+    ]);
   });
 });

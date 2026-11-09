@@ -95,10 +95,12 @@ describe("the packed package", () => {
       "Breadcrumbs",
       "Button",
       "CHIP_VARIANTS",
+      "Callout",
       "Card",
       "Checkbox",
       "Chip",
       "ChoiceCard",
+      "Citation",
       "ColorSchemeSetting",
       "Combobox",
       "ConfirmDialog",
@@ -139,6 +141,7 @@ describe("the packed package", () => {
       "RATINGS",
       "Radio",
       "Rating",
+      "RichText",
       "SEVERITIES",
       "SearchInput",
       "Select",
@@ -150,6 +153,7 @@ describe("the packed package", () => {
       "Steps",
       "Switch",
       "Table",
+      "TableOfContents",
       "Tabs",
       "Text",
       "Textarea",
@@ -163,12 +167,14 @@ describe("the packed package", () => {
       "clearColorScheme",
       "comparePositionTypes",
       "confirmAction",
+      "documentHeadings",
       "findPilotRating",
       "findRating",
       "formatDuration",
       "formatFrequency",
       "getPositions",
       "groupByPosition",
+      "headingId",
       "isPosition",
       "logoffFromInfo",
       "parseCallsign",
@@ -185,12 +191,17 @@ describe("the packed package", () => {
       "AirportInfo",
       "App",
       "BadgeVariant",
+      "BlockProps",
+      "BlockSnippets",
+      "CalloutLevel",
       "CallsignParts",
       "ChipVariant",
+      "CitationSource",
       "ColorScheme",
       "ConfirmActionOptions",
       "CredentialKind",
       "Crumb",
+      "DocumentHeading",
       "DurationStyle",
       "ErrorPageLink",
       "FieldControl",
@@ -199,6 +210,10 @@ describe("the packed package", () => {
       "FooterLink",
       "FrequencyOptions",
       "HeaderMember",
+      "HeadingIdFunction",
+      "HeadingNode",
+      "LinkDocument",
+      "LinkHrefFunction",
       "MatchablePosition",
       "NavGroup",
       "NavItem",
@@ -211,10 +226,12 @@ describe("the packed package", () => {
       "PositionType",
       "RatingDetails",
       "ResolvePositionOptions",
+      "RichTextState",
       "SaveColorSchemeOptions",
       "SetColorSchemeOptions",
       "SetTimeZoneOptions",
       "Severity",
+      "SerializedNode",
       "SeverityDetails",
       "Step",
       "Tab",
@@ -231,6 +248,53 @@ describe("the packed package", () => {
   test("carries the MIT licence and leaves out tests", () => {
     expect(files).toContain("LICENSE");
     expect(files.filter((f) => /\.test\./.test(f))).toEqual([]);
+  });
+
+  // Payload reads it with no Svelte installed: nothing it loads, in its
+  // JavaScript or its types, may import Svelte.
+  test("serves the blocks contract from /blocks, in Node, with types and no Svelte import", async () => {
+    const pkg = JSON.parse(
+      await readFile(new URL("package.json", root), "utf8"),
+    );
+    const types = pkg.exports["./blocks"].types.replace("./", "");
+    const code = pkg.exports["./blocks"].default.replace("./", "");
+    expect(files).toEqual(expect.arrayContaining([types, code]));
+
+    const blocks = await import("@indy-center/centerline-svelte/blocks");
+    expect(Object.keys(blocks).sort()).toEqual([
+      "AIRPORT_NAME_AT",
+      "BLOCKS",
+      "CALLOUT_LEVELS",
+      "CONTROLLER_RATING_CODES",
+      "FLIGHT_CATEGORIES",
+      "PILOT_RATING_CODES",
+      "POSITION_AIRPORT_AT",
+      "POSITION_FIELDS",
+      "RATING_KINDS",
+    ]);
+
+    // Every file the entry reaches through relative imports.
+    const seen = new Set<string>();
+    const visit = async (path: string) => {
+      if (seen.has(path)) return;
+      seen.add(path);
+      const source = await readFile(new URL(path, root), "utf8");
+      for (const [, from] of source.matchAll(/from\s+["']([^"']+)["']/g)) {
+        expect(from, path).not.toMatch(/^svelte(\/|$)|\.svelte(\.js)?$/);
+        if (from.startsWith(".")) {
+          const next = new URL(from, new URL(path, root)).pathname;
+          const relative = next.slice(new URL(root).pathname.length);
+          await visit(
+            path.endsWith(".d.ts")
+              ? relative.replace(/\.js$/, ".d.ts")
+              : relative,
+          );
+        }
+      }
+    };
+    await visit(code);
+    await visit(types);
+    expect(seen.size).toBeGreaterThan(2);
   });
 
   test("the built aviation helpers run, their imports resolved", async () => {

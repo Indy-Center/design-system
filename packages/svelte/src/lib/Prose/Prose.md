@@ -75,7 +75,25 @@ Only pass `{@html}` HTML the app trusts, such as the CMS's own output.
   `muted`.
 - Quotes upright, with a rule in the `info` role (the sky) and no quote
   marks.
-- Tables: a `muted` head, and `border` lines, the head's too.
+- Tables: a `muted` head, and `border` lines, the head's too. A header
+  cell down the side (`<th scope="row">`) is `foreground` and semibold. A
+  table wider than the column scrolls in its own box.
+- `<u>` in the text colour with a thin line, so it isn't taken for a link;
+  `<s>` struck through.
+- `[data-align="center" | "end" | "justify"]` aligns the element's text.
+- A checklist (a `<ul>` of `<li><label><input type="checkbox"> …</label>`)
+  has no bullet: the box sits beside the label's first line, and the whole
+  row, at least 44px tall, ticks it.
+- A link with `target="_blank"` has a mark after its text, in the link's
+  colour, with the alternative text "opens in a new tab".
+
+### Print
+
+Black text on white whatever the scheme. A link to another site shows its
+URL after the text, in place of the new-tab mark; checkboxes print empty;
+a figure and a table row don't break across pages, nor does a callout;
+code blocks wrap. `Header`, `Footer`, `AppNav`, the skip link and
+a heading's anchor link are hidden.
 
 ## Accessibility
 

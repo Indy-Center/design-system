@@ -14,6 +14,10 @@ export {
   type Crumb,
 } from "./Breadcrumbs/Breadcrumbs.svelte";
 export { default as Button } from "./Button/Button.svelte";
+export {
+  default as Callout,
+  type CalloutLevel,
+} from "./Callout/Callout.svelte";
 export { default as Card } from "./Card/Card.svelte";
 export { default as Checkbox } from "./Checkbox/Checkbox.svelte";
 export { default as ChoiceCard } from "./ChoiceCard/ChoiceCard.svelte";
@@ -22,6 +26,10 @@ export {
   CHIP_VARIANTS,
   type ChipVariant,
 } from "./Chip/Chip.svelte";
+export {
+  default as Citation,
+  type CitationSource,
+} from "./Citation/Citation.svelte";
 export { default as ColorSchemeSetting } from "./ColorSchemeSetting/ColorSchemeSetting.svelte";
 export { default as Combobox } from "./Combobox/Combobox.svelte";
 export { default as ConfirmDialog } from "./ConfirmDialog/ConfirmDialog.svelte";
@@ -77,6 +85,7 @@ export { default as ProgressBar } from "./ProgressBar/ProgressBar.svelte";
 export { default as Prose } from "./Prose/Prose.svelte";
 export { default as Radio } from "./Radio/Radio.svelte";
 export { default as Rating } from "./Rating/Rating.svelte";
+export { default as RichText } from "./RichText/RichText.svelte";
 export { default as SearchInput } from "./SearchInput/SearchInput.svelte";
 export { default as Select } from "./Select/Select.svelte";
 export { default as SkipLink } from "./SkipLink/SkipLink.svelte";
@@ -87,6 +96,7 @@ export { default as StatCard } from "./StatCard/StatCard.svelte";
 export { default as Steps, type Step } from "./Steps/Steps.svelte";
 export { default as Switch } from "./Switch/Switch.svelte";
 export { default as Table } from "./Table/Table.svelte";
+export { default as TableOfContents } from "./TableOfContents/TableOfContents.svelte";
 export { default as Tabs, type Tab } from "./Tabs/Tabs.svelte";
 export { default as Text } from "./Text/Text.svelte";
 export { default as Textarea } from "./Textarea/Textarea.svelte";
@@ -115,6 +125,24 @@ export {
 } from "./severity/severity.js";
 export { toast } from "./Toast/toast.svelte.js";
 export { toastFromServer, type ToastCookies } from "./Toast/toastFromServer.js";
+
+// Rich text: what RichText takes, and the heading ids it gives, for a
+// contents list to read from the same JSON. The blocks' field types are
+// the `blocks` entry's (./blocks.ts).
+export type { BlockProps, BlockSnippets } from "./RichText/blockSnippets.js";
+export type { LinkHrefFunction } from "./RichText/draw.js";
+export {
+  documentHeadings,
+  headingId,
+  type DocumentHeading,
+  type HeadingIdFunction,
+} from "./RichText/headings.js";
+export type {
+  HeadingNode,
+  LinkDocument,
+  RichTextState,
+  SerializedNode,
+} from "./RichText/nodes.js";
 
 // Asks the member to confirm an action, in place of confirm().
 export {
