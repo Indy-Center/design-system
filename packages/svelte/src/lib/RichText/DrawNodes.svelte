@@ -16,7 +16,7 @@
   // Draws a list of Lexical nodes, and itself again for their children.
   import { DEV } from "esm-env";
   import Nodes from "./DrawNodes.svelte";
-  import { blockContent } from "./headings.js";
+  import { blockContent, textOf } from "./headings.js";
   import {
     align,
     blockFields,
@@ -157,12 +157,29 @@
     {/if}
   {:else if node.type === "heading"}
     {@const heading = as<HeadingNode>(node)}
+    {@const id = drawing.ids.get(node)}
     <svelte:element
       this={heading.tag}
-      id={drawing.ids.get(node)}
+      {id}
       data-align={align(heading.format)}
+      class="group"
     >
       <Nodes nodes={heading.children ?? []} {drawing} />
+      {#if id}
+        <!-- Seen on hover and focus; packages/tokens/prose.css hides it in print by its data attribute. -->
+        <a
+          href="#{id}"
+          data-heading-anchor
+          class={[
+            "not-prose ms-2 rounded-sm text-muted-foreground no-underline opacity-0",
+            "group-hover:opacity-100 hover:text-link focus-visible:opacity-100",
+            "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
+          ]}
+          ><span aria-hidden="true">#</span><span class="sr-only"
+            >Link to section: {textOf(node).replace(/\s+/g, " ").trim()}</span
+          ></a
+        >
+      {/if}
     </svelte:element>
   {:else if node.type === "quote"}
     {@const quote = as<QuoteNode>(node)}

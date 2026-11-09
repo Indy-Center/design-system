@@ -80,7 +80,7 @@ Each of Lexical's own nodes as the element that fits it (decision 0010):
 | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | paragraph              | `<p>`; an empty one draws nothing                                                                                                                                                                                                                                                    |
 | text                   | its formats as `<strong>`, `<em>`, `<u>`, `<s>`, `<sub>`, `<sup>`, `<code>`; a line break as `<br>`                                                                                                                                                                                  |
-| heading                | its `h2`–`h4` (the editor offers no others), with an id (below)                                                                                                                                                                                                                      |
+| heading                | its `h2`–`h4` (the editor offers no others), with an id and an anchor link (below)                                                                                                                                                                                                   |
 | list                   | `<ul>` or `<ol>` (with `start` when not 1); a nested list inside the item above it                                                                                                                                                                                                   |
 | checklist              | a `<ul>` of `<label><input type="checkbox"> …</label>`. Readers can tick them; nothing is saved, and every box starts unticked, whatever the author left                                                                                                                             |
 | quote, horizontal rule | `<blockquote>`, `<hr>`                                                                                                                                                                                                                                                               |
@@ -100,6 +100,11 @@ Each of Lexical's own nodes as the element that fits it (decision 0010):
   `section`). A repeat gets `-2`, `-3` in document order, counting
   headings in blocks' content. `headingId` is the slug, exported for an
   app's own rule to build on.
+- Each heading ends with a "link to this section": an `<a href="#id"
+data-heading-anchor>` showing `#`, named "Link to section: <heading>".
+  It shows on hover and keyboard focus, and not in print.
+  [TableOfContents](../TableOfContents/TableOfContents.md) lists the same
+  headings with the same ids.
 
 ## Blocks
 
