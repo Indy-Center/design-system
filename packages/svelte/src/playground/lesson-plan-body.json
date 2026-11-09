@@ -1,0 +1,1076 @@
+{
+  "root": {
+    "type": "root",
+    "format": "",
+    "indent": 0,
+    "version": 1,
+    "children": [
+      {
+        "tag": "h2",
+        "type": "heading",
+        "format": "",
+        "indent": 0,
+        "version": 1,
+        "children": [
+          {
+            "mode": "normal",
+            "text": "Runways",
+            "type": "text",
+            "style": "",
+            "detail": 0,
+            "format": 0,
+            "version": 1
+          }
+        ],
+        "direction": null
+      },
+      {
+        "type": "paragraph",
+        "format": "",
+        "indent": 0,
+        "version": 1,
+        "children": [
+          {
+            "mode": "normal",
+            "text": "Tower ",
+            "type": "text",
+            "style": "",
+            "detail": 0,
+            "format": 0,
+            "version": 1
+          },
+          {
+            "mode": "normal",
+            "text": "controls",
+            "type": "text",
+            "style": "",
+            "detail": 0,
+            "format": 2,
+            "version": 1
+          },
+          {
+            "mode": "normal",
+            "text": " ",
+            "type": "text",
+            "style": "",
+            "detail": 0,
+            "format": 0,
+            "version": 1
+          },
+          {
+            "mode": "normal",
+            "text": "every",
+            "type": "text",
+            "style": "",
+            "detail": 0,
+            "format": 1,
+            "version": 1
+          },
+          {
+            "mode": "normal",
+            "text": " ",
+            "type": "text",
+            "style": "",
+            "detail": 0,
+            "format": 0,
+            "version": 1
+          },
+          {
+            "id": "6ae41aa6b1d8a7ad26dc56da",
+            "type": "link",
+            "fields": {
+              "doc": {
+                "label": "X-TWR-0",
+                "value": {
+                  "id": "<plan-id>",
+                  "code": "X-TWR-0",
+                  "title": "Before"
+                },
+                "relationTo": "lesson-plans"
+              },
+              "linkType": "internal"
+            },
+            "format": "",
+            "indent": 0,
+            "version": 3,
+            "children": [
+              {
+                "mode": "normal",
+                "text": "runway",
+                "type": "text",
+                "style": "",
+                "detail": 0,
+                "format": 0,
+                "version": 1
+              }
+            ],
+            "direction": null
+          },
+          {
+            "mode": "normal",
+            "text": ". ",
+            "type": "text",
+            "style": "",
+            "detail": 0,
+            "format": 0,
+            "version": 1
+          },
+          {
+            "mode": "normal",
+            "text": "Read back",
+            "type": "text",
+            "style": "",
+            "detail": 0,
+            "format": 8,
+            "version": 1
+          },
+          {
+            "mode": "normal",
+            "text": " each ",
+            "type": "text",
+            "style": "",
+            "detail": 0,
+            "format": 0,
+            "version": 1
+          },
+          {
+            "mode": "normal",
+            "text": "landing",
+            "type": "text",
+            "style": "",
+            "detail": 0,
+            "format": 4,
+            "version": 1
+          },
+          {
+            "mode": "normal",
+            "text": " ",
+            "type": "text",
+            "style": "",
+            "detail": 0,
+            "format": 0,
+            "version": 1
+          },
+          {
+            "id": "6ae41b00b1d8a7ad26dc56db",
+            "type": "link",
+            "fields": {
+              "url": "https://www.faa.gov/air_traffic/publications/atpubs/atc_html/chap3_section10.html",
+              "newTab": true,
+              "linkType": "custom"
+            },
+            "format": "",
+            "indent": 0,
+            "version": 3,
+            "children": [
+              {
+                "mode": "normal",
+                "text": "clearance",
+                "type": "text",
+                "style": "",
+                "detail": 0,
+                "format": 0,
+                "version": 1
+              }
+            ],
+            "direction": null
+          },
+          {
+            "mode": "normal",
+            "text": ".",
+            "type": "text",
+            "style": "",
+            "detail": 0,
+            "format": 0,
+            "version": 1
+          }
+        ],
+        "direction": null,
+        "textStyle": "",
+        "textFormat": 0
+      },
+      {
+        "tag": "h3",
+        "type": "heading",
+        "format": "",
+        "indent": 0,
+        "version": 1,
+        "children": [
+          {
+            "mode": "normal",
+            "text": "Hold short",
+            "type": "text",
+            "style": "",
+            "detail": 0,
+            "format": 0,
+            "version": 1
+          }
+        ],
+        "direction": null
+      },
+      {
+        "type": "paragraph",
+        "format": "center",
+        "indent": 0,
+        "version": 1,
+        "children": [
+          {
+            "mode": "normal",
+            "text": "Centred.",
+            "type": "text",
+            "style": "",
+            "detail": 0,
+            "format": 0,
+            "version": 1
+          }
+        ],
+        "direction": null,
+        "textStyle": "",
+        "textFormat": 0
+      },
+      {
+        "tag": "h4",
+        "type": "heading",
+        "format": "",
+        "indent": 0,
+        "version": 1,
+        "children": [
+          {
+            "mode": "normal",
+            "text": "Notes",
+            "type": "text",
+            "style": "",
+            "detail": 0,
+            "format": 0,
+            "version": 1
+          }
+        ],
+        "direction": null
+      },
+      {
+        "tag": "ul",
+        "type": "list",
+        "start": 1,
+        "format": "",
+        "indent": 0,
+        "version": 1,
+        "children": [
+          {
+            "type": "listitem",
+            "value": 1,
+            "format": "",
+            "indent": 0,
+            "version": 1,
+            "children": [
+              {
+                "mode": "normal",
+                "text": "Wind",
+                "type": "text",
+                "style": "",
+                "detail": 0,
+                "format": 0,
+                "version": 1
+              }
+            ],
+            "direction": null
+          },
+          {
+            "type": "listitem",
+            "value": 2,
+            "format": "",
+            "indent": 0,
+            "version": 1,
+            "children": [
+              {
+                "mode": "normal",
+                "text": "Altimeter",
+                "type": "text",
+                "style": "",
+                "detail": 0,
+                "format": 0,
+                "version": 1
+              }
+            ],
+            "direction": null
+          }
+        ],
+        "listType": "bullet",
+        "direction": null
+      },
+      {
+        "tag": "ol",
+        "type": "list",
+        "start": 1,
+        "format": "",
+        "indent": 0,
+        "version": 1,
+        "children": [
+          {
+            "type": "listitem",
+            "value": 1,
+            "format": "",
+            "indent": 0,
+            "version": 1,
+            "children": [
+              {
+                "mode": "normal",
+                "text": "Listen",
+                "type": "text",
+                "style": "",
+                "detail": 0,
+                "format": 0,
+                "version": 1
+              }
+            ],
+            "direction": null
+          },
+          {
+            "type": "listitem",
+            "value": 2,
+            "format": "",
+            "indent": 0,
+            "version": 1,
+            "children": [
+              {
+                "mode": "normal",
+                "text": "Read back",
+                "type": "text",
+                "style": "",
+                "detail": 0,
+                "format": 0,
+                "version": 1
+              }
+            ],
+            "direction": null
+          }
+        ],
+        "listType": "number",
+        "direction": null
+      },
+      {
+        "type": "quote",
+        "format": "",
+        "indent": 0,
+        "version": 1,
+        "children": [
+          {
+            "mode": "normal",
+            "text": "Cleared to land.",
+            "type": "text",
+            "style": "",
+            "detail": 0,
+            "format": 0,
+            "version": 1
+          }
+        ],
+        "direction": null
+      },
+      {
+        "tag": "ul",
+        "type": "list",
+        "start": 1,
+        "format": "",
+        "indent": 0,
+        "version": 1,
+        "children": [
+          {
+            "type": "listitem",
+            "value": 1,
+            "format": "",
+            "indent": 0,
+            "checked": true,
+            "version": 1,
+            "children": [
+              {
+                "mode": "normal",
+                "text": "ATIS current",
+                "type": "text",
+                "style": "",
+                "detail": 0,
+                "format": 0,
+                "version": 1
+              }
+            ],
+            "direction": null
+          },
+          {
+            "type": "listitem",
+            "value": 2,
+            "format": "",
+            "indent": 0,
+            "checked": false,
+            "version": 1,
+            "children": [
+              {
+                "mode": "normal",
+                "text": "Wind checked",
+                "type": "text",
+                "style": "",
+                "detail": 0,
+                "format": 0,
+                "version": 1
+              }
+            ],
+            "direction": null
+          }
+        ],
+        "listType": "check",
+        "direction": null
+      },
+      {
+        "type": "paragraph",
+        "format": "",
+        "indent": 0,
+        "version": 1,
+        "children": [],
+        "direction": null,
+        "textStyle": "",
+        "textFormat": 0
+      },
+      {
+        "type": "paragraph",
+        "format": "",
+        "indent": 0,
+        "version": 1,
+        "children": [],
+        "direction": null,
+        "textStyle": "",
+        "textFormat": 0
+      },
+      { "type": "horizontalrule", "version": 1 },
+      {
+        "type": "paragraph",
+        "format": "",
+        "indent": 0,
+        "version": 1,
+        "children": [
+          {
+            "mode": "normal",
+            "text": "Runways at KIND:",
+            "type": "text",
+            "style": "",
+            "detail": 0,
+            "format": 0,
+            "version": 1
+          }
+        ],
+        "direction": null,
+        "textStyle": "",
+        "textFormat": 0
+      },
+      {
+        "type": "table",
+        "format": "",
+        "indent": 0,
+        "version": 1,
+        "children": [
+          {
+            "type": "tablerow",
+            "format": "",
+            "indent": 0,
+            "version": 1,
+            "children": [
+              {
+                "type": "tablecell",
+                "format": "",
+                "indent": 0,
+                "colSpan": 1,
+                "rowSpan": 1,
+                "version": 1,
+                "children": [
+                  {
+                    "type": "paragraph",
+                    "format": "",
+                    "indent": 0,
+                    "version": 1,
+                    "children": [
+                      {
+                        "mode": "normal",
+                        "text": "Runway",
+                        "type": "text",
+                        "style": "",
+                        "detail": 0,
+                        "format": 0,
+                        "version": 1
+                      }
+                    ],
+                    "direction": null,
+                    "textStyle": "",
+                    "textFormat": 0
+                  }
+                ],
+                "direction": null,
+                "headerState": 3,
+                "backgroundColor": null
+              },
+              {
+                "type": "tablecell",
+                "format": "",
+                "indent": 0,
+                "colSpan": 1,
+                "rowSpan": 1,
+                "version": 1,
+                "children": [
+                  {
+                    "type": "paragraph",
+                    "format": "",
+                    "indent": 0,
+                    "version": 1,
+                    "children": [
+                      {
+                        "mode": "normal",
+                        "text": "Length",
+                        "type": "text",
+                        "style": "",
+                        "detail": 0,
+                        "format": 0,
+                        "version": 1
+                      }
+                    ],
+                    "direction": null,
+                    "textStyle": "",
+                    "textFormat": 0
+                  }
+                ],
+                "direction": null,
+                "headerState": 1,
+                "backgroundColor": null
+              },
+              {
+                "type": "tablecell",
+                "format": "",
+                "indent": 0,
+                "colSpan": 1,
+                "rowSpan": 1,
+                "version": 1,
+                "children": [
+                  {
+                    "type": "paragraph",
+                    "format": "",
+                    "indent": 0,
+                    "version": 1,
+                    "children": [
+                      {
+                        "mode": "normal",
+                        "text": "Use",
+                        "type": "text",
+                        "style": "",
+                        "detail": 0,
+                        "format": 0,
+                        "version": 1
+                      }
+                    ],
+                    "direction": null,
+                    "textStyle": "",
+                    "textFormat": 0
+                  }
+                ],
+                "direction": null,
+                "headerState": 1,
+                "backgroundColor": null
+              }
+            ],
+            "direction": null
+          },
+          {
+            "type": "tablerow",
+            "format": "",
+            "indent": 0,
+            "version": 1,
+            "children": [
+              {
+                "type": "tablecell",
+                "format": "",
+                "indent": 0,
+                "colSpan": 1,
+                "rowSpan": 1,
+                "version": 1,
+                "children": [
+                  {
+                    "type": "paragraph",
+                    "format": "",
+                    "indent": 0,
+                    "version": 1,
+                    "children": [
+                      {
+                        "mode": "normal",
+                        "text": "5L",
+                        "type": "text",
+                        "style": "",
+                        "detail": 0,
+                        "format": 0,
+                        "version": 1
+                      }
+                    ],
+                    "direction": null,
+                    "textStyle": "",
+                    "textFormat": 0
+                  }
+                ],
+                "direction": null,
+                "headerState": 2,
+                "backgroundColor": null
+              },
+              {
+                "type": "tablecell",
+                "format": "",
+                "indent": 0,
+                "colSpan": 1,
+                "rowSpan": 1,
+                "version": 1,
+                "children": [
+                  {
+                    "type": "paragraph",
+                    "format": "",
+                    "indent": 0,
+                    "version": 1,
+                    "children": [
+                      {
+                        "mode": "normal",
+                        "text": "11,200 ft",
+                        "type": "text",
+                        "style": "",
+                        "detail": 0,
+                        "format": 0,
+                        "version": 1
+                      }
+                    ],
+                    "direction": null,
+                    "textStyle": "",
+                    "textFormat": 0
+                  }
+                ],
+                "direction": null,
+                "headerState": 0,
+                "backgroundColor": null
+              },
+              {
+                "type": "tablecell",
+                "format": "",
+                "indent": 0,
+                "colSpan": 1,
+                "rowSpan": 1,
+                "version": 1,
+                "children": [
+                  {
+                    "type": "paragraph",
+                    "format": "",
+                    "indent": 0,
+                    "version": 1,
+                    "children": [
+                      {
+                        "mode": "normal",
+                        "text": "Arrivals",
+                        "type": "text",
+                        "style": "",
+                        "detail": 0,
+                        "format": 0,
+                        "version": 1
+                      }
+                    ],
+                    "direction": null,
+                    "textStyle": "",
+                    "textFormat": 0
+                  }
+                ],
+                "direction": null,
+                "headerState": 0,
+                "backgroundColor": null
+              }
+            ],
+            "direction": null
+          },
+          {
+            "type": "tablerow",
+            "format": "",
+            "indent": 0,
+            "version": 1,
+            "children": [
+              {
+                "type": "tablecell",
+                "format": "",
+                "indent": 0,
+                "colSpan": 1,
+                "rowSpan": 1,
+                "version": 1,
+                "children": [
+                  {
+                    "type": "paragraph",
+                    "format": "",
+                    "indent": 0,
+                    "version": 1,
+                    "children": [
+                      {
+                        "mode": "normal",
+                        "text": "23R",
+                        "type": "text",
+                        "style": "",
+                        "detail": 0,
+                        "format": 0,
+                        "version": 1
+                      }
+                    ],
+                    "direction": null,
+                    "textStyle": "",
+                    "textFormat": 0
+                  }
+                ],
+                "direction": null,
+                "headerState": 2,
+                "backgroundColor": null
+              },
+              {
+                "type": "tablecell",
+                "format": "",
+                "indent": 0,
+                "colSpan": 2,
+                "rowSpan": 1,
+                "version": 1,
+                "children": [
+                  {
+                    "type": "paragraph",
+                    "format": "",
+                    "indent": 0,
+                    "version": 1,
+                    "children": [
+                      {
+                        "mode": "normal",
+                        "text": "Closed for resurfacing",
+                        "type": "text",
+                        "style": "",
+                        "detail": 0,
+                        "format": 0,
+                        "version": 1
+                      }
+                    ],
+                    "direction": null,
+                    "textStyle": "",
+                    "textFormat": 0
+                  }
+                ],
+                "direction": null,
+                "headerState": 0,
+                "backgroundColor": null
+              }
+            ],
+            "direction": null
+          }
+        ],
+        "colWidths": [92, 92, 92],
+        "direction": null
+      },
+      {
+        "id": "6ae41b3eb1d8a7ad26dc56dc",
+        "type": "upload",
+        "value": {
+          "id": "<media-id>",
+          "alt": "Runway 23 at KIND",
+          "url": "/api/media/file/runway.png",
+          "filename": "runway.png",
+          "width": 800,
+          "height": 600,
+          "sizes": {
+            "logo": {
+              "url": "/api/media/file/runway-256x192.png",
+              "width": 256,
+              "height": 192,
+              "mimeType": "image/png",
+              "filesize": null,
+              "filename": "runway-256x192.png"
+            },
+            "banner": {
+              "url": null,
+              "width": null,
+              "height": null,
+              "mimeType": null,
+              "filesize": null,
+              "filename": null
+            },
+            "thumbnail": {
+              "url": "/api/media/file/runway-400x300.png",
+              "width": 400,
+              "height": 300,
+              "mimeType": "image/png",
+              "filesize": null,
+              "filename": "runway-400x300.png"
+            },
+            "large": {
+              "url": null,
+              "width": null,
+              "height": null,
+              "mimeType": null,
+              "filesize": null,
+              "filename": null
+            }
+          }
+        },
+        "fields": null,
+        "format": "",
+        "version": 3,
+        "relationTo": "media"
+      },
+      {
+        "type": "block",
+        "fields": {
+          "id": "6ae41b7cb1d8a7ad26dc56dd",
+          "label": "Wake turbulence",
+          "level": "caution",
+          "content": {
+            "root": {
+              "type": "root",
+              "format": "",
+              "indent": 0,
+              "version": 1,
+              "children": [
+                {
+                  "type": "paragraph",
+                  "format": "",
+                  "indent": 0,
+                  "version": 1,
+                  "children": [
+                    {
+                      "mode": "normal",
+                      "text": "Hold departures behind a heavy for two minutes, per ",
+                      "type": "text",
+                      "style": "",
+                      "detail": 0,
+                      "format": 0,
+                      "version": 1
+                    },
+                    {
+                      "type": "inlineBlock",
+                      "fields": {
+                        "at": "3-9-6",
+                        "id": "6ae41b9ab1d8a7ad26dc56de",
+                        "source": {
+                          "id": "<source-id>",
+                          "name": "JO 7110.65",
+                          "edition": "AA",
+                          "url": "https://www.faa.gov/air_traffic/publications/atpubs/atc_html/"
+                        },
+                        "blockType": "citation"
+                      },
+                      "version": 1
+                    }
+                  ],
+                  "direction": null,
+                  "textStyle": "",
+                  "textFormat": 0
+                }
+              ],
+              "direction": null
+            }
+          },
+          "blockName": "",
+          "blockType": "callout"
+        },
+        "format": "",
+        "version": 2
+      },
+      {
+        "type": "block",
+        "fields": {
+          "id": "6ae41bf3b1d8a7ad26dc56df",
+          "content": {
+            "root": {
+              "type": "root",
+              "format": "",
+              "indent": 0,
+              "version": 1,
+              "children": [
+                {
+                  "type": "paragraph",
+                  "format": "",
+                  "indent": 0,
+                  "version": 1,
+                  "children": [
+                    {
+                      "mode": "normal",
+                      "text": "The vortex sinks and drifts with the wind. On ",
+                      "type": "text",
+                      "style": "",
+                      "detail": 0,
+                      "format": 0,
+                      "version": 1
+                    },
+                    {
+                      "type": "inlineBlock",
+                      "fields": {
+                        "id": "6ae41c03b1d8a7ad26dc56e0",
+                        "nameAt": "inline",
+                        "airport": {
+                          "code": "KIND",
+                          "name": "Indianapolis International"
+                        },
+                        "blockType": "airport",
+                        "focusable": true
+                      },
+                      "version": 1
+                    },
+                    {
+                      "mode": "normal",
+                      "text": " parallel runways, wait three.",
+                      "type": "text",
+                      "style": "",
+                      "detail": 0,
+                      "format": 0,
+                      "version": 1
+                    }
+                  ],
+                  "direction": null,
+                  "textStyle": "",
+                  "textFormat": 0
+                }
+              ],
+              "direction": null
+            }
+          },
+          "summary": "Why two minutes?",
+          "blockName": "",
+          "blockType": "disclosure"
+        },
+        "format": "",
+        "version": 2
+      },
+      {
+        "type": "paragraph",
+        "format": "",
+        "indent": 0,
+        "version": 1,
+        "children": [
+          {
+            "mode": "normal",
+            "text": "Contact tower on ",
+            "type": "text",
+            "style": "",
+            "detail": 0,
+            "format": 0,
+            "version": 1
+          },
+          {
+            "type": "inlineBlock",
+            "fields": {
+              "id": "6ae41c2eb1d8a7ad26dc56e1",
+              "value": "120.900",
+              "blockType": "frequency"
+            },
+            "version": 1
+          },
+          {
+            "mode": "normal",
+            "text": ", then ",
+            "type": "text",
+            "style": "",
+            "detail": 0,
+            "format": 0,
+            "version": 1
+          },
+          {
+            "type": "inlineBlock",
+            "fields": {
+              "id": "6ae41c40b1d8a7ad26dc56e2",
+              "show": ["airport"],
+              "airport": {},
+              "callsign": "IND_TWR",
+              "blockType": "position"
+            },
+            "version": 1
+          },
+          {
+            "mode": "normal",
+            "text": " for a ",
+            "type": "text",
+            "style": "",
+            "detail": 0,
+            "format": 0,
+            "version": 1
+          },
+          {
+            "type": "inlineBlock",
+            "fields": {
+              "id": "6ae41c5ab1d8a7ad26dc56e3",
+              "kind": "controller",
+              "rating": "S2",
+              "blockType": "rating"
+            },
+            "version": 1
+          },
+          {
+            "mode": "normal",
+            "text": " checkride in ",
+            "type": "text",
+            "style": "",
+            "detail": 0,
+            "format": 0,
+            "version": 1
+          },
+          {
+            "type": "inlineBlock",
+            "fields": {
+              "id": "6ae41cd1b1d8a7ad26dc56e4",
+              "category": "MVFR",
+              "blockType": "flightCategory"
+            },
+            "version": 1
+          },
+          {
+            "mode": "normal",
+            "text": " weather, before ",
+            "type": "text",
+            "style": "",
+            "detail": 0,
+            "format": 0,
+            "version": 1
+          },
+          {
+            "type": "inlineBlock",
+            "fields": {
+              "id": "6ae41ce9b1d8a7ad26dc56e5",
+              "end": "0300",
+              "value": "2300",
+              "blockType": "time"
+            },
+            "version": 1
+          },
+          {
+            "mode": "normal",
+            "text": ". Then file it under ",
+            "type": "text",
+            "style": "",
+            "detail": 0,
+            "format": 0,
+            "version": 1
+          },
+          {
+            "type": "inlineBlock",
+            "fields": {
+              "at": "Chapter 4",
+              "id": "6ae41d02b1d8a7ad26dc56e6",
+              "source": {
+                "id": "<source-id>",
+                "name": "JO 7110.65",
+                "edition": "AA",
+                "url": "https://www.faa.gov/air_traffic/publications/atpubs/atc_html/"
+              },
+              "blockType": "citation"
+            },
+            "version": 1
+          },
+          {
+            "mode": "normal",
+            "text": ".",
+            "type": "text",
+            "style": "",
+            "detail": 0,
+            "format": 0,
+            "version": 1
+          }
+        ],
+        "direction": null,
+        "textStyle": "",
+        "textFormat": 0
+      }
+    ],
+    "direction": null
+  }
+}

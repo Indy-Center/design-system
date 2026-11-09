@@ -75,6 +75,7 @@ export {
 } from "./Position/Position.svelte";
 export { default as ProgressBar } from "./ProgressBar/ProgressBar.svelte";
 export { default as Prose } from "./Prose/Prose.svelte";
+export { default as RichText } from "./RichText/RichText.svelte";
 export { default as Radio } from "./Radio/Radio.svelte";
 export { default as Rating } from "./Rating/Rating.svelte";
 export { default as SearchInput } from "./SearchInput/SearchInput.svelte";
@@ -115,6 +116,24 @@ export {
 } from "./severity/severity.js";
 export { toast } from "./Toast/toast.svelte.js";
 export { toastFromServer, type ToastCookies } from "./Toast/toastFromServer.js";
+
+// Rich text: what RichText takes, and the heading ids it gives, for a
+// contents list to read from the same JSON. The blocks' field types are
+// the `blocks` entry's (./blocks.ts).
+export type { BlockProps, BlockSnippets } from "./RichText/blockSnippets.js";
+export type { LinkHrefFunction } from "./RichText/draw.js";
+export {
+  documentHeadings,
+  headingId,
+  type DocumentHeading,
+  type HeadingIdFunction,
+} from "./RichText/headings.js";
+export type {
+  HeadingNode,
+  LinkDocument,
+  RichTextState,
+  SerializedNode,
+} from "./RichText/nodes.js";
 
 // Asks the member to confirm an action, in place of confirm().
 export {
