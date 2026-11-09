@@ -1,7 +1,7 @@
 <script lang="ts" module>
-  /** A part of a position that `Position` can show. */
-  export type PositionField =
-    "shortName" | "airport" | "radioName" | "name" | "frequency";
+  // The list lives in a .ts file so the `blocks` entry can share it.
+  import type { PositionField } from "./positionFields.js";
+  export type { PositionField };
 </script>
 
 <script lang="ts">
