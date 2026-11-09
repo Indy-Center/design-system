@@ -15,7 +15,7 @@
 <script lang="ts">
   import type { HTMLAttributes } from "svelte/elements";
   import Link from "../Link/Link.svelte";
-  import { isTrustedUrl } from "../RichText/draw.ts";
+  import { isTrustedUrl } from "../RichText/draw.js";
 
   type Props = Omit<HTMLAttributes<HTMLSpanElement>, "children"> & {
     /** The source: `{ name: "JO 7110.65", edition: "BB", url: "https://…" }`. */
