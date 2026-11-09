@@ -14,6 +14,8 @@ description: Draws a Payload rich-text field's JSON as semantic HTML inside Pros
       Payload's `{ relationTo, value }`, where `value` is the filled-in
       document, its id, or `null` once it is deleted. Return `undefined`
       for one with no page: its text is drawn plain, never `href="#"`.
+      `RichText` doesn't check what it returns: that address is the
+      app's, so return only ones you trust.
 - [ ] Have Payload fill in linked documents and uploads (`depth: 1` or
       more) with only the fields the page draws: an upload left as its id
       draws nothing.
@@ -87,10 +89,20 @@ Each of Lexical's own nodes as the element that fits it (decision 0010):
 | table                  | `<table>`, its header rows in `<thead>`. Header cells are `<th scope="col">` (a header row's) or `<th scope="row">` (a header column's); merged cells keep `colspan` and `rowspan`. Lexical's widths and colours are dropped, and a cell's lone paragraph is drawn without its `<p>` |
 | image upload           | one `<img>`: `src` the original, `srcset` its `thumbnail`, `large` and `banner` sizes and the original (each Payload made), `sizes` the reading column, the original's `width` and `height`, and its `alt`                                                                           |
 | other upload           | a link to the file, named by its file name                                                                                                                                                                                                                                           |
-| link                   | `<a href>`; a "new tab" one adds `target="_blank" rel="noopener noreferrer"`. An internal link's address is `linkHref`'s; with none, its text is drawn plain                                                                                                                         |
+| link                   | `<a href>`; a "new tab" one adds `target="_blank" rel="noopener noreferrer"`. A URL the document gives must be one it trusts (below), or its text is drawn plain. An internal link's address is `linkHref`'s; with none, its text is drawn plain                                     |
 | block, inline block    | the snippet for its slug (below)                                                                                                                                                                                                                                                     |
 | anything else          | its children, or nothing when it has none                                                                                                                                                                                                                                            |
 
+- A link or autolink whose URL comes from the document is drawn as a
+  link only when the URL is relative or uses `http:`, `https:`,
+  `mailto:` or `tel:`. Any other (`javascript:`, `data:`, `vbscript:`,
+  `file:`) draws the link's text plain, with no `<a>`. The scheme is
+  read as a browser reads it: spaces and control characters trimmed
+  from the ends, tabs and newlines dropped anywhere, in any case, so
+  `" JavaScript:"`, and `java` and `script:` split by a tab, are caught.
+  A URL with no scheme before its first `/`, `?` or `#` is relative. An
+  internal link's address is `linkHref`'s and isn't checked: it is the
+  app's own.
 - Alignment is `data-align="center"`, `"end"` or `"justify"`; left and
   start write nothing. Indent and Lexical's inline `style` are never
   written.

@@ -377,6 +377,30 @@ describe("RichText", () => {
       expect(screen.container.querySelector('a[href="#"]')).toBeNull();
     });
 
+    test.each(["link", "autolink"])(
+      "a javascript: URL in a %s node is its text, with no link",
+      async (type) => {
+        const screen = await renderIn("light", RichText, {
+          content: doc(
+            paragraph(
+              text("Read the "),
+              {
+                type,
+                fields: { linkType: "custom", url: " JavaScript:alert(1)" },
+                children: [text("briefing")],
+              },
+              text(" first."),
+            ),
+          ),
+        });
+        await expect
+          .element(screen.getByText("Read the briefing first."))
+          .toBeVisible();
+        await expect.element(screen.getByRole("link")).not.toBeInTheDocument();
+        expect(screen.container.querySelector("a")).toBeNull();
+      },
+    );
+
     test("a link to a deleted document, null, is its text when linkHref gives undefined", async () => {
       const p = sentence();
       const link = (p.children as SerializedNode[]).find(
