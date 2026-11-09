@@ -73,7 +73,11 @@ for the `app.html` script tag and saving a choice.
 
 `Prose`, for CMS rich text, also needs `@tailwindcss/typography` and
 `@indy-center/centerline-tokens/prose.css` in the stylesheet: see
-[`src/lib/Prose/Prose.md`](src/lib/Prose/Prose.md).
+[`src/lib/Prose/Prose.md`](src/lib/Prose/Prose.md). `RichText` draws a
+Payload rich-text field's JSON inside `Prose`; its blocks' field types,
+for the CMS's block configs, are plain TypeScript from
+`@indy-center/centerline-svelte/blocks`, which imports no Svelte: see
+[`src/lib/RichText/RichText.md`](src/lib/RichText/RichText.md).
 
 Aviation helpers (frequencies, callsigns, positions, ratings, durations)
 are plain functions from the package root, for an app's own code too:
