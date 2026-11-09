@@ -75,9 +75,9 @@ export {
 } from "./Position/Position.svelte";
 export { default as ProgressBar } from "./ProgressBar/ProgressBar.svelte";
 export { default as Prose } from "./Prose/Prose.svelte";
-export { default as RichText } from "./RichText/RichText.svelte";
 export { default as Radio } from "./Radio/Radio.svelte";
 export { default as Rating } from "./Rating/Rating.svelte";
+export { default as RichText } from "./RichText/RichText.svelte";
 export { default as SearchInput } from "./SearchInput/SearchInput.svelte";
 export { default as Select } from "./Select/Select.svelte";
 export { default as SkipLink } from "./SkipLink/SkipLink.svelte";
