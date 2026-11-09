@@ -38,7 +38,10 @@ describe("Callout", () => {
       level: "caution",
       children,
     });
-    const aside = screen.getByRole("complementary", { name: "Caution" });
+    const aside = screen.getByRole("complementary", {
+      name: "Caution",
+      exact: true,
+    });
     await expect.element(aside).toBeVisible();
     await expect.element(aside.getByText("Caution")).toBeVisible();
     // A document's note isn't news: that is Alert's.
@@ -46,17 +49,23 @@ describe("Callout", () => {
     await expect.element(screen.getByRole("alert")).not.toBeInTheDocument();
   });
 
-  test("a custom label replaces the level's own, shown and as its name", async () => {
+  test("a custom label shows in place of the level's word, which readers still hear", async () => {
     const screen = await renderIn("light", Callout, {
       level: "caution",
       label: "Wake turbulence",
       children,
     });
     const aside = screen.getByRole("complementary", {
-      name: "Wake turbulence",
+      name: "Caution: Wake turbulence",
+      exact: true,
     });
-    await expect.element(aside.getByText("Wake turbulence")).toBeVisible();
-    await expect.element(aside.getByText("Caution")).not.toBeInTheDocument();
+    await expect.element(aside).toBeVisible();
+    // The label's line, with the level's word inside it for readers alone, as Alert's is.
+    await expect
+      .element(aside.getByText(/^Caution: Wake turbulence$/))
+      .toBeVisible();
+    const word = aside.getByText("Caution:", { exact: true });
+    await expect.element(word).toHaveClass("sr-only");
   });
 
   describe.each(["light", "dark"] as const)("in %s", (scheme) => {

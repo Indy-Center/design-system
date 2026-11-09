@@ -12,7 +12,7 @@
   type Props = HTMLAttributes<HTMLElement> & {
     /** How it reads: info (Note), caution, danger (Warning) or reference. */
     level: CalloutLevel;
-    /** Shown and read in place of the level's own label. */
+    /** Shown in place of the level's own label; readers hear the level's word, then this. */
     label?: string;
     /** The callout's text: document content, such as paragraphs. */
     children: Snippet;
@@ -35,7 +35,13 @@
   </span>
   <div class="min-w-0 flex-1 text-foreground-soft">
     <p id="{id}-label" class="not-prose font-semibold text-foreground">
-      {label ?? callout.label}
+      {#if label}
+        <!-- A custom label shows alone; readers still hear the level, as in Alert. -->
+        <span class="sr-only">{callout.label}:</span>
+        {label}
+      {:else}
+        {callout.label}
+      {/if}
     </p>
     <!-- Its content's own margins stay between its parts, not at its edges. -->
     <div class="mt-1 *:first:mt-0 *:last:mb-0">{@render children()}</div>

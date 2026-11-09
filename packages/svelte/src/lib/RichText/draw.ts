@@ -187,7 +187,7 @@ export type UploadDrawing =
       height?: number;
       alt: string;
     }
-  | { kind: "file"; href: string; name: string }
+  | { kind: "file"; href: string | undefined; name: string }
   | { kind: "none" };
 
 /**
@@ -202,7 +202,7 @@ export function uploadDrawing(node: UploadNode): UploadDrawing {
   if (!isImage(file)) {
     return {
       kind: "file",
-      href: file.url,
+      href: isTrustedUrl(file.url) ? file.url : undefined,
       name: file.filename || file.url.split("/").at(-1) || file.url,
     };
   }
@@ -238,9 +238,27 @@ function isImage(file: UploadDocument): boolean {
 /** Gives an internal link's address, or `undefined` to draw its text plain. */
 export type LinkHrefFunction = (doc: LinkDocument) => string | undefined;
 
+/** The schemes a document's own link may use; a relative URL has none. */
+const TRUSTED_SCHEMES = new Set(["http", "https", "mailto", "tel"]);
+
 /**
- * A link's address: its URL, or for an internal link what `linkHref`
- * gives. `undefined` draws the link's text plain.
+ * Whether a document's URL is relative or uses a trusted scheme. The
+ * scheme is found as a browser finds it: spaces and control characters
+ * trimmed from the ends, tabs and newlines dropped anywhere, a scheme's
+ * letters before the first `:` (none before a `/`, `?` or `#`), any case.
+ */
+export function isTrustedUrl(url: string): boolean {
+  const cleaned = url
+    .replace(/^[\u0000- ]+|[\u0000- ]+$/g, "")
+    .replace(/[\t\n\r]/g, "");
+  const scheme = /^([a-z][a-z\d+.-]*):/i.exec(cleaned)?.[1];
+  return scheme === undefined || TRUSTED_SCHEMES.has(scheme.toLowerCase());
+}
+
+/**
+ * A link's address: its URL when `isTrustedUrl`, or for an internal link
+ * what `linkHref` gives, unchecked, since that is the app's own. `undefined`
+ * draws the link's text plain.
  */
 export function linkAddress(
   fields: LinkFields,
@@ -251,5 +269,5 @@ export function linkAddress(
       ? linkHref(fields.doc) || undefined
       : undefined;
   }
-  return fields.url || undefined;
+  return fields.url && isTrustedUrl(fields.url) ? fields.url : undefined;
 }

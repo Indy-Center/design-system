@@ -1,6 +1,8 @@
+import { createRawSnippet } from "svelte";
 import { beforeEach, describe, expect, test, vi } from "vitest";
 import { page, userEvent } from "vitest/browser";
 import { renderIn } from "../../../test/schemes.ts";
+import Prose from "../Prose/Prose.svelte";
 import WithPositions from "../../../test/WithPositions.svelte";
 import body from "../../playground/lesson-plan-body.json" with { type: "json" };
 import {
@@ -76,11 +78,8 @@ describe("RichText", () => {
       [3, "Hold short", "hold-short"],
       [4, "Notes", "notes"],
     ] as const) {
-      // The heading's name ends with its anchor link's text.
       await expect
-        .element(
-          article.getByRole("heading", { level, name: new RegExp(`^${name}`) }),
-        )
+        .element(article.getByRole("heading", { level, name, exact: true }))
         .toHaveAttribute("id", id);
     }
   });
@@ -112,9 +111,193 @@ describe("RichText", () => {
       headingId: (words) => `section-${words.length}`,
     });
     const [first, second] = screen
-      .getByRole("heading", { name: /^Runways/ })
+      .getByRole("heading", { name: "Runways", exact: true })
       .elements();
     expect([first.id, second.id]).toEqual(["section-7", "section-7-2"]);
+  });
+
+  describe("headings", () => {
+    const heading = (tag: string, words: string): SerializedNode => ({
+      type: "heading",
+      tag,
+      children: [text(words)],
+    });
+    const words = "Taxi via Alpha, hold short of the runway.";
+
+    test("the anchor link follows the heading, outside it, with no space between", async () => {
+      const screen = await renderIn("light", RichText, {
+        content: doc({ ...heading("h2", "Runways"), format: "center" }),
+      });
+      const h2 = screen.getByRole("heading", { name: "Runways", exact: true });
+      const link = screen.getByRole("link", {
+        name: "Link to section: Runways",
+        exact: true,
+      });
+      await expect.element(h2).toHaveAttribute("id", "runways");
+      expect(h2.element().nextElementSibling).toBe(link.element());
+      expect(h2.element().contains(link.element())).toBe(false);
+      // Only Svelte's markers between them: no text, so no space to break at.
+      let between = h2.element().nextSibling;
+      while (between && between !== link.element()) {
+        expect(between.nodeType).toBe(Node.COMMENT_NODE);
+        between = between.nextSibling;
+      }
+      // The two in a wrapper, which takes the heading's alignment.
+      const wrapper = h2.element().parentElement!;
+      expect(wrapper.dataset.heading).toBe("h2");
+      expect(wrapper.dataset.align).toBe("center");
+      expect(wrapper.parentElement).toBe(screen.getByRole("article").element());
+      expect(h2.element()).not.toHaveAttribute("data-align");
+    });
+
+    test("the anchor sits on the heading's line, after its last word", async () => {
+      const screen = await renderIn("light", RichText, {
+        content: doc(heading("h2", "Runways")),
+      });
+      const h2 = screen.getByRole("heading", { name: "Runways" }).element();
+      const hash = screen.container.querySelector("[data-heading-anchor]")!;
+      const text = h2.getBoundingClientRect();
+      const mark = hash.getBoundingClientRect();
+      expect(mark.left).toBeGreaterThan(text.right);
+      expect(mark.top).toBeLessThan(text.bottom);
+      expect(mark.bottom).toBeGreaterThan(text.top);
+    });
+
+    // A document with headings in every place the typography plugin's
+    // spacing rules reach: first, after a paragraph, after a heading, after
+    // a rule, before a list, last. Drawn by RichText with its wrappers, and
+    // by Prose from the same plain HTML, each part sits at the same place.
+    test("each heading looks and spaces as a plain heading in Prose does", async () => {
+      const parts: [string, string][] = [
+        ["h2", "Runways"],
+        ["p", words],
+        ["h3", "Hold short"],
+        ["p", words],
+        ["h4", "Notes"],
+        ["p", words],
+        ["h2", "Taxi"],
+        ["h3", "Ground"],
+        ["h4", "Ramp"],
+        ["p", words],
+        ["hr", ""],
+        ["h3", "After a rule"],
+        ["ul", words],
+        ["h2", "Last"],
+      ];
+      const node = ([tag, s]: [string, string]): SerializedNode =>
+        tag === "p"
+          ? paragraph(text(s))
+          : tag === "hr"
+            ? { type: "horizontalrule" }
+            : tag === "ul"
+              ? {
+                  type: "list",
+                  listType: "bullet",
+                  children: [{ type: "listitem", children: [text(s)] }],
+                }
+              : heading(tag, s);
+      const html = parts
+        .map(([tag, s]) =>
+          tag === "hr"
+            ? "<hr>"
+            : tag === "ul"
+              ? `<ul><li>${s}</li></ul>`
+              : `<${tag}>${s}</${tag}>`,
+        )
+        .join("");
+      const drawn = await renderIn("light", RichText, {
+        content: doc(...parts.map(node)),
+        class: "w-96",
+      });
+      const plain = await renderIn("light", Prose, {
+        class: "w-96",
+        children: createRawSnippet(() => ({
+          render: () => `<div>${html}</div>`,
+        })),
+      });
+      const [richArticle, plainArticle] = [drawn, plain].map((screen) =>
+        screen.container.querySelector("article")!,
+      );
+      // Prose's children went in one div, for the raw snippet: lift them out.
+      plainArticle.replaceChildren(
+        ...plainArticle.firstElementChild!.childNodes,
+      );
+      const boxes = (article: Element) => {
+        const top = article.getBoundingClientRect().top;
+        return [...article.children].map((child) => {
+          const box = child.getBoundingClientRect();
+          // A wrapper stands for its heading.
+          const tag =
+            (child as HTMLElement).dataset.heading ??
+            child.tagName.toLowerCase();
+          return [tag, box.top - top, box.height];
+        });
+      };
+      expect(boxes(richArticle)).toEqual(boxes(plainArticle));
+      expect(richArticle.getBoundingClientRect().height).toBe(
+        plainArticle.getBoundingClientRect().height,
+      );
+      // The heading's own looks: its font, and where its text starts.
+      const richHeadings = [...richArticle.querySelectorAll("h2, h3, h4")];
+      const plainHeadings = [...plainArticle.querySelectorAll("h2, h3, h4")];
+      expect(richHeadings).toHaveLength(plainHeadings.length);
+      richHeadings.forEach((h, i) => {
+        const [a, b] = [h, plainHeadings[i]].map((el) => getComputedStyle(el));
+        expect(a.fontSize).not.toBe("");
+        for (const property of [
+          "fontFamily",
+          "fontSize",
+          "fontWeight",
+          "lineHeight",
+          "color",
+        ] as const) {
+          expect(a[property], `${h.textContent} ${property}`).toBe(b[property]);
+        }
+        expect(h.getBoundingClientRect().left).toBe(
+          plainHeadings[i].getBoundingClientRect().left,
+        );
+      });
+    });
+
+    test("a heading first or last in a callout's content has no margin outside it, as a paragraph there has none", async () => {
+      const callout = (label: string, ...children: SerializedNode[]) => ({
+        type: "block",
+        fields: {
+          blockType: "callout",
+          level: "info",
+          label,
+          content: { root: { type: "root", children } },
+        },
+      });
+      const screen = await renderIn("light", RichText, {
+        content: doc(
+          callout(
+            "Headings",
+            heading("h3", "Before you start"),
+            paragraph(text(words)),
+            heading("h4", "Then"),
+          ),
+          callout(
+            "Paragraphs",
+            paragraph(text(words)),
+            paragraph(text(words)),
+            paragraph(text(words)),
+          ),
+        ),
+      });
+      // How far the content's first part sits below the callout's top, and
+      // its last part above the callout's bottom.
+      const insets = (name: string) => {
+        const aside = screen.getByRole("complementary", { name }).element();
+        const content = aside.querySelector("p[id]")!.nextElementSibling!;
+        const box = aside.getBoundingClientRect();
+        return [
+          content.firstElementChild!.getBoundingClientRect().top - box.top,
+          box.bottom - content.lastElementChild!.getBoundingClientRect().bottom,
+        ];
+      };
+      expect(insets("Note: Headings")).toEqual(insets("Note: Paragraphs"));
+    });
   });
 
   describe("text", () => {
@@ -325,6 +508,19 @@ describe("RichText", () => {
       .toHaveAttribute("href", "/api/media/file/sop.pdf");
   });
 
+  test("an upload whose file address isn't relative or http is its name, plain", async () => {
+    const upload = find("upload");
+    upload.value = {
+      id: "<media-id>",
+      url: "javascript:alert(1)",
+      filename: "sop.pdf",
+      mimeType: "application/pdf",
+    };
+    const screen = await renderIn("light", RichText, { content: doc(upload) });
+    await expect.element(screen.getByText("sop.pdf")).toBeVisible();
+    await expect.element(screen.getByRole("link")).not.toBeInTheDocument();
+  });
+
   describe("links", () => {
     const sentence = () => paragraphWith("Tower ");
 
@@ -376,6 +572,30 @@ describe("RichText", () => {
       await expect.element(screen.getByText(/every runway\./)).toBeVisible();
       expect(screen.container.querySelector('a[href="#"]')).toBeNull();
     });
+
+    test.each(["link", "autolink"])(
+      "a javascript: URL in a %s node is its text, with no link",
+      async (type) => {
+        const screen = await renderIn("light", RichText, {
+          content: doc(
+            paragraph(
+              text("Read the "),
+              {
+                type,
+                fields: { linkType: "custom", url: " JavaScript:alert(1)" },
+                children: [text("briefing")],
+              },
+              text(" first."),
+            ),
+          ),
+        });
+        await expect
+          .element(screen.getByText("Read the briefing first."))
+          .toBeVisible();
+        await expect.element(screen.getByRole("link")).not.toBeInTheDocument();
+        expect(screen.container.querySelector("a")).toBeNull();
+      },
+    );
 
     test("a link to a deleted document, null, is its text when linkHref gives undefined", async () => {
       const p = sentence();
@@ -444,12 +664,12 @@ describe("RichText", () => {
         (n) => (n.fields as { blockType: string }).blockType === slug,
       );
 
-    test("a callout is a Callout named by its label, its content drawn inside", async () => {
+    test("a callout is a Callout named by its level and label, its content drawn inside", async () => {
       const screen = await renderIn("light", RichText, {
         content: doc(block("callout")),
       });
       const aside = screen.getByRole("complementary", {
-        name: "Wake turbulence",
+        name: "Caution: Wake turbulence",
       });
       await expect
         .element(aside.getByText(/^Hold departures behind a heavy/))
@@ -461,7 +681,7 @@ describe("RichText", () => {
         content: doc(block("callout")),
       });
       const aside = screen.getByRole("complementary", {
-        name: "Wake turbulence",
+        name: "Caution: Wake turbulence",
       });
       await expect
         .element(aside.getByText("JO 7110.65 AA"))

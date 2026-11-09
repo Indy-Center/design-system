@@ -55,6 +55,8 @@ the same fields, with an `id`.
 - `JO 7110.65 BB` in a `<cite>`, then `3-7-2` after it.
 - The place links to the source's `url`. With no `url`, it links to the
   attached file. With neither, it is plain text.
+- The address must be relative or use `http:`, `https:`, `mailto:` or
+  `tel:`; any other (`javascript:`, `data:`) leaves the place plain text.
 - With no `at`, only the source's name and edition.
 
 ## Looks

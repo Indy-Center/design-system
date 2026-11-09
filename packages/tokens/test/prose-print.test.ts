@@ -25,7 +25,8 @@ const page = `
   <header data-theme="dark" id="header"><a class="sr-only" id="skip" href="#main">Skip</a><nav data-theme="dark" id="appnav">Nav</nav></header>
   <main id="main">
     <article class="prose prose-centerline" id="prose">
-      <h2 id="h">Title <a href="#h" id="anchor" data-heading-anchor>#</a> <a href="#other" id="inbody">see</a></h2>
+      <div data-heading="h2" id="wrapper"><h2 id="h">Title <a href="#other" id="inbody">see</a></h2><a href="#h" id="anchor" data-heading-anchor>#</a></div>
+      <h3 id="plain">Plain <a href="#plain" id="inplain">#</a></h3>
       <p id="p">See <a id="ext" href="https://example.com/x" target="_blank">the order</a> and <a id="int" href="/a">a page</a>.</p>
       <aside aria-labelledby="callout-label" id="callout"><div><p id="callout-label">Note</p><div><p>Notice</p></div></div></aside>
       <figure id="figure"><pre>code</pre></figure>
@@ -115,12 +116,21 @@ describe("prose.css in print", () => {
     expect(await style("#wide", "overflow-x")).toBe("auto");
   });
 
-  // This selector matches the link RichText draws inside a heading; the
-  // callout's above matches Callout's <aside>.
+  // This selector matches the link RichText draws after a heading, in the
+  // heading's wrapper; the callout's above matches Callout's <aside>.
   test("hides a heading's anchor link", async () => {
     await p.emulateMedia({ media: "print" });
     expect(await style("#anchor", "display")).toBe("none");
-    // An author's own link to a #id in a heading stays.
+    // An author's own link to a #id in a heading stays, in RichText's
+    // heading or in a plain one.
     expect(await style("#inbody", "display")).toBe("inline");
+    expect(await style("#inplain", "display")).toBe("inline");
+  });
+
+  test("keeps a heading with the text after it, RichText's wrapper too", async () => {
+    await p.emulateMedia({ media: "print" });
+    for (const id of ["#wrapper", "#plain"]) {
+      expect(await style(id, "break-after")).toBe("avoid");
+    }
   });
 });
