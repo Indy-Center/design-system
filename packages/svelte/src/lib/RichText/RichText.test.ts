@@ -710,7 +710,9 @@ describe("RichText", () => {
         content: doc(block("disclosure")),
       });
       const summary = screen.getByText("Why two minutes?");
-      await expect.element(summary).toBeVisible();
+      // The <summary> itself: in WebKit, Vitest counts nothing inside a
+      // closed <details> as showing, the summary's own text included.
+      await expect.element(summary.element().closest("summary")!).toBeVisible();
       const content = screen.getByText(/^The vortex sinks/);
       await expect.element(content).not.toBeVisible();
       await summary.click();
