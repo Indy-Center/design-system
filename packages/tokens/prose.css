@@ -280,12 +280,14 @@
   /* SEAM SELECTORS: these two name elements that components draw. Keep
    * each in step with its component. Anchor link: the "link to this
    * section" RichText draws inside a heading (data-heading-anchor, in
-   * RichText/DrawNodes.svelte). Callout: any element carrying
-   * data-callout. */
+   * RichText/DrawNodes.svelte). Callout: Callout draws an <aside>, the
+   * only one rich text has. */
   .prose-centerline :is(h1, h2, h3, h4, h5, h6) > a[data-heading-anchor] {
     display: none;
   }
-  .prose-centerline [data-callout] {
+
+  /* A callout kept whole. */
+  .prose-centerline aside {
     break-inside: avoid;
   }
 }

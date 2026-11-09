@@ -16,12 +16,18 @@ import {
   BLOCKS,
   type AirportBlock,
   type BlockFieldTypes,
+  type CalloutBlock,
+  type CitationBlock,
+  type DisclosureBlock,
   type FlightCategoryBlock,
   type FrequencyBlock,
   type PositionBlock,
   type RatingBlock,
   type TimeBlock,
 } from "../blocks.ts";
+import Callout from "../Callout/Callout.svelte";
+import Citation from "../Citation/Citation.svelte";
+import Disclosure from "../Disclosure/Disclosure.svelte";
 import FlightCategory from "../FlightCategory/FlightCategory.svelte";
 import Frequency from "../Frequency/Frequency.svelte";
 import Link from "../Link/Link.svelte";
@@ -45,6 +51,18 @@ describe("each block's fields fit its component's props", () => {
     expectTypeOf<AsProps<AirportBlock>>().toExtend<
       ComponentProps<typeof Airport>
     >();
+    expectTypeOf<AsProps<CalloutBlock>>().toExtend<
+      ComponentProps<typeof Callout>
+    >();
+    expectTypeOf<AsProps<CitationBlock>>().toExtend<
+      ComponentProps<typeof Citation>
+    >();
+    // Disclosure's summary is a snippet; the block's is text, which its
+    // snippet draws as the summary's line.
+    expectTypeOf<DisclosureBlock["summary"]>().toEqualTypeOf<string>();
+    expectTypeOf<
+      Omit<AsProps<DisclosureBlock>, "summary"> & { summary: Snippet }
+    >().toExtend<ComponentProps<typeof Disclosure>>();
     expectTypeOf<AsProps<FlightCategoryBlock>>().toExtend<
       ComponentProps<typeof FlightCategory>
     >();

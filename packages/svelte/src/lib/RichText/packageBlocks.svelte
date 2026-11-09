@@ -8,6 +8,9 @@
     AirportBlock,
     BlockFieldTypes,
     BlockSlug,
+    CalloutBlock,
+    CitationBlock,
+    DisclosureBlock,
     FlightCategoryBlock,
     FrequencyBlock,
     PositionBlock,
@@ -15,6 +18,9 @@
     TimeBlock,
   } from "../blocks.js";
   import Airport from "../Airport/Airport.svelte";
+  import Callout from "../Callout/Callout.svelte";
+  import Citation from "../Citation/Citation.svelte";
+  import Disclosure from "../Disclosure/Disclosure.svelte";
   import FlightCategory from "../FlightCategory/FlightCategory.svelte";
   import Frequency from "../Frequency/Frequency.svelte";
   import Position from "../Position/Position.svelte";
@@ -27,6 +33,9 @@
   } = {
     // One line per block, alphabetical: `callout,`
     airport,
+    callout,
+    citation,
+    disclosure,
     flightCategory,
     frequency,
     position,
@@ -44,6 +53,23 @@
 
 {#snippet airport(fields: BlockProps<AirportBlock>)}
   <Airport {...fields} />
+{/snippet}
+
+<!-- my-5: a paragraph's gap, kept between two callouts in a row. -->
+{#snippet callout({ content, ...fields }: BlockProps<CalloutBlock>)}
+  <Callout {...fields} class="my-5">{@render content()}</Callout>
+{/snippet}
+
+{#snippet citation(fields: BlockProps<CitationBlock>)}
+  <Citation {...fields} />
+{/snippet}
+
+<!-- The content's own margins stay between its parts, not at its edges. -->
+{#snippet disclosure({ summary, content }: BlockProps<DisclosureBlock>)}
+  {#snippet line()}{summary}{/snippet}
+  <Disclosure summary={line}>
+    <div class="*:first:mt-0 *:last:mb-0">{@render content()}</div>
+  </Disclosure>
 {/snippet}
 
 {#snippet flightCategory(fields: BlockProps<FlightCategoryBlock>)}

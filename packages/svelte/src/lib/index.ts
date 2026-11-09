@@ -14,6 +14,10 @@ export {
   type Crumb,
 } from "./Breadcrumbs/Breadcrumbs.svelte";
 export { default as Button } from "./Button/Button.svelte";
+export {
+  default as Callout,
+  type CalloutLevel,
+} from "./Callout/Callout.svelte";
 export { default as Card } from "./Card/Card.svelte";
 export { default as Checkbox } from "./Checkbox/Checkbox.svelte";
 export { default as ChoiceCard } from "./ChoiceCard/ChoiceCard.svelte";
@@ -22,6 +26,10 @@ export {
   CHIP_VARIANTS,
   type ChipVariant,
 } from "./Chip/Chip.svelte";
+export {
+  default as Citation,
+  type CitationSource,
+} from "./Citation/Citation.svelte";
 export { default as ColorSchemeSetting } from "./ColorSchemeSetting/ColorSchemeSetting.svelte";
 export { default as Combobox } from "./Combobox/Combobox.svelte";
 export { default as ConfirmDialog } from "./ConfirmDialog/ConfirmDialog.svelte";

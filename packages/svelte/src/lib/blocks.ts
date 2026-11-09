@@ -16,10 +16,45 @@ import {
   POSITION_FIELDS,
   type PositionField,
 } from "./Position/positionFields.js";
-export type { RichTextState } from "./RichText/nodes.js";
+import type { RichTextState } from "./RichText/nodes.js";
+
+export type { RichTextState };
 
 /** Where a block sits: on a line of its own, or inline in a paragraph. */
 export type BlockKind = "block" | "inline";
+
+/** A callout: a note set apart in a document, drawn by `Callout`. */
+export type CalloutBlock = {
+  /** One of `CALLOUT_LEVELS`. */
+  level: CalloutLevel;
+  /** Shown in place of the level's own label ("Note"). */
+  label?: string | null;
+  /** The callout's text. */
+  content: RichTextState;
+};
+
+/** Where a citation points: a source record as Payload populates it. */
+export type CitationBlock = {
+  /** The source: its name and edition, and where it is read. */
+  source: {
+    id: string;
+    name: string;
+    edition?: string | null;
+    url?: string | null;
+    /** The file attached to the source, read when there is no `url`. */
+    file?: { url?: string | null } | null;
+  };
+  /** The place in the source, as it numbers itself: "3-7-2", "Chapter 4". */
+  at: string;
+};
+
+/** A "show more" section, drawn by `Disclosure`. */
+export type DisclosureBlock = {
+  /** The line that is always shown: plain text. */
+  summary: string;
+  /** What it shows when open. */
+  content: RichTextState;
+};
 
 /**
  * Each block the package draws, by slug: its fields as Payload sends them,
@@ -29,6 +64,9 @@ export type BlockKind = "block" | "inline";
 export interface BlockFieldTypes {
   // One line per block, alphabetical: `callout: CalloutBlock;`
   airport: AirportBlock;
+  callout: CalloutBlock;
+  citation: CitationBlock;
+  disclosure: DisclosureBlock;
   flightCategory: FlightCategoryBlock;
   frequency: FrequencyBlock;
   position: PositionBlock;
@@ -46,6 +84,9 @@ export type BlockSlug = keyof BlockFieldTypes;
 export const BLOCKS = {
   // One line per block, alphabetical: `callout: "block",`
   airport: "inline",
+  callout: "block",
+  citation: "inline",
+  disclosure: "block",
   flightCategory: "inline",
   frequency: "inline",
   position: "inline",
@@ -54,6 +95,17 @@ export const BLOCKS = {
 } as const satisfies { [Slug in BlockSlug]: BlockKind };
 
 // The option lists Payload's selects need, each beside its block's type.
+
+/** A callout's levels: the FAA's NOTE, CAUTION, WARNING and REFERENCE. */
+export const CALLOUT_LEVELS = [
+  "info",
+  "caution",
+  "danger",
+  "reference",
+] as const;
+
+/** How a callout reads: `info`, `caution`, `danger`, or `reference` (no colour). */
+export type CalloutLevel = (typeof CALLOUT_LEVELS)[number];
 
 // Inline blocks. Fields are the component's props; a text field holds what a
 // number prop would (a frequency in megahertz), and an optional one may be
