@@ -45,3 +45,11 @@ html {
     margin-inline: -1.5em 0.5em;
   }
 }
+
+/* The site's own sidebar is chrome too (prose.css hides the header,
+ * footer and nav in print). */
+@media print {
+  aside {
+    display: none;
+  }
+}
