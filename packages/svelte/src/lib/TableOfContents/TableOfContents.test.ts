@@ -147,7 +147,8 @@ describe("a heading's anchor link", () => {
       name: "Link to section: Runways",
     });
     await expect.element(link).toHaveAttribute("href", "#runways");
-    expect(link.element().parentElement?.id).toBe("runways");
+    // Beside the heading, not inside it.
+    expect(link.element().previousElementSibling?.id).toBe("runways");
   });
 
   test("is drawn for each heading", async () => {
@@ -170,13 +171,19 @@ describe("a heading's anchor link", () => {
     const link = screen.getByRole("link", { name: "Link to section: Runways" });
     const opacity = () => getComputedStyle(link.element()).opacity;
     expect(opacity()).toBe("0");
-    await userEvent.hover(
-      screen.getByRole("heading", { name: /Runways/, level: 2 }),
-    );
+    const heading = screen.getByRole("heading", {
+      name: "Runways",
+      exact: true,
+      level: 2,
+    });
+    await userEvent.hover(heading);
     await expect.poll(opacity).toBe("1");
-    await userEvent.unhover(
-      screen.getByRole("heading", { name: /Runways/, level: 2 }),
-    );
+    await userEvent.unhover(heading);
+    await expect.poll(opacity).toBe("0");
+    // The link itself, beside the heading, keeps it shown while the pointer moves to it.
+    await userEvent.hover(link);
+    await expect.poll(opacity).toBe("1");
+    await userEvent.unhover(link);
     await userEvent.tab();
     expect(document.activeElement).toBe(link.element());
     expect(opacity()).toBe("1");

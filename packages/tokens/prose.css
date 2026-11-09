@@ -230,7 +230,9 @@
     &:is(figure, tr) {
       break-inside: avoid;
     }
-    &:is(h1, h2, h3, h4, h5, h6) {
+    /* RichText's heading is inline in its wrapper, so the wrapper keeps
+     * with the text after it. */
+    &:is(h1, h2, h3, h4, h5, h6, [data-heading]) {
       break-after: avoid;
     }
     /* A table fits the page, every column kept: long words break, so the
@@ -243,6 +245,67 @@
     &:is(th, td) {
       overflow-wrap: anywhere;
     }
+  }
+}
+
+/* A heading RichText draws with its "link to this section" beside it, so
+ * the heading's name is its text alone (RichText/DrawNodes.svelte):
+ *   <div data-heading="h2"><h2 id="…">…</h2><a data-heading-anchor>…</a></div>
+ * The heading is inline, so the link follows its last word, and the
+ * wrapper takes the heading's place: its size, line height and font, and
+ * the margins the typography plugin gives that heading at prose's base
+ * size (keep in step with the plugin's styles.js). These sit in the
+ * components layer, under the plugin's own rules and Tailwind's
+ * utilities, so the rules that trim an edge child's margin (prose's first
+ * and last child, hr + *, a callout's content) still win over them, as
+ * they did over the heading's. */
+@layer components {
+  .prose-centerline
+    :where([data-heading]):not(
+      :where([class~="not-prose"], [class~="not-prose"] *)
+    ) {
+    font-family: var(--font-heading);
+    font-weight: 600;
+    &:where([data-heading="h1"]) {
+      font-size: var(--text-3xl);
+      line-height: var(--text-3xl--line-height);
+      margin-block: 0 calc(32em / 36);
+    }
+    &:where([data-heading="h2"]) {
+      font-size: var(--text-xl);
+      line-height: var(--text-xl--line-height);
+      margin-block: 2em 1em;
+    }
+    &:where([data-heading="h3"]) {
+      font-size: var(--text-lg);
+      line-height: var(--text-lg--line-height);
+      margin-block: 1.6em 0.6em;
+    }
+    &:where([data-heading="h4"]) {
+      font-size: var(--text-base);
+      line-height: var(--text-base--line-height);
+      margin-block: 1.5em 0.5em;
+    }
+    &:where([data-heading="h5"], [data-heading="h6"]) {
+      font-size: var(--text-base);
+      line-height: var(--text-base--line-height);
+    }
+    & > :where(h1, h2, h3, h4, h5, h6) {
+      display: inline;
+    }
+  }
+}
+
+/* As the plugin's h2 + *, h3 + * and h4 + *: nothing above what follows
+ * one of those headings. In the utilities layer, after the plugin's rules
+ * and as specific, so it wins over a paragraph's or a list's top margin
+ * (and a callout's my-5) as the plugin's does. */
+@layer utilities {
+  .prose-centerline
+    :where(
+      :is([data-heading="h2"], [data-heading="h3"], [data-heading="h4"]) + *
+    ):not(:where([class~="not-prose"], [class~="not-prose"] *)) {
+    margin-top: 0;
   }
 }
 
@@ -279,9 +342,10 @@
 
   /* Selectors for markup other components draw; keep each in step with
    * its component. This one is the "link to this section" RichText draws
-   * inside a heading (data-heading-anchor, in RichText/DrawNodes.svelte).
-   * The next is Callout's <aside>, the only one rich text has. */
-  .prose-centerline :is(h1, h2, h3, h4, h5, h6) > a[data-heading-anchor] {
+   * after a heading, in the heading's wrapper (data-heading and
+   * data-heading-anchor, in RichText/DrawNodes.svelte). The next is
+   * Callout's <aside>, the only one rich text has. */
+  .prose-centerline [data-heading] > a[data-heading-anchor] {
     display: none;
   }
 

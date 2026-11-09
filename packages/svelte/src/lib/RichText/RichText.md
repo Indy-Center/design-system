@@ -82,7 +82,7 @@ Each of Lexical's own nodes as the element that fits it (decision 0010):
 | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | paragraph              | `<p>`; an empty one draws nothing                                                                                                                                                                                                                                                    |
 | text                   | its formats as `<strong>`, `<em>`, `<u>`, `<s>`, `<sub>`, `<sup>`, `<code>`; a line break as `<br>`                                                                                                                                                                                  |
-| heading                | its `h2`–`h4` (the editor offers no others), with an id and an anchor link (below)                                                                                                                                                                                                   |
+| heading                | its `h2`–`h4` (the editor offers no others), with an id, and an anchor link after it (below)                                                                                                                                                                                         |
 | list                   | `<ul>` or `<ol>` (with `start` when not 1); a nested list inside the item above it                                                                                                                                                                                                   |
 | checklist              | a `<ul>` of `<label><input type="checkbox"> …</label>`. Readers can tick them; nothing is saved, and every box starts unticked, whatever the author left                                                                                                                             |
 | quote, horizontal rule | `<blockquote>`, `<hr>`                                                                                                                                                                                                                                                               |
@@ -112,11 +112,17 @@ Each of Lexical's own nodes as the element that fits it (decision 0010):
   `section`). A repeat gets `-2`, `-3` in document order, counting
   headings in blocks' content. `headingId` is the slug, exported for an
   app's own rule to build on.
-- Each heading ends with a "link to this section": an `<a href="#id"
+- Each heading is followed by a "link to this section": an `<a href="#id"
 data-heading-anchor>` showing `#`, named "Link to section: <heading>".
-  It shows on hover and keyboard focus, and not in print.
-  [TableOfContents](../TableOfContents/TableOfContents.md) lists the same
-  headings with the same ids.
+  The link is beside the heading, not inside it, so the heading's name is
+  its text alone; the two sit in a `<div data-heading="h2">` (the
+  heading's tag), which takes the heading's alignment. `prose.css` draws
+  the heading inline in it, so the link follows its last word, and gives
+  the wrapper the heading's size and margins: it looks and spaces as a
+  plain heading in `Prose` does. The id stays on the heading. The link
+  shows on hover of the heading's line and on keyboard focus, and not in
+  print. [TableOfContents](../TableOfContents/TableOfContents.md) lists
+  the same headings with the same ids.
 
 ## Blocks
 
@@ -169,6 +175,8 @@ components' looks.
 - Its elements carry the document's structure: headings, lists, tables
   with header cells and scopes, an image's `alt`. The CMS must use real
   ones; Payload's editor offers no others.
+- A heading's name is its text; the link after it is named "Link to
+  section: <heading>", so moving by headings reads each name once.
 - Each checklist box is named by its label, and toggles with Space; it is
   a reader's own tick, saved nowhere.
 - A new-tab link is marked by `Prose` (with text for screen readers), not

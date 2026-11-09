@@ -158,16 +158,20 @@
   {:else if node.type === "heading"}
     {@const heading = as<HeadingNode>(node)}
     {@const id = drawing.ids.get(node)}
-    <svelte:element
-      this={heading.tag}
-      {id}
-      data-align={align(heading.format)}
-      class="group"
-    >
-      <Nodes nodes={heading.children ?? []} {drawing} />
-      {#if id}
-        <!-- Seen on hover and focus; packages/tokens/prose.css hides it in print by its data attribute. -->
-        <a
+    {#if id}
+      <!-- The "link to this section" sits beside the heading, not in it, so
+           the heading's name is its text alone. packages/tokens/prose.css
+           lays the two out by data-heading (the heading inline, the wrapper
+           with its size and margins) and hides the link in print. No space
+           between them, so the link wraps with the heading's last word. -->
+      <div
+        data-heading={heading.tag}
+        data-align={align(heading.format)}
+        class="group"
+      >
+        <svelte:element this={heading.tag} {id}
+          ><Nodes nodes={heading.children ?? []} {drawing} /></svelte:element
+        ><a
           href="#{id}"
           data-heading-anchor
           class={[
@@ -179,8 +183,12 @@
             >Link to section: {textOf(node).replace(/\s+/g, " ").trim()}</span
           ></a
         >
-      {/if}
-    </svelte:element>
+      </div>
+    {:else}
+      <svelte:element this={heading.tag} data-align={align(heading.format)}>
+        <Nodes nodes={heading.children ?? []} {drawing} />
+      </svelte:element>
+    {/if}
   {:else if node.type === "quote"}
     {@const quote = as<QuoteNode>(node)}
     <blockquote data-align={align(quote.format)}>
