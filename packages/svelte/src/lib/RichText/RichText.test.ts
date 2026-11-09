@@ -1,7 +1,13 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
 import { page, userEvent } from "vitest/browser";
 import { renderIn } from "../../../test/schemes.ts";
+import WithPositions from "../../../test/WithPositions.svelte";
 import body from "../../playground/lesson-plan-body.json" with { type: "json" };
+import {
+  indyCenter,
+  indyGround,
+  lexingtonTower,
+} from "../../playground/positions.ts";
 import type { RichTextState, SerializedNode } from "./nodes.ts";
 import RichText from "./RichText.svelte";
 import RichTextWithBlocks from "./RichText.test.svelte";
@@ -480,6 +486,173 @@ describe("RichText", () => {
       await expect.element(p.getByText(/^value: "120.900"$/)).toBeVisible();
       await expect.element(p.getByText(/^category: "MVFR"$/)).toBeVisible();
       expect(warn).not.toHaveBeenCalled();
+    });
+  });
+
+  // The package's own inline blocks, drawn by their components.
+  describe("inline blocks", () => {
+    const inline = (blockType: string, fields: object): SerializedNode => ({
+      type: "inlineBlock",
+      fields: { id: "<block-id>", blockType, ...fields },
+    });
+    /** A sentence holding `block` between two words, under an app's positions. */
+    const sentence = (block: SerializedNode, positions = [indyGround]) =>
+      renderIn("light", WithPositions, {
+        positions,
+        component: RichText,
+        props: {
+          content: doc(paragraph(text("See "), block, text(" here."))),
+        },
+      });
+
+    test("the fixture's sentence draws each block inside its paragraph, with no warning", async () => {
+      const sentenceNode = paragraphWith("Contact tower");
+      // The citation is another ticket's block.
+      sentenceNode.children = (
+        sentenceNode.children as SerializedNode[]
+      ).filter(
+        (n) =>
+          (n.fields as { blockType?: string } | undefined)?.blockType !==
+          "citation",
+      );
+      const screen = await renderIn("light", WithPositions, {
+        positions: [lexingtonTower],
+        component: RichText,
+        props: { content: doc(sentenceNode) },
+      });
+      const p = screen.getByRole("article").element().querySelector("p")!;
+      // Frequency, position (no airport: its callsign), rating, flight
+      // category and time all sit in the one paragraph.
+      expect(p.querySelector("span.font-mono")?.textContent).toContain(
+        "120.90",
+      );
+      expect(p.textContent).toContain("IND_TWR");
+      expect(p.querySelector("abbr")).not.toBeNull();
+      expect(p.querySelectorAll("time")).toHaveLength(2);
+      expect(p.textContent).toContain("2300Z");
+      expect(p.textContent).toContain("0300Z");
+      expect(p.parentElement?.tagName).toBe("ARTICLE");
+      expect(p.querySelectorAll("p, div")).toHaveLength(0);
+      expect(warn).not.toHaveBeenCalled();
+    });
+
+    test("a position is inline, and a callsign the app doesn't know is drawn as the callsign", async () => {
+      const screen = await sentence(
+        inline("position", { callsign: "IND_83_CTR", show: null }),
+        [indyCenter],
+      );
+      await expect.element(screen.getByText("Indy Center")).toBeVisible();
+      await expect.element(screen.getByText("128.22")).toBeVisible();
+      screen.unmount();
+      const unknown = await sentence(
+        inline("position", { callsign: "XYZ_APP" }),
+      );
+      const p = unknown.getByRole("article").element().querySelector("p")!;
+      expect(p.textContent).toBe("See XYZ_APP here.");
+    });
+
+    test("a position with airport {} or a null code has no airport", async () => {
+      for (const airport of [{}, { code: null, name: null }, null]) {
+        const screen = await sentence(
+          inline("position", {
+            callsign: "IND_1_GND",
+            show: ["radioName", "airport"],
+            airportAt: "under",
+            airport,
+          }),
+        );
+        const p = screen.getByRole("article").element().querySelector("p")!;
+        expect(p.textContent).toContain("Indianapolis Ground");
+        expect(p.querySelector(".font-mono")).toBeNull();
+        screen.unmount();
+      }
+    });
+
+    test("a position's airport shows with its code", async () => {
+      const screen = await sentence(
+        inline("position", {
+          callsign: "IND_1_GND",
+          show: ["radioName", "airport"],
+          airport: { code: "KIND", name: null },
+        }),
+      );
+      await expect.element(screen.getByText("KIND")).toBeVisible();
+    });
+
+    test("a frequency by value, by callsign, and the value wins", async () => {
+      const byValue = await sentence(inline("frequency", { value: "121.9" }));
+      await expect.element(byValue.getByText("121.90")).toBeVisible();
+      byValue.unmount();
+      const byCallsign = await sentence(
+        inline("frequency", { callsign: "IND_83_CTR" }),
+        [indyCenter],
+      );
+      await expect.element(byCallsign.getByText("128.22")).toBeVisible();
+      byCallsign.unmount();
+      const both = await sentence(
+        inline("frequency", { value: "133.4", callsign: "IND_83_CTR" }),
+        [indyCenter],
+      );
+      await expect.element(both.getByText("133.40")).toBeVisible();
+      both.unmount();
+      // A blank value is no value: the callsign is used.
+      const blank = await sentence(
+        inline("frequency", { value: "", callsign: "IND_83_CTR" }),
+        [indyCenter],
+      );
+      await expect.element(blank.getByText("128.22")).toBeVisible();
+    });
+
+    test("an airport, a rating and a flight category", async () => {
+      const airport = await sentence(
+        inline("airport", {
+          airport: { code: "KIND", name: "Indianapolis International" },
+          nameAt: null,
+          focusable: null,
+        }),
+      );
+      await expect
+        .element(airport.getByText("Indianapolis International"))
+        .toBeVisible();
+      airport.unmount();
+      const rating = await sentence(
+        inline("rating", { rating: "IR", kind: "pilot" }),
+      );
+      expect(
+        rating.getByRole("article").element().querySelector("abbr")
+          ?.textContent,
+      ).toMatch(/^IR\b/);
+      rating.unmount();
+      const category = await sentence(
+        inline("flightCategory", { category: "IFR" }),
+      );
+      expect(
+        category.getByRole("article").element().querySelector("abbr")
+          ?.textContent,
+      ).toMatch(/^IFR\b/);
+      expect(warn).not.toHaveBeenCalled();
+    });
+
+    test("a time range across midnight", async () => {
+      const screen = await sentence(
+        inline("time", { value: "2300", end: "0300" }),
+      );
+      const p = screen.getByRole("article").element().querySelector("p")!;
+      expect(p.textContent?.replace(/\s+/g, " ")).toBe("See 2300Z–0300Z here.");
+      const times = [...p.querySelectorAll("time")];
+      expect(times.map((t) => t.getAttribute("datetime"))).toEqual([
+        "23:00",
+        "03:00",
+      ]);
+    });
+
+    test("a time with a null end is one time", async () => {
+      const screen = await sentence(
+        inline("time", { value: "1400", end: null }),
+      );
+      expect(
+        screen.getByRole("article").element().querySelectorAll("time"),
+      ).toHaveLength(1);
     });
   });
 });

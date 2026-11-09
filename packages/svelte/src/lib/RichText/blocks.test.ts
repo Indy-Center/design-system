@@ -10,8 +10,24 @@
 // snippet for a text field) maps that field in its line, and says why.
 import type { ComponentProps, Snippet } from "svelte";
 import { describe, expectTypeOf, test } from "vitest";
-import { BLOCKS, type BlockFieldTypes } from "../blocks.ts";
+import type { AirportInfo } from "../aviation/airport.ts";
+import Airport from "../Airport/Airport.svelte";
+import {
+  BLOCKS,
+  type AirportBlock,
+  type BlockFieldTypes,
+  type FlightCategoryBlock,
+  type FrequencyBlock,
+  type PositionBlock,
+  type RatingBlock,
+  type TimeBlock,
+} from "../blocks.ts";
+import FlightCategory from "../FlightCategory/FlightCategory.svelte";
+import Frequency from "../Frequency/Frequency.svelte";
 import Link from "../Link/Link.svelte";
+import Position from "../Position/Position.svelte";
+import Rating from "../Rating/Rating.svelte";
+import Time from "../Time/Time.svelte";
 import type { BlockProps, BlockSnippets } from "./blockSnippets.ts";
 import type { RichTextState } from "./nodes.ts";
 import { PACKAGE_BLOCKS } from "./packageBlocks.svelte";
@@ -26,6 +42,25 @@ type AsProps<F> = Omit<BlockProps<F>, "content"> &
 describe("each block's fields fit its component's props", () => {
   test("the package's blocks", () => {
     // One line per block, alphabetical (see the top of this file).
+    expectTypeOf<AsProps<AirportBlock>>().toExtend<
+      ComponentProps<typeof Airport>
+    >();
+    expectTypeOf<AsProps<FlightCategoryBlock>>().toExtend<
+      ComponentProps<typeof FlightCategory>
+    >();
+    expectTypeOf<AsProps<FrequencyBlock>>().toExtend<
+      ComponentProps<typeof Frequency>
+    >();
+    // `airport` is mapped: the field may be `{}` (no airport), and the
+    // snippet turns that into undefined before Position gets it.
+    expectTypeOf<
+      Omit<AsProps<PositionBlock>, "airport"> & { airport?: AirportInfo }
+    >().toExtend<ComponentProps<typeof Position>>();
+    expectTypeOf<AsProps<RatingBlock>>().toExtend<
+      ComponentProps<typeof Rating>
+    >();
+    // `show="daily"` is set by the snippet: the fields are the other props.
+    expectTypeOf<AsProps<TimeBlock>>().toExtend<ComponentProps<typeof Time>>();
     expectTypeOf(BLOCKS).toExtend<
       Record<keyof BlockFieldTypes, "block" | "inline">
     >();

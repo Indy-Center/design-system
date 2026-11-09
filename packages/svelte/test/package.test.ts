@@ -256,7 +256,16 @@ describe("the packed package", () => {
     expect(files).toEqual(expect.arrayContaining([types, code]));
 
     const blocks = await import("@indy-center/centerline-svelte/blocks");
-    expect(Object.keys(blocks)).toEqual(["BLOCKS"]);
+    expect(Object.keys(blocks).sort()).toEqual([
+      "AIRPORT_NAME_AT",
+      "BLOCKS",
+      "CONTROLLER_RATING_CODES",
+      "FLIGHT_CATEGORIES",
+      "PILOT_RATING_CODES",
+      "POSITION_AIRPORT_AT",
+      "POSITION_FIELDS",
+      "RATING_KINDS",
+    ]);
 
     // Every file the entry reaches through relative imports.
     const seen = new Set<string>();

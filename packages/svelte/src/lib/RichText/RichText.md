@@ -126,11 +126,18 @@ import {
 } from "@indy-center/centerline-svelte/blocks";
 ```
 
-| Slug | Kind | Fields | Component | Needs |
-| ---- | ---- | ------ | --------- | ----- |
+| Slug             | Kind   | Fields                                                                                                           | Component                            | Needs                                                                                            |
+| ---------------- | ------ | ---------------------------------------------------------------------------------------------------------------- | ------------------------------------ | ------------------------------------------------------------------------------------------------ |
+| `airport`        | inline | `airport` (`{ code, name? }`), `nameAt?` (`AIRPORT_NAME_AT`), `focusable?`                                       | `Airport`                            |                                                                                                  |
+| `flightCategory` | inline | `category` (`FLIGHT_CATEGORIES`), `focusable?`                                                                   | `FlightCategory`                     |                                                                                                  |
+| `frequency`      | inline | `value?` (megahertz as text), `callsign?`; `value` wins                                                          | `Frequency`                          | `setPositions`, for a `callsign`                                                                 |
+| `position`       | inline | `callsign`, `show?` (`POSITION_FIELDS`), `airportAt?` (`POSITION_AIRPORT_AT`), `airport?` (`{ code?, name? }`)   | `Position`, always `layout="inline"` | `setPositions`: a callsign it doesn't know is drawn as the callsign. `airport: {}` is no airport |
+| `rating`         | inline | `rating` (a short code: `CONTROLLER_RATING_CODES`, `PILOT_RATING_CODES`), `kind?` (`RATING_KINDS`), `focusable?` | `Rating`                             |                                                                                                  |
+| `time`           | inline | `value`, `end?`: Zulu times of day as four digits (`"2300"`)                                                     | `Time` with `show="daily"`           |                                                                                                  |
 
-The package draws no blocks of its own yet: an app gives every slug a
-snippet. A snippet types its argument with `BlockProps<Fields>`.
+A slug with no row here is an app's own: it gives that slug a snippet. A
+snippet types its argument with `BlockProps<Fields>`. The inline blocks
+sit in the sentence with no spacing of their own.
 
 ## Accessibility
 

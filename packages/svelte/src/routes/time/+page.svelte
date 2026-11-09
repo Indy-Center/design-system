@@ -37,6 +37,12 @@
     <dd>
       <Time value={at(2)} end={at(5)} show="datetime" zone="both" />
     </dd>
+    <dt class="text-muted-foreground">Daily</dt>
+    <dd><Time value="1400" show="daily" /></dd>
+    <dt class="text-muted-foreground">Daily range</dt>
+    <dd><Time value="1900" end="2200" show="daily" /></dd>
+    <dt class="text-muted-foreground">Across midnight</dt>
+    <dd><Time value="2300" end="0300" show="daily" /></dd>
     <dt class="text-muted-foreground">Starts</dt>
     <dd><Time value={at(2)} show="relative" /></dd>
     <dt class="text-muted-foreground">Online</dt>
