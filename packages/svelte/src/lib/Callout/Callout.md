@@ -15,7 +15,8 @@ description: A tinted note set apart in a document, the FAA's NOTE, CAUTION, WAR
       where to read more (no colour).
 - [ ] Give a `label` only when the level's own word ("Note", "Caution",
       "Warning", "Reference") says less than a short title would. The
-      label replaces that word, on screen and for screen readers.
+      label shows in place of that word; screen readers hear the word
+      first ("Caution: Before you start"), so the level is never lost.
 - [ ] Write the content as document text: paragraphs, a list, a link.
       In CMS rich text it is the `callout` block, drawn by
       [`RichText`](../RichText/RichText.md).
@@ -40,13 +41,13 @@ description: A tinted note set apart in a document, the FAA's NOTE, CAUTION, WAR
 
 ## Props
 
-| Prop       | Type                                             | Notes                                             |
-| ---------- | ------------------------------------------------ | ------------------------------------------------- |
-| `level`    | `"info" \| "caution" \| "danger" \| "reference"` | Required. Sets the icon, colours and label.       |
-| `label`    | `string`                                         | Shown and read in place of the level's own label. |
-| `children` | snippet                                          | The content: document text.                       |
-| `class`    | `string`                                         | Added after Callout's own classes. Layout only.   |
-| others     | `<aside>` attributes                             | Passed to the `<aside>`.                          |
+| Prop       | Type                                             | Notes                                                                        |
+| ---------- | ------------------------------------------------ | ---------------------------------------------------------------------------- |
+| `level`    | `"info" \| "caution" \| "danger" \| "reference"` | Required. Sets the icon, colours and label.                                  |
+| `label`    | `string`                                         | Shown in place of the level's own label, which readers still hear before it. |
+| `children` | snippet                                          | The content: document text.                                                  |
+| `class`    | `string`                                         | Added after Callout's own classes. Layout only.                              |
+| others     | `<aside>` attributes                             | Passed to the `<aside>`.                                                     |
 
 The levels are `CALLOUT_LEVELS` from `@indy-center/centerline-svelte/blocks`,
 for a CMS select.
@@ -68,7 +69,8 @@ for a CMS select.
 ## Accessibility
 
 - It renders an `<aside>` named by its visible label (`aria-labelledby`),
-  so readers list it as a complementary landmark: "Caution", or the
-  custom label.
+  so readers list it as a complementary landmark: "Caution", or with a
+  custom label the level's word and then the label, "Caution: Before you
+  start". The word is visually hidden, as in `Alert`.
 - It is not `role="alert"` or `status`: readers come to it as they read.
 - The icon is hidden from readers; the label says the level.

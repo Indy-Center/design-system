@@ -444,12 +444,12 @@ describe("RichText", () => {
         (n) => (n.fields as { blockType: string }).blockType === slug,
       );
 
-    test("a callout is a Callout named by its label, its content drawn inside", async () => {
+    test("a callout is a Callout named by its level and label, its content drawn inside", async () => {
       const screen = await renderIn("light", RichText, {
         content: doc(block("callout")),
       });
       const aside = screen.getByRole("complementary", {
-        name: "Wake turbulence",
+        name: "Caution: Wake turbulence",
       });
       await expect
         .element(aside.getByText(/^Hold departures behind a heavy/))
@@ -461,7 +461,7 @@ describe("RichText", () => {
         content: doc(block("callout")),
       });
       const aside = screen.getByRole("complementary", {
-        name: "Wake turbulence",
+        name: "Caution: Wake turbulence",
       });
       await expect
         .element(aside.getByText("JO 7110.65 AA"))
