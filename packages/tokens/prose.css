@@ -103,8 +103,180 @@
     &:is(thead) {
       background-color: var(--color-muted);
     }
-    &:is(thead th, tbody td):first-child {
+    &:is(thead th, tbody td, tbody th):first-child {
       padding-inline-start: 0.75rem;
     }
+    /* A header cell down the side reads as a head: foreground, semibold,
+     * the cell's own padding. */
+    &:is(tbody th) {
+      color: var(--color-foreground);
+      font-weight: 600;
+      text-align: start;
+      vertical-align: baseline;
+      padding: 0.5714286em;
+    }
+    /* A wide table scrolls in its own box, not the page. RichText writes
+     * the bare <table>, so the table is the box. */
+    &:is(table) {
+      display: block;
+      max-inline-size: 100%;
+      overflow-x: auto;
+    }
+
+    /* <u> in the text colour with a thin line, so it isn't taken for a
+     * link (links are the link colour, with a thicker line on hover). */
+    &:is(u) {
+      color: inherit;
+      text-decoration-line: underline;
+      text-decoration-color: currentcolor;
+      text-decoration-thickness: 1px;
+      text-underline-offset: 2px;
+    }
+    &:is(s) {
+      text-decoration-line: line-through;
+    }
+
+    /* Alignment, as RichText writes it. */
+    &[data-align="center"] {
+      text-align: center;
+    }
+    &[data-align="end"] {
+      text-align: end;
+    }
+    &[data-align="justify"] {
+      text-align: justify;
+      hyphens: auto;
+    }
+  }
+}
+
+/* The rest is plain rules, not inside the utility: Tailwind sorts a
+ * utility among the plugin's by the properties it sets, and with these
+ * added prose-centerline would sort before .prose, whose literal colours
+ * would then win over the roles above. These are outside Tailwind's
+ * layers, so they win over the plugin's rules whatever the order, and
+ * skip not-prose as the utility does. */
+.prose-centerline :not(:where([class~="not-prose"], [class~="not-prose"] *)) {
+  /* A checklist: <ul> of <li><label><input type="checkbox"> text</label>.
+     * The box beside the label's first line, no bullet, and the whole row
+     * (at least 44px) ticks it. The box is Checkbox's: size-5, primary. */
+  &:is(ul):has(> li > label > input[type="checkbox"]) {
+    padding-inline-start: 0;
+  }
+  &:is(li):has(> label > input[type="checkbox"]) {
+    list-style: none;
+    margin-block: 0;
+    padding-inline-start: 0;
+  }
+  &:is(li > label:has(> input[type="checkbox"])) {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    min-block-size: 2.75rem;
+    padding-block: 0.625rem;
+    cursor: pointer;
+  }
+  &:is(label > input[type="checkbox"]) {
+    flex-shrink: 0;
+    inline-size: 1.25rem;
+    block-size: 1.25rem;
+    margin: 0.25rem 0 0;
+    accent-color: var(--color-primary);
+  }
+  &:is(label > input[type="checkbox"]):focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 2px;
+  }
+
+  /* A new-tab link: a mark after the text, in the text's colour, with
+     * alternative text for screen readers. The first content line is for
+     * browsers that don't read the alternative. */
+  &:is(a)[target="_blank"]::after {
+    content: "";
+    content: "" / "opens in a new tab";
+    display: inline-block;
+    inline-size: 0.75em;
+    block-size: 0.75em;
+    margin-inline-start: 0.25em;
+    background-color: currentcolor;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7zm5 16H5V5h7V3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7h-2v7z'/%3E%3C/svg%3E")
+      center / contain no-repeat;
+  }
+
+  @media print {
+    /* The URL after an external link, in place of the new-tab mark. */
+    &:is(a[href^="http://"], a[href^="https://"], a[href^="//"])::after {
+      content: " (" attr(href) ")";
+      display: inline;
+      inline-size: auto;
+      block-size: auto;
+      margin: 0;
+      background: none;
+      mask: none;
+      overflow-wrap: anywhere;
+    }
+    /* Checkboxes print empty, ticked or not. */
+    &:is(label > input[type="checkbox"]) {
+      appearance: none;
+      border: 1px solid currentcolor;
+      background: none;
+    }
+    &:is(pre) {
+      white-space: pre-wrap;
+      border: 1px solid var(--color-border);
+    }
+    &:is(figure, tr) {
+      break-inside: avoid;
+    }
+    &:is(h1, h2, h3, h4, h5, h6) {
+      break-after: avoid;
+    }
+    &:is(table) {
+      display: table;
+      overflow: visible;
+    }
+  }
+}
+
+/* Print: black on white whatever the scheme. The roles the prose draws
+ * with are set to print values on it and on the elements around it that
+ * carry data-theme (a dark page, a dark panel), so the same rules
+ * serve both schemes. */
+@media print {
+  :root:has(.prose-centerline),
+  [data-theme]:has(.prose-centerline),
+  .prose-centerline {
+    color-scheme: light;
+    --color-background: #fff;
+    --color-card: #fff;
+    --color-foreground: #000;
+    --color-foreground-soft: #000;
+    --color-muted-foreground: #000;
+    --color-muted: #fff;
+    --color-link: #000;
+    --color-info: #000;
+    --color-primary: #000;
+    --color-border: #555;
+  }
+
+  /* The chrome: Header, Footer and AppNav draw data-theme="dark" on their
+   * root (a header around prose is a dark panel, not chrome); SkipLink is
+   * the sr-only link to a #id. */
+  header[data-theme="dark"]:not(:has(.prose-centerline)),
+  footer[data-theme="dark"]:not(:has(.prose-centerline)),
+  nav[data-theme="dark"]:not(:has(.prose-centerline)),
+  a.sr-only[href^="#"] {
+    display: none;
+  }
+
+  /* SEAM SELECTORS: these two name elements that components not yet on
+   * this branch draw. A later change points each at the real element.
+   * Anchor link: a link to a #id inside a heading. Callout: any element
+   * carrying data-callout. */
+  .prose-centerline :is(h1, h2, h3, h4, h5, h6) > a[href^="#"] {
+    display: none;
+  }
+  .prose-centerline [data-callout] {
+    break-inside: avoid;
   }
 }
