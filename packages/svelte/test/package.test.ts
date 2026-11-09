@@ -151,6 +151,7 @@ describe("the packed package", () => {
       "Steps",
       "Switch",
       "Table",
+      "TableOfContents",
       "Tabs",
       "Text",
       "Textarea",
