@@ -579,23 +579,14 @@ describe("RichText", () => {
       });
 
     test("the fixture's sentence draws each block inside its paragraph, with no warning", async () => {
-      const sentenceNode = paragraphWith("Contact tower");
-      // The citation is another ticket's block.
-      sentenceNode.children = (
-        sentenceNode.children as SerializedNode[]
-      ).filter(
-        (n) =>
-          (n.fields as { blockType?: string } | undefined)?.blockType !==
-          "citation",
-      );
       const screen = await renderIn("light", WithPositions, {
         positions: [lexingtonTower],
         component: RichText,
-        props: { content: doc(sentenceNode) },
+        props: { content: doc(paragraphWith("Contact tower")) },
       });
       const p = screen.getByRole("article").element().querySelector("p")!;
       // Frequency, position (no airport: its callsign), rating, flight
-      // category and time all sit in the one paragraph.
+      // category, time and citation all sit in the one paragraph.
       expect(p.querySelector("span.font-mono")?.textContent).toContain(
         "120.90",
       );
@@ -604,6 +595,7 @@ describe("RichText", () => {
       expect(p.querySelectorAll("time")).toHaveLength(2);
       expect(p.textContent).toContain("2300Z");
       expect(p.textContent).toContain("0300Z");
+      expect(p.querySelector("cite")?.textContent).toContain("JO 7110.65");
       expect(p.parentElement?.tagName).toBe("ARTICLE");
       expect(p.querySelectorAll("p, div")).toHaveLength(0);
       expect(warn).not.toHaveBeenCalled();

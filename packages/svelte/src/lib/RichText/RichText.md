@@ -147,6 +147,11 @@ A slug with no row here is an app's own: it gives that slug a snippet. A
 snippet types its argument with `BlockProps<Fields>`. The inline blocks
 sit in the sentence with no spacing of their own.
 
+## Looks
+
+`Prose`'s; see [Prose](../Prose/Prose.md). The blocks keep their own
+components' looks.
+
 ## Accessibility
 
 - Its elements carry the document's structure: headings, lists, tables
