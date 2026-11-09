@@ -32,7 +32,9 @@
   }: Props = $props();
 
   const drawing: Drawing = $derived({
-    blocks: { ...PACKAGE_BLOCKS, ...blocks } as Drawing["blocks"],
+    // Each snippet takes its own fields; the drawing hands it whatever the
+    // block's JSON holds, so the types are met only by the cast.
+    blocks: { ...PACKAGE_BLOCKS, ...blocks } as unknown as Drawing["blocks"],
     linkHref,
     ids: new Map(
       documentHeadings(content, headingId).map(({ node, id }) => [node, id]),

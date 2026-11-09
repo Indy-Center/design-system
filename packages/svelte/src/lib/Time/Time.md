@@ -14,6 +14,8 @@ description: A time, date, range or relative time as a <time datetime>, in the m
       is the rule, such as a training report's times.
 - [ ] Add `show="datetime"` when the day isn't clear from the page, and
       pass `end` for a range rather than writing two `Time`s with a dash.
+- [ ] Use `show="daily"` for a time of day that repeats, with no date:
+      "the net runs 2300Z–0300Z". It is Zulu always; pass four digits.
 - [ ] Write any label yourself: "Online" before a relative time, "ago"
       after one, "Starts" before an event. `Time` shows only the time.
 - [ ] Don't colour it or set its font: it takes the text around it.
@@ -32,20 +34,23 @@ description: A time, date, range or relative time as a <time datetime>, in the m
 <!-- Today, 7:00 PM–10:00 PM EDT · 2300Z–0200Z -->
 <Time value={event.start} end={event.end} show="datetime" zone="both" />
 
+<!-- 2300Z–0300Z, every day -->
+<Time value="2300" end="0300" show="daily" />
+
 <!-- Online 1 h 23 m -->
 <p>Online <Time value={controller.loginTime} show="relative" /></p>
 ```
 
 ## Props
 
-| Prop    | Type                                 | Notes                                                                                                                          |
-| ------- | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------ |
-| `value` | `Date \| string \| number`           | Required. The instant: a `Date`, an ISO string or milliseconds since the epoch. If it isn't a date, `Time` shows nothing.      |
-| `end`   | `Date \| string \| number`           | A range's end. If it isn't a date, only the start shows.                                                                       |
-| `zone`  | `"local" \| "zulu" \| "both"`        | `"local"` by default. `"both"` is local, then Zulu: `7:00 PM EDT · 2300Z`.                                                     |
-| `show`  | `"time" \| "datetime" \| "relative"` | `"time"` by default. `"datetime"` puts the day first; `"relative"` gives "in 2 h" or "1 h 23 m", and ignores `end` and `zone`. |
-| `class` | `string`                             | Layout only.                                                                                                                   |
-| others  | global attributes                    | `id`, `aria-*` and the rest, passed to the root: the `<time>`, or a range's `<span>`. `Time` sets `datetime` itself.           |
+| Prop    | Type                                            | Notes                                                                                                                                                                               |
+| ------- | ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `value` | `Date \| string \| number`                      | Required. The instant: a `Date`, an ISO string or milliseconds since the epoch. If it isn't a date, `Time` shows nothing. With `show="daily"`, a Zulu time of day: `"2300"`.        |
+| `end`   | `Date \| string \| number`                      | A range's end. If it isn't a date, only the start shows. With `show="daily"`, `"0300"`.                                                                                             |
+| `zone`  | `"local" \| "zulu" \| "both"`                   | `"local"` by default. `"both"` is local, then Zulu: `7:00 PM EDT · 2300Z`.                                                                                                          |
+| `show`  | `"time" \| "datetime" \| "relative" \| "daily"` | `"time"` by default. `"datetime"` puts the day first; `"relative"` gives "in 2 h" or "1 h 23 m", and ignores `end` and `zone`; `"daily"` is a Zulu time of day, and ignores `zone`. |
+| `class` | `string`                                        | Layout only.                                                                                                                                                                        |
+| others  | global attributes                               | `id`, `aria-*` and the rest, passed to the root: the `<time>`, or a range's `<span>`. `Time` sets `datetime` itself.                                                                |
 
 ## What it shows
 
@@ -66,7 +71,14 @@ Times, with the clock pinned at 5:00 PM EDT on Tuesday 20 October 2026:
 | `show="relative"`, to come              | `in 2 h`                                    |
 | `show="relative"`, gone by              | `1 h 23 m`                                  |
 | `show="relative"`, this minute          | `0 m`                                       |
+| `show="daily"`, `value="2300"`          | `2300Z`                                     |
+| `show="daily"`, `end="0300"`            | `2300Z–0300Z`                               |
 
+- `show="daily"` takes `value` and `end` as four digits, `0000` to `2359`,
+  not dates; `zone` is ignored. It draws Zulu in every zone, on the server
+  and in the browser, and each `<time>` carries `datetime="23:00"`. An
+  `end` before the `value` is after midnight, and reads the same. A bad
+  `value` shows nothing and a bad `end` is left off, as for dates.
 - Zulu is always four digits and a `Z`. Local is the 12-hour clock with
   the zone's abbreviation; a zone without one shows its offset (`GMT+1`).
 - The day is the member's day, not Zulu's: 0200Z on the 21st is "Today"

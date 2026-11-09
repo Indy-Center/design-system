@@ -191,6 +191,58 @@ describe("Time", () => {
   });
 });
 
+// The daily form: a Zulu time of day, whatever the member's zone or day.
+describe('Time show="daily"', () => {
+  test("is one <time> holding the time of day, in Zulu", async () => {
+    const screen = await renderIn("light", Time, {
+      value: "2300",
+      show: "daily",
+    });
+    const time = screen.container.querySelector("time");
+    await expect.element(time).toHaveTextContent("2300Z");
+    await expect.element(time).toHaveAttribute("datetime", "23:00");
+  });
+
+  test("is a range of two <time>s, an end before the start crossing midnight", async () => {
+    const screen = await renderIn("light", Time, {
+      value: "2300",
+      end: "0300",
+      show: "daily",
+      id: "shift",
+    });
+    const range = screen.container.querySelector<HTMLElement>("#shift")!;
+    expect(range.textContent?.replace(/\s/g, "")).toBe("2300Z–0300Z");
+    const times = [...range.querySelectorAll("time")];
+    expect(times.map((t) => t.getAttribute("datetime"))).toEqual([
+      "23:00",
+      "03:00",
+    ]);
+  });
+
+  test("ignores the member's zone", async () => {
+    expect(
+      await shown({ value: "2300", end: "0300", show: "daily", zone: "local" }),
+    ).toMatch(/^\s*2300Z\s*–\s*0300Z\s*$/);
+  });
+
+  test("shows nothing for a value that isn't a time of day, and warns; leaves off a bad end", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    expect(await shown({ value: "25:00", show: "daily" })).toBe("");
+    expect(warn).toHaveBeenCalledWith(
+      "Time: value is not a time of day:",
+      "25:00",
+    );
+    expect(await shown({ value: "2300", end: "2460", show: "daily" })).toBe(
+      "2300Z",
+    );
+    expect(warn).toHaveBeenCalledWith(
+      "Time: end is not a time of day:",
+      "2460",
+    );
+    warn.mockRestore();
+  });
+});
+
 /** Fakes the clock and its timers at `at`, moving only when a test says. */
 function useFakeClock(at: Date | string) {
   vi.useFakeTimers({ toFake: ["Date", "setTimeout", "clearTimeout"] });
