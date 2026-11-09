@@ -323,7 +323,8 @@ describe("RichText", () => {
       const screen = await renderIn("light", RichText, {
         content: doc(sentence()),
       });
-      const link = screen.getByRole("link", { name: "clearance" });
+      // Prose's mark after a new-tab link adds "opens in a new tab" to its name.
+      const link = screen.getByRole("link", { name: /^clearance/ });
       await expect
         .element(link)
         .toHaveAttribute(
