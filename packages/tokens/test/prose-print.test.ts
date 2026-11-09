@@ -115,8 +115,8 @@ describe("prose.css in print", () => {
     expect(await style("#wide", "overflow-x")).toBe("auto");
   });
 
-  // This selector points at an element another component draws; update
-  // it with the real markup. The callout's above is Callout's <aside>.
+  // This selector matches the link RichText draws inside a heading; the
+  // callout's above matches Callout's <aside>.
   test("hides a heading's anchor link", async () => {
     await p.emulateMedia({ media: "print" });
     expect(await style("#anchor", "display")).toBe("none");

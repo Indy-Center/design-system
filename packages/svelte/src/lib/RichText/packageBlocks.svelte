@@ -31,7 +31,6 @@
   export const PACKAGE_BLOCKS: {
     [Slug in BlockSlug]: Snippet<[BlockProps<BlockFieldTypes[Slug]>]>;
   } = {
-    // One line per block, alphabetical: `callout,`
     airport,
     callout,
     citation,
@@ -43,13 +42,6 @@
     time,
   };
 </script>
-
-<!--
-  One snippet per block, alphabetical, drawing its component:
-  {#snippet callout({ content, ...fields }: BlockProps<CalloutBlock>)}
-    <Callout {...fields}>{@render content()}</Callout>
-  {/snippet}
--->
 
 {#snippet airport(fields: BlockProps<AirportBlock>)}
   <Airport {...fields} />

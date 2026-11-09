@@ -32,6 +32,15 @@ export type CalloutBlock = {
   /** The callout's text. */
   content: RichTextState;
 };
+/** A callout's levels: the FAA's NOTE, CAUTION, WARNING and REFERENCE. */
+export const CALLOUT_LEVELS = [
+  "info",
+  "caution",
+  "danger",
+  "reference",
+] as const;
+/** How a callout reads: `info`, `caution`, `danger`, or `reference` (no colour). */
+export type CalloutLevel = (typeof CALLOUT_LEVELS)[number];
 
 /** Where a citation points: a source record as Payload populates it. */
 export type CitationBlock = {
@@ -62,7 +71,6 @@ export type DisclosureBlock = {
  * `null`; nested rich text is a `content: RichTextState` field.
  */
 export interface BlockFieldTypes {
-  // One line per block, alphabetical: `callout: CalloutBlock;`
   airport: AirportBlock;
   callout: CalloutBlock;
   citation: CitationBlock;
@@ -82,7 +90,6 @@ export type BlockSlug = keyof BlockFieldTypes;
  * lists the first under `blocks` and the second under `inlineBlocks`.
  */
 export const BLOCKS = {
-  // One line per block, alphabetical: `callout: "block",`
   airport: "inline",
   callout: "block",
   citation: "inline",
@@ -93,19 +100,6 @@ export const BLOCKS = {
   rating: "inline",
   time: "inline",
 } as const satisfies { [Slug in BlockSlug]: BlockKind };
-
-// The option lists Payload's selects need, each beside its block's type.
-
-/** A callout's levels: the FAA's NOTE, CAUTION, WARNING and REFERENCE. */
-export const CALLOUT_LEVELS = [
-  "info",
-  "caution",
-  "danger",
-  "reference",
-] as const;
-
-/** How a callout reads: `info`, `caution`, `danger`, or `reference` (no colour). */
-export type CalloutLevel = (typeof CALLOUT_LEVELS)[number];
 
 // Inline blocks. Fields are the component's props; a text field holds what a
 // number prop would (a frequency in megahertz), and an optional one may be
