@@ -245,6 +245,25 @@ describe("the packed package", () => {
     expect(await exportsOf("dist/index.js")).toEqual({ values, types: [] });
   });
 
+  // svelte-package turns a `.ts` module into `.js` but leaves import paths
+  // inside `.svelte` files as written, so an import ending `.ts` there
+  // points at a file the package doesn't have.
+  test("every relative import in the built package names a file it ships", async () => {
+    const built = files.filter((f) => /^dist\/.*\.(js|svelte)$/.test(f));
+    for (const path of built) {
+      const source = await readFile(new URL(path, root), "utf8");
+      for (const [, from] of source.matchAll(
+        /(?:from|import)\s*\(?\s*["'](\.[^"']+)["']/g,
+      )) {
+        const target = new URL(from, new URL(path, root)).pathname.slice(
+          new URL(root).pathname.length,
+        );
+        expect(files, `${path} imports ${from}`).toContain(target);
+      }
+    }
+    expect(built.length).toBeGreaterThan(100);
+  });
+
   test("carries the MIT licence and leaves out tests", () => {
     expect(files).toContain("LICENSE");
     expect(files.filter((f) => /\.test\./.test(f))).toEqual([]);
