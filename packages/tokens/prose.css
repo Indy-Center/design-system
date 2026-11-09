@@ -277,14 +277,16 @@
     display: none;
   }
 
-  /* SEAM SELECTORS: these two name elements that components not yet on
-   * this branch draw. A later change points each at the real element.
-   * Anchor link: a link to a #id inside a heading. Callout: any element
-   * carrying data-callout. */
+  /* SEAM SELECTOR: this names an element that a component not yet on
+   * this branch draws. A later change points it at the real element.
+   * Anchor link: a link to a #id inside a heading. */
   .prose-centerline :is(h1, h2, h3, h4, h5, h6) > a[href^="#"] {
     display: none;
   }
-  .prose-centerline [data-callout] {
+
+  /* A callout kept whole: Callout draws an <aside>, the only one rich
+   * text has. */
+  .prose-centerline aside {
     break-inside: avoid;
   }
 }

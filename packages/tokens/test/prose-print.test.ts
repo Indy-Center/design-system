@@ -27,7 +27,7 @@ const page = `
     <article class="prose prose-centerline" id="prose">
       <h2 id="h">Title <a href="#h" id="anchor">#</a></h2>
       <p id="p">See <a id="ext" href="https://example.com/x" target="_blank">the order</a> and <a id="int" href="/a">a page</a>.</p>
-      <div data-callout id="callout"><p>Notice</p></div>
+      <aside aria-labelledby="callout-label" id="callout"><div><p id="callout-label">Note</p><div><p>Notice</p></div></div></aside>
       <figure id="figure"><pre>code</pre></figure>
       <table><tbody><tr id="row"><td>cell</td></tr></tbody></table>
       <ul><li><label><input id="box" type="checkbox" checked> Tick</label></li></ul>
@@ -115,8 +115,8 @@ describe("prose.css in print", () => {
     expect(await style("#wide", "overflow-x")).toBe("auto");
   });
 
-  // This selector, and the callout's above, point at elements other
-  // components draw; update them with the real markup.
+  // This selector points at an element another component draws; update
+  // it with the real markup. The callout's above is Callout's <aside>.
   test("hides a heading's anchor link", async () => {
     await p.emulateMedia({ media: "print" });
     expect(await style("#anchor", "display")).toBe("none");
